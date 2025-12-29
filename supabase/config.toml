@@ -1,8 +1,5 @@
 project_id = "ukuqflaakynzzikuszjl"
 
-[functions.vapi-chat]
-verify_jwt = false
-
 [functions.demo-chat]
 verify_jwt = false
 

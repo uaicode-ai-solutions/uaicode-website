@@ -87,12 +87,18 @@ const ChatSection = () => {
     return () => clearInterval(interval);
   }, [isCallActive]);
 
+  // Store volume functions in refs to avoid dependency issues
+  const getInputVolumeRef = useRef(getInputVolume);
+  const getOutputVolumeRef = useRef(getOutputVolume);
+  getInputVolumeRef.current = getInputVolume;
+  getOutputVolumeRef.current = getOutputVolume;
+
   // Waveform visualization
   useEffect(() => {
     if (isCallActive) {
       const interval = setInterval(() => {
-        const inputVol = getInputVolume();
-        const outputVol = getOutputVolume();
+        const inputVol = getInputVolumeRef.current();
+        const outputVol = getOutputVolumeRef.current();
         const volumeLevel = Math.max(inputVol, outputVol);
         
         const newBars = Array(16).fill(0).map((_, index) => {
@@ -109,7 +115,7 @@ const ChatSection = () => {
     } else {
       setFrequencyBars(Array(16).fill(0));
     }
-  }, [isCallActive, getInputVolume, getOutputVolume]);
+  }, [isCallActive]);
 
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
