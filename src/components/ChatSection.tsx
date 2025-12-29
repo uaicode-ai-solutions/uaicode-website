@@ -22,7 +22,7 @@ type InterfaceMode = "chat" | "voice";
 
 const ChatSection = () => {
   const [mode, setMode] = useState<InterfaceMode>("chat");
-  const { messages, setMessages, addMessage, resetConversation, isLoadingHistory } = useConversation();
+  const { messages, addMessage, resetConversation, isLoadingHistory } = useConversation();
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -31,17 +31,21 @@ const ChatSection = () => {
   const prevLoadingRef = useRef(isLoading);
   const { toast } = useToast();
 
-  // ElevenLabs voice hook
+  // Callback to save voice messages to database
+  const handleVoiceMessage = async (message: Message) => {
+    await addMessage(message);
+  };
+
+  // ElevenLabs voice hook with message callback
   const {
     isCallActive,
     isConnecting,
     isSpeaking,
-    conversation: voiceConversation,
     error: voiceError,
     toggleCall,
     getInputVolume,
     getOutputVolume,
-  } = useElevenLabs();
+  } = useElevenLabs({ onVoiceMessage: handleVoiceMessage });
 
   // Waveform visualization
   const [frequencyBars, setFrequencyBars] = useState<number[]>(Array(16).fill(0));
@@ -55,7 +59,7 @@ const ChatSection = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, voiceConversation]);
+  }, [messages]);
 
   useEffect(() => {
     if (prevLoadingRef.current === true && isLoading === false && inputRef.current) {
@@ -215,9 +219,6 @@ const ChatSection = () => {
     return "Ready";
   };
 
-  // Combine chat and voice messages for display
-  const displayMessages = mode === "voice" && isCallActive ? voiceConversation : messages;
-
   return (
     <section id="chat" className="py-24 bg-background">
       <div className="container max-w-4xl mx-auto px-4">
@@ -278,17 +279,17 @@ const ChatSection = () => {
               <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-accent/3 rounded-full blur-3xl" />
             </div>
             
-            {displayMessages.length === 0 && !isLoading ? (
+            {messages.length === 0 && !isLoading ? (
               <EmptyState />
             ) : (
               <div className="relative z-10 space-y-4">
-                {displayMessages.map((message, index) => (
+                {messages.map((message, index) => (
                   <ChatMessage
                     key={index}
                     role={message.role}
                     content={message.content}
-                    isLatest={index === displayMessages.length - 1}
-                    isSpeaking={isSpeaking && message.role === "assistant" && index === displayMessages.length - 1}
+                    isLatest={index === messages.length - 1}
+                    isSpeaking={isSpeaking && message.role === "assistant" && index === messages.length - 1}
                   />
                 ))}
                 {isLoading && <TypingIndicator />}
@@ -300,7 +301,7 @@ const ChatSection = () => {
           {/* Quick Replies */}
           <QuickReplies 
             onSelect={(message) => sendMessage(message)} 
-            isVisible={displayMessages.length <= 1 && !isLoading && !isCallActive && !inputValue}
+            isVisible={messages.length <= 1 && !isLoading && !isCallActive && !inputValue}
           />
 
           {/* Voice Visualization (when call is active) */}
