@@ -185,12 +185,19 @@ const ChatSection = () => {
       console.error("Voice toggle error:", error);
       const errorMessage = error.message || "Failed to connect to Eve.";
       
-      // Provide more specific error messages
+      // Provide more specific error messages based on error type
       let description = errorMessage;
-      if (errorMessage.includes("Network error") || errorMessage.includes("Failed to fetch")) {
-        description = "Could not connect to voice service. Please check your internet connection and try again.";
+      
+      if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError")) {
+        description = "Network error connecting to voice service. Please check your connection.";
       } else if (errorMessage.includes("Microphone")) {
-        description = "Microphone access is required. Please allow microphone access in your browser settings.";
+        description = "Microphone access required. Please allow it in browser settings.";
+      } else if (errorMessage.includes("401") || errorMessage.includes("403") || errorMessage.includes("Unauthorized")) {
+        description = "Voice service authentication error. Please try again.";
+      } else if (errorMessage.includes("not configured")) {
+        description = "Voice service is not configured. Please contact support.";
+      } else if (errorMessage.includes("allowlist") || errorMessage.includes("origin")) {
+        description = "This domain is not allowed for voice. Please contact support.";
       }
       
       toast({

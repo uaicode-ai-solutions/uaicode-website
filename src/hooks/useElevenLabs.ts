@@ -1,14 +1,11 @@
 import { useConversation } from "@elevenlabs/react";
 import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
-
-// Get Supabase URL from environment
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://ukuqflaakynzzikuszjl.supabase.co";
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrdXFmbGFha3luenppa3VzempsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyOTIzNDcsImV4cCI6MjA3Nzg2ODM0N30.090glE1geyiMbUXxOofu4AZ7OC5Oozgd59iRbONiq-M";
 
 export const useElevenLabs = () => {
   const [isConnecting, setIsConnecting] = useState(false);
@@ -28,7 +25,6 @@ export const useElevenLabs = () => {
     onMessage: (payload) => {
       console.log("ElevenLabs message:", payload);
       
-      // Map the role from ElevenLabs format to our format
       const role = payload.role === "user" ? "user" : "assistant";
       const content = payload.message;
       
@@ -43,49 +39,43 @@ export const useElevenLabs = () => {
     },
   });
 
-  // Direct fetch to edge function (bypasses SDK issues)
-  const fetchSignedUrl = async (): Promise<{ signed_url: string; agent_id: string }> => {
-    const functionUrl = `${SUPABASE_URL}/functions/v1/elevenlabs-conversation-token`;
+  // Fetch token using supabase.functions.invoke (same pattern as eve-chat)
+  const fetchConversationToken = async (mode: "webrtc" | "websocket" = "webrtc") => {
+    console.log(`Fetching ElevenLabs token with mode: ${mode}`);
     
-    console.log("Calling edge function directly:", functionUrl);
-    
-    const response = await fetch(functionUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({}),
+    const { data, error } = await supabase.functions.invoke('elevenlabs-conversation-token', {
+      body: { mode }
     });
 
-    console.log("Edge function response status:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Edge function error response:", errorText);
-      
-      if (response.status === 404) {
-        throw new Error("Voice service not found. Please try again later.");
-      }
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication error with voice service.");
-      }
-      
-      throw new Error(`Voice service error (${response.status}): ${errorText}`);
+    if (error) {
+      console.error("Edge function invoke error:", error);
+      throw new Error(`Voice service error: ${error.message}`);
     }
 
-    const data = await response.json();
-    
-    if (data.error) {
+    if (data?.error) {
+      console.error("Edge function returned error:", data.error);
       throw new Error(data.error);
     }
+
+    console.log("Edge function response:", data);
+
+    if (mode === "webrtc" && data?.token) {
+      return { type: "webrtc" as const, token: data.token, agentId: data.agent_id };
+    }
     
-    if (!data.signed_url) {
-      throw new Error("Voice service did not return required data.");
+    if (mode === "websocket" && data?.signed_url) {
+      return { type: "websocket" as const, signedUrl: data.signed_url, agentId: data.agent_id };
     }
 
-    return data;
+    // Fallback: check if we got either format
+    if (data?.token) {
+      return { type: "webrtc" as const, token: data.token, agentId: data.agent_id };
+    }
+    if (data?.signed_url) {
+      return { type: "websocket" as const, signedUrl: data.signed_url, agentId: data.agent_id };
+    }
+
+    throw new Error("Voice service did not return valid credentials.");
   };
 
   const startCall = useCallback(async () => {
@@ -104,19 +94,39 @@ export const useElevenLabs = () => {
         throw new Error("Microphone access denied. Please allow microphone access and try again.");
       }
 
-      // Get signed URL from edge function using direct fetch
-      console.log("Fetching conversation token from edge function...");
-      
-      const data = await fetchSignedUrl();
+      // Try WebRTC first (recommended by ElevenLabs docs)
+      console.log("Attempting WebRTC connection...");
+      try {
+        const webrtcData = await fetchConversationToken("webrtc");
+        
+        if (webrtcData.type === "webrtc" && webrtcData.token) {
+          console.log("Starting ElevenLabs session with WebRTC token");
+          await conversationHook.startSession({
+            conversationToken: webrtcData.token,
+            connectionType: "webrtc",
+          });
+          console.log("ElevenLabs WebRTC session started successfully");
+          return;
+        }
+      } catch (webrtcError: any) {
+        console.warn("WebRTC connection failed, trying WebSocket fallback:", webrtcError.message);
+      }
 
-      console.log("Starting ElevenLabs session with signed URL");
-
-      // Start the conversation with WebSocket
-      await conversationHook.startSession({
-        signedUrl: data.signed_url,
-      });
+      // Fallback to WebSocket with signed URL
+      console.log("Attempting WebSocket connection...");
+      const wsData = await fetchConversationToken("websocket");
       
-      console.log("ElevenLabs session started successfully");
+      if (wsData.type === "websocket" && wsData.signedUrl) {
+        console.log("Starting ElevenLabs session with WebSocket signed URL");
+        await conversationHook.startSession({
+          signedUrl: wsData.signedUrl,
+          connectionType: "websocket",
+        });
+        console.log("ElevenLabs WebSocket session started successfully");
+        return;
+      }
+
+      throw new Error("Could not establish voice connection. Please try again.");
     } catch (err: any) {
       console.error("Failed to start call:", err);
       setError(err.message || "Failed to connect to voice service");
@@ -150,7 +160,6 @@ export const useElevenLabs = () => {
     toggleCall,
     startCall,
     endCall,
-    // Expose volume methods for visualization
     getInputVolume: () => conversationHook.getInputVolume?.() || 0,
     getOutputVolume: () => conversationHook.getOutputVolume?.() || 0,
   };
