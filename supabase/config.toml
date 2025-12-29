@@ -1,0 +1,19 @@
+project_id = "ukuqflaakynzzikuszjl"
+
+[functions.vapi-chat]
+verify_jwt = false
+
+[functions.demo-chat]
+verify_jwt = false
+
+[functions.generate-saas-report]
+verify_jwt = false
+
+[functions.generate-screen-mockups]
+verify_jwt = false
+
+[functions.improve-description]
+verify_jwt = false
+
+[functions.search-competitors]
+verify_jwt = false
