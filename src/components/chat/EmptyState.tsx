@@ -1,5 +1,5 @@
-import { MessageCircle, Sparkles } from "lucide-react";
-import EveAvatar from "./EveAvatar";
+import { MessageCircle, Mic } from "lucide-react";
+import eveAvatarImage from "@/assets/eve-avatar.webp";
 
 const EmptyState = () => {
   return (
@@ -13,7 +13,13 @@ const EmptyState = () => {
       {/* Avatar with glow */}
       <div className="relative mb-6">
         <div className="absolute inset-0 bg-accent/20 rounded-full blur-2xl scale-150" />
-        <EveAvatar size="lg" isActive />
+        <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-accent shadow-[0_0_30px_rgba(250,204,21,0.4)]">
+          <img 
+            src={eveAvatarImage} 
+            alt="Eve - Assistente Virtual"
+            className="w-full h-full object-cover"
+          />
+        </div>
       </div>
       
       {/* Welcome text */}
@@ -31,7 +37,7 @@ const EmptyState = () => {
           <span>Chat instantâneo</span>
         </div>
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 text-xs text-muted-foreground">
-          <Sparkles className="w-3 h-3" />
+          <Mic className="w-3 h-3" />
           <span>Resposta inteligente</span>
         </div>
       </div>

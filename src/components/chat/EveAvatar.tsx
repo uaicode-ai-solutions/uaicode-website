@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles } from "lucide-react";
+import eveAvatarImage from "@/assets/eve-avatar.webp";
 
 interface EveAvatarProps {
   isActive?: boolean;
@@ -25,12 +25,6 @@ const EveAvatar = ({ isActive = false, isSpeaking = false, size = "md" }: EveAva
     lg: "w-16 h-16",
   };
 
-  const iconSizes = {
-    sm: "w-4 h-4",
-    md: "w-6 h-6",
-    lg: "w-8 h-8",
-  };
-
   return (
     <div className="relative">
       {/* Outer glow ring */}
@@ -52,21 +46,25 @@ const EveAvatar = ({ isActive = false, isSpeaking = false, size = "md" }: EveAva
       
       {/* Main avatar container */}
       <div 
-        className={`relative ${sizeClasses[size]} rounded-full bg-gradient-to-br from-secondary via-secondary to-muted flex items-center justify-center border-2 transition-all duration-300 ${
+        className={`relative ${sizeClasses[size]} rounded-full overflow-hidden border-2 transition-all duration-300 ${
           isActive 
             ? 'border-accent shadow-[0_0_20px_rgba(250,204,21,0.4)]' 
             : 'border-border'
         }`}
       >
-        {/* Inner gradient */}
-        <div className="absolute inset-1 rounded-full bg-gradient-to-br from-accent/20 via-transparent to-accent/10" />
-        
-        {/* Icon */}
-        <Sparkles 
-          className={`${iconSizes[size]} text-accent relative z-10 transition-transform duration-300 ${
-            isSpeaking ? 'animate-pulse scale-110' : ''
-          }`} 
+        {/* Avatar image */}
+        <img 
+          src={eveAvatarImage} 
+          alt="Eve - Assistente Virtual"
+          className={`w-full h-full object-cover transition-transform duration-300 ${
+            isSpeaking ? 'scale-105' : 'scale-100'
+          }`}
         />
+        
+        {/* Overlay gradient when active */}
+        {isActive && (
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-accent/5 pointer-events-none" />
+        )}
       </div>
       
       {/* Status indicator */}
