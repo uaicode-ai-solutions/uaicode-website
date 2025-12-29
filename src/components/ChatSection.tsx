@@ -182,9 +182,20 @@ const ChatSection = () => {
         setMode("voice");
       }
     } catch (error: any) {
+      console.error("Voice toggle error:", error);
+      const errorMessage = error.message || "Failed to connect to Eve.";
+      
+      // Provide more specific error messages
+      let description = errorMessage;
+      if (errorMessage.includes("Network error") || errorMessage.includes("Failed to fetch")) {
+        description = "Could not connect to voice service. Please check your internet connection and try again.";
+      } else if (errorMessage.includes("Microphone")) {
+        description = "Microphone access is required. Please allow microphone access in your browser settings.";
+      }
+      
       toast({
-        title: "Connection Error",
-        description: error.message || "Failed to connect to Eve. Please check microphone permissions.",
+        title: "Voice Connection Error",
+        description,
         variant: "destructive"
       });
     }

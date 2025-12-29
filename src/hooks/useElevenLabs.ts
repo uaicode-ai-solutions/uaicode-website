@@ -47,19 +47,41 @@ export const useElevenLabs = () => {
 
     try {
       // Request microphone permission
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log("Requesting microphone permission...");
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log("Microphone permission granted");
+      } catch (micError: any) {
+        console.error("Microphone permission error:", micError);
+        throw new Error("Microphone access denied. Please allow microphone access and try again.");
+      }
 
       // Get signed URL from edge function
-      const { data, error: fnError } = await supabase.functions.invoke(
-        "elevenlabs-conversation-token"
-      );
+      console.log("Fetching conversation token from edge function...");
+      
+      let data, fnError;
+      try {
+        const response = await supabase.functions.invoke("elevenlabs-conversation-token");
+        data = response.data;
+        fnError = response.error;
+      } catch (fetchError: any) {
+        console.error("Network error calling edge function:", fetchError);
+        throw new Error("Network error: Could not reach voice service. Please check your connection and try again.");
+      }
 
       if (fnError) {
+        console.error("Edge function error:", fnError);
         throw new Error(fnError.message || "Failed to get conversation token");
       }
 
+      if (data?.error) {
+        console.error("API error from edge function:", data.error);
+        throw new Error(data.error);
+      }
+
       if (!data?.signed_url) {
-        throw new Error(data?.error || "No signed URL received. Please configure ELEVENLABS_AGENT_ID in secrets.");
+        console.error("No signed_url in response:", data);
+        throw new Error("Voice service configuration error. Please contact support.");
       }
 
       console.log("Starting ElevenLabs session with signed URL");
@@ -68,9 +90,11 @@ export const useElevenLabs = () => {
       await conversationHook.startSession({
         signedUrl: data.signed_url,
       });
+      
+      console.log("ElevenLabs session started successfully");
     } catch (err: any) {
       console.error("Failed to start call:", err);
-      setError(err.message || "Failed to connect");
+      setError(err.message || "Failed to connect to voice service");
       setIsConnecting(false);
       throw err;
     }
