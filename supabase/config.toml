@@ -1,4 +1,4 @@
-project_id = "ukuqflaakynzzikuszjl"
+project_id = "ccjnxselfgdoeyyuziwt"
 
 [functions.demo-chat]
 verify_jwt = false
@@ -7,5 +7,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.elevenlabs-conversation-token]
-# Voice conversation token endpoint - public access
 verify_jwt = false
