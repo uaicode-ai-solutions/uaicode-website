@@ -1,11 +1,14 @@
 import { useConversation } from "@elevenlabs/react";
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+// Get Supabase URL from environment
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://ukuqflaakynzzikuszjl.supabase.co";
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrdXFmbGFha3luenppa3VzempsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyOTIzNDcsImV4cCI6MjA3Nzg2ODM0N30.090glE1geyiMbUXxOofu4AZ7OC5Oozgd59iRbONiq-M";
 
 export const useElevenLabs = () => {
   const [isConnecting, setIsConnecting] = useState(false);
@@ -40,6 +43,51 @@ export const useElevenLabs = () => {
     },
   });
 
+  // Direct fetch to edge function (bypasses SDK issues)
+  const fetchSignedUrl = async (): Promise<{ signed_url: string; agent_id: string }> => {
+    const functionUrl = `${SUPABASE_URL}/functions/v1/elevenlabs-conversation-token`;
+    
+    console.log("Calling edge function directly:", functionUrl);
+    
+    const response = await fetch(functionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({}),
+    });
+
+    console.log("Edge function response status:", response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Edge function error response:", errorText);
+      
+      if (response.status === 404) {
+        throw new Error("Voice service not found. Please try again later.");
+      }
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication error with voice service.");
+      }
+      
+      throw new Error(`Voice service error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    
+    if (!data.signed_url) {
+      throw new Error("Voice service did not return required data.");
+    }
+
+    return data;
+  };
+
   const startCall = useCallback(async () => {
     setIsConnecting(true);
     setError(null);
@@ -56,33 +104,10 @@ export const useElevenLabs = () => {
         throw new Error("Microphone access denied. Please allow microphone access and try again.");
       }
 
-      // Get signed URL from edge function
+      // Get signed URL from edge function using direct fetch
       console.log("Fetching conversation token from edge function...");
       
-      let data, fnError;
-      try {
-        const response = await supabase.functions.invoke("elevenlabs-conversation-token");
-        data = response.data;
-        fnError = response.error;
-      } catch (fetchError: any) {
-        console.error("Network error calling edge function:", fetchError);
-        throw new Error("Network error: Could not reach voice service. Please check your connection and try again.");
-      }
-
-      if (fnError) {
-        console.error("Edge function error:", fnError);
-        throw new Error(fnError.message || "Failed to get conversation token");
-      }
-
-      if (data?.error) {
-        console.error("API error from edge function:", data.error);
-        throw new Error(data.error);
-      }
-
-      if (!data?.signed_url) {
-        console.error("No signed_url in response:", data);
-        throw new Error("Voice service configuration error. Please contact support.");
-      }
+      const data = await fetchSignedUrl();
 
       console.log("Starting ElevenLabs session with signed URL");
 
