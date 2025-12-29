@@ -20,11 +20,23 @@ const INITIAL_MESSAGE: Message = {
 
 const getSessionId = (): string => {
   const key = 'eve_session_id';
-  let sessionId = localStorage.getItem(key);
+  
+  // Use sessionStorage first to avoid conflicts between tabs
+  let sessionId = sessionStorage.getItem(key);
+  
   if (!sessionId) {
-    sessionId = crypto.randomUUID();
+    // Try to recover from localStorage as fallback
+    sessionId = localStorage.getItem(key);
+    
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+    }
+    
+    // Sync both storages
     localStorage.setItem(key, sessionId);
+    sessionStorage.setItem(key, sessionId);
   }
+  
   return sessionId;
 };
 
@@ -38,11 +50,14 @@ export const useConversation = () => {
   useEffect(() => {
     const initConversation = async () => {
       try {
-        // Try to find existing conversation for this session
+        // Calculate 24 hours ago for fallback query
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        
+        // Try to find existing conversation for this session or recent one
         const { data: existingConversation, error: fetchError } = await supabase
           .from('chat_conversations')
-          .select('id')
-          .eq('session_id', sessionId)
+          .select('id, session_id')
+          .or(`session_id.eq.${sessionId},updated_at.gte.${oneDayAgo}`)
           .order('updated_at', { ascending: false })
           .limit(1)
           .maybeSingle();
