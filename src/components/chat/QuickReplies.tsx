@@ -8,23 +8,23 @@ interface QuickRepliesProps {
 const quickReplies = [
   {
     icon: MessageSquare,
-    label: "Como funciona?",
-    message: "Como funciona o processo de desenvolvimento com a UaiCode?",
+    label: "How it works",
+    message: "How does the development process work with UaiCode?",
   },
   {
     icon: DollarSign,
-    label: "Investimento",
-    message: "Qual é o investimento necessário para começar um projeto?",
+    label: "Investment",
+    message: "What investment is needed to start a project?",
   },
   {
     icon: Calendar,
-    label: "Agendar reunião",
-    message: "Gostaria de agendar uma reunião para discutir meu projeto.",
+    label: "Schedule meeting",
+    message: "I would like to schedule a meeting to discuss my project.",
   },
   {
     icon: Clock,
-    label: "Prazos",
-    message: "Qual é o prazo médio de entrega de um MVP?",
+    label: "Timelines",
+    message: "What is the average delivery time for an MVP?",
   },
 ];
 

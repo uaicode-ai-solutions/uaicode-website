@@ -55,7 +55,7 @@ const EveAvatar = ({ isActive = false, isSpeaking = false, size = "md" }: EveAva
         {/* Avatar image */}
         <img 
           src={eveAvatarImage} 
-          alt="Eve - Assistente Virtual"
+          alt="Eve - AI Assistant"
           className={`w-full h-full object-cover transition-transform duration-300 ${
             isSpeaking ? 'scale-105' : 'scale-100'
           }`}
