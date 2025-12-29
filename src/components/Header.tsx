@@ -60,7 +60,7 @@ const Header = () => {
             <button onClick={() => scrollToSection("how-it-works")} className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Process</button>
             <button onClick={() => scrollToSection("investment")} className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Investment</button>
             <button onClick={() => scrollToSection("pricing")} className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Solutions</button>
-            <button onClick={() => { setIsMenuOpen(false); navigate("/planning"); }} className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Planning</button>
+            
             <Link to="/jobs" className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Jobs</Link>
             <Link to="/newsletter" className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Insights</Link>
           </nav>
@@ -103,7 +103,7 @@ const Header = () => {
               <button onClick={() => scrollToSection("how-it-works")} className="text-left text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Process</button>
               <button onClick={() => scrollToSection("investment")} className="text-left text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Investment</button>
               <button onClick={() => scrollToSection("pricing")} className="text-left text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Solutions</button>
-              <button onClick={() => { setIsMenuOpen(false); navigate("/planning"); }} className="text-left text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Planning</button>
+              
               <Link to="/jobs" className="text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Jobs</Link>
               <Link to="/newsletter" className="text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Insights</Link>
             </nav>
