@@ -46,7 +46,7 @@ serve(async (req) => {
       );
     }
 
-    const apiUrl = `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${ELEVENLABS_AGENT_ID}`;
+    const apiUrl = `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${ELEVENLABS_AGENT_ID}`;
     console.log('Calling ElevenLabs API:', apiUrl);
 
     const response = await fetch(apiUrl, {
