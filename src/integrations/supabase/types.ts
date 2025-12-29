@@ -10,151 +10,11 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
-      blog_posts: {
-        Row: {
-          author_avatar: string | null
-          author_name: string
-          category: Database["public"]["Enums"]["blog_category"]
-          content: string
-          created_at: string
-          excerpt: string
-          id: string
-          image_url: string
-          published: boolean
-          published_at: string | null
-          slug: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          author_avatar?: string | null
-          author_name: string
-          category?: Database["public"]["Enums"]["blog_category"]
-          content: string
-          created_at?: string
-          excerpt: string
-          id?: string
-          image_url: string
-          published?: boolean
-          published_at?: string | null
-          slug: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          author_avatar?: string | null
-          author_name?: string
-          category?: Database["public"]["Enums"]["blog_category"]
-          content?: string
-          created_at?: string
-          excerpt?: string
-          id?: string
-          image_url?: string
-          published?: boolean
-          published_at?: string | null
-          slug?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      wizard_submissions: {
-        Row: {
-          budget_range: string | null
-          company_name: string
-          competitors: string[] | null
-          competitors_data: Json | null
-          completed_at: string | null
-          complexity_score: number | null
-          created_at: string
-          current_step: number | null
-          email: string
-          enterprise_features: string[] | null
-          full_name: string
-          growth_features: string[] | null
-          id: string
-          industry: string | null
-          launch_timeline: string | null
-          market_size: string | null
-          phone: string | null
-          primary_goal: string | null
-          recommended_plan: string | null
-          report_data: Json | null
-          report_url: string | null
-          saas_category: string | null
-          saas_idea: string | null
-          screen_mockups: Json | null
-          starter_features: string[] | null
-          target_customers: string[] | null
-          updated_at: string
-          viability_score: number | null
-        }
-        Insert: {
-          budget_range?: string | null
-          company_name: string
-          competitors?: string[] | null
-          competitors_data?: Json | null
-          completed_at?: string | null
-          complexity_score?: number | null
-          created_at?: string
-          current_step?: number | null
-          email: string
-          enterprise_features?: string[] | null
-          full_name: string
-          growth_features?: string[] | null
-          id?: string
-          industry?: string | null
-          launch_timeline?: string | null
-          market_size?: string | null
-          phone?: string | null
-          primary_goal?: string | null
-          recommended_plan?: string | null
-          report_data?: Json | null
-          report_url?: string | null
-          saas_category?: string | null
-          saas_idea?: string | null
-          screen_mockups?: Json | null
-          starter_features?: string[] | null
-          target_customers?: string[] | null
-          updated_at?: string
-          viability_score?: number | null
-        }
-        Update: {
-          budget_range?: string | null
-          company_name?: string
-          competitors?: string[] | null
-          competitors_data?: Json | null
-          completed_at?: string | null
-          complexity_score?: number | null
-          created_at?: string
-          current_step?: number | null
-          email?: string
-          enterprise_features?: string[] | null
-          full_name?: string
-          growth_features?: string[] | null
-          id?: string
-          industry?: string | null
-          launch_timeline?: string | null
-          market_size?: string | null
-          phone?: string | null
-          primary_goal?: string | null
-          recommended_plan?: string | null
-          report_data?: Json | null
-          report_url?: string | null
-          saas_category?: string | null
-          saas_idea?: string | null
-          screen_mockups?: Json | null
-          starter_features?: string[] | null
-          target_customers?: string[] | null
-          updated_at?: string
-          viability_score?: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
@@ -163,12 +23,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      blog_category:
-        | "AI Solutions"
-        | "Industry Insights"
-        | "Case Studies"
-        | "Technology"
-        | "News"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -295,14 +150,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      blog_category: [
-        "AI Solutions",
-        "Industry Insights",
-        "Case Studies",
-        "Technology",
-        "News",
-      ],
-    },
+    Enums: {},
   },
 } as const
