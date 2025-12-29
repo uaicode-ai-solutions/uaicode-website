@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { RotateCcw, Send, Mic, MicOff, MessageCircle, Globe } from "lucide-react";
+import { RotateCcw, Send, Mic, MicOff, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useElevenLabs } from "@/hooks/useElevenLabs";
+import { useConversation } from "@/hooks/useConversation";
 import logo from "@/assets/uaicode-logo.png";
 
 interface Message {
@@ -16,12 +17,7 @@ type InterfaceMode = "chat" | "voice";
 
 const ChatSection = () => {
   const [mode, setMode] = useState<InterfaceMode>("chat");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hi! 👋 I'm Eve, your AI assistant at Uaicode. I speak English, Português, and Español. How can I help you today?"
-    }
-  ]);
+  const { messages, setMessages, addMessage, resetConversation, isLoadingHistory } = useConversation();
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -120,24 +116,22 @@ const ChatSection = () => {
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
 
-    const newMessages = [...messages, { role: "user" as const, content: message }];
-    setMessages(newMessages);
+    const userMessage = { role: "user" as const, content: message };
+    await addMessage(userMessage);
     setInputValue("");
     setIsLoading(true);
 
     try {
+      const allMessages = [...messages, userMessage];
       const { data, error } = await supabase.functions.invoke('eve-chat', {
-        body: { messages: newMessages }
+        body: { messages: allMessages }
       });
 
       if (error) throw error;
 
-      const assistantMessage = data?.output?.[0]?.content || "Sorry, I could not process your request.";
-
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: assistantMessage },
-      ]);
+      const assistantContent = data?.output?.[0]?.content || "Sorry, I could not process your request.";
+      const assistantMessage = { role: "assistant" as const, content: assistantContent };
+      await addMessage(assistantMessage);
 
       // Handle scheduling action
       if (data?.action === 'schedule') {
@@ -154,10 +148,8 @@ const ChatSection = () => {
         variant: "destructive",
       });
 
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: "Sorry, there was an error connecting to the chat service. Please try again." },
-      ]);
+      const errorMessage = { role: "assistant" as const, content: "Sorry, there was an error connecting to the chat service. Please try again." };
+      await addMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -169,10 +161,7 @@ const ChatSection = () => {
   };
 
   const handleReset = () => {
-    setMessages([{
-      role: "assistant",
-      content: "Hi! 👋 I'm Eve, your AI assistant at Uaicode. I speak English, Português, and Español. How can I help you today?"
-    }]);
+    resetConversation();
   };
 
   const handleToggleVoice = async () => {
