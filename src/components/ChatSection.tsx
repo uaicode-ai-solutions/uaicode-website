@@ -1,12 +1,17 @@
 import { useState, useRef, useEffect } from "react";
-import { RotateCcw, Send, Mic, MicOff, Globe } from "lucide-react";
+import { RotateCcw, Send, Mic, MicOff, Globe, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useElevenLabs } from "@/hooks/useElevenLabs";
 import { useConversation } from "@/hooks/useConversation";
-import logo from "@/assets/uaicode-logo.png";
+import EveAvatar from "@/components/chat/EveAvatar";
+import ChatMessage from "@/components/chat/ChatMessage";
+import TypingIndicator from "@/components/chat/TypingIndicator";
+import QuickReplies from "@/components/chat/QuickReplies";
+import EmptyState from "@/components/chat/EmptyState";
+import VoiceVisualization from "@/components/chat/VoiceVisualization";
 
 interface Message {
   role: "user" | "assistant";
@@ -229,147 +234,129 @@ const ChatSection = () => {
           </div>
         </div>
 
-        <div className="bg-background border border-border rounded-xl shadow-xl flex flex-col h-[550px] sm:h-[600px] md:h-[650px] overflow-hidden">
-          {/* Header */}
-          <div className="bg-secondary/50 border-b border-border p-4 flex items-center justify-between">
+        <div className="glass-card rounded-2xl flex flex-col h-[550px] sm:h-[600px] md:h-[650px] overflow-hidden border-accent/10">
+          {/* Header with glassmorphism */}
+          <div className="relative bg-gradient-to-r from-secondary/80 via-secondary/60 to-secondary/80 backdrop-blur-xl border-b border-accent/20 p-4 flex items-center justify-between">
+            {/* Subtle golden accent line at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
+            
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <img src={logo} alt="Eve" className="w-10 h-10 rounded-full" loading="lazy" />
-                <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-secondary ${
-                  isCallActive ? 'bg-green-500 animate-pulse' : 'bg-green-500'
-                }`} />
-              </div>
+              <EveAvatar isActive={isCallActive} isSpeaking={isSpeaking} size="md" />
               <div>
-                <h3 className="font-semibold text-foreground">Eve</h3>
                 <div className="flex items-center gap-2">
-                  <Badge 
-                    variant="secondary" 
-                    className={`text-xs ${
-                      isCallActive 
-                        ? 'bg-green-500/10 text-green-500' 
-                        : 'bg-accent/10 text-accent'
-                    }`}
-                  >
-                    {getStatusText()}
-                  </Badge>
+                  <h3 className="font-semibold text-foreground">Eve</h3>
+                  <Sparkles className="w-4 h-4 text-accent" />
                 </div>
+                <Badge 
+                  variant="secondary" 
+                  className={`text-xs mt-0.5 ${
+                    isCallActive 
+                      ? 'bg-green-500/15 text-green-400 border border-green-500/30' 
+                      : 'bg-accent/10 text-accent border border-accent/20'
+                  }`}
+                >
+                  {getStatusText()}
+                </Badge>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleReset}
-                size="icon"
-                variant="ghost"
-                className="h-9 w-9"
-                title="Reset conversation"
-              >
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button
+              onClick={handleReset}
+              size="icon"
+              variant="ghost"
+              className="h-9 w-9 hover:bg-accent/10 hover:text-accent transition-colors"
+              title="Reiniciar conversa"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
           </div>
 
           {/* Messages Area */}
-          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-            {displayMessages.length === 0 && (
-              <div className="text-center text-muted-foreground mt-8">
-                <p>Start a conversation with Eve</p>
-              </div>
-            )}
-            {displayMessages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                    message.role === "user"
-                      ? "bg-accent text-accent-foreground"
-                      : "bg-secondary text-foreground"
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-secondary text-foreground rounded-2xl px-4 py-3">
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </div>
+          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 relative">
+            {/* Subtle background pattern */}
+            <div className="absolute inset-0 pointer-events-none opacity-30">
+              <div className="absolute top-1/3 left-1/4 w-48 h-48 bg-accent/5 rounded-full blur-3xl" />
+              <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-accent/3 rounded-full blur-3xl" />
+            </div>
+            
+            {displayMessages.length === 0 && !isLoading ? (
+              <EmptyState />
+            ) : (
+              <div className="relative z-10 space-y-4">
+                {displayMessages.map((message, index) => (
+                  <ChatMessage
+                    key={index}
+                    role={message.role}
+                    content={message.content}
+                    isLatest={index === displayMessages.length - 1}
+                    isSpeaking={isSpeaking && message.role === "assistant" && index === displayMessages.length - 1}
+                  />
+                ))}
+                {isLoading && <TypingIndicator />}
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
+          
+          {/* Quick Replies */}
+          <QuickReplies 
+            onSelect={(message) => sendMessage(message)} 
+            isVisible={displayMessages.length <= 1 && !isLoading && !isCallActive && !inputValue}
+          />
 
           {/* Voice Visualization (when call is active) */}
           {isCallActive && (
-            <div className="px-4 py-3 border-t border-border bg-secondary/30">
-              <div className="flex items-end justify-center gap-1 h-12">
-                {frequencyBars.map((height, i) => (
-                  <div
-                    key={i}
-                    className="w-2 rounded-full transition-all duration-75 ease-out"
-                    style={{
-                      height: `${Math.max(height * 100, 10)}%`,
-                      background: isSpeaking 
-                        ? 'hsl(var(--accent))' 
-                        : 'hsl(var(--muted-foreground))',
-                      opacity: height > 0.2 ? 1 : 0.4,
-                    }}
-                  />
-                ))}
-              </div>
-              <p className="text-xs text-center text-muted-foreground mt-2">
-                {isSpeaking ? "Eve is speaking..." : "Listening..."}
-              </p>
-            </div>
+            <VoiceVisualization frequencyBars={frequencyBars} isSpeaking={isSpeaking} />
           )}
 
           {/* Input Area */}
-          <div className="border-t border-border p-4">
+          <div className="border-t border-accent/10 p-4 bg-gradient-to-t from-secondary/30 to-transparent">
             <div className="flex items-center gap-3">
-              {/* Voice Button */}
-              <Button
-                onClick={handleToggleVoice}
-                disabled={isConnecting}
-                size="icon"
-                className={`h-12 w-12 rounded-full shrink-0 transition-all duration-300 ${
-                  isCallActive
-                    ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
-                    : isConnecting
-                    ? 'bg-accent/50 text-accent-foreground'
-                    : 'bg-accent hover:bg-accent/90 text-accent-foreground'
-                }`}
-              >
-                {isCallActive ? (
-                  <MicOff className="h-5 w-5" />
-                ) : isConnecting ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-accent-foreground border-t-transparent" />
-                ) : (
-                  <Mic className="h-5 w-5" />
+              {/* Voice Button with premium styling */}
+              <div className="relative">
+                {/* Pulse ring when inactive */}
+                {!isCallActive && !isConnecting && (
+                  <div className="absolute inset-0 rounded-full border-2 border-accent/30 animate-ping-slow" />
                 )}
-              </Button>
+                <Button
+                  onClick={handleToggleVoice}
+                  disabled={isConnecting}
+                  size="icon"
+                  className={`h-12 w-12 rounded-full shrink-0 transition-all duration-300 relative z-10 ${
+                    isCallActive
+                      ? 'bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]'
+                      : isConnecting
+                      ? 'bg-accent/50 text-accent-foreground'
+                      : 'bg-accent hover:bg-accent/90 text-accent-foreground shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)]'
+                  }`}
+                >
+                  {isCallActive ? (
+                    <MicOff className="h-5 w-5" />
+                  ) : isConnecting ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-accent-foreground border-t-transparent" />
+                  ) : (
+                    <Mic className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
 
-              {/* Text Input */}
+              {/* Text Input with enhanced styling */}
               <form onSubmit={handleSubmit} className="flex-1 flex gap-2">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder={isCallActive ? "Voice mode active..." : "Type your message..."}
-                  disabled={isLoading || isCallActive}
-                  className="flex-1 px-4 py-3 bg-secondary border border-border rounded-full focus:outline-none focus:ring-2 focus:ring-accent text-foreground placeholder:text-muted-foreground disabled:opacity-50"
-                />
+                <div className="flex-1 relative">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder={isCallActive ? "Modo voz ativo..." : "Escreva sua mensagem..."}
+                    disabled={isLoading || isCallActive}
+                    className="w-full px-5 py-3 bg-secondary/80 border border-border/50 rounded-full focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 text-foreground placeholder:text-muted-foreground/70 disabled:opacity-50 transition-all duration-300"
+                  />
+                </div>
                 <Button
                   type="submit"
                   size="icon"
                   disabled={!inputValue.trim() || isLoading || isCallActive}
-                  className="h-12 w-12 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground shrink-0"
+                  className="h-12 w-12 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground shrink-0 transition-all duration-300 hover:shadow-[0_0_20px_rgba(250,204,21,0.3)] disabled:opacity-50 disabled:shadow-none"
                 >
                   <Send className="h-5 w-5" />
                 </Button>
@@ -377,10 +364,10 @@ const ChatSection = () => {
             </div>
 
             {/* Helper text */}
-            <p className="text-xs text-center text-muted-foreground mt-3">
+            <p className="text-xs text-center text-muted-foreground/70 mt-3">
               {isCallActive 
-                ? "Tap the microphone button to end the call" 
-                : "Type a message or tap the microphone to talk"
+                ? "Toque no microfone para encerrar a chamada" 
+                : "Digite uma mensagem ou toque no microfone para falar"
               }
             </p>
           </div>
