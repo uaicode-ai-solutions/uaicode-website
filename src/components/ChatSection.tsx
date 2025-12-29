@@ -1,38 +1,25 @@
 import { useState, useRef, useEffect } from "react";
-import { RotateCcw, Send, Play, MessageCircle, ChevronDown, Phone } from "lucide-react";
+import { RotateCcw, Send, Mic, MicOff, MessageCircle, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useElevenLabs } from "@/hooks/useElevenLabs";
 import logo from "@/assets/uaicode-logo.png";
-import SampleQuestions from "./demo/SampleQuestions";
-import DemoCTAModal from "./demo/DemoCTAModal";
-import PhoneInterface from "./PhoneInterface";
-import { demoScenarios, demoWelcomeMessages, type DemoScenario } from "@/lib/demoConfig";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
+type InterfaceMode = "chat" | "voice";
+
 const ChatSection = () => {
-  const [isDemoMode, setIsDemoMode] = useState(false);
-  const [demoScenario, setDemoScenario] = useState<DemoScenario>('jewelry');
-  const [demoMessageCount, setDemoMessageCount] = useState(0);
-  const [showDemoCTA, setShowDemoCTA] = useState(false);
+  const [mode, setMode] = useState<InterfaceMode>("chat");
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi! 😊 I'm Eve. How can I help you today?"
+      content: "Hi! 👋 I'm Eve, your AI assistant at Uaicode. I speak English, Português, and Español. How can I help you today?"
     }
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -43,6 +30,22 @@ const ChatSection = () => {
   const prevLoadingRef = useRef(isLoading);
   const { toast } = useToast();
 
+  // ElevenLabs voice hook
+  const {
+    isCallActive,
+    isConnecting,
+    isSpeaking,
+    conversation: voiceConversation,
+    error: voiceError,
+    toggleCall,
+    getInputVolume,
+    getOutputVolume,
+  } = useElevenLabs();
+
+  // Waveform visualization
+  const [frequencyBars, setFrequencyBars] = useState<number[]>(Array(16).fill(0));
+  const [callDuration, setCallDuration] = useState(0);
+
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
@@ -51,42 +54,62 @@ const ChatSection = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, voiceConversation]);
 
   useEffect(() => {
-    // Only refocus when loading completes (transition from true to false)
     if (prevLoadingRef.current === true && isLoading === false && inputRef.current) {
       inputRef.current.focus();
     }
     prevLoadingRef.current = isLoading;
   }, [isLoading]);
 
-  const startDemo = (scenario: DemoScenario = 'jewelry') => {
-    setIsDemoMode(true);
-    setDemoScenario(scenario);
-    setDemoMessageCount(0);
-    setShowDemoCTA(false);
-    setMessages([{
-      role: "assistant",
-      content: demoWelcomeMessages[scenario]
-    }]);
-  };
+  // Voice error handling
+  useEffect(() => {
+    if (voiceError) {
+      toast({
+        title: "Voice Connection Error",
+        description: voiceError,
+        variant: "destructive",
+      });
+    }
+  }, [voiceError, toast]);
 
-  const exitDemo = () => {
-    setIsDemoMode(false);
-    setDemoMessageCount(0);
-    setShowDemoCTA(false);
-    setMessages([{
-      role: "assistant",
-      content: "Hi! 😊 I'm Eve. How can I help you today?"
-    }]);
-  };
+  // Call duration timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isCallActive) {
+      interval = setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+    } else {
+      setCallDuration(0);
+    }
+    return () => clearInterval(interval);
+  }, [isCallActive]);
 
-  const handleSchedule = () => {
-    setShowDemoCTA(false);
-    exitDemo();
-    document.getElementById('schedule')?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Waveform visualization
+  useEffect(() => {
+    if (isCallActive) {
+      const interval = setInterval(() => {
+        const inputVol = getInputVolume();
+        const outputVol = getOutputVolume();
+        const volumeLevel = Math.max(inputVol, outputVol);
+        
+        const newBars = Array(16).fill(0).map((_, index) => {
+          const centerDistance = Math.abs(index - 8) / 8;
+          const baseHeight = volumeLevel * (1 - centerDistance * 0.5);
+          const variation = (Math.random() - 0.5) * 0.3;
+          return Math.max(0.1, Math.min(1, baseHeight + variation));
+        });
+        
+        setFrequencyBars(newBars);
+      }, 50);
+      
+      return () => clearInterval(interval);
+    } else {
+      setFrequencyBars(Array(16).fill(0));
+    }
+  }, [isCallActive, getInputVolume, getOutputVolume]);
 
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
@@ -96,55 +119,38 @@ const ChatSection = () => {
     setInputValue("");
     setIsLoading(true);
 
-    // Increment demo message count
-    if (isDemoMode) {
-      const newCount = demoMessageCount + 1;
-      setDemoMessageCount(newCount);
-      
-      // Show CTA after 7 messages
-      if (newCount >= 7 && !showDemoCTA) {
-        setTimeout(() => setShowDemoCTA(true), 2000);
-      }
-    }
-
     try {
-      const functionName = isDemoMode ? 'demo-chat' : 'vapi-chat';
-      const body = isDemoMode 
-        ? { messages: newMessages, scenario: demoScenario }
-        : { input: message };
+      const { data, error } = await supabase.functions.invoke('eve-chat', {
+        body: { messages: newMessages }
+      });
 
-      const { data, error } = await supabase.functions.invoke(functionName, { body });
-
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const assistantMessage = data?.output?.[0]?.content || "Sorry, I could not process your request.";
 
       setMessages([
         ...newMessages,
-        {
-          role: "assistant",
-          content: assistantMessage,
-        },
+        { role: "assistant", content: assistantMessage },
       ]);
+
+      // Handle scheduling action
+      if (data?.action === 'schedule') {
+        setTimeout(() => {
+          document.getElementById('schedule')?.scrollIntoView({ behavior: 'smooth' });
+        }, 1000);
+      }
     } catch (error: any) {
       console.error("Error sending message:", error);
       
-      const errorMessage = error?.message || `Sorry, there was an error connecting to ${isDemoMode ? 'the demo' : 'Eve'}.`;
-      
       toast({
         title: "Error",
-        description: errorMessage,
+        description: error?.message || "Sorry, there was an error connecting to Eve.",
         variant: "destructive",
       });
 
       setMessages([
         ...newMessages,
-        {
-          role: "assistant",
-          content: "Sorry, there was an error connecting to the chat service. Please try again.",
-        },
+        { role: "assistant", content: "Sorry, there was an error connecting to the chat service. Please try again." },
       ]);
     } finally {
       setIsLoading(false);
@@ -157,80 +163,92 @@ const ChatSection = () => {
   };
 
   const handleReset = () => {
-    if (isDemoMode) {
-      setMessages([{
-        role: "assistant",
-        content: demoWelcomeMessages[demoScenario]
-      }]);
-      setDemoMessageCount(0);
-      setShowDemoCTA(false);
-    } else {
-      setMessages([]);
+    setMessages([{
+      role: "assistant",
+      content: "Hi! 👋 I'm Eve, your AI assistant at Uaicode. I speak English, Português, and Español. How can I help you today?"
+    }]);
+  };
+
+  const handleToggleVoice = async () => {
+    try {
+      await toggleCall();
+      if (!isCallActive) {
+        setMode("voice");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Connection Error",
+        description: error.message || "Failed to connect to Eve. Please check microphone permissions.",
+        variant: "destructive"
+      });
     }
   };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getStatusText = () => {
+    if (isConnecting) return "Connecting...";
+    if (isSpeaking) return "Eve is speaking...";
+    if (isCallActive) return `Listening... ${formatDuration(callDuration)}`;
+    return "Ready";
+  };
+
+  // Combine chat and voice messages for display
+  const displayMessages = mode === "voice" && isCallActive ? voiceConversation : messages;
 
   return (
     <section id="chat" className="py-24 bg-background">
       <div className="container max-w-4xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Doubts? Talk to <span className="text-gradient-gold">Eve</span>!
+            Talk to <span className="text-gradient-gold">Eve</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Our AI assistant is here to help answer your questions
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
+            Your AI assistant - available via chat or voice
           </p>
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Globe className="h-4 w-4" />
+            <span>English • Português • Español</span>
+          </div>
         </div>
 
-        <Tabs defaultValue="chat" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 h-10 sm:h-11">
-            <TabsTrigger value="chat" className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" />
-              Chat with Eve
-            </TabsTrigger>
-            <TabsTrigger value="phone" className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
-              Call Eve
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="chat">
-            <div className="bg-background border border-border rounded-lg shadow-xl flex flex-col h-[500px] sm:h-[550px] md:h-[600px]">
+        <div className="bg-background border border-border rounded-xl shadow-xl flex flex-col h-[550px] sm:h-[600px] md:h-[650px] overflow-hidden">
           {/* Header */}
-          <div className="bg-background border-b border-border p-3 sm:p-4 rounded-t-lg flex items-center justify-between">
+          <div className="bg-secondary/50 border-b border-border p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={logo} alt="Uaicode" className="w-8 h-8" loading="lazy" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-sm text-foreground">
-                  {isDemoMode ? `${demoScenarios[demoScenario].name} Demo` : "Uaicode AI Solutions"}
-                </h3>
-                {isDemoMode ? (
-                  <Badge variant="secondary" className="bg-accent/10 text-accent hover:bg-accent/20 text-xs">
-                    <Play className="h-3 w-3 mr-1" />
-                    Demo Mode
+              <div className="relative">
+                <img src={logo} alt="Eve" className="w-10 h-10 rounded-full" loading="lazy" />
+                <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-secondary ${
+                  isCallActive ? 'bg-green-500 animate-pulse' : 'bg-green-500'
+                }`} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Eve</h3>
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant="secondary" 
+                    className={`text-xs ${
+                      isCallActive 
+                        ? 'bg-green-500/10 text-green-500' 
+                        : 'bg-accent/10 text-accent'
+                    }`}
+                  >
+                    {getStatusText()}
                   </Badge>
-                ) : (
-                  <Badge variant="secondary" className="bg-green-500/10 text-green-600 hover:bg-green-500/20 text-xs">
-                    <MessageCircle className="h-3 w-3 mr-1" />
-                    Live Support
-                  </Badge>
-                )}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {isDemoMode && (
-                <Button
-                  onClick={exitDemo}
-                  size="sm"
-                  variant="outline"
-                  className="h-9 px-3 text-xs"
-                >
-                  Exit Demo
-                </Button>
-              )}
               <Button
                 onClick={handleReset}
                 size="icon"
-                className="h-9 w-9 bg-[#ffbd17] hover:bg-[#ffbd17]/90 text-black"
+                variant="ghost"
+                className="h-9 w-9"
+                title="Reset conversation"
               >
                 <RotateCcw className="h-4 w-4" />
               </Button>
@@ -238,22 +256,22 @@ const ChatSection = () => {
           </div>
 
           {/* Messages Area */}
-          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4">
-            {messages.length === 0 && (
+          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+            {displayMessages.length === 0 && (
               <div className="text-center text-muted-foreground mt-8">
-                <p>Start a conversation with our AI assistant</p>
+                <p>Start a conversation with Eve</p>
               </div>
             )}
-            {messages.map((message, index) => (
+            {displayMessages.map((message, index) => (
               <div
                 key={index}
                 className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                     message.role === "user"
-                      ? "bg-white text-black border border-border"
-                      : "bg-muted text-foreground"
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-secondary text-foreground"
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -262,63 +280,98 @@ const ChatSection = () => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-muted text-foreground rounded-lg p-3">
-                  <p className="text-sm">Typing...</p>
+                <div className="bg-secondary text-foreground rounded-2xl px-4 py-3">
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Sample Questions for Demo Mode */}
-          {isDemoMode && (
-            <SampleQuestions 
-              scenario={demoScenario}
-              onSelect={(question) => {
-                setInputValue(question);
-                sendMessage(question);
-              }}
-            />
+          {/* Voice Visualization (when call is active) */}
+          {isCallActive && (
+            <div className="px-4 py-3 border-t border-border bg-secondary/30">
+              <div className="flex items-end justify-center gap-1 h-12">
+                {frequencyBars.map((height, i) => (
+                  <div
+                    key={i}
+                    className="w-2 rounded-full transition-all duration-75 ease-out"
+                    style={{
+                      height: `${Math.max(height * 100, 10)}%`,
+                      background: isSpeaking 
+                        ? 'hsl(var(--accent))' 
+                        : 'hsl(var(--muted-foreground))',
+                      opacity: height > 0.2 ? 1 : 0.4,
+                    }}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                {isSpeaking ? "Eve is speaking..." : "Listening..."}
+              </p>
+            </div>
           )}
 
           {/* Input Area */}
-          <div className="border-t border-border p-3 sm:p-4">
-            <form onSubmit={handleSubmit} className="flex gap-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder={isDemoMode ? "Ask about our jewelry collection..." : "Type your message..."}
-                disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground disabled:opacity-50"
-              />
+          <div className="border-t border-border p-4">
+            <div className="flex items-center gap-3">
+              {/* Voice Button */}
               <Button
-                type="submit"
+                onClick={handleToggleVoice}
+                disabled={isConnecting}
                 size="icon"
-                disabled={!inputValue.trim() || isLoading}
-                className="bg-[#ffbd17] hover:bg-[#ffbd17]/90 text-black"
+                className={`h-12 w-12 rounded-full shrink-0 transition-all duration-300 ${
+                  isCallActive
+                    ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
+                    : isConnecting
+                    ? 'bg-accent/50 text-accent-foreground'
+                    : 'bg-accent hover:bg-accent/90 text-accent-foreground'
+                }`}
               >
-                <Send className="h-4 w-4" />
+                {isCallActive ? (
+                  <MicOff className="h-5 w-5" />
+                ) : isConnecting ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-accent-foreground border-t-transparent" />
+                ) : (
+                  <Mic className="h-5 w-5" />
+                )}
               </Button>
-            </form>
-          </div>
-            </div>
-          </TabsContent>
 
-          <TabsContent value="phone">
-            <PhoneInterface />
-          </TabsContent>
-        </Tabs>
-        
-        {/* Demo CTA Modal */}
-        <DemoCTAModal
-          open={showDemoCTA}
-          onClose={() => setShowDemoCTA(false)}
-          onSchedule={handleSchedule}
-          onContinue={() => setShowDemoCTA(false)}
-          scenario={demoScenario}
-        />
+              {/* Text Input */}
+              <form onSubmit={handleSubmit} className="flex-1 flex gap-2">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder={isCallActive ? "Voice mode active..." : "Type your message..."}
+                  disabled={isLoading || isCallActive}
+                  className="flex-1 px-4 py-3 bg-secondary border border-border rounded-full focus:outline-none focus:ring-2 focus:ring-accent text-foreground placeholder:text-muted-foreground disabled:opacity-50"
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={!inputValue.trim() || isLoading || isCallActive}
+                  className="h-12 w-12 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground shrink-0"
+                >
+                  <Send className="h-5 w-5" />
+                </Button>
+              </form>
+            </div>
+
+            {/* Helper text */}
+            <p className="text-xs text-center text-muted-foreground mt-3">
+              {isCallActive 
+                ? "Tap the microphone button to end the call" 
+                : "Type a message or tap the microphone to talk"
+              }
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );
