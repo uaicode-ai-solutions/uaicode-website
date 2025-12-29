@@ -1,5 +1,5 @@
 import { useConversation } from "@elevenlabs/react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
@@ -7,10 +7,17 @@ interface Message {
   content: string;
 }
 
-export const useElevenLabs = () => {
+interface UseElevenLabsOptions {
+  onVoiceMessage?: (message: Message) => Promise<void>;
+}
+
+export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
   const [isConnecting, setIsConnecting] = useState(false);
-  const [conversation, setConversation] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
+  
+  // Store callback in ref to avoid stale closures
+  const onVoiceMessageRef = useRef(options.onVoiceMessage);
+  onVoiceMessageRef.current = options.onVoiceMessage;
 
   const conversationHook = useConversation({
     onConnect: () => {
@@ -29,7 +36,9 @@ export const useElevenLabs = () => {
       const content = payload.message;
       
       if (content) {
-        setConversation(prev => [...prev, { role, content }]);
+        const message: Message = { role: role as "user" | "assistant", content };
+        // Save voice message to database via callback
+        onVoiceMessageRef.current?.(message);
       }
     },
     onError: (message, context) => {
@@ -81,7 +90,6 @@ export const useElevenLabs = () => {
   const startCall = useCallback(async () => {
     setIsConnecting(true);
     setError(null);
-    setConversation([]);
 
     try {
       // Request microphone permission
@@ -155,7 +163,6 @@ export const useElevenLabs = () => {
     isCallActive: conversationHook.status === "connected",
     isConnecting,
     isSpeaking: conversationHook.isSpeaking,
-    conversation,
     error,
     toggleCall,
     startCall,
