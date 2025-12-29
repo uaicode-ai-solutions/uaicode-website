@@ -9,7 +9,7 @@ const TypingIndicator = () => {
       
       <div className="bg-gradient-to-br from-secondary via-secondary to-secondary/80 text-foreground rounded-2xl rounded-bl-md px-4 py-3 border border-border/50">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Eve está digitando</span>
+          <span className="text-sm text-muted-foreground">Eve is typing</span>
           <div className="flex items-center gap-1">
             <span 
               className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce" 

@@ -16,7 +16,7 @@ const EmptyState = () => {
         <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-accent shadow-[0_0_30px_rgba(250,204,21,0.4)]">
           <img 
             src={eveAvatarImage} 
-            alt="Eve - Assistente Virtual"
+            alt="Eve - AI Assistant"
             className="w-full h-full object-cover"
           />
         </div>
@@ -24,21 +24,21 @@ const EmptyState = () => {
       
       {/* Welcome text */}
       <h3 className="text-xl font-semibold text-foreground mb-2">
-        Olá! Eu sou a <span className="text-gradient-gold">Eve</span>
+        Hi! I'm <span className="text-gradient-gold">Eve</span>
       </h3>
       <p className="text-muted-foreground max-w-sm mb-6 leading-relaxed">
-        Sua assistente de IA. Estou aqui para ajudar você a descobrir como podemos transformar suas ideias em realidade.
+        Your AI assistant. I'm here to help you discover how we can transform your ideas into reality.
       </p>
       
       {/* Feature badges */}
       <div className="flex flex-wrap gap-2 justify-center">
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 text-xs text-muted-foreground">
           <MessageCircle className="w-3 h-3" />
-          <span>Chat instantâneo</span>
+          <span>Instant chat</span>
         </div>
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 text-xs text-muted-foreground">
           <Mic className="w-3 h-3" />
-          <span>Resposta inteligente</span>
+          <span>Smart response</span>
         </div>
       </div>
     </div>
