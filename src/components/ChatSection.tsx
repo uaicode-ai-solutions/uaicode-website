@@ -264,7 +264,7 @@ const ChatSection = () => {
               size="icon"
               variant="ghost"
               className="h-9 w-9 hover:bg-accent/10 hover:text-accent transition-colors"
-              title="Reiniciar conversa"
+              title="Reset conversation"
             >
               <RotateCcw className="h-4 w-4" />
             </Button>
@@ -347,7 +347,7 @@ const ChatSection = () => {
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder={isCallActive ? "Modo voz ativo..." : "Escreva sua mensagem..."}
+                    placeholder={isCallActive ? "Voice mode active..." : "Type your message..."}
                     disabled={isLoading || isCallActive}
                     className="w-full px-5 py-3 bg-secondary/80 border border-border/50 rounded-full focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 text-foreground placeholder:text-muted-foreground/70 disabled:opacity-50 transition-all duration-300"
                   />
@@ -366,8 +366,8 @@ const ChatSection = () => {
             {/* Helper text */}
             <p className="text-xs text-center text-muted-foreground/70 mt-3">
               {isCallActive 
-                ? "Toque no microfone para encerrar a chamada" 
-                : "Digite uma mensagem ou toque no microfone para falar"
+                ? "Tap the microphone to end the call" 
+                : "Type a message or tap the microphone to speak"
               }
             </p>
           </div>
