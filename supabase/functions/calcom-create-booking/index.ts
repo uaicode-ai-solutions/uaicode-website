@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const CALCOM_API_KEY = Deno.env.get('CALCOM_API_KEY');
-const DEFAULT_EVENT_TYPE_ID = 2242134; // diagnostic-45min event type
+const CALCOM_EVENT_TYPE_ID = Deno.env.get('CALCOM_EVENT_TYPE_ID');
 
 serve(async (req) => {
   console.log('=== calcom-create-booking function called ===');
@@ -47,7 +47,17 @@ serve(async (req) => {
       );
     }
 
-    const typeId = eventTypeId || DEFAULT_EVENT_TYPE_ID;
+    const typeId = eventTypeId || CALCOM_EVENT_TYPE_ID;
+    
+    if (!typeId) {
+      console.error('CALCOM_EVENT_TYPE_ID not configured and no eventTypeId provided');
+      return new Response(
+        JSON.stringify({ error: 'Event type ID is required. Configure CALCOM_EVENT_TYPE_ID or pass eventTypeId.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Using eventTypeId:', typeId);
 
     // Create booking via Cal.com API
     const calcomUrl = `https://api.cal.com/v1/bookings?apiKey=${CALCOM_API_KEY}`;
