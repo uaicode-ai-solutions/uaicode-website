@@ -50,10 +50,10 @@ serve(async (req) => {
     // SEMPRE priorizar o secret sobre o valor do request para evitar conflitos
     console.log('CALCOM_EVENT_TYPE_ID from secret:', CALCOM_EVENT_TYPE_ID);
     console.log('eventTypeId from request:', eventTypeId);
-    const typeId = CALCOM_EVENT_TYPE_ID || eventTypeId;
-    console.log('Final typeId being used:', typeId);
+    const typeIdStr = CALCOM_EVENT_TYPE_ID || eventTypeId;
+    console.log('Final typeId string being used:', typeIdStr);
     
-    if (!typeId) {
+    if (!typeIdStr) {
       console.error('CALCOM_EVENT_TYPE_ID not configured and no eventTypeId provided');
       return new Response(
         JSON.stringify({ error: 'Event type ID is required. Configure CALCOM_EVENT_TYPE_ID or pass eventTypeId.' }),
@@ -61,13 +61,23 @@ serve(async (req) => {
       );
     }
 
-    console.log('Using eventTypeId:', typeId);
+    // Converter para número - Cal.com exige eventTypeId como number, não string
+    const numericTypeId = parseInt(typeIdStr, 10);
+    if (isNaN(numericTypeId)) {
+      console.error('Invalid eventTypeId - not a valid number:', typeIdStr);
+      return new Response(
+        JSON.stringify({ error: 'Invalid eventTypeId: must be a valid number' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Using eventTypeId (as number):', numericTypeId);
 
     // Create booking via Cal.com API
     const calcomUrl = `https://api.cal.com/v1/bookings?apiKey=${CALCOM_API_KEY}`;
     
     const bookingPayload = {
-      eventTypeId: typeId,
+      eventTypeId: numericTypeId,
       start,
       responses: {
         name,
