@@ -1,5 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+// Função para calcular distância de Levenshtein (similaridade entre strings)
+function levenshteinDistance(str1: string, str2: string): number {
+  const m = str1.length;
+  const n = str2.length;
+  const dp: number[][] = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+  
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (str1[i - 1] === str2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+  return dp[m][n];
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -75,10 +96,34 @@ serve(async (req) => {
 
     // SECURITY: Filter bookings to only show those belonging to the requested email
     const normalizedEmail = email.toLowerCase().trim();
-    const userBookings = (data.bookings || []).filter((booking: any) => {
+    
+    // Primeiro, tenta correspondência exata
+    let userBookings = (data.bookings || []).filter((booking: any) => {
       const attendeeEmails = booking.attendees?.map((a: any) => a.email?.toLowerCase().trim()) || [];
       return attendeeEmails.includes(normalizedEmail);
     });
+
+    // Se não encontrou correspondência exata, tenta fuzzy matching
+    if (userBookings.length === 0) {
+      console.log('No exact match found, trying fuzzy matching...');
+      
+      userBookings = (data.bookings || []).filter((booking: any) => {
+        const attendeeEmails = booking.attendees?.map((a: any) => a.email?.toLowerCase().trim()) || [];
+        
+        return attendeeEmails.some((attendeeEmail: string) => {
+          const distance = levenshteinDistance(normalizedEmail, attendeeEmail);
+          // Permite diferença de até 2 caracteres (typos comuns de transcrição)
+          const maxDistance = 2;
+          const isSimilar = distance <= maxDistance;
+          
+          if (isSimilar && distance > 0) {
+            console.log(`Fuzzy match found: "${normalizedEmail}" ~ "${attendeeEmail}" (distance: ${distance})`);
+          }
+          
+          return isSimilar;
+        });
+      });
+    }
 
     console.log('Filtered to', userBookings.length, 'bookings for email:', normalizedEmail);
 
