@@ -36,7 +36,11 @@ serve(async (req) => {
       );
     }
 
-    const typeId = eventTypeId || CALCOM_EVENT_TYPE_ID;
+    // SEMPRE priorizar o secret sobre o valor do request para evitar conflitos
+    console.log('CALCOM_EVENT_TYPE_ID from secret:', CALCOM_EVENT_TYPE_ID);
+    console.log('eventTypeId from request:', eventTypeId);
+    const typeId = CALCOM_EVENT_TYPE_ID || eventTypeId;
+    console.log('Final typeId being used:', typeId);
     
     if (!typeId) {
       console.error('CALCOM_EVENT_TYPE_ID not configured and no eventTypeId provided');
