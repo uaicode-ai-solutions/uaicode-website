@@ -1,5 +1,5 @@
 import { useConversation } from "@elevenlabs/react";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
@@ -11,6 +11,19 @@ interface UseElevenLabsOptions {
   onVoiceMessage?: (message: Message) => Promise<void>;
 }
 
+// Safe fallback return type when hook fails to initialize
+const createFallbackReturn = (errorMessage: string) => ({
+  isCallActive: false,
+  isConnecting: false,
+  isSpeaking: false,
+  error: errorMessage,
+  toggleCall: async () => {},
+  startCall: async () => {},
+  endCall: async () => {},
+  getInputVolume: () => 0,
+  getOutputVolume: () => 0,
+});
+
 export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +33,8 @@ export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
   const onVoiceMessageRef = useRef(options.onVoiceMessage);
   onVoiceMessageRef.current = options.onVoiceMessage;
 
-  const conversationHook = useConversation({
+  // Memoize the conversation config to prevent re-initialization issues
+  const conversationConfig = useMemo(() => ({
     onConnect: () => {
       console.log("ElevenLabs: Connected to agent");
       setIsConnecting(false);
@@ -29,9 +43,9 @@ export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
     onDisconnect: () => {
       console.log("ElevenLabs: Disconnected from agent");
       setIsConnecting(false);
-      setLocalIsSpeaking(false); // Reset speaking state on disconnect
+      setLocalIsSpeaking(false);
     },
-    onMessage: (payload) => {
+    onMessage: (payload: { role?: string; message?: string }) => {
       console.log("ElevenLabs message:", payload);
       
       const role = payload.role === "user" ? "user" : "assistant";
@@ -39,21 +53,22 @@ export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
       
       if (content) {
         const message: Message = { role: role as "user" | "assistant", content };
-        // Save voice message to database via callback
         onVoiceMessageRef.current?.(message);
       }
     },
-    onError: (message, context) => {
+    onError: (message: string, context: unknown) => {
       console.error("ElevenLabs error:", message, context);
       setError(message || "Connection error");
       setIsConnecting(false);
-      setLocalIsSpeaking(false); // Reset speaking state on error
+      setLocalIsSpeaking(false);
     },
     onSpeakingChange: (speaking: boolean) => {
       console.log("ElevenLabs speaking state:", speaking);
       setLocalIsSpeaking(speaking);
     },
-  });
+  }), []);
+
+  const conversationHook = useConversation(conversationConfig);
 
   // Watchdog: if isSpeaking but not connected, reset
   useEffect(() => {
