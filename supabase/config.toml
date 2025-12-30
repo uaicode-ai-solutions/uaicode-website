@@ -11,3 +11,18 @@ verify_jwt = false
 
 [functions.save-lead]
 verify_jwt = false
+
+[functions.calcom-get-slots]
+verify_jwt = false
+
+[functions.calcom-create-booking]
+verify_jwt = false
+
+[functions.calcom-get-bookings]
+verify_jwt = false
+
+[functions.calcom-get-booking]
+verify_jwt = false
+
+[functions.calcom-cancel-booking]
+verify_jwt = false
