@@ -61,7 +61,6 @@ export const YouTubeEmbed = ({ videoId, title = "YouTube video", customThumbnail
               alt={title}
               className="absolute top-0 left-0 w-full h-full object-cover object-[center_20%]"
               loading="lazy"
-              fetchPriority="high"
               decoding="async"
             />
             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-300" />
