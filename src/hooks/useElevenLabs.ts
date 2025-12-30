@@ -102,6 +102,10 @@ export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
         throw new Error("Microphone access denied. Please allow microphone access and try again.");
       }
 
+      // Detectar timezone do usuário para variáveis dinâmicas
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      console.log("User timezone detected:", userTimezone);
+
       // Try WebRTC first (recommended by ElevenLabs docs)
       console.log("Attempting WebRTC connection...");
       try {
@@ -112,6 +116,9 @@ export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
           await conversationHook.startSession({
             conversationToken: webrtcData.token,
             connectionType: "webrtc",
+            dynamicVariables: {
+              timezone: userTimezone,
+            },
           });
           console.log("ElevenLabs WebRTC session started successfully");
           return;
@@ -129,6 +136,9 @@ export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
         await conversationHook.startSession({
           signedUrl: wsData.signedUrl,
           connectionType: "websocket",
+          dynamicVariables: {
+            timezone: userTimezone,
+          },
         });
         console.log("ElevenLabs WebSocket session started successfully");
         return;
