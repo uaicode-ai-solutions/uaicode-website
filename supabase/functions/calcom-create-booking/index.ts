@@ -82,7 +82,7 @@ serve(async (req) => {
       responses: {
         name,
         email,
-        phone: phone || '',
+        attendeePhoneNumber: phone || '',
         notes: notes || '',
       },
       metadata: {
