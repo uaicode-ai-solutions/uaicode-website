@@ -1,5 +1,5 @@
 import { useConversation } from "@elevenlabs/react";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
@@ -14,6 +14,7 @@ interface UseElevenLabsOptions {
 export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [localIsSpeaking, setLocalIsSpeaking] = useState(false);
   
   // Store callback in ref to avoid stale closures
   const onVoiceMessageRef = useRef(options.onVoiceMessage);
@@ -28,6 +29,7 @@ export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
     onDisconnect: () => {
       console.log("ElevenLabs: Disconnected from agent");
       setIsConnecting(false);
+      setLocalIsSpeaking(false); // Reset speaking state on disconnect
     },
     onMessage: (payload) => {
       console.log("ElevenLabs message:", payload);
@@ -45,8 +47,21 @@ export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
       console.error("ElevenLabs error:", message, context);
       setError(message || "Connection error");
       setIsConnecting(false);
+      setLocalIsSpeaking(false); // Reset speaking state on error
+    },
+    onSpeakingChange: (speaking: boolean) => {
+      console.log("ElevenLabs speaking state:", speaking);
+      setLocalIsSpeaking(speaking);
     },
   });
+
+  // Watchdog: if isSpeaking but not connected, reset
+  useEffect(() => {
+    if (conversationHook.status !== "connected" && localIsSpeaking) {
+      console.log("Watchdog: Resetting stale isSpeaking state");
+      setLocalIsSpeaking(false);
+    }
+  }, [conversationHook.status, localIsSpeaking]);
 
   // Fetch token using supabase.functions.invoke (same pattern as eve-chat)
   const fetchConversationToken = async (mode: "webrtc" | "websocket" = "webrtc") => {
@@ -172,7 +187,10 @@ export const useElevenLabs = (options: UseElevenLabsOptions = {}) => {
   return {
     isCallActive: conversationHook.status === "connected",
     isConnecting,
-    isSpeaking: conversationHook.isSpeaking,
+    // Use local state that gets reset on disconnect, with fallback that ensures false if not connected
+    isSpeaking: conversationHook.status === "connected" 
+      ? (localIsSpeaking || conversationHook.isSpeaking) 
+      : false,
     error,
     toggleCall,
     startCall,
