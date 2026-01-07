@@ -60,7 +60,7 @@ const ChatSection = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
   useEffect(() => {
     if (prevLoadingRef.current === true && isLoading === false && inputRef.current) {
