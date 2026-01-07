@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.calcom-cancel-booking]
 verify_jwt = false
+
+[functions.vapi-chat]
+verify_jwt = false
