@@ -68,9 +68,10 @@ serve(async (req) => {
 
     const data = await response.json();
     console.log('VAPI chat - response received, chatId:', data.id);
+    console.log('VAPI chat - full response structure:', JSON.stringify(data, null, 2));
     
-    // Extract content from output array
-    const outputContent = data.output?.[0]?.content || "Sorry, I couldn't process that.";
+    // Extract content from output array - content is an array of objects with text property
+    const outputContent = data.output?.[0]?.content?.[0]?.text || "Sorry, I couldn't process that.";
     
     // Check for scheduling action
     const shouldSchedule = outputContent.includes('[SCHEDULE_MEETING]');
