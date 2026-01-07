@@ -70,8 +70,24 @@ serve(async (req) => {
     console.log('VAPI chat - response received, chatId:', data.id);
     console.log('VAPI chat - full response structure:', JSON.stringify(data, null, 2));
     
-    // Extract content from output array - content is an array of objects with text property
-    const outputContent = data.output?.[0]?.content?.[0]?.text || "Sorry, I couldn't process that.";
+    // Find the last assistant message with content in the output array
+    // VAPI returns multiple items: tool_calls, tool responses, and final assistant message
+    const assistantMessages = data.output?.filter(
+      (item: { role: string; content?: unknown }) => item.role === 'assistant' && item.content
+    ) || [];
+    const lastAssistantMessage = assistantMessages[assistantMessages.length - 1];
+
+    // Extract text from content - can be string or array of objects with text property
+    let outputContent = "Sorry, I couldn't process that.";
+    if (lastAssistantMessage?.content) {
+      if (typeof lastAssistantMessage.content === 'string') {
+        outputContent = lastAssistantMessage.content;
+      } else if (Array.isArray(lastAssistantMessage.content)) {
+        outputContent = lastAssistantMessage.content[0]?.text || outputContent;
+      }
+    }
+    
+    console.log('VAPI chat - extracted content:', outputContent.substring(0, 100));
     
     // Check for scheduling action
     const shouldSchedule = outputContent.includes('[SCHEDULE_MEETING]');
