@@ -15,7 +15,7 @@ interface Conversation {
 
 const INITIAL_MESSAGE: Message = {
   role: 'assistant',
-  content: "Hi! 👋 I'm Eve, your AI assistant at Uaicode. I speak English, Português, and Español. How can I help you today?"
+  content: "Hi! 👋 I'm Eve, your AI assistant at Uaicode. How can I help you today?"
 };
 
 const getSessionId = (): string => {
