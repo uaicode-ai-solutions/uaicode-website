@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useElevenLabs } from "@/hooks/useElevenLabs";
+import { useVapi } from "@/hooks/useVapi";
 import { useConversation } from "@/hooks/useConversation";
 import EveAvatar from "@/components/chat/EveAvatar";
 import ChatMessage from "@/components/chat/ChatMessage";
@@ -36,7 +36,7 @@ const ChatSection = () => {
     await addMessage(message);
   };
 
-  // ElevenLabs voice hook with message callback
+  // VAPI voice hook with message callback
   const {
     isCallActive,
     isConnecting,
@@ -45,7 +45,7 @@ const ChatSection = () => {
     toggleCall,
     getInputVolume,
     getOutputVolume,
-  } = useElevenLabs({ onVoiceMessage: handleVoiceMessage });
+  } = useVapi({ onVoiceMessage: handleVoiceMessage });
 
   // Waveform visualization
   const [frequencyBars, setFrequencyBars] = useState<number[]>(Array(16).fill(0));
