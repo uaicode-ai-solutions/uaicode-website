@@ -25,6 +25,7 @@ const ChatSection = () => {
   const { messages, addMessage, resetConversation, isLoadingHistory } = useConversation();
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [vapiChatId, setVapiChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -131,14 +132,21 @@ const ChatSection = () => {
     setIsLoading(true);
 
     try {
-      const allMessages = [...messages, userMessage];
-      const { data, error } = await supabase.functions.invoke('eve-chat', {
-        body: { messages: allMessages }
+      const { data, error } = await supabase.functions.invoke('vapi-chat', {
+        body: { 
+          message: message,
+          previousChatId: vapiChatId 
+        }
       });
 
       if (error) throw error;
 
-      const assistantContent = data?.output?.[0]?.content || "Sorry, I could not process your request.";
+      // Update chatId to maintain conversation context
+      if (data?.chatId) {
+        setVapiChatId(data.chatId);
+      }
+
+      const assistantContent = data?.output || "Sorry, I could not process your request.";
       const assistantMessage = { role: "assistant" as const, content: assistantContent };
       await addMessage(assistantMessage);
 
@@ -170,6 +178,7 @@ const ChatSection = () => {
   };
 
   const handleReset = () => {
+    setVapiChatId(null);
     resetConversation();
   };
 
