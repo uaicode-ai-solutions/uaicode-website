@@ -127,6 +127,87 @@ export type Database = {
         }
         Relationships: []
       }
+      tb_web_appointment: {
+        Row: {
+          appointmentDate: string | null
+          appointmentId: string | null
+          appointmentNotes: string | null
+          appointmentType: string | null
+          appointmentUid: string | null
+          created_at: string
+          email: string | null
+          id: number
+        }
+        Insert: {
+          appointmentDate?: string | null
+          appointmentId?: string | null
+          appointmentNotes?: string | null
+          appointmentType?: string | null
+          appointmentUid?: string | null
+          created_at?: string
+          email?: string | null
+          id?: number
+        }
+        Update: {
+          appointmentDate?: string | null
+          appointmentId?: string | null
+          appointmentNotes?: string | null
+          appointmentType?: string | null
+          appointmentUid?: string | null
+          created_at?: string
+          email?: string | null
+          id?: number
+        }
+        Relationships: []
+      }
+      tb_web_call: {
+        Row: {
+          created_at: string
+          date: string | null
+          id: number
+          outcome: string | null
+          summary: string | null
+        }
+        Insert: {
+          created_at?: string
+          date?: string | null
+          id?: number
+          outcome?: string | null
+          summary?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string | null
+          id?: number
+          outcome?: string | null
+          summary?: string | null
+        }
+        Relationships: []
+      }
+      tb_web_leads: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: number
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: number
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: number
+          phone?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
