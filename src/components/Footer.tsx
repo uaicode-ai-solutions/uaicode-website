@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Phone, MapPin, Youtube, Facebook, Instagram, Linkedin, Twitter, MessageCircle, Building2 } from "lucide-react";
+import { Mail, Phone, MapPin, Youtube, Facebook, Instagram, Linkedin, Twitter, MessageCircle, Building2, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { toast } from "@/hooks/use-toast";
@@ -127,11 +127,19 @@ const Footer = () => {
     <NewsletterSuccessDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog} />
     <footer className="bg-card border-t border-border pt-12 pb-6 px-4">
       <div className="container mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-6 mb-10">
           {/* Navigation */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-accent">Navigation</h3>
             <ul className="space-y-3">
+              <li>
+                <button 
+                  onClick={() => scrollToSection("how-it-works")}
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
+                  Process
+                </button>
+              </li>
               <li>
                 <button 
                   onClick={() => scrollToSection("investment")}
@@ -146,14 +154,6 @@ const Footer = () => {
                   className="text-muted-foreground hover:text-accent transition-colors"
                 >
                   Solutions
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => navigate("/planning")}
-                  className="text-muted-foreground hover:text-accent transition-colors"
-                >
-                  Planning
                 </button>
               </li>
               <li>
@@ -182,6 +182,22 @@ const Footer = () => {
                 <p>6751 Forum Drive, Suite 240<br />Orlando, FL 32821</p>
               </div>
             </div>
+          </div>
+
+          {/* Get MVP Pricing */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 text-accent">Get MVP Pricing</h3>
+            <ul className="space-y-3">
+              <li>
+                <button 
+                  onClick={() => scrollToSection("schedule")}
+                  className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-2"
+                >
+                  <Calendar className="w-5 h-5" />
+                  Schedule a Free Consultation
+                </button>
+              </li>
+            </ul>
           </div>
 
           {/* Contact */}
