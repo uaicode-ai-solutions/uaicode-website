@@ -83,16 +83,41 @@ const Schedule = () => {
   }, []);
 
   const onSubmit = async (data: ScheduleFormData) => {
-    try {
-      const sanitizedData = sanitizeFormData(data);
-      
-      const { data: responseData, error } = await supabase.functions.invoke('submit-contact-form', {
-        body: sanitizedData,
-      });
-      
-      if (error) {
-        throw new Error(error.message);
+    const sanitizedData = sanitizeFormData(data);
+    
+    const attemptSubmit = async (): Promise<{ data: unknown; error: Error | null }> => {
+      try {
+        console.log("Attempting form submission...");
+        const { data: responseData, error } = await supabase.functions.invoke('submit-contact-form', {
+          body: sanitizedData,
+        });
+        
+        if (error) {
+          return { data: null, error: new Error(error.message) };
+        }
+        
+        return { data: responseData, error: null };
+      } catch (err) {
+        return { data: null, error: err instanceof Error ? err : new Error('Unknown error') };
       }
+    };
+
+    try {
+      // First attempt
+      let result = await attemptSubmit();
+      
+      // If first attempt fails, retry after 2 seconds
+      if (result.error) {
+        console.warn("First attempt failed, retrying in 2 seconds...", result.error.message);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        result = await attemptSubmit();
+      }
+      
+      if (result.error) {
+        throw result.error;
+      }
+      
+      const responseData = result.data as { title?: string; message?: string } | null;
       
       toast({
         title: responseData?.title || "Success!",
