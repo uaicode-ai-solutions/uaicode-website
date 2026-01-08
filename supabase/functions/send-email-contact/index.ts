@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { Resend } from "https://esm.sh/resend@2.0.0?target=deno";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -73,7 +73,7 @@ serve(async (req) => {
     const teamEmailResult = await resend.emails.send({
       from: "Website UaiCode <no-reply@uaicode.ai>",
       to: ["hello@uaicode.ai"],
-      replyTo: formData.email,
+      reply_to: formData.email,
       subject: `New contact via website - ${formData.name}`,
       html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #141414; padding: 0;">
