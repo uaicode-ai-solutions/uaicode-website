@@ -130,10 +130,10 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
             </div>
           </div>
 
-          <DialogTitle className="text-2xl font-bold">
+          <DialogTitle className="text-2xl font-bold text-center">
             Send Us a <span className="text-gradient-gold">Message</span>
           </DialogTitle>
-          <p className="text-muted-foreground text-sm mt-2">
+          <p className="text-muted-foreground text-sm mt-2 text-center">
             We'll respond within 24 hours
           </p>
         </DialogHeader>
