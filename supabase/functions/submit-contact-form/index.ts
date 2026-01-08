@@ -18,7 +18,10 @@ serve(async (req) => {
 
     const formData = await req.json();
     
-    const webhookUrl = `https://uaicode-n8n.ax5vln.easypanel.host/webhook/${webhookId}`;
+    // Detecta se é URL completa ou apenas o ID
+    const webhookUrl = webhookId.startsWith("http") 
+      ? webhookId 
+      : `https://uaicode-n8n.ax5vln.easypanel.host/webhook/${webhookId}`;
     
     console.log("Sending form data to webhook:", webhookUrl);
     
