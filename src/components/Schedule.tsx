@@ -252,7 +252,7 @@ const Schedule = () => {
                 <div>
                   <h4 className="font-semibold mb-1 text-base">Location</h4>
                   <p className="text-muted-foreground">
-                    Remote-First • Serving Clients Worldwide
+                    6751 Fórum Drive, Ste 240, Orlando, Florida
                   </p>
                 </div>
               </div>
