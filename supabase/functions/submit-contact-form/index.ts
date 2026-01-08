@@ -18,12 +18,12 @@ serve(async (req) => {
 
     const formData = await req.json();
     
-    // Detecta se é URL completa ou apenas o ID
     const webhookUrl = webhookId.startsWith("http") 
       ? webhookId 
       : `https://uaicode-n8n.ax5vln.easypanel.host/webhook/${webhookId}`;
     
     console.log("Sending form data to webhook:", webhookUrl);
+    console.log("Form data:", JSON.stringify(formData));
     
     const response = await fetch(webhookUrl, {
       method: "POST",
@@ -35,14 +35,33 @@ serve(async (req) => {
       }),
     });
 
-    const responseData = await response.json();
+    // Tratamento robusto de resposta
+    let responseData;
+    const contentType = response.headers.get("content-type");
+    
+    if (contentType?.includes("application/json")) {
+      responseData = await response.json();
+    } else {
+      const textResponse = await response.text();
+      console.log("Non-JSON response:", textResponse);
+      responseData = {
+        title: response.ok ? "Success" : "Warning",
+        message: response.ok 
+          ? "Form submitted successfully" 
+          : `Webhook processed with message: ${textResponse.substring(0, 100)}`
+      };
+    }
     
     console.log("Webhook response:", responseData);
 
-    return new Response(JSON.stringify(responseData), {
-      status: response.ok ? 200 : 400,
+    return new Response(JSON.stringify({
+      title: responseData.title || "Success",
+      message: responseData.message || "Form submitted successfully"
+    }), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+    
   } catch (error) {
     console.error("Error submitting form:", error);
     const errorMessage = error instanceof Error ? error.message : "Failed to submit form";
@@ -51,7 +70,7 @@ serve(async (req) => {
         title: "Error", 
         message: errorMessage 
       }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
