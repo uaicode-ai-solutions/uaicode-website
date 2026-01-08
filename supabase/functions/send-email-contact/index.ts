@@ -12,7 +12,7 @@ serve(async (req) => {
   console.log("Method:", req.method);
 
   if (req.method === "OPTIONS") {
-    return new Response("", { 
+    return new Response(null, { 
       status: 204,
       headers: corsHeaders 
     });
