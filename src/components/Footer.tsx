@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { sanitizeInput } from "@/lib/inputSanitization";
 import { supabase } from "@/integrations/supabase/client";
 import NewsletterSuccessDialog from "./newsletter/NewsletterSuccessDialog";
+import PhoneCallDialog from "./chat/PhoneCallDialog";
 import logo from "@/assets/uaicode-logo.png";
 
 const newsletterSchema = z.object({
@@ -30,6 +31,7 @@ type NewsletterFormData = z.infer<typeof newsletterSchema>;
 const Footer = () => {
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showPhoneDialog, setShowPhoneDialog] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -214,13 +216,13 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a 
-                  href="tel:+13215291451" 
+                <button 
+                  onClick={() => setShowPhoneDialog(true)}
                   className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-2"
                 >
                   <Phone className="w-5 h-5" />
                   +1 (321) 529 1451
-                </a>
+                </button>
               </li>
               <li>
                 <button 
@@ -349,6 +351,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
+    <PhoneCallDialog open={showPhoneDialog} onOpenChange={setShowPhoneDialog} />
     </>
   );
 };
