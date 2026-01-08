@@ -6,7 +6,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CalendarCheck, Clock, Mail } from "lucide-react";
+import { CalendarCheck, Clock, Mail, Sparkles } from "lucide-react";
+import { useConfetti } from "@/hooks/useConfetti";
+import { useEffect } from "react";
 
 interface BookingDetails {
   date?: string;
@@ -27,7 +29,13 @@ const BookingConfirmationDialog = ({
   onClose,
   bookingDetails,
 }: BookingConfirmationDialogProps) => {
-  
+  const { fireConfetti } = useConfetti();
+
+  useEffect(() => {
+    if (open) {
+      fireConfetti();
+    }
+  }, [open, fireConfetti]);
 
   // Create a proper Date object from NY time
   const getNyInstantDate = () => {
@@ -103,50 +111,76 @@ const BookingConfirmationDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
-            <CalendarCheck className="w-8 h-8 text-green-500" />
+      <DialogContent className="sm:max-w-md border-accent/20 bg-gradient-to-b from-card to-background">
+        <DialogHeader className="space-y-6 pt-4">
+          {/* Animated Success Icon */}
+          <div className="mx-auto relative">
+            {/* Outer glow ring */}
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-accent to-accent/60 p-[2px] animate-pulse">
+              <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
+                <CalendarCheck className="w-10 h-10 text-accent" strokeWidth={2} />
+              </div>
+            </div>
+            {/* Decorative sparkles */}
+            <Sparkles className="w-5 h-5 text-accent absolute -top-1 -right-1 animate-pulse" />
+            <Sparkles className="w-4 h-4 text-accent/70 absolute -bottom-1 -left-2 animate-pulse" style={{ animationDelay: '150ms' }} />
           </div>
-          <DialogTitle className="text-2xl font-bold text-center">
-            Meeting Scheduled! 🎉
-          </DialogTitle>
-          <DialogDescription className="text-center text-muted-foreground">
-            Your consultation has been successfully booked.
-          </DialogDescription>
+          
+          <div className="space-y-3 text-center">
+            <DialogTitle className="text-2xl md:text-3xl font-bold">
+              <span className="text-gradient-gold">Meeting</span> Scheduled!
+            </DialogTitle>
+            <DialogDescription className="text-base md:text-lg text-muted-foreground leading-relaxed">
+              Your consultation has been successfully booked.
+            </DialogDescription>
+          </div>
         </DialogHeader>
 
+        {/* Decorative divider */}
+        <div className="flex items-center gap-4 my-2">
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+        </div>
+
+        {/* Booking Details with enhanced styling */}
         {hasDetails && (
-          <div className="bg-muted/50 rounded-lg p-4 space-y-4 my-4">
-            {/* New York Time (Primary) */}
+          <div className="rounded-xl border border-accent/20 bg-card/50 p-4 space-y-4">
+            {/* New York Time */}
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+              <p className="text-xs text-accent font-semibold uppercase tracking-wider">
                 New York Time (EST/EDT)
               </p>
               <div className="flex items-center gap-3">
-                <CalendarCheck className="w-5 h-5 text-accent" />
-                <span className="text-foreground">{nyDate}</span>
+                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                  <CalendarCheck className="w-4 h-4 text-accent" />
+                </div>
+                <span className="text-foreground font-medium">{nyDate}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-accent" />
-                <span className="text-foreground">{nyTime}</span>
+                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-accent" />
+                </div>
+                <span className="text-foreground font-medium">{nyTime}</span>
               </div>
             </div>
 
-            {/* User's Local Time */}
+            {/* Local Time */}
             {showLocalTime && (
               <>
-                <div className="border-t border-border" />
+                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
                 <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                     Your Local Time ({tzName})
                   </p>
                   <div className="flex items-center gap-3">
-                    <CalendarCheck className="w-5 h-5 text-accent/70" />
+                    <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
+                      <CalendarCheck className="w-4 h-4 text-muted-foreground" />
+                    </div>
                     <span className="text-foreground/80">{localDate}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-accent/70" />
+                    <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                    </div>
                     <span className="text-foreground/80">{localTime}</span>
                   </div>
                 </div>
@@ -155,12 +189,15 @@ const BookingConfirmationDialog = ({
           </div>
         )}
 
-        <div className="flex items-start gap-3 p-4 bg-accent/10 rounded-lg">
-          <Mail className="w-5 h-5 text-accent mt-0.5" />
-          <p className="text-sm text-muted-foreground">
+        {/* Email confirmation with enhanced styling */}
+        <div className="flex items-start gap-3 p-4 rounded-xl border border-accent/10 bg-accent/5">
+          <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+            <Mail className="w-4 h-4 text-accent" />
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
             A confirmation email has been sent to{" "}
             {bookingDetails?.email ? (
-              <span className="text-foreground font-medium">{bookingDetails.email}</span>
+              <span className="text-accent font-medium">{bookingDetails.email}</span>
             ) : (
               "your inbox"
             )}{" "}
@@ -170,7 +207,7 @@ const BookingConfirmationDialog = ({
 
         <Button
           onClick={onClose}
-          className="w-full mt-4 bg-accent text-accent-foreground hover:bg-accent/90"
+          className="w-full h-12 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-base rounded-lg shadow-[0_0_20px_hsl(var(--accent)/0.3)] hover:shadow-[0_0_30px_hsl(var(--accent)/0.5)] transition-all duration-300"
         >
           Got it!
         </Button>
