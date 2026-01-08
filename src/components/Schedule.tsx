@@ -12,6 +12,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { sanitizeFormData } from "@/lib/inputSanitization";
+import { supabase } from "@/integrations/supabase/client";
 
 const scheduleFormSchema = z.object({
   name: z.string()
@@ -83,35 +84,26 @@ const Schedule = () => {
 
   const onSubmit = async (data: ScheduleFormData) => {
     try {
-      // Sanitize all inputs before sending
       const sanitizedData = sanitizeFormData(data);
       
-      const response = await fetch("https://uaicode-n8n.ax5vln.easypanel.host/webhook/YOUR_WEBHOOK_ID", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...sanitizedData,
-          timestamp: new Date().toISOString(),
-          source: "schedule_contact_form",
-        }),
+      const { data: responseData, error } = await supabase.functions.invoke('submit-contact-form', {
+        body: sanitizedData,
       });
       
-      if (response.ok) {
-        toast({
-          title: "Success!",
-          description: "Your message has been sent. We'll get back to you soon!",
-        });
-        reset();
-      } else {
-        throw new Error("Submission failed");
+      if (error) {
+        throw new Error(error.message);
       }
+      
+      toast({
+        title: responseData?.title || "Success!",
+        description: responseData?.message || "Your message has been sent. We'll get back to you soon!",
+      });
+      reset();
     } catch (error) {
       console.error("Form submission error:", error);
       toast({
         title: "Unable to Submit",
-        description: "There was an error submitting your form. Please check your internet connection and try again.",
+        description: error instanceof Error ? error.message : "There was an error submitting your form.",
         variant: "destructive",
       });
     }
