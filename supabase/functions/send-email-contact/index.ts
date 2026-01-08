@@ -31,62 +31,70 @@ serve(async (req) => {
     const formData: ContactFormData = await req.json();
     console.log("Form data received:", JSON.stringify({ name: formData.name, email: formData.email }));
 
-    // Email de confirmação para o cliente
+    // Client confirmation email
     const clientEmailResult = await resend.emails.send({
       from: "UaiCode <no-reply@uaicode.ai>",
       to: [formData.email],
-      subject: "Recebemos sua mensagem - UaiCode",
+      subject: "We received your message - UaiCode",
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #9b87f5; margin: 0;">UaiCode</h1>
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #141414; padding: 0;">
+          <div style="background: linear-gradient(135deg, #FACC15 0%, #EAB308 100%); padding: 30px; text-align: center;">
+            <h1 style="color: #141414; margin: 0; font-size: 28px; font-weight: bold;">UaiCode</h1>
           </div>
-          <h2 style="color: #333;">Olá, ${formData.name}! 👋</h2>
-          <p style="color: #555; line-height: 1.6;">
-            Recebemos sua mensagem e ficamos muito felizes com seu contato!
-          </p>
-          <p style="color: #555; line-height: 1.6;">
-            Nossa equipe irá analisar sua solicitação e retornaremos em até <strong>24-48 horas úteis</strong>.
-          </p>
-          <div style="background: #f5f3ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #6b5b95; margin: 0; font-style: italic;">
-              "${formData.message.substring(0, 200)}${formData.message.length > 200 ? '...' : ''}"
+          <div style="padding: 40px 30px;">
+            <h2 style="color: #FFFFFF; margin: 0 0 20px 0; font-size: 22px;">Hello, ${formData.name}! 👋</h2>
+            <p style="color: #E5E5E5; line-height: 1.7; font-size: 16px; margin: 0 0 16px 0;">
+              We received your message and we're excited to connect with you!
+            </p>
+            <p style="color: #E5E5E5; line-height: 1.7; font-size: 16px; margin: 0 0 24px 0;">
+              Our team will review your request and get back to you within <span style="color: #FACC15; font-weight: 600;">24-48 business hours</span>.
+            </p>
+            <div style="background: #22272A; padding: 20px; border-radius: 8px; border-left: 4px solid #FACC15; margin: 24px 0;">
+              <p style="color: #B3B3B3; margin: 0; font-style: italic; font-size: 14px;">
+                "${formData.message.substring(0, 200)}${formData.message.length > 200 ? '...' : ''}"
+              </p>
+            </div>
+            <p style="color: #E5E5E5; line-height: 1.7; font-size: 16px; margin: 24px 0 0 0;">
+              In the meantime, feel free to explore more about our services at 
+              <a href="https://uaicode.ai" style="color: #FACC15; text-decoration: none; font-weight: 600;">uaicode.ai</a>
             </p>
           </div>
-          <p style="color: #555; line-height: 1.6;">
-            Enquanto isso, que tal conhecer mais sobre nossos serviços em <a href="https://uaicode.ai" style="color: #9b87f5;">uaicode.ai</a>?
-          </p>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
-          <p style="color: #999; font-size: 12px; text-align: center;">
-            UaiCode - Transformando ideias em soluções digitais
-          </p>
+          <div style="border-top: 1px solid #333; padding: 24px 30px; text-align: center;">
+            <p style="color: #666; font-size: 12px; margin: 0;">
+              UaiCode - Transforming ideas into digital solutions
+            </p>
+          </div>
         </div>
       `,
     });
     console.log("Client email sent:", clientEmailResult);
 
-    // Email de notificação para a equipe com Reply-To do cliente
+    // Team notification email with Reply-To
     const teamEmailResult = await resend.emails.send({
       from: "Website UaiCode <no-reply@uaicode.ai>",
       to: ["hello@uaicode.ai"],
       replyTo: formData.email,
-      subject: `Novo contato via site - ${formData.name}`,
+      subject: `New contact via website - ${formData.name}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #9b87f5;">📬 Novo Contato via Website</h2>
-          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 10px 0;"><strong>Nome:</strong> ${formData.name}</p>
-            <p style="margin: 10px 0;"><strong>Email:</strong> <a href="mailto:${formData.email}">${formData.email}</a></p>
-            ${formData.phone ? `<p style="margin: 10px 0;"><strong>Telefone:</strong> ${formData.phone}</p>` : ''}
-            <p style="margin: 10px 0;"><strong>Data:</strong> ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #141414; padding: 0;">
+          <div style="background: linear-gradient(135deg, #FACC15 0%, #EAB308 100%); padding: 24px; text-align: center;">
+            <h2 style="color: #141414; margin: 0; font-size: 20px;">📬 New Contact via Website</h2>
           </div>
-          <div style="background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
-            <h3 style="color: #333; margin-top: 0;">Mensagem:</h3>
-            <p style="color: #555; line-height: 1.6; white-space: pre-wrap;">${formData.message}</p>
+          <div style="padding: 30px;">
+            <div style="background: #22272A; padding: 24px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="margin: 8px 0; color: #E5E5E5;"><strong style="color: #FACC15;">Name:</strong> ${formData.name}</p>
+              <p style="margin: 8px 0; color: #E5E5E5;"><strong style="color: #FACC15;">Email:</strong> <a href="mailto:${formData.email}" style="color: #FACC15;">${formData.email}</a></p>
+              ${formData.phone ? `<p style="margin: 8px 0; color: #E5E5E5;"><strong style="color: #FACC15;">Phone:</strong> ${formData.phone}</p>` : ''}
+              <p style="margin: 8px 0; color: #E5E5E5;"><strong style="color: #FACC15;">Date:</strong> ${new Date().toLocaleString('en-US', { timeZone: 'UTC' })} (UTC)</p>
+            </div>
+            <div style="background: #1A1A1A; border: 1px solid #333; padding: 24px; border-radius: 8px;">
+              <h3 style="color: #FACC15; margin: 0 0 16px 0; font-size: 16px;">Message:</h3>
+              <p style="color: #E5E5E5; line-height: 1.7; white-space: pre-wrap; margin: 0;">${formData.message}</p>
+            </div>
+            <p style="color: #666; font-size: 12px; margin-top: 20px; text-align: center;">
+              💡 Reply to this email to contact ${formData.name} directly
+            </p>
           </div>
-          <p style="color: #999; font-size: 12px; margin-top: 20px;">
-            💡 Responda este email para contatar diretamente ${formData.name}
-          </p>
         </div>
       `,
     });
@@ -96,8 +104,8 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        title: "Sucesso", 
-        message: "Mensagem enviada com sucesso!" 
+        title: "Success", 
+        message: "Message sent successfully!" 
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -108,8 +116,8 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        title: "Erro", 
-        message: "Falha ao enviar mensagem. Tente novamente." 
+        title: "Error", 
+        message: "Failed to send message. Please try again." 
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
