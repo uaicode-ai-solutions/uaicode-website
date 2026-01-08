@@ -70,63 +70,6 @@ export type Database = {
           },
         ]
       }
-      leads: {
-        Row: {
-          booking_date: string | null
-          booking_id: string | null
-          country_code: string | null
-          created_at: string
-          email: string
-          enriched: boolean | null
-          enriched_at: string | null
-          full_name: string
-          id: string
-          language: string | null
-          marketing_consent: boolean | null
-          phone: string
-          project_description: string | null
-          session_id: string | null
-          source: string | null
-          updated_at: string
-        }
-        Insert: {
-          booking_date?: string | null
-          booking_id?: string | null
-          country_code?: string | null
-          created_at?: string
-          email: string
-          enriched?: boolean | null
-          enriched_at?: string | null
-          full_name: string
-          id?: string
-          language?: string | null
-          marketing_consent?: boolean | null
-          phone: string
-          project_description?: string | null
-          session_id?: string | null
-          source?: string | null
-          updated_at?: string
-        }
-        Update: {
-          booking_date?: string | null
-          booking_id?: string | null
-          country_code?: string | null
-          created_at?: string
-          email?: string
-          enriched?: boolean | null
-          enriched_at?: string | null
-          full_name?: string
-          id?: string
-          language?: string | null
-          marketing_consent?: boolean | null
-          phone?: string
-          project_description?: string | null
-          session_id?: string | null
-          source?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       tb_web_appointment: {
         Row: {
           appointmentDate: string | null
