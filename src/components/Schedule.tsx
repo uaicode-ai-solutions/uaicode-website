@@ -46,6 +46,8 @@ type ScheduleFormData = z.infer<typeof scheduleFormSchema>;
 interface BookingDetails {
   date?: string;
   time?: string;
+  rawDate?: string;
+  rawTime?: string;
   email?: string;
 }
 
@@ -158,6 +160,8 @@ const Schedule = () => {
       setBookingDetails({
         date: formattedDate,
         time: formattedTime,
+        rawDate: responseData?.booking?.date,
+        rawTime: responseData?.booking?.time,
         email: data.email,
       });
       setShowConfirmation(true);
