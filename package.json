@@ -11,7 +11,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@calcom/atoms": "^1.12.1",
     "@calcom/embed-react": "^1.5.3",
     "@elevenlabs/react": "^0.12.3",
     "@hookform/resolvers": "^3.10.0",

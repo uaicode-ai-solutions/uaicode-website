@@ -70,10 +70,10 @@ const Schedule = () => {
         theme: "dark",
         cssVarsPerTheme: {
           dark: {
-            "cal-brand": "#E8B419"
+            "cal-brand": "#FFC61A"
           },
           light: {
-            "cal-brand": "#E8B419"
+            "cal-brand": "#FFC61A"
           }
         },
         hideEventTypeDetails: false,
@@ -155,6 +155,17 @@ const Schedule = () => {
               config={{ layout: "month_view", theme: "dark" }}
             />
           </div>
+          <p className="text-center text-sm text-muted-foreground py-4">
+            Having trouble seeing the calendar?{" "}
+            <a 
+              href="https://cal.com/uaicode-ai/diagnostic-45min" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-accent hover:underline"
+            >
+              Click here to open it in a new tab
+            </a>
+          </p>
         </div>
 
         {/* Contact Form Section */}
