@@ -11,6 +11,7 @@ import { sanitizeInput } from "@/lib/inputSanitization";
 import { supabase } from "@/integrations/supabase/client";
 import NewsletterSuccessDialog from "./newsletter/NewsletterSuccessDialog";
 import PhoneCallDialog from "./chat/PhoneCallDialog";
+import EmailContactDialog from "./chat/EmailContactDialog";
 import logo from "@/assets/uaicode-logo.png";
 
 const newsletterSchema = z.object({
@@ -32,6 +33,7 @@ const Footer = () => {
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showPhoneDialog, setShowPhoneDialog] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -207,13 +209,13 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4 text-accent">Contact</h3>
             <ul className="space-y-3">
               <li>
-                <a 
-                  href="mailto:hello@uaicode.ai" 
+                <button 
+                  onClick={() => setShowEmailDialog(true)}
                   className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-2"
                 >
                   <Mail className="w-5 h-5" />
                   hello@uaicode.ai
-                </a>
+                </button>
               </li>
               <li>
                 <button 
@@ -352,6 +354,7 @@ const Footer = () => {
       </div>
     </footer>
     <PhoneCallDialog open={showPhoneDialog} onOpenChange={setShowPhoneDialog} />
+    <EmailContactDialog open={showEmailDialog} onOpenChange={setShowEmailDialog} />
     </>
   );
 };
