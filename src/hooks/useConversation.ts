@@ -31,7 +31,7 @@ export const useConversation = () => {
       try {
         // Find existing conversation for this session only
         const { data: existingConversation, error: fetchError } = await supabase
-          .from('chat_conversations')
+          .from('tb_web_chat_conversations')
           .select('id, session_id')
           .eq('session_id', sessionId)
           .order('updated_at', { ascending: false })
@@ -47,7 +47,7 @@ export const useConversation = () => {
         if (existingConversation) {
           // Load messages from existing conversation
           const { data: existingMessages, error: messagesError } = await supabase
-            .from('chat_messages')
+            .from('tb_web_chat_messages')
             .select('role, content')
             .eq('conversation_id', existingConversation.id)
             .order('created_at', { ascending: true });
@@ -62,7 +62,7 @@ export const useConversation = () => {
         } else {
           // Create new conversation
           const { data: newConversation, error: createError } = await supabase
-            .from('chat_conversations')
+            .from('tb_web_chat_conversations')
             .insert({ session_id: sessionId })
             .select('id')
             .single();
@@ -72,7 +72,7 @@ export const useConversation = () => {
           } else if (newConversation) {
             setConversationId(newConversation.id);
             // Save initial message
-            await supabase.from('chat_messages').insert({
+            await supabase.from('tb_web_chat_messages').insert({
               conversation_id: newConversation.id,
               role: INITIAL_MESSAGE.role,
               content: INITIAL_MESSAGE.content
@@ -93,7 +93,7 @@ export const useConversation = () => {
   const saveMessage = useCallback(async (message: Message) => {
     if (!conversationId) return;
 
-    const { error } = await supabase.from('chat_messages').insert({
+    const { error } = await supabase.from('tb_web_chat_messages').insert({
       conversation_id: conversationId,
       role: message.role,
       content: message.content
@@ -114,7 +114,7 @@ export const useConversation = () => {
   const resetConversation = useCallback(async () => {
     try {
       const { data: newConversation, error } = await supabase
-        .from('chat_conversations')
+        .from('tb_web_chat_conversations')
         .insert({ session_id: sessionId })
         .select('id')
         .single();
@@ -129,7 +129,7 @@ export const useConversation = () => {
         setMessages([INITIAL_MESSAGE]);
         
         // Save initial message to new conversation
-        await supabase.from('chat_messages').insert({
+        await supabase.from('tb_web_chat_messages').insert({
           conversation_id: newConversation.id,
           role: INITIAL_MESSAGE.role,
           content: INITIAL_MESSAGE.content
