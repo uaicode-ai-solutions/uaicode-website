@@ -27,64 +27,79 @@ const BookingConfirmationDialog = ({
   onClose,
   bookingDetails,
 }: BookingConfirmationDialogProps) => {
-  const hasDetails = bookingDetails?.date || bookingDetails?.time;
+  
 
-  // Calculate local timezone equivalent
-  const getLocalTimeDetails = () => {
+  // Create a proper Date object from NY time
+  const getNyInstantDate = () => {
     if (!bookingDetails?.rawDate || !bookingDetails?.rawTime) return null;
     
-    // Create a date string and parse it as NY time
-    const nyDateTimeString = `${bookingDetails.rawDate}T${bookingDetails.rawTime}:00`;
+    // Parse the date parts
+    const [year, month, day] = bookingDetails.rawDate.split('-').map(Number);
+    const [hour, minute] = bookingDetails.rawTime.split(':').map(Number);
     
-    // Create date object - we need to interpret this as NY time
-    // Use Intl.DateTimeFormat to get the offset for NY at that date
-    const tempDate = new Date(nyDateTimeString);
+    // Create a probe date at noon UTC to determine NY offset for that day
+    const probeDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+    
+    // Get NY offset using Intl
     const nyFormatter = new Intl.DateTimeFormat('en-US', {
       timeZone: 'America/New_York',
       timeZoneName: 'shortOffset'
     });
-    const nyParts = nyFormatter.formatToParts(tempDate);
-    const offsetPart = nyParts.find(p => p.type === 'timeZoneName')?.value || 'GMT-5';
+    const parts = nyFormatter.formatToParts(probeDate);
+    const offsetPart = parts.find(p => p.type === 'timeZoneName')?.value || 'GMT-5';
     
     // Parse offset (e.g., "GMT-5" or "GMT-4")
     const offsetMatch = offsetPart.match(/GMT([+-]?\d+)/);
-    const nyOffset = offsetMatch ? parseInt(offsetMatch[1]) : -5;
+    const nyOffsetHours = offsetMatch ? parseInt(offsetMatch[1]) : -5;
     
-    // Create date with NY timezone offset
-    const nyDate = new Date(`${nyDateTimeString}${nyOffset >= 0 ? '+' : ''}${String(nyOffset).padStart(2, '0')}:00`);
+    // Build proper ISO string with correct offset format
+    const sign = nyOffsetHours >= 0 ? '+' : '-';
+    const absOffset = Math.abs(nyOffsetHours);
+    const offsetStr = `${sign}${String(absOffset).padStart(2, '0')}:00`;
+    const isoString = `${bookingDetails.rawDate}T${bookingDetails.rawTime}:00${offsetStr}`;
     
-    // Get user's timezone
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
-    // Format in user's local timezone
-    const localFormattedDate = nyDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      timeZone: userTimezone
-    });
-    
-    const localFormattedTime = nyDate.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-      timeZone: userTimezone
-    });
-    
-    // Get friendly timezone name
-    const tzName = userTimezone.split('/').pop()?.replace(/_/g, ' ') || userTimezone;
-    
-    return {
-      date: localFormattedDate,
-      time: localFormattedTime,
-      timezone: tzName
-    };
+    const date = new Date(isoString);
+    return isNaN(date.getTime()) ? null : date;
   };
 
-  const localDetails = getLocalTimeDetails();
+  const nyInstant = getNyInstantDate();
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const showLocalTime = localDetails && userTimezone !== 'America/New_York';
+  const showLocalTime = nyInstant && userTimezone !== 'America/New_York';
+
+  // Format dates from the instant
+  const nyDate = nyInstant?.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'America/New_York'
+  });
+  
+  const nyTime = nyInstant?.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'America/New_York'
+  });
+
+  const localDate = nyInstant?.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: userTimezone
+  });
+  
+  const localTime = nyInstant?.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: userTimezone
+  });
+  
+  const tzName = userTimezone.split('/').pop()?.replace(/_/g, ' ') || userTimezone;
+
+  const hasDetails = nyInstant !== null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -108,35 +123,31 @@ const BookingConfirmationDialog = ({
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
                 New York Time (EST/EDT)
               </p>
-              {bookingDetails?.date && (
-                <div className="flex items-center gap-3">
-                  <CalendarCheck className="w-5 h-5 text-accent" />
-                  <span className="text-foreground">{bookingDetails.date}</span>
-                </div>
-              )}
-              {bookingDetails?.time && (
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-accent" />
-                  <span className="text-foreground">{bookingDetails.time}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                <CalendarCheck className="w-5 h-5 text-accent" />
+                <span className="text-foreground">{nyDate}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-accent" />
+                <span className="text-foreground">{nyTime}</span>
+              </div>
             </div>
 
             {/* User's Local Time */}
-            {showLocalTime && localDetails && (
+            {showLocalTime && (
               <>
                 <div className="border-t border-border" />
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                    Your Local Time ({localDetails.timezone})
+                    Your Local Time ({tzName})
                   </p>
                   <div className="flex items-center gap-3">
                     <CalendarCheck className="w-5 h-5 text-accent/70" />
-                    <span className="text-foreground/80">{localDetails.date}</span>
+                    <span className="text-foreground/80">{localDate}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Clock className="w-5 h-5 text-accent/70" />
-                    <span className="text-foreground/80">{localDetails.time}</span>
+                    <span className="text-foreground/80">{localTime}</span>
                   </div>
                 </div>
               </>
