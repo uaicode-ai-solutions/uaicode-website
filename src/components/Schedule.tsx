@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +13,7 @@ import { Mail, Phone, MapPin } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { sanitizeFormData } from "@/lib/inputSanitization";
 import { supabase } from "@/integrations/supabase/client";
+import BookingConfirmationDialog from "@/components/scheduler/BookingConfirmationDialog";
 
 const scheduleFormSchema = z.object({
   name: z.string()
@@ -42,7 +43,16 @@ const scheduleFormSchema = z.object({
 
 type ScheduleFormData = z.infer<typeof scheduleFormSchema>;
 
+interface BookingDetails {
+  date?: string;
+  time?: string;
+  email?: string;
+}
+
 const Schedule = () => {
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -117,12 +127,22 @@ const Schedule = () => {
         throw result.error;
       }
       
-      const responseData = result.data as { title?: string; message?: string } | null;
+      const responseData = result.data as { 
+        title?: string; 
+        message?: string;
+        booking?: {
+          date?: string;
+          time?: string;
+        };
+      } | null;
       
-      toast({
-        title: responseData?.title || "Success!",
-        description: responseData?.message || "Your message has been sent. We'll get back to you soon!",
+      // Set booking details for the confirmation dialog
+      setBookingDetails({
+        date: responseData?.booking?.date,
+        time: responseData?.booking?.time,
+        email: data.email,
       });
+      setShowConfirmation(true);
       reset();
     } catch (error) {
       console.error("Form submission error:", error);
@@ -365,6 +385,12 @@ const Schedule = () => {
         </div>
 
       </div>
+
+      <BookingConfirmationDialog
+        open={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+        bookingDetails={bookingDetails}
+      />
     </section>
   );
 };
