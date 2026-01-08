@@ -23,7 +23,8 @@ function levenshteinDistance(str1: string, str2: string): number {
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-session-id',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 const CALCOM_API_KEY = Deno.env.get('CALCOM_API_KEY');
