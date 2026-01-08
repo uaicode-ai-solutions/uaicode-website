@@ -60,7 +60,11 @@ serve(async (req) => {
       const rawText = await response.text();
       console.log("Webhook raw response:", rawText.substring(0, 500));
       
-      let responseData;
+      let responseData: {
+        title?: string;
+        message?: string;
+        booking?: { date?: string; time?: string };
+      };
       if (rawText.trim()) {
         try {
           responseData = JSON.parse(rawText);
@@ -88,7 +92,8 @@ serve(async (req) => {
       
       return new Response(JSON.stringify({
         title: responseData.title || "Success",
-        message: responseData.message || "Form submitted successfully"
+        message: responseData.message || "Form submitted successfully",
+        booking: responseData.booking || null
       }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

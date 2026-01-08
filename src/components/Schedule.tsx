@@ -136,10 +136,28 @@ const Schedule = () => {
         };
       } | null;
       
-      // Set booking details for the confirmation dialog
+      // Format and set booking details for the confirmation dialog
+      let formattedDate: string | undefined;
+      let formattedTime: string | undefined;
+
+      if (responseData?.booking?.date) {
+        const dateObj = new Date(responseData.booking.date + 'T' + (responseData.booking.time || '00:00'));
+        formattedDate = dateObj.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        formattedTime = dateObj.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+      }
+
       setBookingDetails({
-        date: responseData?.booking?.date,
-        time: responseData?.booking?.time,
+        date: formattedDate,
+        time: formattedTime,
         email: data.email,
       });
       setShowConfirmation(true);
