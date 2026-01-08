@@ -15,6 +15,7 @@ import { sanitizeFormData } from "@/lib/inputSanitization";
 import { supabase } from "@/integrations/supabase/client";
 import BookingConfirmationDialog from "@/components/scheduler/BookingConfirmationDialog";
 import PhoneCallDialog from "@/components/chat/PhoneCallDialog";
+import EmailContactDialog from "@/components/chat/EmailContactDialog";
 
 const scheduleFormSchema = z.object({
   name: z.string()
@@ -56,6 +57,7 @@ const Schedule = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [showPhoneDialog, setShowPhoneDialog] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
 
   const {
     register,
@@ -229,9 +231,12 @@ const Schedule = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold mb-1 text-base">Email Us</h4>
-                  <a href="mailto:hello@uaicode.ai" className="text-muted-foreground hover:text-accent transition-colors">
+                  <button 
+                    onClick={() => setShowEmailDialog(true)}
+                    className="text-muted-foreground hover:text-accent transition-colors"
+                  >
                     hello@uaicode.ai
-                  </a>
+                  </button>
                 </div>
               </div>
               
@@ -419,6 +424,7 @@ const Schedule = () => {
         bookingDetails={bookingDetails}
       />
       <PhoneCallDialog open={showPhoneDialog} onOpenChange={setShowPhoneDialog} />
+      <EmailContactDialog open={showEmailDialog} onOpenChange={setShowEmailDialog} />
     </section>
   );
 };
