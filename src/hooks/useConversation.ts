@@ -50,14 +50,11 @@ export const useConversation = () => {
   useEffect(() => {
     const initConversation = async () => {
       try {
-        // Calculate 24 hours ago for fallback query
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        
-        // Try to find existing conversation for this session or recent one
+        // Find existing conversation for this session only
         const { data: existingConversation, error: fetchError } = await supabase
           .from('chat_conversations')
           .select('id, session_id')
-          .or(`session_id.eq.${sessionId},updated_at.gte.${oneDayAgo}`)
+          .eq('session_id', sessionId)
           .order('updated_at', { ascending: false })
           .limit(1)
           .maybeSingle();
