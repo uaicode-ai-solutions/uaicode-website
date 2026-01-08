@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getSessionId } from '@/lib/sessionId';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -16,28 +17,6 @@ interface Conversation {
 const INITIAL_MESSAGE: Message = {
   role: 'assistant',
   content: "Hi! 👋 I'm Eve, your AI assistant at Uaicode. How can I help you today?"
-};
-
-const getSessionId = (): string => {
-  const key = 'eve_session_id';
-  
-  // Use sessionStorage first to avoid conflicts between tabs
-  let sessionId = sessionStorage.getItem(key);
-  
-  if (!sessionId) {
-    // Try to recover from localStorage as fallback
-    sessionId = localStorage.getItem(key);
-    
-    if (!sessionId) {
-      sessionId = crypto.randomUUID();
-    }
-    
-    // Sync both storages
-    localStorage.setItem(key, sessionId);
-    sessionStorage.setItem(key, sessionId);
-  }
-  
-  return sessionId;
 };
 
 export const useConversation = () => {
