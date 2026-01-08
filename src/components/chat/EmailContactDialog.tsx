@@ -74,12 +74,12 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
     try {
       const sanitizedData = sanitizeFormData(data);
       
-      const { error } = await supabase.functions.invoke('submit-contact-form', {
+      const { error } = await supabase.functions.invoke('send-email-contact', {
         body: {
           name: sanitizedData.name,
           email: sanitizedData.email,
           phone: sanitizedData.phone,
-          project: sanitizedData.message,
+          message: sanitizedData.message,
           source: 'email_contact_popup',
         },
       });
