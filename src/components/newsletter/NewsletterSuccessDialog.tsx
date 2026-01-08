@@ -25,17 +25,17 @@ const NewsletterSuccessDialog = ({ open, onOpenChange }: NewsletterSuccessDialog
             </div>
           </div>
           <DialogTitle className="text-2xl font-bold">
-            Cadastro realizado com sucesso!
+            Successfully subscribed!
           </DialogTitle>
           <DialogDescription className="text-base text-muted-foreground">
-            Você receberá nossas newsletters por email a cada novo lançamento.
+            You will receive our insights by email with each new release.
           </DialogDescription>
         </DialogHeader>
         <Button 
           onClick={() => onOpenChange(false)} 
           className="mt-4 w-full bg-accent text-accent-foreground hover:bg-accent/90"
         >
-          Fechar
+          Close
         </Button>
       </DialogContent>
     </Dialog>

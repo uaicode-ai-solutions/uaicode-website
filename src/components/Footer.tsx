@@ -85,8 +85,8 @@ const Footer = () => {
       // Handle duplicate email error
       if (dbError?.code === '23505') {
         toast({
-          title: "Já cadastrado!",
-          description: "Este email já está inscrito em nossa newsletter.",
+          title: "Already subscribed!",
+          description: "This email is already subscribed to our newsletter.",
         });
         return;
       }
