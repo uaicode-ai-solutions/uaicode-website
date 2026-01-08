@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Mail, Loader2, ArrowUpNarrowWide, ArrowDownNarrowWide, Youtube, Radio, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import NewsletterSuccessDialog from "@/components/newsletter/NewsletterSuccessDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Pagination,
@@ -44,6 +49,21 @@ interface BlogPost {
   highlights?: string[];
   subtitles?: string[];
 }
+
+const newsletterSchema = z.object({
+  email: z.string()
+    .trim()
+    .min(1, "Email é obrigatório")
+    .email("Por favor, insira um email válido")
+    .max(255, "Email deve ter menos de 255 caracteres")
+    .toLowerCase()
+    .refine(
+      (email) => !email.includes('+'),
+      "Por favor, use um email padrão sem o símbolo '+'"
+    ),
+});
+
+type NewsletterFormData = z.infer<typeof newsletterSchema>;
 
 export const mockPosts: BlogPost[] = [
   {
@@ -968,13 +988,28 @@ Don't build in a vacuum. Validate first. Build second. Scale third. This order m
 
 const Newsletter = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [postsPerPage, setPostsPerPage] = useState(6);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    watch,
+  } = useForm<NewsletterFormData>({
+    resolver: zodResolver(newsletterSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const emailValue = watch("email");
+  const emailCharCount = emailValue?.length || 0;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1004,24 +1039,33 @@ const Newsletter = () => {
   const endIndex = startIndex + postsPerPage;
   const currentPosts = filteredPosts.slice(startIndex, endIndex);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
+  const onNewsletterSubmit = async (data: NewsletterFormData) => {
     try {
-      const response = await fetch(
+      const sanitizedEmail = data.email.trim().toLowerCase();
+
+      // First, try to insert into Supabase
+      const { error: dbError } = await supabase
+        .from('tb_web_newsletter')
+        .insert({ 
+          email: sanitizedEmail, 
+          source: 'newsletter_hero' 
+        });
+
+      // Handle duplicate email error
+      if (dbError?.code === '23505') {
+        toast({
+          title: "Já cadastrado!",
+          description: "Este email já está inscrito em nossa newsletter.",
+        });
+        return;
+      }
+
+      if (dbError) {
+        throw dbError;
+      }
+      
+      // Call the webhook
+      await fetch(
         "https://uaicode-n8n.ax5vln.easypanel.host/webhook/a95bfd22-a4e0-48b2-b88d-bec4bfe84be4",
         {
           method: "POST",
@@ -1029,36 +1073,16 @@ const Newsletter = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: email.trim(),
+            email: sanitizedEmail,
             timestamp: new Date().toISOString(),
             source: "newsletter_hero",
           }),
         }
       );
 
-      const rawBody = await response.text();
-      let responseMessage = "You've been subscribed to our newsletter.";
-
-      try {
-        const data = JSON.parse(rawBody);
-        responseMessage = data.message || data.error || (typeof data === 'string' ? data : JSON.stringify(data));
-      } catch {
-        responseMessage = rawBody || responseMessage;
-      }
-
-      if (response.ok) {
-        toast({
-          title: "Success!",
-          description: responseMessage,
-        });
-        setEmail("");
-      } else {
-        toast({
-          title: "Error",
-          description: responseMessage || "There was an error subscribing to our newsletter. Please try again later.",
-          variant: "destructive",
-        });
-      }
+      // Show success dialog
+      reset();
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error("Newsletter subscription error:", error);
       toast({
@@ -1066,8 +1090,6 @@ const Newsletter = () => {
         description: "Something went wrong. Please try again later.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -1077,6 +1099,7 @@ const Newsletter = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <NewsletterSuccessDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog} />
       <Header />
 
       {/* Hero Section */}
@@ -1098,27 +1121,34 @@ const Newsletter = () => {
               </div>
 
               {/* Email Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit(onNewsletterSubmit)} className="space-y-4">
                 <div className="glass-card p-6 rounded-xl space-y-4">
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                    <Input
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-12 py-6 text-lg bg-background/50 border-border"
-                      required
-                      disabled={isLoading}
-                    />
+                  <div>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                      <Input
+                        type="email"
+                        placeholder="Enter your email address"
+                        {...register("email")}
+                        className="pl-12 py-6 text-lg bg-background/50 border-border"
+                        disabled={isSubmitting}
+                        maxLength={255}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <p className="text-xs text-muted-foreground">{emailCharCount}/255 characters</p>
+                      {errors.email && (
+                        <p className="text-red-500 text-xs">{errors.email.message}</p>
+                      )}
+                    </div>
                   </div>
                   <Button
                     type="submit"
                     size="lg"
                     className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg py-6"
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                   >
-                    {isLoading ? (
+                    {isSubmitting ? (
                       <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                         Subscribing...

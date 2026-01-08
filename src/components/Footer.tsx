@@ -8,6 +8,8 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { toast } from "@/hooks/use-toast";
 import { sanitizeInput } from "@/lib/inputSanitization";
+import { supabase } from "@/integrations/supabase/client";
+import NewsletterSuccessDialog from "./newsletter/NewsletterSuccessDialog";
 import logo from "@/assets/uaicode-logo.png";
 
 const newsletterSchema = z.object({
@@ -27,6 +29,7 @@ type NewsletterFormData = z.infer<typeof newsletterSchema>;
 
 const Footer = () => {
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -69,9 +72,31 @@ const Footer = () => {
     
     try {
       // Sanitize email input
-      const sanitizedEmail = sanitizeInput(data.email);
+      const sanitizedEmail = sanitizeInput(data.email).toLowerCase();
       
-      const response = await fetch("https://uaicode-n8n.ax5vln.easypanel.host/webhook/a95bfd22-a4e0-48b2-b88d-bec4bfe84be4", {
+      // First, try to insert into Supabase
+      const { error: dbError } = await supabase
+        .from('tb_web_newsletter')
+        .insert({ 
+          email: sanitizedEmail, 
+          source: 'footer_newsletter' 
+        });
+
+      // Handle duplicate email error
+      if (dbError?.code === '23505') {
+        toast({
+          title: "Já cadastrado!",
+          description: "Este email já está inscrito em nossa newsletter.",
+        });
+        return;
+      }
+
+      if (dbError) {
+        throw dbError;
+      }
+      
+      // Call the webhook
+      await fetch("https://uaicode-n8n.ax5vln.easypanel.host/webhook/a95bfd22-a4e0-48b2-b88d-bec4bfe84be4", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,35 +107,11 @@ const Footer = () => {
           source: "footer_newsletter",
         }),
       });
-      
-      // Read response body once and extract message
-      const rawBody = await response.text();
-      let responseMessage = "You've been subscribed to our insights newsletter!";
-      try {
-        const parsedData = rawBody ? JSON.parse(rawBody) : null;
-        if (parsedData) {
-          responseMessage = parsedData.message || parsedData.error || (typeof parsedData === 'string' ? parsedData : JSON.stringify(parsedData));
-        }
-      } catch {
-        if (rawBody) {
-          responseMessage = rawBody;
-        }
-      }
 
-      if (response.ok) {
-        toast({
-          title: "Success!",
-          description: responseMessage,
-        });
-        reset();
-        setLastSubmitTime(now);
-      } else {
-        toast({
-          title: "Unable to Subscribe",
-          description: responseMessage || "There was an error subscribing. Please check your email and try again.",
-          variant: "destructive",
-        });
-      }
+      // Show success dialog
+      reset();
+      setLastSubmitTime(now);
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error("Newsletter subscription error:", error);
       toast({
@@ -122,6 +123,8 @@ const Footer = () => {
   };
 
   return (
+    <>
+    <NewsletterSuccessDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog} />
     <footer className="bg-card border-t border-border pt-12 pb-6 px-4">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-10">
@@ -330,6 +333,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
+    </>
   );
 };
 
