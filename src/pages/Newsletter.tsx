@@ -53,13 +53,13 @@ interface BlogPost {
 const newsletterSchema = z.object({
   email: z.string()
     .trim()
-    .min(1, "Email é obrigatório")
-    .email("Por favor, insira um email válido")
-    .max(255, "Email deve ter menos de 255 caracteres")
+    .min(1, "Email is required")
+    .email("Please enter a valid email address")
+    .max(255, "Email must be less than 255 characters")
     .toLowerCase()
     .refine(
       (email) => !email.includes('+'),
-      "Por favor, use um email padrão sem o símbolo '+'"
+      "Please use a standard email address without '+' symbols"
     ),
 });
 
@@ -1054,8 +1054,8 @@ const Newsletter = () => {
       // Handle duplicate email error
       if (dbError?.code === '23505') {
         toast({
-          title: "Já cadastrado!",
-          description: "Este email já está inscrito em nossa newsletter.",
+          title: "Already subscribed!",
+          description: "This email is already subscribed to our newsletter.",
         });
         return;
       }
