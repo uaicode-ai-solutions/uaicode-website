@@ -19,7 +19,7 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "$999",
+    price: "$799",
     period: "one-time",
     description: "Everything you need to launch",
     features: [
