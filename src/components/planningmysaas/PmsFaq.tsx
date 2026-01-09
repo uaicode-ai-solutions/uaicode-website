@@ -19,14 +19,6 @@ const faqs = [
     answer: "Absolutely! All generated assets are fully editable. You receive source files that you can modify in any design tool. We also provide multiple variations so you can choose what works best.",
   },
   {
-    question: "What if I'm not satisfied with the results?",
-    answer: "We offer a 60-day money-back guarantee. If the report doesn't meet your expectations, simply contact our support team and we'll process a full refund — no questions asked.",
-  },
-  {
-    question: "Do you offer refunds?",
-    answer: "Yes! We have a hassle-free 60-day refund policy. If you're not completely satisfied with your validation report and assets, we'll refund your purchase in full.",
-  },
-  {
     question: "Can I use the assets commercially?",
     answer: "Yes, all generated assets (logos, mockups, brand materials) are yours to use commercially without any restrictions. You have full ownership and licensing rights.",
   },
