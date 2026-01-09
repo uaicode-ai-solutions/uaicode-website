@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Check, Star, Shield, ArrowRight, Rocket, Zap, Crown } from "lucide-react";
+import { Check, Star, ArrowRight, Rocket, Zap, Crown } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
 interface Plan {
@@ -172,15 +172,6 @@ const PmsPricing = () => {
           ))}
         </div>
 
-        {/* Money Back Guarantee */}
-        <div className="mt-12 text-center">
-          <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full glass-premium border border-accent/20">
-            <Shield className="w-5 h-5 text-accent" />
-            <span className="text-muted-foreground">
-              <strong className="text-foreground">60-Day Money-Back Guarantee</strong> — No questions asked
-            </span>
-          </div>
-        </div>
       </div>
     </section>
   );
