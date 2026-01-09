@@ -4,7 +4,7 @@ import { Check, Star, Shield, ArrowRight } from "lucide-react";
 const plans = [
   {
     name: "Starter",
-    price: "$29",
+    price: "$199",
     period: "one-time",
     description: "Perfect for validating a single idea",
     features: [
@@ -19,8 +19,7 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "$79",
-    originalPrice: "$99",
+    price: "$999",
     period: "one-time",
     description: "Everything you need to launch",
     features: [
@@ -34,11 +33,10 @@ const plans = [
     ],
     cta: "Get Pro — Best Value",
     popular: true,
-    badge: "SAVE 20%",
   },
   {
     name: "Enterprise",
-    price: "$199",
+    price: "$1299",
     period: "one-time",
     description: "For serious founders & teams",
     features: [
