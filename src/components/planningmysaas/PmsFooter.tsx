@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Sparkles, Youtube, Facebook, Instagram, Linkedin, Twitter, Loader2 } from "lucide-react";
+import uaicodeLogo from "@/assets/uaicode-logo.png";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -247,8 +248,18 @@ const PmsFooter = () => {
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} Planning My SaaS. All rights reserved.
             </p>
-            <p className="text-sm text-muted-foreground">
-              Made with ❤️ for founders everywhere
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              Made by 
+              <a 
+                href="https://uaicode.ai" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-foreground hover:text-accent transition-colors font-medium"
+              >
+                Uaicode
+                <img src={uaicodeLogo} alt="Uaicode" className="w-4 h-4" />
+              </a>
+              for founders everywhere
             </p>
           </div>
         </div>
