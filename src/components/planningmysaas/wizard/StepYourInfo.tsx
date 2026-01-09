@@ -81,6 +81,19 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
           />
         </div>
 
+        {/* Phone */}
+        <div className="space-y-1.5">
+          <Label htmlFor="phone" className="text-sm text-muted-foreground">
+            Phone Number <span className="text-accent">*</span>
+          </Label>
+          <PhoneInput
+            value={data.phone}
+            onChange={(value) => onChange("phone", value)}
+            defaultCountry="us"
+            placeholder="(555) 123-4567"
+          />
+        </div>
+
         {/* Company Name - Optional */}
         <div className="space-y-1.5">
           <Label htmlFor="companyName" className="text-sm text-muted-foreground">
@@ -93,19 +106,6 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
             value={data.companyName}
             onChange={(e) => onChange("companyName", e.target.value)}
             className="bg-background border-border/50 focus:border-accent"
-          />
-        </div>
-
-        {/* Phone */}
-        <div className="space-y-1.5">
-          <Label htmlFor="phone" className="text-sm text-muted-foreground">
-            Phone Number <span className="text-accent">*</span>
-          </Label>
-          <PhoneInput
-            value={data.phone}
-            onChange={(value) => onChange("phone", value)}
-            defaultCountry="us"
-            placeholder="(555) 123-4567"
           />
         </div>
       </div>
