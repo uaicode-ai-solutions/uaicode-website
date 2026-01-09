@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import WizardLayout from "@/components/planningmysaas/wizard/WizardLayout";
 import StepYourInfo from "@/components/planningmysaas/wizard/StepYourInfo";
 import StepYourIdea from "@/components/planningmysaas/wizard/StepYourIdea";
@@ -75,6 +75,7 @@ const getSavedData = (): { data: WizardData; currentStep: number } => {
 };
 
 const PmsWizard = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const selectedPlan = searchParams.get("plan") || "starter";
   const totalSteps = 5;
@@ -162,8 +163,13 @@ const PmsWizard = () => {
     // Show success toast
     toast({
       title: "🎉 Submission Successful!",
-      description: "Your SaaS validation report is being generated. We'll send it to your email shortly.",
+      description: "Your SaaS validation report is ready! Redirecting...",
     });
+
+    // Navigate to dashboard after a brief delay
+    setTimeout(() => {
+      navigate("/planningmysaas/dashboard");
+    }, 1500);
   };
 
   const renderStep = () => {
