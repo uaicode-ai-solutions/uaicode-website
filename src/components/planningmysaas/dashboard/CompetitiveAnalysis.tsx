@@ -7,7 +7,7 @@ const CompetitiveAnalysis = () => (
   <div className="space-y-6">
     <div className="flex items-center gap-3">
       <div className="p-2 rounded-lg bg-accent/10"><Users className="h-5 w-5 text-accent" /></div>
-      <div><h2 className="text-2xl font-bold text-foreground">Competitive Analysis</h2><p className="text-muted-foreground">Know your competition</p></div>
+      <div><h2 className="text-lg font-semibold text-foreground">Competitive Analysis</h2><p className="text-sm text-muted-foreground">Know your competition</p></div>
     </div>
     <div className="grid gap-4">
       {competitorsData.map((c, i) => (

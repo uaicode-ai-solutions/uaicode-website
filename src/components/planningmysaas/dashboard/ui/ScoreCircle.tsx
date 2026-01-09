@@ -19,9 +19,9 @@ const ScoreCircle = ({ score, label, color = "accent", size = "md" }: ScoreCircl
   };
 
   const sizeMap = {
-    sm: { container: "w-16 h-16", text: "text-lg", label: "text-[10px]" },
-    md: { container: "w-20 h-20", text: "text-xl", label: "text-xs" },
-    lg: { container: "w-24 h-24", text: "text-2xl", label: "text-xs" },
+    sm: { container: "w-12 h-12", text: "text-sm", label: "text-[9px]" },
+    md: { container: "w-14 h-14", text: "text-base", label: "text-[10px]" },
+    lg: { container: "w-16 h-16", text: "text-lg", label: "text-[10px]" },
   };
 
   return (

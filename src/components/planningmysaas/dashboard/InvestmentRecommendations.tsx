@@ -9,7 +9,7 @@ const InvestmentRecommendations = () => {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10"><TrendingUp className="h-5 w-5 text-accent" /></div>
-        <div><h2 className="text-2xl font-bold text-foreground">Investment Recommendations</h2><p className="text-muted-foreground">Where to allocate your budget</p></div>
+        <div><h2 className="text-lg font-semibold text-foreground">Investment Recommendations</h2><p className="text-sm text-muted-foreground">Where to allocate your budget</p></div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="bg-card/50 border-border/50"><CardContent className="pt-6 text-center"><DollarSign className="h-5 w-5 mx-auto text-accent mb-2" /><div className="text-xl font-bold text-foreground">{monthlyMarketing}</div><div className="text-xs text-muted-foreground">Monthly Marketing</div></CardContent></Card>

@@ -4,20 +4,20 @@ import { screenMockups } from "@/lib/dashboardMockData";
 import { Badge } from "@/components/ui/badge";
 
 const ScreenMockups = () => (
-  <div className="space-y-8">
+  <div className="space-y-6">
     {/* Section Header */}
-    <div className="flex items-center gap-4">
-      <div className="p-3 rounded-xl icon-container-premium">
-        <Layout className="h-6 w-6 text-accent" />
+    <div className="flex items-center gap-3">
+      <div className="p-2 rounded-lg icon-container-premium">
+        <Layout className="h-5 w-5 text-accent" />
       </div>
       <div>
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground">Screen Mockups</h2>
-        <p className="text-muted-foreground">Key screens for your application</p>
+        <h2 className="text-lg font-semibold text-foreground">Screen Mockups</h2>
+        <p className="text-sm text-muted-foreground">Key screens for your application</p>
       </div>
     </div>
 
     {/* Mockups Grid */}
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
       {screenMockups.map((mockup, index) => (
         <Card 
           key={index} 
@@ -27,11 +27,11 @@ const ScreenMockups = () => (
             {/* Screen Preview Area */}
             <div className="aspect-video bg-gradient-to-br from-muted/30 via-muted/10 to-transparent relative overflow-hidden">
               {/* Device frame */}
-              <div className="absolute inset-4 rounded-lg border border-border/50 bg-background/50 backdrop-blur-sm flex items-center justify-center group-hover:border-accent/30 transition-colors">
+              <div className="absolute inset-3 rounded-md border border-border/50 bg-background/50 backdrop-blur-sm flex items-center justify-center group-hover:border-accent/30 transition-colors">
                 {mockup.category === "Mobile" ? (
-                  <Smartphone className="h-12 w-12 text-muted-foreground/30 group-hover:text-accent/50 transition-colors" />
+                  <Smartphone className="h-8 w-8 text-muted-foreground/30 group-hover:text-accent/50 transition-colors" />
                 ) : (
-                  <Monitor className="h-12 w-12 text-muted-foreground/30 group-hover:text-accent/50 transition-colors" />
+                  <Monitor className="h-8 w-8 text-muted-foreground/30 group-hover:text-accent/50 transition-colors" />
                 )}
               </div>
               {/* Gradient overlay */}
@@ -39,32 +39,32 @@ const ScreenMockups = () => (
             </div>
 
             {/* Content */}
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-foreground group-hover:text-accent transition-colors">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-sm text-foreground group-hover:text-accent transition-colors">
                   {mockup.name}
                 </h3>
-                <Badge variant="outline" className="text-xs border-border/50">
+                <Badge variant="outline" className="text-[10px] border-border/50">
                   {mockup.category}
                 </Badge>
               </div>
               
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
                 {mockup.description}
               </p>
 
               {/* Features Tags */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1">
                 {mockup.features.slice(0, 3).map((feature, idx) => (
                   <span 
                     key={idx} 
-                    className="text-xs px-2 py-1 rounded-full bg-accent/10 text-accent border border-accent/20"
+                    className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20"
                   >
                     {feature}
                   </span>
                 ))}
                 {mockup.features.length > 3 && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-muted/50 text-muted-foreground">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted/50 text-muted-foreground">
                     +{mockup.features.length - 3}
                   </span>
                 )}

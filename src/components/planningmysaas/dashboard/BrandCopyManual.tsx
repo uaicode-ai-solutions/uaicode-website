@@ -9,7 +9,7 @@ const BrandCopyManual = () => {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10"><MessageSquare className="h-5 w-5 text-accent" /></div>
-        <div><h2 className="text-2xl font-bold text-foreground">Brand Copy Manual</h2><p className="text-muted-foreground">Voice, tone, and messaging guidelines for {brandName}</p></div>
+        <div><h2 className="text-lg font-semibold text-foreground">Brand Copy Manual</h2><p className="text-sm text-muted-foreground">Voice, tone, and messaging guidelines for {brandName}</p></div>
       </div>
       <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
         <CardContent className="pt-6">

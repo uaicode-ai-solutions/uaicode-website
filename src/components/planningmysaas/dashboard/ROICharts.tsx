@@ -7,7 +7,7 @@ const ROICharts = () => (
   <div className="space-y-6">
     <div className="flex items-center gap-3">
       <div className="p-2 rounded-lg bg-accent/10"><TrendingUp className="h-5 w-5 text-accent" /></div>
-      <div><h2 className="text-2xl font-bold text-foreground">ROI & Growth Analysis</h2><p className="text-muted-foreground">Financial projections and break-even analysis</p></div>
+      <div><h2 className="text-lg font-semibold text-foreground">ROI & Growth Analysis</h2><p className="text-sm text-muted-foreground">Financial projections and break-even analysis</p></div>
     </div>
     <Card className="bg-card/50 border-border/50">
       <CardHeader><CardTitle className="text-lg">ROI Estimate (12 Months)</CardTitle></CardHeader>
