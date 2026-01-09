@@ -251,84 +251,81 @@ const PmsSampleReport = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="p-6 md:p-8 relative min-h-[480px] pb-32">
-              {/* Content */}
-              <div className="relative z-10">
-                <h3 className="text-2xl font-bold text-foreground mb-6">
-                  {currentContent.title}
-                </h3>
-                
-                {activeTab === "brand" ? (
-                  /* Brand Assets Special Layout */
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <AssetPreview count={3} label="Logo Variations" icon={Palette} />
-                      <AssetPreview count={5} label="Product Mockups" icon={Layers} />
-                      <AssetPreview count={1} label="Landing Template" icon={FileText} />
+            <div className="p-6 md:p-8">
+              <h3 className="text-2xl font-bold text-foreground mb-6">
+                {currentContent.title}
+              </h3>
+              
+              {activeTab === "brand" ? (
+                /* Brand Assets Special Layout */
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <AssetPreview count={3} label="Logo Variations" icon={Palette} />
+                    <AssetPreview count={5} label="Product Mockups" icon={Layers} />
+                    <AssetPreview count={1} label="Landing Template" icon={FileText} />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="glass-premium rounded-xl p-4 border border-border/50 animate-fade-in" style={{ animationDelay: "300ms" }}>
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">Color Palette</span>
+                      <ColorPalettePreview />
+                      <p className="text-xs text-muted-foreground mt-2">Primary + 4 accent colors</p>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="glass-premium rounded-xl p-4 border border-border/50 animate-fade-in" style={{ animationDelay: "300ms" }}>
-                        <span className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">Color Palette</span>
-                        <ColorPalettePreview />
-                        <p className="text-xs text-muted-foreground mt-2">Primary + 4 accent colors</p>
+                    <div className="glass-premium rounded-xl p-4 border border-border/50 animate-fade-in" style={{ animationDelay: "400ms" }}>
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">Typography</span>
+                      <div className="space-y-1">
+                        <p className="text-lg font-bold text-foreground">Display Font</p>
+                        <p className="text-sm text-muted-foreground">Body Font Style</p>
                       </div>
-                      
-                      <div className="glass-premium rounded-xl p-4 border border-border/50 animate-fade-in" style={{ animationDelay: "400ms" }}>
-                        <span className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">Typography</span>
-                        <div className="space-y-1">
-                          <p className="text-lg font-bold text-foreground">Display Font</p>
-                          <p className="text-sm text-muted-foreground">Body Font Style</p>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">Headers + Body fonts included</p>
-                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Headers + Body fonts included</p>
                     </div>
-                    
-                    <div className="glass-premium rounded-xl p-4 border border-border/50 animate-fade-in" style={{ animationDelay: "500ms" }}>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-xs text-muted-foreground uppercase tracking-wider">Complete Package</span>
-                          <p className="text-lg font-bold text-foreground mt-1">All assets in one download</p>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
-                          <Download className="w-6 h-6 text-accent" />
-                        </div>
+                  </div>
+                  
+                  <div className="glass-premium rounded-xl p-4 border border-border/50 animate-fade-in" style={{ animationDelay: "500ms" }}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wider">Complete Package</span>
+                        <p className="text-lg font-bold text-foreground mt-1">All assets in one download</p>
+                      </div>
+                      <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
+                        <Download className="w-6 h-6 text-accent" />
                       </div>
                     </div>
                   </div>
-                ) : (
-                  /* Standard Metrics Grid */
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {currentContent.metrics.map((metric, index) => (
-                      <MetricCard 
-                        key={index}
-                        label={metric.label}
-                        value={metric.value}
-                        description={metric.description}
-                        type={metric.type}
-                        icon={metric.icon}
-                        delay={index * 100}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Blur Overlay - Fixed positioning */}
-              <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-card via-card/95 to-transparent flex flex-col items-center justify-center z-20">
-                <div className="flex items-center gap-2 text-muted-foreground mb-4">
-                  <Lock className="w-5 h-5 text-accent" />
-                  <span className="text-sm">Full report unlocked after purchase</span>
                 </div>
-                <Button
-                  size="lg"
-                  className="bg-accent hover:bg-accent/90 text-background font-bold glow-white"
-                  onClick={() => scrollToSection("pricing")}
-                >
-                  Unlock Full Report
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+              ) : (
+                /* Standard Metrics Grid */
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {currentContent.metrics.map((metric, index) => (
+                    <MetricCard 
+                      key={index}
+                      label={metric.label}
+                      value={metric.value}
+                      description={metric.description}
+                      type={metric.type}
+                      icon={metric.icon}
+                      delay={index * 100}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* CTA Footer - Outside content container */}
+            <div className="border-t border-border/50 p-6 md:p-8 flex flex-col items-center gap-4 bg-muted/30">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Lock className="w-5 h-5 text-accent" />
+                <span className="text-sm">Full report unlocked after purchase</span>
               </div>
+              <Button
+                size="lg"
+                className="bg-accent hover:bg-accent/90 text-background font-bold glow-white w-full sm:w-auto"
+                onClick={() => scrollToSection("pricing")}
+              >
+                Unlock Full Report
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
             </div>
           </div>
         </div>
