@@ -139,6 +139,11 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
   const calculateComplexity = () => {
     let score = 0;
     let maxScore = 0;
+    const selectedByTier: Record<string, number> = {
+      essential: 0,
+      advanced: 0,
+      enterprise: 0,
+    };
 
     tiers.forEach((tier) => {
       const weight = TIER_WEIGHTS[tier.id];
@@ -148,23 +153,46 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
       const selectedInTier = tier.features.filter((f) =>
         data.selectedFeatures.includes(f.id)
       ).length;
+      
+      selectedByTier[tier.id] = selectedInTier;
       score += selectedInTier * weight;
     });
 
     const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
-    return { score, maxScore, percentage };
+    return { score, maxScore, percentage, selectedByTier };
   };
 
-  const getComplexityLevel = (percentage: number) => {
+  const getComplexityLevel = (
+    percentage: number,
+    selectedByTier: Record<string, number>
+  ) => {
     if (percentage === 0) return { label: "No Features", color: "gray" };
+    
+    const hasEnterprise = selectedByTier.enterprise > 0;
+    const hasAdvanced = selectedByTier.advanced > 0;
+    
+    // Se tem Enterprise, mínimo é High
+    if (hasEnterprise) {
+      if (percentage > 80) return { label: "Very High", color: "red" };
+      return { label: "High", color: "orange" };
+    }
+    
+    // Se tem Advanced, mínimo é Medium
+    if (hasAdvanced) {
+      if (percentage > 80) return { label: "Very High", color: "red" };
+      if (percentage > 60) return { label: "High", color: "orange" };
+      return { label: "Medium", color: "yellow" };
+    }
+    
+    // Apenas Essential - usa porcentagem normal
     if (percentage <= 30) return { label: "Low", color: "green" };
     if (percentage <= 60) return { label: "Medium", color: "yellow" };
     if (percentage <= 80) return { label: "High", color: "orange" };
     return { label: "Very High", color: "red" };
   };
 
-  const { percentage } = calculateComplexity();
-  const complexityLevel = getComplexityLevel(percentage);
+  const { percentage, selectedByTier } = calculateComplexity();
+  const complexityLevel = getComplexityLevel(percentage, selectedByTier);
 
   return (
     <TooltipProvider>
