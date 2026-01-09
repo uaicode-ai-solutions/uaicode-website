@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 interface ScoreCircleProps {
   score: number;
   label: string;
-  color?: "success" | "warning" | "error" | "accent";
+  color?: "accent" | "muted";
   size?: "sm" | "md" | "lg";
 }
 
@@ -12,10 +12,8 @@ const ScoreCircle = ({ score, label, color = "accent", size = "md" }: ScoreCircl
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   const colorMap = {
-    success: { stroke: "stroke-green-500", text: "text-green-500", bg: "bg-green-500/10" },
-    warning: { stroke: "stroke-amber-500", text: "text-amber-500", bg: "bg-amber-500/10" },
-    error: { stroke: "stroke-red-500", text: "text-red-500", bg: "bg-red-500/10" },
     accent: { stroke: "stroke-accent", text: "text-accent", bg: "bg-accent/10" },
+    muted: { stroke: "stroke-muted-foreground", text: "text-muted-foreground", bg: "bg-muted/10" },
   };
 
   const sizeMap = {
