@@ -1,75 +1,100 @@
-import { Label } from "@/components/ui/label";
-import SelectableCard from "./SelectableCard";
-import { cn } from "@/lib/utils";
-import {
-  Target,
-  Rocket,
-  TrendingUp,
-  Calendar,
-  User,
-  Mail,
-  Phone,
-  Lightbulb,
-  Building2,
-  Users,
-  CheckCircle,
+import { 
+  RefreshCw, 
+  DollarSign, 
+  Users, 
+  Zap, 
+  Lightbulb, 
+  HelpCircle,
+  Target
 } from "lucide-react";
+import SelectableCard from "./SelectableCard";
 
 const goals = [
-  { id: "validate", title: "Validate Idea", description: "Test market demand first", icon: Target },
-  { id: "launch", title: "Launch MVP", description: "Build and ship quickly", icon: Rocket },
-  { id: "scale", title: "Scale Product", description: "Grow existing solution", icon: TrendingUp },
+  { 
+    id: "replace-manual", 
+    title: "Replace manual processes", 
+    description: "Automate existing business workflows", 
+    icon: RefreshCw 
+  },
+  { 
+    id: "new-revenue", 
+    title: "Create a new revenue stream", 
+    description: "Build a new product to sell", 
+    icon: DollarSign 
+  },
+  { 
+    id: "serve-customers", 
+    title: "Serve customers in a new way", 
+    description: "Improve customer experience", 
+    icon: Users 
+  },
+  { 
+    id: "disrupt-market", 
+    title: "Disrupt an existing market", 
+    description: "Challenge established players", 
+    icon: Zap 
+  },
+  { 
+    id: "solve-problem", 
+    title: "Solve a problem I personally face", 
+    description: "Scratch your own itch", 
+    icon: Lightbulb 
+  },
+  { 
+    id: "other", 
+    title: "Other", 
+    description: "Something different", 
+    icon: HelpCircle 
+  },
+];
+
+const budgets = [
+  { id: "10k-25k", title: "$10K - $25K", description: "Basic MVP" },
+  { id: "25k-50k", title: "$25K - $50K", description: "Complete MVP" },
+  { id: "50k-100k", title: "$50K - $100K", description: "Robust product" },
+  { id: "100k+", title: "$100K+", description: "Enterprise solution" },
+  { id: "guidance", title: "I need guidance", description: "Help with budgeting" },
 ];
 
 const timelines = [
-  { id: "1month", label: "1 month" },
-  { id: "3months", label: "3 months" },
-  { id: "6months", label: "6 months" },
-  { id: "flexible", label: "Flexible" },
+  { id: "asap", label: "ASAP (within 3 months)" },
+  { id: "this-year", label: "This year (3-6 months)" },
+  { id: "next-year", label: "Next year (6-12 months)" },
+  { id: "flexible", label: "I'm flexible on timing" },
 ];
 
 interface StepGoalsProps {
   data: {
     goal: string;
+    budget: string;
     timeline: string;
   };
-  allData: {
-    fullName: string;
-    email: string;
-    phone: string;
-    saasType: string;
-    industry: string;
-    description: string;
-    customerTypes: string[];
-    marketSize: string;
-    selectedFeatures: string[];
-    selectedTier: string;
-    goal: string;
-    timeline: string;
-  };
-  selectedPlan?: string;
-  onChange: (field: string, value: string) => void;
+  onChange: (field: string, value: string | string[]) => void;
 }
 
-const StepGoals = ({ data, allData, selectedPlan, onChange }: StepGoalsProps) => {
+const StepGoals = ({ data, onChange }: StepGoalsProps) => {
   return (
-    <div className="space-y-10">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          Set your <span className="text-gradient-gold">goals</span>
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+          Set Your <span className="text-gradient-gold">Goals</span>
         </h2>
         <p className="text-muted-foreground">
-          What do you want to achieve?
+          Final step! Tell us about your objectives and timeline so we can provide accurate recommendations.
         </p>
       </div>
 
-      {/* Primary Goal */}
+      {/* Main Goal Section */}
       <div className="space-y-4">
-        <Label className="text-foreground text-lg">
-          Primary Goal <span className="text-accent">*</span>
-        </Label>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">
+            What's your primary goal? <span className="text-accent">*</span>
+          </h3>
+          <p className="text-sm text-muted-foreground">Select the main objective for your SaaS</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {goals.map((goal) => (
             <SelectableCard
               key={goal.id}
@@ -78,129 +103,84 @@ const StepGoals = ({ data, allData, selectedPlan, onChange }: StepGoalsProps) =>
               description={goal.description}
               selected={data.goal === goal.id}
               onClick={() => onChange("goal", goal.id)}
-              className="p-8"
             />
           ))}
         </div>
       </div>
 
-      {/* Timeline */}
+      {/* Budget Section */}
       <div className="space-y-4">
-        <Label className="text-foreground text-lg">
-          Timeline <span className="text-accent">*</span>
-        </Label>
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">
+            What's your estimated development budget? <span className="text-accent">*</span>
+          </h3>
+          <p className="text-sm text-muted-foreground">Select your estimated investment range</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {budgets.map((budget) => (
+            <button
+              key={budget.id}
+              type="button"
+              onClick={() => onChange("budget", budget.id)}
+              className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                data.budget === budget.id
+                  ? "border-accent bg-accent/10 shadow-md"
+                  : "border-border/50 hover:border-accent/50 hover:bg-muted/50"
+              }`}
+            >
+              <p className={`font-semibold ${
+                data.budget === budget.id ? "text-accent" : "text-foreground"
+              }`}>
+                {budget.title}
+              </p>
+              <p className="text-sm text-muted-foreground">{budget.description}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Timeline Section */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">
+            When do you plan to launch? <span className="text-accent">*</span>
+          </h3>
+          <p className="text-sm text-muted-foreground">When do you want to go live?</p>
+        </div>
+
         <div className="flex flex-wrap gap-3">
           {timelines.map((timeline) => (
             <button
               key={timeline.id}
               type="button"
               onClick={() => onChange("timeline", timeline.id)}
-              className={cn(
-                "px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2",
+              className={`px-4 py-2.5 rounded-full border-2 transition-all duration-200 text-sm font-medium ${
                 data.timeline === timeline.id
-                  ? "bg-accent text-background"
-                  : "glass-card border border-border/50 text-muted-foreground hover:border-accent/50 hover:text-foreground"
-              )}
+                  ? "border-accent bg-accent text-background shadow-md"
+                  : "border-border/50 text-muted-foreground hover:border-accent/50 hover:text-foreground"
+              }`}
             >
-              <Calendar className="w-4 h-4" />
               {timeline.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="space-y-4">
-        <Label className="text-foreground text-lg">Summary</Label>
-        <div className="glass-premium rounded-2xl p-6 border border-accent/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Personal Info */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-accent uppercase tracking-wider">
-                Personal Info
-              </h4>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">{allData.fullName || "Not provided"}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">{allData.email || "Not provided"}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">{allData.phone || "Not provided"}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* SaaS Details */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-accent uppercase tracking-wider">
-                SaaS Details
-              </h4>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Lightbulb className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground capitalize">
-                    {allData.saasType?.replace(/([A-Z])/g, " $1").trim() || "Not selected"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Building2 className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground capitalize">
-                    {allData.industry || "Not selected"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground capitalize">
-                    {allData.customerTypes?.length > 0 
-                      ? `${allData.customerTypes.length} customer type(s) selected`
-                      : "Not selected"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Selected Plan */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-accent uppercase tracking-wider">
-                Selected Plan
-              </h4>
-              <div className="flex items-center gap-2 text-sm">
-                <CheckCircle className="w-4 h-4 text-accent" />
-                <span className="text-foreground font-medium capitalize">
-                  {selectedPlan || "Not selected"}
-                </span>
-              </div>
-            </div>
-
-            {/* Features */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-accent uppercase tracking-wider">
-                Features
-              </h4>
-              <div className="flex items-center gap-2 text-sm">
-                <CheckCircle className="w-4 h-4 text-accent" />
-                <span className="text-foreground">
-                  {allData.selectedFeatures?.length || 0} features selected
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Description */}
-          {allData.description && (
-            <div className="mt-6 pt-6 border-t border-border/30">
-              <h4 className="text-sm font-medium text-accent uppercase tracking-wider mb-2">
-                Idea Description
-              </h4>
-              <p className="text-sm text-muted-foreground">{allData.description}</p>
-            </div>
-          )}
+      {/* CTA Container */}
+      <div className="rounded-2xl p-8 border border-accent/30 text-center bg-gradient-to-br from-accent/15 to-accent/5">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+          <Target className="w-8 h-8 text-accent" />
         </div>
+        
+        <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
+          Ready to see your personalized feasibility study?
+        </h3>
+        
+        <p className="text-muted-foreground max-w-lg mx-auto">
+          Our AI will analyze your responses and generate a comprehensive report 
+          with market analysis, technical feasibility, and financial projections.
+        </p>
       </div>
     </div>
   );
