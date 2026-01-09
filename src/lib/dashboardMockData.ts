@@ -1,5 +1,30 @@
 // Dashboard Mock Data - All data for the Planning My SaaS Dashboard
 
+// Project Info Data - Dados do projeto vindos do wizard
+export const projectInfoData = {
+  // Dados básicos do projeto (viriam do wizard)
+  projectName: "My Doctor Hub",
+  description: "SaaS para venda de produtos alimentares e de saúde como suplementos e alimentos funcionais, com foco em gestão de estoque e delivery para pequenos negócios",
+  
+  // Tipo e indústria (mapeados das seleções do wizard)
+  saasType: "E-commerce / Marketplace",
+  industry: "Healthcare & Wellness",
+  
+  // Mercado alvo
+  targetMarket: "Small Businesses",
+  marketSize: "Local/Regional",
+  
+  // Metadados do relatório
+  reportType: "AI-Generated Feasibility Report",
+  successRate: 94, // % de projetos similares entregues com sucesso
+  planType: "pro",
+  generatedAt: new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  }),
+};
+
 export const executiveSummaryData = {
   projectName: "SalesFlow AI",
   viabilityScore: 87,

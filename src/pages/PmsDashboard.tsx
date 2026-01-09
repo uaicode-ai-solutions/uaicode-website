@@ -21,9 +21,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { executiveSummaryData } from "@/lib/dashboardMockData";
+import { projectInfoData } from "@/lib/dashboardMockData";
 
 // Dashboard section components
+import DashboardHero from "@/components/planningmysaas/dashboard/DashboardHero";
 import DashboardExecutiveSummary from "@/components/planningmysaas/dashboard/ExecutiveSummary";
 import DashboardMarketOpportunity from "@/components/planningmysaas/dashboard/MarketOpportunity";
 import DashboardMarketAnalysis from "@/components/planningmysaas/dashboard/MarketAnalysis";
@@ -128,7 +129,7 @@ const PmsDashboard = () => {
               <ChevronLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-lg font-bold text-foreground">{executiveSummaryData.projectName}</h1>
+              <h1 className="text-lg font-bold text-foreground">{projectInfoData.projectName}</h1>
               <p className="text-xs text-muted-foreground">Launch Plan Dashboard</p>
             </div>
           </div>
@@ -233,6 +234,11 @@ const PmsDashboard = () => {
           "lg:ml-64"
         )}>
           <div className="max-w-5xl mx-auto px-4 lg:px-8 py-8 space-y-16">
+            {/* Project Hero Section */}
+            <section id="project-overview">
+              <DashboardHero />
+            </section>
+
             <section id="executive-summary">
               <DashboardExecutiveSummary />
             </section>
