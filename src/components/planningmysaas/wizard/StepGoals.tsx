@@ -40,7 +40,7 @@ interface StepGoalsProps {
     saasType: string;
     industry: string;
     description: string;
-    customerType: string;
+    customerTypes: string[];
     marketSize: string;
     selectedFeatures: string[];
     selectedTier: string;
@@ -156,7 +156,9 @@ const StepGoals = ({ data, allData, selectedPlan, onChange }: StepGoalsProps) =>
                 <div className="flex items-center gap-2 text-sm">
                   <Users className="w-4 h-4 text-muted-foreground" />
                   <span className="text-foreground capitalize">
-                    {allData.customerType || "Not selected"}
+                    {allData.customerTypes?.length > 0 
+                      ? `${allData.customerTypes.length} customer type(s) selected`
+                      : "Not selected"}
                   </span>
                 </div>
               </div>

@@ -1,60 +1,74 @@
 import { Label } from "@/components/ui/label";
 import SelectableCard from "./SelectableCard";
 import {
-  Rocket,
   Building,
   Building2,
-  Factory,
+  Landmark,
   User,
-  Briefcase,
-  Users,
-  TrendingUp,
-  BarChart3,
+  Rocket,
+  Heart,
+  MapPin,
+  Flag,
   Globe,
+  HelpCircle,
 } from "lucide-react";
 
 const customerTypes = [
-  { id: "startups", title: "Startups & Founders", description: "Early-stage companies", icon: Rocket },
   { id: "small", title: "Small Businesses", description: "1-50 employees", icon: Building },
-  { id: "midmarket", title: "Mid-Market", description: "51-500 employees", icon: Building2 },
-  { id: "enterprise", title: "Enterprise", description: "500+ employees", icon: Factory },
-  { id: "consumers", title: "Consumers", description: "Individual users", icon: User },
-  { id: "freelancers", title: "Freelancers", description: "Solo professionals", icon: Briefcase },
+  { id: "medium", title: "Medium Companies", description: "51-500 employees", icon: Building2 },
+  { id: "enterprise", title: "Large Enterprises", description: "500+ employees", icon: Landmark },
+  { id: "individual", title: "Individual Professionals", description: "Freelancers & consultants", icon: User },
+  { id: "startups", title: "Startups & Entrepreneurs", description: "Early-stage companies", icon: Rocket },
+  { id: "government", title: "Government/Non-profit", description: "Public sector organizations", icon: Heart },
 ];
 
 const marketSizes = [
-  { id: "niche", title: "Niche", description: "Less than 10K potential users", icon: Users },
-  { id: "growing", title: "Growing", description: "10K - 100K users", icon: TrendingUp },
-  { id: "established", title: "Established", description: "100K - 1M users", icon: BarChart3 },
-  { id: "massive", title: "Massive", description: "1M+ users", icon: Globe },
+  { id: "local", title: "Local/Regional", description: "under $1M", icon: MapPin },
+  { id: "national", title: "National", description: "$1M - $100M", icon: Flag },
+  { id: "global", title: "Global", description: "$100M+", icon: Globe },
+  { id: "unsure", title: "I'm not sure yet", description: "", icon: HelpCircle },
 ];
 
 interface StepTargetMarketProps {
   data: {
-    customerType: string;
+    customerTypes: string[];
     marketSize: string;
   };
-  onChange: (field: string, value: string) => void;
+  onChange: (field: string, value: string | string[]) => void;
 }
 
 const StepTargetMarket = ({ data, onChange }: StepTargetMarketProps) => {
+  const handleCustomerTypeToggle = (typeId: string) => {
+    const currentTypes = data.customerTypes;
+    if (currentTypes.includes(typeId)) {
+      onChange("customerTypes", currentTypes.filter(t => t !== typeId));
+    } else {
+      onChange("customerTypes", [...currentTypes, typeId]);
+    }
+  };
+
   return (
     <div className="space-y-10">
       {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          Define your <span className="text-gradient-gold">target market</span>
+          Define Your <span className="text-gradient-gold">Target Market</span>
         </h2>
         <p className="text-muted-foreground">
-          Who are you building this for?
+          Help us understand who your ideal customers are and the size of your market opportunity.
         </p>
       </div>
 
-      {/* Ideal Customer */}
+      {/* Ideal Customer - Multi-Select */}
       <div className="space-y-4">
-        <Label className="text-foreground text-lg">
-          Ideal Customer <span className="text-accent">*</span>
-        </Label>
+        <div>
+          <Label className="text-foreground text-lg">
+            Who is your ideal customer? <span className="text-accent">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select all that apply
+          </p>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {customerTypes.map((type) => (
             <SelectableCard
@@ -62,18 +76,23 @@ const StepTargetMarket = ({ data, onChange }: StepTargetMarketProps) => {
               icon={type.icon}
               title={type.title}
               description={type.description}
-              selected={data.customerType === type.id}
-              onClick={() => onChange("customerType", type.id)}
+              selected={data.customerTypes.includes(type.id)}
+              onClick={() => handleCustomerTypeToggle(type.id)}
             />
           ))}
         </div>
       </div>
 
-      {/* Market Size */}
+      {/* Market Size - Single Select */}
       <div className="space-y-4">
-        <Label className="text-foreground text-lg">
-          Market Size <span className="text-accent">*</span>
-        </Label>
+        <div>
+          <Label className="text-foreground text-lg">
+            What's your estimated addressable market size? <span className="text-accent">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select the option that best fits your target market
+          </p>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {marketSizes.map((size) => (
             <SelectableCard
