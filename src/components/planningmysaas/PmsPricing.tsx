@@ -20,6 +20,7 @@ const plans = [
   {
     name: "Pro",
     price: "$79",
+    originalPrice: "$99",
     period: "one-time",
     description: "Everything you need to launch",
     features: [
@@ -31,8 +32,9 @@ const plans = [
       "Landing Page Blueprint",
       "Priority Support",
     ],
-    cta: "Get Pro",
+    cta: "Get Pro — Best Value",
     popular: true,
+    badge: "SAVE 20%",
   },
   {
     name: "Enterprise",
@@ -110,12 +112,22 @@ const PmsPricing = () => {
                   <h3 className="text-2xl font-bold text-foreground mb-2">
                     {plan.name}
                   </h3>
-                  <div className="flex items-baseline justify-center gap-1 mb-2">
+                  <div className="flex items-baseline justify-center gap-2 mb-2">
+                    {(plan as any).originalPrice && (
+                      <span className="text-2xl text-muted-foreground line-through">
+                        {(plan as any).originalPrice}
+                      </span>
+                    )}
                     <span className={`text-5xl font-bold ${plan.popular ? 'text-gradient-gold' : 'text-foreground'}`}>
                       {plan.price}
                     </span>
                     <span className="text-muted-foreground">/{plan.period}</span>
                   </div>
+                  {(plan as any).badge && (
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-accent/20 text-accent text-xs font-bold mb-2">
+                      {(plan as any).badge}
+                    </div>
+                  )}
                   <p className="text-sm text-muted-foreground">
                     {plan.description}
                   </p>

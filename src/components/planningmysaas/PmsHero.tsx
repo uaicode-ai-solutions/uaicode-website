@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle, Sparkles, Zap, Clock } from "lucide-react";
+import { ArrowRight, CheckCircle, Sparkles, Zap, Clock, ChevronDown } from "lucide-react";
+import heroDashboard from "@/assets/pms-hero-dashboard.webp";
 
 const PmsHero = () => {
   const scrollToSection = (id: string) => {
@@ -10,8 +11,16 @@ const PmsHero = () => {
   };
 
   return (
-    <section id="hero" className="pt-32 pb-20 px-4">
-      <div className="container mx-auto max-w-6xl">
+    <section id="hero" className="pt-32 pb-20 px-4 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 mesh-gradient opacity-50" />
+      
+      {/* Floating Orbs */}
+      <div className="absolute top-40 left-10 w-64 h-64 bg-accent/10 rounded-full blur-3xl animate-float-slow" />
+      <div className="absolute top-60 right-10 w-80 h-80 bg-accent/5 rounded-full blur-3xl animate-float-delayed" />
+      <div className="absolute bottom-40 left-1/4 w-48 h-48 bg-accent/10 rounded-full blur-3xl animate-float" />
+      
+      <div className="container mx-auto max-w-6xl relative z-10">
         <div className="text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-8 animate-fade-in">
@@ -36,11 +45,11 @@ const PmsHero = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-in">
             <Button
               size="lg"
-              className="bg-accent hover:bg-accent/90 text-background font-semibold text-lg px-8 py-6 glow-white"
+              className="bg-accent hover:bg-accent/90 text-background font-semibold text-lg px-8 py-6 glow-white group"
               onClick={() => scrollToSection("pricing")}
             >
               Validate My Idea
-              <ArrowRight className="ml-2 w-5 h-5" />
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button
               size="lg"
@@ -53,36 +62,54 @@ const PmsHero = () => {
           </div>
 
           {/* Trust Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 animate-fade-in">
-            <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 mb-16 animate-fade-in">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
               <CheckCircle className="w-5 h-5 text-accent" />
-              <span className="text-sm">500+ Ideas Validated</span>
+              <span className="text-sm text-muted-foreground font-medium">2,500+ Ideas Validated</span>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
               <Clock className="w-5 h-5 text-accent" />
-              <span className="text-sm">Reports in 5 Minutes</span>
+              <span className="text-sm text-muted-foreground font-medium">Reports in 5 Minutes</span>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
               <Zap className="w-5 h-5 text-accent" />
-              <span className="text-sm">AI-Powered Insights</span>
+              <span className="text-sm text-muted-foreground font-medium">AI-Powered Insights</span>
             </div>
           </div>
 
-          {/* Product Mockup Placeholder */}
-          <div className="mt-16 relative animate-fade-in">
-            <div className="glass-card rounded-2xl p-8 max-w-4xl mx-auto border border-accent/20">
-              <div className="aspect-video bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-20 rounded-2xl bg-accent/20 flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="w-10 h-10 text-accent" />
-                  </div>
-                  <p className="text-muted-foreground">Interactive Demo Coming Soon</p>
+          {/* Product Mockup */}
+          <div className="relative animate-fade-in">
+            {/* Glow Effect */}
+            <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-3xl scale-90" />
+            
+            <div className="relative glass-premium rounded-2xl p-3 border border-accent/20 max-w-4xl mx-auto">
+              <img 
+                src={heroDashboard} 
+                alt="Planning My SaaS Dashboard Preview"
+                className="w-full h-auto rounded-xl"
+              />
+              
+              {/* Floating Badges */}
+              <div className="absolute -top-4 -right-4 md:top-8 md:-right-8 px-4 py-2 rounded-xl glass-premium border border-accent/30 animate-float">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-accent animate-pulse" />
+                  <span className="text-sm font-medium text-foreground">Market Validated</span>
+                </div>
+              </div>
+              
+              <div className="absolute -bottom-4 -left-4 md:bottom-8 md:-left-8 px-4 py-2 rounded-xl glass-premium border border-accent/30 animate-float-delayed">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold text-gradient-gold">94%</span>
+                  <span className="text-xs text-muted-foreground">Viability<br/>Score</span>
                 </div>
               </div>
             </div>
-            {/* Decorative Elements */}
-            <div className="absolute -top-4 -left-4 w-24 h-24 bg-accent/20 rounded-full blur-3xl" />
-            <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-accent/10 rounded-full blur-3xl" />
+          </div>
+
+          {/* Scroll Indicator */}
+          <div className="mt-16 flex flex-col items-center animate-bounce">
+            <span className="text-sm text-muted-foreground mb-2">Scroll to explore</span>
+            <ChevronDown className="w-6 h-6 text-accent" />
           </div>
         </div>
       </div>
