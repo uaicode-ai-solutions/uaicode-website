@@ -2,13 +2,23 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Sparkles, Mail, Twitter, Linkedin, Github, Loader2 } from "lucide-react";
+import { Sparkles, Mail, Twitter, Linkedin, Github, Loader2, Zap, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import NewsletterSuccessDialog from "@/components/newsletter/NewsletterSuccessDialog";
+
+import sarahJohnsonImg from "@/assets/testimonial-sarah-johnson.webp";
+import emmaThompsonImg from "@/assets/testimonial-emma-thompson.webp";
+import johnSmithImg from "@/assets/testimonial-john-smith.webp";
+
+const founderAvatars = [
+  { src: sarahJohnsonImg, alt: "Sarah" },
+  { src: emmaThompsonImg, alt: "Emma" },
+  { src: johnSmithImg, alt: "John" },
+];
 
 const newsletterSchema = z.object({
   email: z.string()
@@ -104,47 +114,103 @@ const PmsFooter = () => {
         <div className="absolute inset-0 mesh-gradient opacity-20" />
 
         <div className="container mx-auto max-w-7xl relative z-10">
-          {/* Newsletter Section */}
-          <div className="glass-premium rounded-2xl border border-white/10 p-8 md:p-12 mb-16 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/30 mb-6">
-              <Mail className="w-4 h-4 text-accent" />
-              <span className="text-sm font-medium text-accent">Stay Updated</span>
+        {/* Newsletter Section - Premium Design */}
+        <div className="relative mb-16">
+          {/* Background Glow */}
+          <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-accent/5 to-accent/10 blur-3xl rounded-3xl scale-95" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent/20 blur-[100px] rounded-full" />
+          
+          <div className="relative glass-premium rounded-3xl border border-accent/20 p-10 md:p-16 text-center overflow-hidden">
+            {/* Decorative Elements */}
+            <div className="absolute top-6 right-6 md:top-10 md:right-10">
+              <Sparkles className="w-8 h-8 text-accent/40 animate-pulse" />
+            </div>
+            <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10">
+              <Star className="w-6 h-6 text-accent/30" />
+            </div>
+            <div className="absolute top-1/2 right-8 -translate-y-1/2 hidden lg:block">
+              <Zap className="w-5 h-5 text-accent/20" />
             </div>
             
-            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Get SaaS Tips & Updates
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-accent/20 to-accent/10 border border-accent/30 mb-8 shadow-lg shadow-accent/10">
+              <Mail className="w-4 h-4 text-accent" />
+              <span className="text-sm font-semibold text-accent">Newsletter</span>
+            </div>
+            
+            {/* Headline with Gradient */}
+            <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+              <span className="text-foreground">Get Weekly</span>
+              <br />
+              <span className="text-gradient-gold">SaaS Insights</span>
             </h3>
-            <p className="text-muted-foreground max-w-md mx-auto mb-8">
-              Join 5,000+ founders getting weekly insights on building and launching successful SaaS products.
+            
+            {/* Description */}
+            <p className="text-muted-foreground max-w-lg mx-auto mb-10 text-lg leading-relaxed">
+              Join <span className="text-accent font-semibold">5,000+</span> founders getting exclusive tips on building, 
+              launching, and scaling successful SaaS products.
             </p>
 
-            <form onSubmit={handleSubmit(onNewsletterSubmit)} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            {/* Form with Premium Style */}
+            <form onSubmit={handleSubmit(onNewsletterSubmit)} className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto mb-10">
               <div className="flex-1">
                 <Input
                   type="email"
                   {...register("email")}
-                  placeholder="Enter your email"
-                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent/50 transition-colors h-auto"
+                  placeholder="Enter your email address"
+                  className="w-full px-5 py-4 rounded-xl glass-premium border border-white/20 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20 transition-all h-auto text-base"
                   disabled={isSubmitting}
                   maxLength={255}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-xs mt-1 text-left">{errors.email.message}</p>
+                  <p className="text-red-500 text-xs mt-2 text-left">{errors.email.message}</p>
                 )}
               </div>
               <Button 
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-accent hover:bg-accent/90 text-background font-bold px-8 py-3 rounded-xl h-auto"
+                className="bg-gradient-to-r from-[hsl(45,100%,55%)] to-[hsl(38,100%,50%)] hover:from-[hsl(45,100%,50%)] hover:to-[hsl(38,100%,45%)] text-background font-bold px-10 py-4 rounded-xl h-auto text-base shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:scale-[1.02] transition-all"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  "Subscribe"
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Subscribe Free
+                  </>
                 )}
               </Button>
             </form>
+
+            {/* Social Proof with Avatars */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex -space-x-3">
+                {founderAvatars.map((avatar, i) => (
+                  <img 
+                    key={i} 
+                    src={avatar.src} 
+                    alt={avatar.alt}
+                    className="w-10 h-10 rounded-full border-2 border-background object-cover shadow-lg" 
+                  />
+                ))}
+                <div className="w-10 h-10 rounded-full border-2 border-background bg-accent/20 flex items-center justify-center text-xs font-bold text-accent shadow-lg">
+                  +5k
+                </div>
+              </div>
+              <div className="text-center sm:text-left">
+                <p className="text-sm text-muted-foreground">
+                  Trusted by <span className="text-accent font-semibold">5,000+</span> founders worldwide
+                </p>
+                <div className="flex items-center justify-center sm:justify-start gap-1 mt-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-accent text-accent" />
+                  ))}
+                  <span className="text-xs text-muted-foreground ml-1">4.9/5</span>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
 
           {/* Footer Content */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
