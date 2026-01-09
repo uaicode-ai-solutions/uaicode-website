@@ -157,21 +157,6 @@ const PmsTestimonials = () => {
           </Carousel>
         </div>
 
-        {/* Stats */}
-        <div className="mt-16 flex flex-wrap justify-center gap-8 md:gap-16">
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-gradient-gold">2,500+</div>
-            <div className="text-muted-foreground text-sm">Ideas Validated</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-gradient-gold">4.9/5</div>
-            <div className="text-muted-foreground text-sm">Average Rating</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-gradient-gold">98%</div>
-            <div className="text-muted-foreground text-sm">Would Recommend</div>
-          </div>
-        </div>
       </div>
     </section>
   );
