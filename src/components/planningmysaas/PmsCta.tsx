@@ -15,14 +15,14 @@ const PmsCta = () => {
       <div className="absolute inset-0 aurora-bg" />
       <div className="absolute inset-0 mesh-gradient" />
       
-      {/* Animated Orbs */}
+      {/* Animated Orbs - Using only accent/gold color */}
       <div className="absolute top-20 left-20 w-72 h-72 bg-accent/20 rounded-full blur-3xl animate-float-slow" />
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float-delayed" />
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float-delayed" />
 
       <div className="container mx-auto max-w-5xl relative z-10">
         <div className="relative rounded-3xl overflow-hidden">
-          {/* Animated Border */}
-          <div className="absolute -inset-[2px] rounded-3xl bg-gradient-to-r from-accent via-purple-500 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite]" />
+          {/* Animated Border - Gold only */}
+          <div className="absolute -inset-[2px] rounded-3xl bg-gradient-to-r from-accent via-yellow-500 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite]" />
           
           {/* Card Content */}
           <div className="relative glass-premium rounded-3xl p-8 md:p-12 lg:p-16 text-center border-0">
@@ -30,10 +30,10 @@ const PmsCta = () => {
             <div className="absolute top-8 left-8 text-accent/30">
               <Sparkles className="w-8 h-8" />
             </div>
-            <div className="absolute top-8 right-8 text-purple-500/30">
+            <div className="absolute top-8 right-8 text-accent/20">
               <Star className="w-6 h-6" />
             </div>
-            <div className="absolute bottom-8 left-12 text-purple-500/30">
+            <div className="absolute bottom-8 left-12 text-accent/20">
               <Star className="w-4 h-4" />
             </div>
             <div className="absolute bottom-12 right-16 text-accent/30">
@@ -75,8 +75,8 @@ const PmsCta = () => {
             {/* Trust Line */}
             <div className="flex flex-wrap items-center justify-center gap-8 mt-10">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-green-400" />
+                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-accent" />
                 </div>
                 <span className="text-sm">No credit card required</span>
               </div>
@@ -87,8 +87,8 @@ const PmsCta = () => {
                 <span className="text-sm">Results in under 5 minutes</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-purple-400" />
+                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-accent" />
                 </div>
                 <span className="text-sm">60-day money-back guarantee</span>
               </div>
