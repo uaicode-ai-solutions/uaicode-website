@@ -1064,10 +1064,12 @@ const Newsletter = () => {
         throw dbError;
       }
       
-      // Send welcome email
+      // Send welcome email (best-effort, don't block success)
       supabase.functions.invoke('send-newsletter-welcome', {
         body: { email: sanitizedEmail, source: 'newsletter_hero' }
-      }).catch(err => console.error('Welcome email error:', err));
+      }).then(({ error }) => {
+        if (error) console.error('Welcome email error:', error);
+      }).catch(err => console.error('Welcome email fetch error:', err));
 
       // Call the webhook
       fetch(

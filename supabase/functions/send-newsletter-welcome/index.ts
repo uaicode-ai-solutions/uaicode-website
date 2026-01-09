@@ -4,7 +4,9 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-session-id",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
 };
 
 interface NewsletterWelcomeRequest {
@@ -185,8 +187,10 @@ const generateWelcomeEmail = (email: string): string => {
 };
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("WELCOME_EMAIL_START", { method: req.method });
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   try {
@@ -218,6 +222,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await res.json();
 
     if (!res.ok) {
+      console.error("RESEND_ERROR", { status: res.status, body: emailResponse });
       throw new Error(emailResponse.message || "Failed to send email");
     }
 
