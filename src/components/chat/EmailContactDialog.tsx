@@ -43,9 +43,10 @@ type EmailContactFormData = z.infer<typeof emailContactSchema>;
 interface EmailContactDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  source?: string;
 }
 
-export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, onOpenChange }) => {
+export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, onOpenChange, source = 'website_uaicode' }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -80,7 +81,7 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
           email: sanitizedData.email,
           phone: sanitizedData.phone,
           message: sanitizedData.message,
-          source: 'email_contact_popup',
+          source,
         },
       });
 

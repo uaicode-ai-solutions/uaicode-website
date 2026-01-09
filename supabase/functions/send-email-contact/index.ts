@@ -14,7 +14,14 @@ interface ContactFormData {
   email: string;
   phone?: string;
   message: string;
+  source?: string;
 }
+
+const sourceLabels: Record<string, string> = {
+  'planningmysaas': '🚀 PlanningMySaaS',
+  'website_uaicode': '🌐 Website UaiCode',
+  'email_contact_popup': '💬 Email Contact Popup',
+};
 
 serve(async (req) => {
   console.log("=== SEND EMAIL CONTACT STARTED ===");
@@ -28,7 +35,8 @@ serve(async (req) => {
 
   try {
     const formData: ContactFormData = await req.json();
-    console.log("Form data received:", JSON.stringify({ name: formData.name, email: formData.email }));
+    const sourceLabel = sourceLabels[formData.source || 'website_uaicode'] || formData.source || 'Website';
+    console.log("Form data received:", JSON.stringify({ name: formData.name, email: formData.email, source: formData.source }));
 
     // Client confirmation email
     const clientRes = await fetch("https://api.resend.com/emails", {
@@ -90,14 +98,15 @@ serve(async (req) => {
         from: "Website UaiCode <no-reply@uaicode.ai>",
         to: ["hello@uaicode.ai"],
         reply_to: formData.email,
-        subject: `New contact via website - ${formData.name}`,
+        subject: `${sourceLabel} - New contact - ${formData.name}`,
         html: `
           <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #141414; padding: 0;">
             <div style="background: linear-gradient(135deg, #FACC15 0%, #EAB308 100%); padding: 24px; text-align: center;">
-              <h2 style="color: #141414; margin: 0; font-size: 20px;">📬 New Contact via Website</h2>
+              <h2 style="color: #141414; margin: 0; font-size: 20px;">📬 New Contact via ${sourceLabel}</h2>
             </div>
             <div style="padding: 30px;">
               <div style="background: #22272A; padding: 24px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 8px 0; color: #E5E5E5;"><strong style="color: #FACC15;">Source:</strong> ${sourceLabel}</p>
                 <p style="margin: 8px 0; color: #E5E5E5;"><strong style="color: #FACC15;">Name:</strong> ${formData.name}</p>
                 <p style="margin: 8px 0; color: #E5E5E5;"><strong style="color: #FACC15;">Email:</strong> <a href="mailto:${formData.email}" style="color: #FACC15;">${formData.email}</a></p>
                 ${formData.phone ? `<p style="margin: 8px 0; color: #E5E5E5;"><strong style="color: #FACC15;">Phone:</strong> ${formData.phone}</p>` : ''}
