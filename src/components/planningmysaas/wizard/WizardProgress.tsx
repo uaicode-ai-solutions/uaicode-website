@@ -17,13 +17,13 @@ const WizardProgress = ({ steps, currentStep, onStepClick }: WizardProgressProps
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
       <div className="flex items-center justify-between relative">
-        {/* Progress line background */}
-        <div className="absolute left-0 right-0 top-6 md:top-7 h-1 bg-border/20 rounded-full" />
+        {/* Progress line background - positioned between icons, not through them */}
+        <div className="absolute left-[10%] right-[10%] top-6 md:top-7 h-0.5 bg-border/30 rounded-full" />
         
-        {/* Progress line filled */}
+        {/* Progress line filled - calculates width based on the space between icons (80% of container) */}
         <div
-          className="absolute left-0 top-6 md:top-7 h-1 bg-gradient-to-r from-accent via-accent to-accent/80 rounded-full transition-all duration-700 ease-out"
-          style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+          className="absolute left-[10%] top-6 md:top-7 h-0.5 bg-gradient-to-r from-accent via-accent to-accent/80 rounded-full transition-all duration-700 ease-out"
+          style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 80}%` }}
         />
 
         {steps.map((step) => {
