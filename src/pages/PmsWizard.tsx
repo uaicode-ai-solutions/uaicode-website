@@ -8,6 +8,7 @@ import StepFeatures from "@/components/planningmysaas/wizard/StepFeatures";
 import StepGoals from "@/components/planningmysaas/wizard/StepGoals";
 import { useToast } from "@/hooks/use-toast";
 import { useConfetti } from "@/hooks/useConfetti";
+import { saveReport, generateReportId, StoredReport } from "@/lib/reportsStorage";
 
 interface WizardData {
   // Step 1: Your Info
@@ -148,14 +149,41 @@ const PmsWizard = () => {
   const handleSubmit = () => {
     if (!validateStep(currentStep)) return;
 
+    // Generate unique ID for this report
+    const reportId = generateReportId();
+    const now = new Date().toISOString();
+
+    // Create project name from description or saasType
+    const projectName = data.description.slice(0, 50) || 
+      (data.saasType === "other" ? data.saasTypeOther : data.saasType) || 
+      "Untitled Project";
+
+    // Create the report object
+    const newReport: StoredReport = {
+      id: reportId,
+      createdAt: now,
+      updatedAt: now,
+      planType: selectedPlan as "starter" | "pro" | "enterprise",
+      wizardData: { ...data },
+      reportData: {
+        projectName,
+        viabilityScore: Math.floor(Math.random() * 20) + 75, // 75-95 mock score
+        complexityScore: Math.floor(Math.random() * 30) + 50, // 50-80 mock score
+      },
+    };
+
+    // Save to localStorage
+    saveReport(newReport);
+
+    // Clear wizard draft data
+    localStorage.removeItem(STORAGE_KEY);
+
     // Log data for debugging
     console.log("Wizard submission:", {
+      reportId,
       selectedPlan,
       ...data,
     });
-
-    // Clear saved data after successful submission
-    localStorage.removeItem(STORAGE_KEY);
 
     // Fire confetti
     fireConfetti();
@@ -166,9 +194,9 @@ const PmsWizard = () => {
       description: "Your SaaS validation report is ready! Redirecting...",
     });
 
-    // Navigate to dashboard after a brief delay
+    // Navigate to dashboard with the new report ID
     setTimeout(() => {
-      navigate("/planningmysaas/dashboard");
+      navigate(`/planningmysaas/dashboard/${reportId}`);
     }, 1500);
   };
 
