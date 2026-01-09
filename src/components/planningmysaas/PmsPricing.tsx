@@ -146,7 +146,7 @@ const PmsPricing = () => {
                       <div className={`w-5 h-5 rounded-full ${plan.popular ? 'bg-accent' : 'bg-muted-foreground/30'} flex items-center justify-center flex-shrink-0 mt-0.5`}>
                         <Check className={`w-3 h-3 ${plan.popular ? 'text-background' : 'text-foreground'}`} />
                       </div>
-                      <span className={feature.startsWith("Everything in") && plan.popular ? "text-accent font-medium" : "text-muted-foreground"}>
+                      <span className={plan.popular ? "text-foreground" : "text-muted-foreground"}>
                         {feature}
                       </span>
                     </li>
