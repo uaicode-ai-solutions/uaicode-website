@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Shield, Zap, Sparkles, Star } from "lucide-react";
+import { ArrowRight, Shield, Zap, Rocket, CheckCircle } from "lucide-react";
 
 const PmsCta = () => {
   const scrollToSection = (id: string) => {
@@ -11,97 +11,76 @@ const PmsCta = () => {
 
   return (
     <section className="py-24 px-4 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 aurora-bg" />
-      <div className="absolute inset-0 mesh-gradient" />
+      {/* Background */}
+      <div className="absolute inset-0 mesh-gradient opacity-30" />
       
-      {/* Animated Orbs - Using only accent/gold color */}
-      <div className="absolute top-20 left-20 w-72 h-72 bg-accent/20 rounded-full blur-3xl animate-float-slow" />
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float-delayed" />
+      {/* Top Border Line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+      
+      {/* Subtle Orb */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 rounded-full blur-3xl" />
 
-      <div className="container mx-auto max-w-5xl relative z-10">
-        <div className="relative rounded-3xl overflow-hidden">
-          {/* Animated Border - Gold only */}
-          <div className="absolute -inset-[2px] rounded-3xl bg-gradient-to-r from-accent via-yellow-500 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite]" />
-          
-          {/* Card Content */}
-          <div className="relative glass-premium rounded-3xl p-8 md:p-12 lg:p-16 text-center border-0">
-            {/* Decorative Stars */}
-            <div className="absolute top-8 left-8 text-accent/30">
-              <Sparkles className="w-8 h-8" />
-            </div>
-            <div className="absolute top-8 right-8 text-accent/20">
-              <Star className="w-6 h-6" />
-            </div>
-            <div className="absolute bottom-8 left-12 text-accent/20">
-              <Star className="w-4 h-4" />
-            </div>
-            <div className="absolute bottom-12 right-16 text-accent/30">
-              <Sparkles className="w-6 h-6" />
-            </div>
+      <div className="container mx-auto max-w-4xl relative z-10 text-center">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-premium border border-accent/30 mb-8">
+          <Rocket className="w-4 h-4 text-accent" />
+          <span className="text-sm font-medium text-foreground">Start Your Journey</span>
+        </div>
 
-            {/* Headline */}
-            <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-6">
-              Ready to Turn Your Idea
-              <br />
-              <span className="text-gradient-gold">Into Reality?</span>
-            </h2>
+        {/* Headline */}
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+          Ready to Turn Your Idea
+          <br />
+          <span className="text-gradient-gold">Into Reality?</span>
+        </h2>
 
-            {/* Subheadline */}
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-              Join thousands of founders who validated their SaaS ideas before writing 
-              a single line of code. Your journey to success starts here.
-            </p>
+        {/* Subheadline */}
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
+          Join thousands of founders who validated their SaaS ideas before writing 
+          a single line of code. Your journey to success starts here.
+        </p>
 
-            {/* CTA Button */}
-            <Button
-              size="lg"
-              className="bg-accent hover:bg-accent/90 text-background font-bold text-lg px-12 py-7 rounded-xl glow-white group relative overflow-hidden"
-              onClick={() => scrollToSection("pricing")}
-            >
-              <span className="relative z-10 flex items-center">
-                Get Started — It's Free
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-accent via-yellow-400 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite] opacity-0 group-hover:opacity-100 transition-opacity" />
-            </Button>
+        {/* CTA Button */}
+        <Button
+          size="lg"
+          className="bg-accent hover:bg-accent/90 text-background font-bold text-lg px-10 py-6 rounded-xl group"
+          onClick={() => scrollToSection("pricing")}
+        >
+          Get Started — It's Free
+          <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+        </Button>
 
-            {/* Social Proof */}
-            <div className="flex flex-col items-center gap-6 mt-10">
-              {/* User Avatars */}
-              <div className="flex items-center gap-4">
-                <div className="flex -space-x-3">
-                  {["SC", "MR", "EW", "JP", "AC"].map((initials, i) => (
-                    <div
-                      key={i}
-                      className="w-10 h-10 rounded-full bg-accent/20 border-2 border-background flex items-center justify-center text-accent text-xs font-bold"
-                    >
-                      {initials}
-                    </div>
-                  ))}
-                </div>
-                <div className="text-left">
-                  <div className="text-foreground font-semibold">Join 2,500+ founders</div>
-                  <div className="text-sm text-muted-foreground">who validated their ideas</div>
-                </div>
+        {/* Trust Badges */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-10">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
+            <Shield className="w-4 h-4 text-accent" />
+            <span className="text-sm text-muted-foreground">No credit card required</span>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
+            <Zap className="w-4 h-4 text-accent" />
+            <span className="text-sm text-muted-foreground">Results in 5 minutes</span>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
+            <CheckCircle className="w-4 h-4 text-accent" />
+            <span className="text-sm text-muted-foreground">2,500+ Ideas Validated</span>
+          </div>
+        </div>
+
+        {/* Social Proof */}
+        <div className="flex items-center justify-center gap-4 mt-10">
+          <div className="flex -space-x-3">
+            {["SC", "MR", "EW", "JP", "AC"].map((initials, i) => (
+              <div
+                key={i}
+                className="w-10 h-10 rounded-full bg-accent/20 border-2 border-background flex items-center justify-center text-accent text-xs font-bold"
+              >
+                {initials}
               </div>
-              
-              {/* Trust Badges */}
-              <div className="flex flex-wrap items-center justify-center gap-6">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                    <Shield className="w-4 h-4 text-accent" />
-                  </div>
-                  <span className="text-sm">No credit card required</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-accent" />
-                  </div>
-                  <span className="text-sm">Results in under 5 minutes</span>
-                </div>
-              </div>
-            </div>
+            ))}
+          </div>
+          <div className="text-left">
+            <div className="text-foreground font-semibold">Join 2,500+ founders</div>
+            <div className="text-sm text-muted-foreground">who validated their ideas</div>
           </div>
         </div>
       </div>
