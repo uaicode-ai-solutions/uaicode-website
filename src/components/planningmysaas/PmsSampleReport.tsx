@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   FileText, 
@@ -194,12 +195,10 @@ const tabContent = {
 
 const PmsSampleReport = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const navigate = useNavigate();
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
+  const handleValidate = () => {
+    navigate("/planningmysaas/wizard?plan=pro");
   };
 
   const currentContent = tabContent[activeTab as keyof typeof tabContent];
@@ -321,7 +320,7 @@ const PmsSampleReport = () => {
               <Button
                 size="lg"
                 className="bg-accent hover:bg-accent/90 text-background font-bold glow-white w-full sm:w-auto"
-                onClick={() => scrollToSection("pricing")}
+                onClick={handleValidate}
               >
                 Validate My Idea
                 <ArrowRight className="ml-2 w-5 h-5" />

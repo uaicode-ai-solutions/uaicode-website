@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Sparkles, Youtube, Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 
@@ -12,6 +13,12 @@ const socialLinks = [
 
 const PmsHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleValidate = () => {
+    navigate("/planningmysaas/wizard?plan=pro");
+    setIsMenuOpen(false);
+  };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -80,7 +87,7 @@ const PmsHeader = () => {
               ))}
             </div>
             <Button
-              onClick={() => scrollToSection("pricing")}
+              onClick={handleValidate}
               className="bg-accent hover:bg-accent/90 text-background font-semibold"
             >
               Validate My Idea
@@ -138,7 +145,7 @@ const PmsHeader = () => {
               ))}
             </div>
             <Button
-              onClick={() => scrollToSection("pricing")}
+              onClick={handleValidate}
               className="bg-accent hover:bg-accent/90 text-background font-semibold w-full"
             >
               Validate My Idea
