@@ -17,49 +17,41 @@ const features = [
     icon: FileSearch,
     title: "Market Validation Report",
     description: "Data-driven analysis of your idea's potential with real market insights.",
-    size: "large",
   },
   {
     icon: Users,
     title: "Competitor Analysis",
     description: "Know who you're up against and how to stand out.",
-    size: "small",
   },
   {
     icon: Target,
     title: "Positioning Strategy",
     description: "Clear messaging that resonates with your audience.",
-    size: "small",
   },
   {
     icon: BookOpen,
     title: "Complete Brand Manual",
     description: "Guidelines for consistent brand identity across all touchpoints.",
-    size: "large",
   },
   {
     icon: Sparkles,
     title: "AI-Generated Logo",
     description: "Professional logo options ready to use immediately.",
-    size: "small",
   },
   {
     icon: Palette,
     title: "Color Palette",
     description: "Curated colors that match your brand personality.",
-    size: "small",
   },
   {
     icon: Monitor,
     title: "Product Mockups",
     description: "Visualize your SaaS before you build it.",
-    size: "small",
   },
   {
     icon: Layout,
     title: "Landing Page Suggestion",
     description: "A blueprint for your launch page that converts.",
-    size: "small",
   },
 ];
 
@@ -103,9 +95,7 @@ const PmsFeatures = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className={`group relative rounded-2xl p-6 glass-card border border-border/50 transition-all duration-500 hover:border-accent/40 glow-card ${
-                feature.size === 'large' ? 'md:col-span-2' : ''
-              }`}
+              className="group relative rounded-2xl p-6 glass-card border border-border/50 transition-all duration-500 hover:border-accent/40 glow-card"
             >
               {/* Gradient Background on Hover */}
               <div className="absolute inset-0 rounded-2xl bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
