@@ -1,12 +1,25 @@
 import { Button } from "@/components/ui/button";
-import { Check, Star, Shield, ArrowRight } from "lucide-react";
+import { Check, Star, Shield, ArrowRight, Rocket, Zap, Crown } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
-const plans = [
+interface Plan {
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  cta: string;
+  popular: boolean;
+  icon: LucideIcon;
+}
+
+const plans: Plan[] = [
   {
     name: "Starter",
     price: "$199",
     period: "one-time",
     description: "Perfect for validating a single idea",
+    icon: Rocket,
     features: [
       "Market Validation Report",
       "Basic Competitor Analysis",
@@ -22,6 +35,7 @@ const plans = [
     price: "$799",
     period: "one-time",
     description: "Everything you need to launch",
+    icon: Zap,
     features: [
       "Everything in Starter",
       "Complete Brand Manual",
@@ -39,6 +53,7 @@ const plans = [
     price: "$1299",
     period: "one-time",
     description: "For serious founders & teams",
+    icon: Crown,
     features: [
       "Everything in Pro",
       "Unlimited Revisions",
@@ -81,7 +96,7 @@ const PmsPricing = () => {
               className={`relative group rounded-2xl transition-all duration-500 ${
                 plan.popular 
                   ? 'scale-105 z-10' 
-                  : 'hover:scale-[1.02]'
+                  : 'hover:scale-[1.02] hover:-translate-y-1'
               }`}
             >
               {/* Animated Border for Popular Plan */}
@@ -89,10 +104,10 @@ const PmsPricing = () => {
                 <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite]" />
               )}
 
-              <div className={`relative h-full glass-card p-8 rounded-2xl border transition-all duration-300 ${
+              <div className={`relative h-full flex flex-col min-h-[620px] glass-card p-8 rounded-2xl border transition-all duration-300 ${
                 plan.popular
                   ? "border-transparent shadow-lg shadow-accent/20"
-                  : "border-border/50 hover:border-accent/30"
+                  : "border-border/50 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10"
               }`}>
                 
                 {/* Popular Badge */}
@@ -105,43 +120,43 @@ const PmsPricing = () => {
                   </div>
                 )}
 
+                {/* Plan Icon */}
+                <div className={`w-14 h-14 rounded-2xl ${plan.popular ? 'bg-accent/20' : 'bg-muted'} flex items-center justify-center mx-auto mb-6`}>
+                  <plan.icon className={`w-7 h-7 ${plan.popular ? 'text-accent' : 'text-muted-foreground'}`} />
+                </div>
+
                 {/* Plan Info */}
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-foreground mb-2">
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline justify-center gap-2 mb-2">
-                    {(plan as any).originalPrice && (
-                      <span className="text-2xl text-muted-foreground line-through">
-                        {(plan as any).originalPrice}
-                      </span>
-                    )}
                     <span className={`text-5xl font-bold ${plan.popular ? 'text-gradient-gold' : 'text-foreground'}`}>
                       {plan.price}
                     </span>
                     <span className="text-muted-foreground">/{plan.period}</span>
                   </div>
-                  {(plan as any).badge && (
-                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-accent/20 text-accent text-xs font-bold mb-2">
-                      {(plan as any).badge}
-                    </div>
-                  )}
                   <p className="text-sm text-muted-foreground">
                     {plan.description}
                   </p>
                 </div>
 
                 {/* Features List */}
-                <ul className="space-y-4 mb-8">
+                <ul className="space-y-4 mb-8 flex-grow">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
                       <div className={`w-5 h-5 rounded-full ${plan.popular ? 'bg-accent' : 'bg-muted-foreground/30'} flex items-center justify-center flex-shrink-0 mt-0.5`}>
                         <Check className={`w-3 h-3 ${plan.popular ? 'text-background' : 'text-foreground'}`} />
                       </div>
-                      <span className="text-muted-foreground">{feature}</span>
+                      <span className={feature.startsWith("Everything in") ? "text-accent font-medium" : "text-muted-foreground"}>
+                        {feature}
+                      </span>
                     </li>
                   ))}
                 </ul>
+
+                {/* Separator */}
+                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-6" />
 
                 {/* CTA Button */}
                 <Button
