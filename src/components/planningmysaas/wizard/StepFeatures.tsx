@@ -250,7 +250,7 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
               <p className="text-xs text-muted-foreground">Based on selected features</p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-foreground">{percentage}</span>
+              <span className="text-2xl font-bold text-foreground">{Math.round(visualPercentage)}</span>
               <span className="text-sm text-muted-foreground">/100</span>
               <span className={cn(
                 "text-sm font-medium ml-2",
