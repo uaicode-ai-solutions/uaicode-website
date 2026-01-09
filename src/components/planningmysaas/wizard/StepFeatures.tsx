@@ -9,6 +9,12 @@ import {
 import { ChevronDown, ChevronUp, Zap, TrendingUp, Building, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const TIER_WEIGHTS: Record<string, number> = {
+  essential: 1,
+  advanced: 2,
+  enterprise: 3,
+};
+
 const tiers = [
   {
     id: "essential",
@@ -130,6 +136,36 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
     return tier.features.every((f) => data.selectedFeatures.includes(f.id));
   };
 
+  const calculateComplexity = () => {
+    let score = 0;
+    let maxScore = 0;
+
+    tiers.forEach((tier) => {
+      const weight = TIER_WEIGHTS[tier.id];
+      const tierMaxScore = tier.features.length * weight;
+      maxScore += tierMaxScore;
+
+      const selectedInTier = tier.features.filter((f) =>
+        data.selectedFeatures.includes(f.id)
+      ).length;
+      score += selectedInTier * weight;
+    });
+
+    const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+    return { score, maxScore, percentage };
+  };
+
+  const getComplexityLevel = (percentage: number) => {
+    if (percentage === 0) return { label: "No Features", color: "gray" };
+    if (percentage <= 30) return { label: "Low", color: "green" };
+    if (percentage <= 60) return { label: "Medium", color: "yellow" };
+    if (percentage <= 80) return { label: "High", color: "orange" };
+    return { label: "Very High", color: "red" };
+  };
+
+  const { percentage } = calculateComplexity();
+  const complexityLevel = getComplexityLevel(percentage);
+
   return (
     <TooltipProvider>
       <div className="space-y-6">
@@ -141,6 +177,41 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
           <p className="text-muted-foreground">
             Choose the features you need for your SaaS. At least one feature is required.
           </p>
+        </div>
+
+        {/* Complexity Score Card */}
+        <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="font-semibold text-foreground text-sm">Complexity Score</h3>
+              <p className="text-xs text-muted-foreground">Based on selected features</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-foreground">{percentage}</span>
+              <span className="text-sm text-muted-foreground">/100</span>
+              <span className={cn(
+                "text-sm font-medium ml-2",
+                complexityLevel.color === "green" && "text-green-500",
+                complexityLevel.color === "yellow" && "text-yellow-500",
+                complexityLevel.color === "orange" && "text-orange-500",
+                complexityLevel.color === "red" && "text-red-500",
+                complexityLevel.color === "gray" && "text-muted-foreground"
+              )}>
+                {complexityLevel.label}
+              </span>
+            </div>
+          </div>
+          
+          {/* Gradient Progress Bar */}
+          <div className="h-3 rounded-full bg-muted overflow-hidden">
+            <div 
+              className="h-full rounded-full transition-all duration-500 ease-out"
+              style={{
+                width: `${percentage}%`,
+                background: "linear-gradient(90deg, #22c55e 0%, #eab308 40%, #f97316 70%, #ef4444 100%)"
+              }}
+            />
+          </div>
         </div>
 
         {/* Accordion Tiers */}
