@@ -4,12 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Sparkles, Youtube, Facebook, Instagram, Linkedin, Twitter, Loader2 } from "lucide-react";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import NewsletterSuccessDialog from "@/components/newsletter/NewsletterSuccessDialog";
+import EmailContactDialog from "@/components/chat/EmailContactDialog";
 
 const newsletterSchema = z.object({
   email: z.string()
@@ -28,6 +28,7 @@ type NewsletterFormData = z.infer<typeof newsletterSchema>;
 
 const PmsFooter = () => {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
 
   const {
     register,
@@ -212,20 +213,12 @@ const PmsFooter = () => {
                 FAQ
               </button>
               <span className="text-white/20">·</span>
-              <Link to="/terms" className="text-muted-foreground hover:text-accent transition-colors">
-                Terms
-              </Link>
-              <span className="text-white/20">·</span>
-              <Link to="/privacy" className="text-muted-foreground hover:text-accent transition-colors">
-                Privacy
-              </Link>
-              <span className="text-white/20">·</span>
-              <a 
-                href="mailto:support@planningmysaas.com"
+              <button 
+                onClick={() => setShowEmailDialog(true)}
                 className="text-muted-foreground hover:text-accent transition-colors"
               >
                 Contact
-              </a>
+              </button>
             </div>
             
             {/* Copyright Row */}
@@ -248,6 +241,12 @@ const PmsFooter = () => {
             </div>
           </div>
         </div>
+
+        <EmailContactDialog 
+          open={showEmailDialog} 
+          onOpenChange={setShowEmailDialog} 
+          source="pms_footer"
+        />
       </footer>
     </>
   );
