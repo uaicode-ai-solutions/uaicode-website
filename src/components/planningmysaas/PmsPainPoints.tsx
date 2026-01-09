@@ -5,37 +5,21 @@ const painPoints = [
     icon: AlertCircle,
     title: "Market Uncertainty",
     description: "You have a great idea but no data to prove it'll work. Don't gamble with your time and money.",
-    color: "from-red-500/20 to-red-500/5",
-    borderColor: "border-red-500/20",
-    iconBg: "bg-red-500/10",
-    iconColor: "text-red-400",
   },
   {
     icon: Brain,
     title: "Analysis Paralysis",
     description: "Spreadsheets, research, competitors... where do you even start? It's overwhelming.",
-    color: "from-orange-500/20 to-orange-500/5",
-    borderColor: "border-orange-500/20",
-    iconBg: "bg-orange-500/10",
-    iconColor: "text-orange-400",
   },
   {
     icon: Palette,
     title: "Branding Burnout",
     description: "Hiring designers costs thousands and takes weeks. You need to move faster.",
-    color: "from-purple-500/20 to-purple-500/5",
-    borderColor: "border-purple-500/20",
-    iconBg: "bg-purple-500/10",
-    iconColor: "text-purple-400",
   },
   {
     icon: Map,
     title: "No Clear Roadmap",
     description: "You're building blind without a strategic plan. Every decision feels like a guess.",
-    color: "from-blue-500/20 to-blue-500/5",
-    borderColor: "border-blue-500/20",
-    iconBg: "bg-blue-500/10",
-    iconColor: "text-blue-400",
   },
 ];
 
@@ -49,8 +33,8 @@ const PmsPainPoints = () => {
       <div className="container mx-auto max-w-6xl relative z-10">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-premium border border-red-500/20 mb-6">
-            <AlertCircle className="w-4 h-4 text-red-400" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-premium border border-accent/20 mb-6">
+            <AlertCircle className="w-4 h-4 text-accent" />
             <span className="text-sm font-medium text-muted-foreground">The Problem</span>
           </div>
           
@@ -70,17 +54,17 @@ const PmsPainPoints = () => {
           {painPoints.map((point, index) => (
             <div
               key={index}
-              className={`group relative rounded-2xl p-6 border ${point.borderColor} bg-gradient-to-br ${point.color} backdrop-blur-sm transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl`}
+              className="group relative rounded-2xl p-6 glass-card border border-border/50 hover:border-accent/40 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl"
             >
               {/* Shimmer Effect */}
               <div className="absolute inset-0 rounded-2xl shimmer opacity-0 group-hover:opacity-100" />
               
               <div className="relative z-10 flex items-start gap-4">
-                <div className={`w-14 h-14 rounded-xl ${point.iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
-                  <point.icon className={`w-7 h-7 ${point.iconColor}`} />
+                <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300">
+                  <point.icon className="w-7 h-7 text-accent" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-gradient-gold transition-all duration-300">
+                  <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-accent transition-all duration-300">
                     {point.title}
                   </h3>
                   <p className="text-muted-foreground leading-relaxed">
@@ -90,7 +74,7 @@ const PmsPainPoints = () => {
               </div>
 
               {/* Corner Glow */}
-              <div className={`absolute -bottom-2 -right-2 w-20 h-20 ${point.iconBg} rounded-full blur-2xl opacity-0 group-hover:opacity-50 transition-opacity duration-500`} />
+              <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-accent/10 rounded-full blur-2xl opacity-0 group-hover:opacity-50 transition-opacity duration-500" />
             </div>
           ))}
         </div>
