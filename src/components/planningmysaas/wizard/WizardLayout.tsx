@@ -58,11 +58,6 @@ const WizardLayout = ({
               </span>
             </div>
 
-            {/* Step indicator */}
-            <span className="text-sm text-muted-foreground">
-              Step {currentStep} of {totalSteps}
-            </span>
-
             {/* Close button */}
             <button
               onClick={handleClose}
@@ -77,10 +72,14 @@ const WizardLayout = ({
       {/* Progress bar */}
       <div className="py-6 border-b border-border/30">
         <WizardProgress steps={steps} currentStep={currentStep} />
+        {/* Step indicator below progress */}
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Step {currentStep} of {totalSteps}
+        </p>
       </div>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto py-8 px-4">
+      <main className="flex-1 overflow-y-auto pt-4 pb-8 px-4">
         <div className="container mx-auto max-w-4xl relative z-10">
           {children}
         </div>
