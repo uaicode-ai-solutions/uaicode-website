@@ -93,9 +93,9 @@ const PmsPricing = () => {
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`relative group rounded-2xl transition-all duration-500 ${
+            className={`relative group rounded-2xl transition-all duration-500 ${
                 plan.popular 
-                  ? 'scale-105 z-10' 
+                  ? 'scale-105 z-10 hover:scale-110 hover:-translate-y-1' 
                   : 'hover:scale-[1.02] hover:-translate-y-1'
               }`}
             >
