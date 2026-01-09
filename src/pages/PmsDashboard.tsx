@@ -144,11 +144,12 @@ const PmsDashboard = () => {
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={() => navigate("/planningmysaas/reports")}
-              className="hover:bg-accent/10"
+              className="gap-1.5 text-muted-foreground hover:text-foreground hover:bg-accent/10"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">My Reports</span>
             </Button>
             <div>
               <h1 className="text-lg font-bold text-foreground">{projectName}</h1>
