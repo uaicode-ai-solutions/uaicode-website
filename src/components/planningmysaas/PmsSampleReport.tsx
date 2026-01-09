@@ -323,7 +323,7 @@ const PmsSampleReport = () => {
                 className="bg-accent hover:bg-accent/90 text-background font-bold glow-white w-full sm:w-auto"
                 onClick={() => scrollToSection("pricing")}
               >
-                Unlock Full Report
+                Validate My Idea
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
