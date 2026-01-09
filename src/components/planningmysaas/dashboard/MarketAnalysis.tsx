@@ -13,8 +13,8 @@ const MarketAnalysis = () => {
           <BarChart3 className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Market Analysis</h2>
-          <p className="text-muted-foreground">Deep dive into your target market</p>
+          <h2 className="text-lg font-semibold text-foreground">Market Analysis</h2>
+          <p className="text-sm text-muted-foreground">Deep dive into your target market</p>
         </div>
       </div>
 

@@ -16,45 +16,45 @@ const MarketTrends = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Section Header */}
-      <div className="flex items-center gap-4">
-        <div className="p-3 rounded-xl icon-container-premium">
-          <TrendingUp className="h-6 w-6 text-accent" />
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg icon-container-premium">
+          <TrendingUp className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Key Market Trends</h2>
-          <p className="text-muted-foreground">Stay ahead of the curve</p>
+          <h2 className="text-lg font-semibold text-foreground">Key Market Trends</h2>
+          <p className="text-sm text-muted-foreground">Stay ahead of the curve</p>
         </div>
       </div>
 
       {/* Trends Grid - Visual Cards */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
         {marketTrends.slice(0, 6).map((trend, index) => (
           <Card 
             key={index} 
             className="metric-card-premium bg-card/50 border-border/30 hover:border-accent/30 group"
           >
-            <CardContent className="p-5">
+            <CardContent className="p-4">
               {/* Header with trend icon */}
-              <div className="flex items-start justify-between mb-4">
-                <div className={`p-2 rounded-lg ${trend.impact === "High" ? "bg-green-500/10" : "bg-amber-500/10"}`}>
+              <div className="flex items-start justify-between mb-3">
+                <div className={`p-1.5 rounded-md ${trend.impact === "High" ? "bg-green-500/10" : "bg-amber-500/10"}`}>
                   {getTrendIcon(trend.relevance)}
                 </div>
-                <Badge className={getImpactColor(trend.impact)}>
+                <Badge className={`${getImpactColor(trend.impact)} text-[10px]`}>
                   {trend.impact}
                 </Badge>
               </div>
 
               {/* Trend Name */}
-              <h3 className="font-bold text-foreground text-lg mb-2 group-hover:text-accent transition-colors">
+              <h3 className="font-semibold text-foreground text-sm mb-1.5 group-hover:text-accent transition-colors">
                 {trend.trend}
               </h3>
 
               {/* Relevance Badge */}
               <Badge 
                 variant="outline" 
-                className={`mb-3 text-xs ${
+                className={`mb-2 text-[10px] ${
                   trend.relevance === "Direct" 
                     ? "border-accent/30 text-accent" 
                     : "border-muted-foreground/30 text-muted-foreground"
@@ -64,17 +64,17 @@ const MarketTrends = () => {
               </Badge>
 
               {/* Description - Truncated */}
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
                 {trend.description}
               </p>
 
               {/* Footer - Opportunity & Timeframe */}
-              <div className="pt-4 border-t border-border/30 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Opportunity:</span>
-                  <span className="text-xs text-accent font-medium">{trend.opportunity}</span>
+              <div className="pt-3 border-t border-border/30 space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-muted-foreground">Opportunity:</span>
+                  <span className="text-[10px] text-accent font-medium">{trend.opportunity}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                   <Clock className="w-3 h-3" />
                   {trend.timeframe}
                 </div>

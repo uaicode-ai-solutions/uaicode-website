@@ -9,7 +9,7 @@ const UnitEconomics = () => {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10"><DollarSign className="h-5 w-5 text-accent" /></div>
-        <div><h2 className="text-2xl font-bold text-foreground">Unit Economics</h2><p className="text-muted-foreground">Your path to profitability</p></div>
+        <div><h2 className="text-lg font-semibold text-foreground">Unit Economics</h2><p className="text-sm text-muted-foreground">Your path to profitability</p></div>
       </div>
       <Card className="bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/20">
         <CardContent className="pt-6">

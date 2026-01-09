@@ -9,7 +9,7 @@ const PricingIntelligence = () => {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10"><DollarSign className="h-5 w-5 text-accent" /></div>
-        <div><h2 className="text-2xl font-bold text-foreground">Market Pricing Intelligence</h2><p className="text-muted-foreground">Optimal pricing strategy</p></div>
+        <div><h2 className="text-lg font-semibold text-foreground">Market Pricing Intelligence</h2><p className="text-sm text-muted-foreground">Optimal pricing strategy</p></div>
       </div>
       <div className="grid md:grid-cols-3 gap-4">
         <Card className="bg-card/50 border-border/50"><CardContent className="pt-6 text-center"><div className="text-3xl font-bold text-foreground">{marketAverage}</div><div className="text-sm text-muted-foreground mt-1">Market Average</div></CardContent></Card>

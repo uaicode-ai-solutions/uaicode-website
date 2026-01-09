@@ -8,7 +8,7 @@ const BrandIdentityManual = () => {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10"><Palette className="h-5 w-5 text-accent" /></div>
-        <div><h2 className="text-2xl font-bold text-foreground">Brand Identity Manual</h2><p className="text-muted-foreground">Visual guidelines and design system</p></div>
+        <div><h2 className="text-lg font-semibold text-foreground">Brand Identity Manual</h2><p className="text-sm text-muted-foreground">Visual guidelines and design system</p></div>
       </div>
       <Card className="bg-card/50 border-border/50">
         <CardHeader><CardTitle className="text-lg">Color Palette</CardTitle></CardHeader>
