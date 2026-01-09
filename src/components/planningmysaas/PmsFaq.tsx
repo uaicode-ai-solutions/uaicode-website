@@ -57,7 +57,7 @@ const PmsFaq = () => {
             <span className="text-sm font-medium text-accent">FAQ</span>
           </div>
           
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             Frequently Asked <span className="text-gradient-gold">Questions</span>
           </h2>
           <p className="text-lg text-muted-foreground">
@@ -73,15 +73,15 @@ const PmsFaq = () => {
               value={`item-${index}`}
               className="glass-card border border-border/50 rounded-xl px-6 data-[state=open]:border-accent/30 data-[state=open]:shadow-lg data-[state=open]:shadow-accent/5 transition-all duration-300"
             >
-              <AccordionTrigger className="text-left text-foreground hover:text-accent hover:no-underline py-6 group">
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-bold text-accent/50 group-hover:text-accent transition-colors">
-                    0{index + 1}
+              <AccordionTrigger className="text-left text-foreground hover:text-accent hover:no-underline py-5 group">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-accent/60 group-hover:text-accent transition-colors min-w-[24px]">
+                    {String(index + 1).padStart(2, '0')}
                   </span>
-                  <span>{faq.question}</span>
+                  <span className="text-base font-medium">{faq.question}</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-6 pl-10">
+              <AccordionContent className="text-muted-foreground pb-5 pl-9 text-sm leading-relaxed">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>
@@ -89,14 +89,14 @@ const PmsFaq = () => {
         </Accordion>
 
         {/* Contact CTA */}
-        <div className="mt-12 glass-premium rounded-2xl border border-accent/20 p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">💬</span>
+        <div className="mt-16 glass-premium rounded-2xl border border-accent/20 p-6 md:p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-3">
+            <span className="text-xl">💬</span>
           </div>
-          <h3 className="text-xl font-bold text-foreground mb-2">
+          <h3 className="text-lg font-bold text-foreground mb-2">
             Still have questions?
           </h3>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             Our support team is here to help you get started.
           </p>
           <a
