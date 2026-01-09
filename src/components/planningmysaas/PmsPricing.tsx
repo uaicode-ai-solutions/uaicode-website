@@ -63,7 +63,7 @@ const plans: Plan[] = [
       "1-on-1 Strategy Session",
       "Lifetime Updates",
     ],
-    cta: "Contact Sales",
+    cta: "Get Enterprise",
     popular: false,
   },
 ];
