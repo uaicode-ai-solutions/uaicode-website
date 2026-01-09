@@ -1064,8 +1064,13 @@ const Newsletter = () => {
         throw dbError;
       }
       
+      // Send welcome email
+      supabase.functions.invoke('send-newsletter-welcome', {
+        body: { email: sanitizedEmail, source: 'newsletter_hero' }
+      }).catch(err => console.error('Welcome email error:', err));
+
       // Call the webhook
-      await fetch(
+      fetch(
         "https://uaicode-n8n.ax5vln.easypanel.host/webhook/a95bfd22-a4e0-48b2-b88d-bec4bfe84be4",
         {
           method: "POST",
@@ -1078,7 +1083,7 @@ const Newsletter = () => {
             source: "newsletter_hero",
           }),
         }
-      );
+      ).catch(err => console.error('Webhook error:', err));
 
       // Show success dialog
       reset();

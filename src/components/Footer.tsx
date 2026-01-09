@@ -99,8 +99,13 @@ const Footer = () => {
         throw dbError;
       }
       
+      // Send welcome email
+      supabase.functions.invoke('send-newsletter-welcome', {
+        body: { email: sanitizedEmail, source: 'footer_newsletter' }
+      }).catch(err => console.error('Welcome email error:', err));
+
       // Call the webhook
-      await fetch("https://uaicode-n8n.ax5vln.easypanel.host/webhook/a95bfd22-a4e0-48b2-b88d-bec4bfe84be4", {
+      fetch("https://uaicode-n8n.ax5vln.easypanel.host/webhook/a95bfd22-a4e0-48b2-b88d-bec4bfe84be4", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +115,7 @@ const Footer = () => {
           timestamp: new Date().toISOString(),
           source: "footer_newsletter",
         }),
-      });
+      }).catch(err => console.error('Webhook error:', err));
 
       // Show success dialog
       reset();
