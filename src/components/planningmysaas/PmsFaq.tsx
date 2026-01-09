@@ -1,9 +1,11 @@
+import { useState } from "react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import EmailContactDialog from "@/components/chat/EmailContactDialog";
 
 const faqs = [
   {
@@ -33,7 +35,10 @@ const faqs = [
 ];
 
 const PmsFaq = () => {
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+
   return (
+    <>
     <section id="faq" className="py-24 px-4 relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-muted/30" />
@@ -91,15 +96,21 @@ const PmsFaq = () => {
           <p className="text-sm text-muted-foreground mb-4">
             Our support team is here to help you get started.
           </p>
-          <a
-            href="mailto:support@planningmysaas.com"
+          <button
+            onClick={() => setShowEmailDialog(true)}
             className="inline-flex items-center gap-2 text-accent hover:text-accent/80 font-semibold underline underline-offset-4 transition-colors"
           >
             Contact our support team
-          </a>
+          </button>
         </div>
       </div>
     </section>
+    <EmailContactDialog 
+      open={showEmailDialog} 
+      onOpenChange={setShowEmailDialog} 
+      source="planningmysaas"
+    />
+    </>
   );
 };
 
