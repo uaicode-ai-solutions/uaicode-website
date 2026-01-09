@@ -27,7 +27,7 @@ const plans: Plan[] = [
       "PDF Export",
       "Email Support",
     ],
-    cta: "Get Started",
+    cta: "Validate My Idea",
     popular: false,
   },
   {
@@ -45,7 +45,7 @@ const plans: Plan[] = [
       "Landing Page Blueprint",
       "Priority Support",
     ],
-    cta: "Get Pro — Best Value",
+    cta: "Validate My Idea",
     popular: true,
   },
   {
@@ -63,7 +63,7 @@ const plans: Plan[] = [
       "1-on-1 Strategy Session",
       "Lifetime Updates",
     ],
-    cta: "Get Enterprise",
+    cta: "Validate My Idea",
     popular: false,
   },
 ];
