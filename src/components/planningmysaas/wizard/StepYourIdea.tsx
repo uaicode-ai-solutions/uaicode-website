@@ -1,43 +1,53 @@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import SelectableCard from "./SelectableCard";
 import {
-  Building2,
   Users,
-  ShoppingBag,
-  Wrench,
-  Bot,
-  Lightbulb,
-  Heart,
-  DollarSign,
+  Building,
   ShoppingCart,
-  GraduationCap,
-  Home,
-  Megaphone,
   UserPlus,
-  Truck,
-  Globe,
+  DollarSign,
+  Mail,
+  BarChart3,
+  MessageSquare,
+  Headphones,
+  Zap,
+  BookOpen,
+  Plus,
+  Heart,
+  GraduationCap,
+  Building2,
+  Store,
+  Monitor,
+  BarChart,
+  Sparkles,
 } from "lucide-react";
 
 const saasTypes = [
-  { id: "b2b", title: "B2B Platform", description: "Business-to-business software", icon: Building2 },
-  { id: "b2c", title: "B2C App", description: "Consumer-facing application", icon: Users },
-  { id: "marketplace", title: "Marketplace", description: "Two-sided platform", icon: ShoppingBag },
-  { id: "tool", title: "SaaS Tool", description: "Productivity/utility tool", icon: Wrench },
-  { id: "ai", title: "AI/Automation", description: "AI-powered solution", icon: Bot },
-  { id: "other", title: "Other", description: "Something unique", icon: Lightbulb },
+  { id: "crm", title: "CRM & Sales", description: "Customer relationship management", icon: Users },
+  { id: "project", title: "Project Management", description: "Team collaboration tools", icon: Building },
+  { id: "ecommerce", title: "E-commerce", description: "Online retail solutions", icon: ShoppingCart },
+  { id: "hr", title: "HR & Recruiting", description: "Human resources platform", icon: UserPlus },
+  { id: "finance", title: "Financial Management", description: "Business finance tools", icon: DollarSign },
+  { id: "marketing", title: "Marketing Automation", description: "Campaign management", icon: Mail },
+  { id: "analytics", title: "Analytics & BI", description: "Business intelligence", icon: BarChart3 },
+  { id: "communication", title: "Communication", description: "Team messaging", icon: MessageSquare },
+  { id: "support", title: "Customer Support", description: "Help desk & ticketing", icon: Headphones },
+  { id: "productivity", title: "Productivity", description: "Workflow automation", icon: Zap },
+  { id: "education", title: "Education & Learning", description: "LMS & e-learning", icon: BookOpen },
+  { id: "other", title: "Other", description: "Something else", icon: Plus },
 ];
 
 const industries = [
-  { id: "healthcare", title: "Healthcare", icon: Heart },
-  { id: "finance", title: "Finance", icon: DollarSign },
-  { id: "ecommerce", title: "E-commerce", icon: ShoppingCart },
-  { id: "education", title: "Education", icon: GraduationCap },
-  { id: "realestate", title: "Real Estate", icon: Home },
-  { id: "marketing", title: "Marketing", icon: Megaphone },
-  { id: "hr", title: "HR/Recruiting", icon: UserPlus },
-  { id: "logistics", title: "Logistics", icon: Truck },
-  { id: "other", title: "Other", icon: Globe },
+  { id: "healthcare", title: "Healthcare", description: "Medical & health services", icon: Heart },
+  { id: "education", title: "Education", description: "Schools & universities", icon: GraduationCap },
+  { id: "finance", title: "Finance", description: "Banking & fintech", icon: DollarSign },
+  { id: "realestate", title: "Real Estate", description: "Property & construction", icon: Building2 },
+  { id: "retail", title: "Retail", description: "Stores & commerce", icon: Store },
+  { id: "technology", title: "Technology", description: "Software & IT", icon: Monitor },
+  { id: "marketing", title: "Marketing", description: "Advertising & PR", icon: BarChart },
+  { id: "other", title: "Other", description: "Different industry", icon: Plus },
 ];
 
 interface StepYourIdeaProps {
@@ -51,23 +61,28 @@ interface StepYourIdeaProps {
 
 const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          Describe your <span className="text-gradient-gold">SaaS idea</span>
+          Define Your <span className="text-gradient-gold">SaaS Product</span>
         </h2>
         <p className="text-muted-foreground">
-          Help us understand what you're building.
+          Help us understand your product vision. Select the category, industry, and describe your idea.
         </p>
       </div>
 
       {/* Type of SaaS */}
-      <div className="space-y-4">
-        <Label className="text-foreground text-lg">
-          Type of SaaS <span className="text-accent">*</span>
-        </Label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="space-y-3">
+        <div>
+          <Label className="text-foreground text-base font-medium">
+            What type of SaaS are you building? <span className="text-accent">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select the category that best describes your product
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {saasTypes.map((type) => (
             <SelectableCard
               key={type.id}
@@ -82,41 +97,59 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
       </div>
 
       {/* Industry */}
-      <div className="space-y-4">
-        <Label className="text-foreground text-lg">
-          Industry <span className="text-accent">*</span>
-        </Label>
-        <div className="grid grid-cols-3 gap-3">
+      <div className="space-y-3">
+        <div>
+          <Label className="text-foreground text-base font-medium">
+            Which industry are you targeting? <span className="text-accent">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select the primary industry for your product
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {industries.map((industry) => (
             <SelectableCard
               key={industry.id}
               icon={industry.icon}
               title={industry.title}
+              description={industry.description}
               selected={data.industry === industry.id}
               onClick={() => onChange("industry", industry.id)}
-              className="p-4"
             />
           ))}
         </div>
       </div>
 
       {/* Description */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="description" className="text-foreground text-lg">
-            Describe your idea
+      <div className="space-y-3">
+        <div>
+          <Label htmlFor="description" className="text-foreground text-base font-medium">
+            Describe your SaaS idea <span className="text-accent">*</span>
           </Label>
-          <span className="text-xs text-muted-foreground">
-            {data.description.length}/500
-          </span>
+          <p className="text-sm text-muted-foreground mt-1">
+            The more detail you provide, the better our analysis will be (minimum 20 characters)
+          </p>
         </div>
         <Textarea
           id="description"
-          placeholder="Describe your SaaS idea in a few sentences..."
+          placeholder="Describe your SaaS idea in detail. What problem does it solve? Who is it for? What makes it unique?"
           value={data.description}
-          onChange={(e) => onChange("description", e.target.value.slice(0, 500))}
-          className="bg-muted/50 border-border/50 focus:border-accent min-h-[120px] resize-none"
+          onChange={(e) => onChange("description", e.target.value.slice(0, 1000))}
+          className="bg-muted/30 border-border/50 focus:border-accent min-h-[120px] resize-none"
         />
+        <div className="flex items-center justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            className="border-accent text-accent hover:bg-accent/10 hover:text-accent"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Improve with AI
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {data.description.length}/1000
+          </span>
+        </div>
       </div>
     </div>
   );
