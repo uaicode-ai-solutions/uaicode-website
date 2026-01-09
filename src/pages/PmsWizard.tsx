@@ -72,7 +72,11 @@ const PmsWizard = () => {
           data.phone.length >= 8
         );
       case 2:
-        return data.saasType !== "" && data.industry !== "";
+        return (
+          data.saasType !== "" &&
+          data.industry !== "" &&
+          data.description.trim().length >= 20
+        );
       case 3:
         return data.customerType !== "" && data.marketSize !== "";
       case 4:
