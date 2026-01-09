@@ -13,6 +13,7 @@ interface WizardData {
   // Step 1
   fullName: string;
   email: string;
+  companyName: string;
   phone: string;
   // Step 2
   saasType: string;
@@ -32,6 +33,7 @@ interface WizardData {
 const initialData: WizardData = {
   fullName: "",
   email: "",
+  companyName: "",
   phone: "",
   saasType: "",
   industry: "",
@@ -121,6 +123,7 @@ const PmsWizard = () => {
             data={{
               fullName: data.fullName,
               email: data.email,
+              companyName: data.companyName,
               phone: data.phone,
             }}
             onChange={handleChange}

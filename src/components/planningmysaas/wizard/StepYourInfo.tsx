@@ -1,12 +1,13 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { Sparkles, Users, Shield } from "lucide-react";
+import { Check, Users, Sparkles, Shield } from "lucide-react";
 
 interface StepYourInfoProps {
   data: {
     fullName: string;
     email: string;
+    companyName: string;
     phone: string;
   };
   onChange: (field: string, value: string) => void;
@@ -27,32 +28,32 @@ const trustBadges = [
 
 const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto space-y-6">
       {/* Hero Section */}
-      <div className="text-center space-y-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+      <div className="text-center space-y-3">
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground">
           Unlock Your <span className="text-gradient-gold">SaaS Potential</span> in 5 Minutes
         </h2>
-        <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+        <p className="text-muted-foreground text-base max-w-xl mx-auto">
           Get a comprehensive feasibility study tailored to your idea. Our AI-powered analysis will help you understand your market opportunity.
         </p>
       </div>
 
       {/* Feature Bullets */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {features.map((feature, index) => (
-          <div key={index} className="flex items-start gap-3">
-            <Sparkles className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-            <span className="text-foreground/90">{feature}</span>
+          <div key={index} className="flex items-start gap-2">
+            <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+            <span className="text-sm text-foreground/80">{feature}</span>
           </div>
         ))}
       </div>
 
       {/* Form Card */}
-      <div className="bg-card/80 backdrop-blur border border-border/50 rounded-xl p-6 md:p-8 space-y-6">
+      <div className="bg-muted/30 border border-border/30 rounded-xl p-6 space-y-5">
         {/* Full Name */}
-        <div className="space-y-2">
-          <Label htmlFor="fullName" className="text-foreground">
+        <div className="space-y-1.5">
+          <Label htmlFor="fullName" className="text-sm text-muted-foreground">
             Full Name <span className="text-accent">*</span>
           </Label>
           <Input
@@ -61,13 +62,13 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
             placeholder="John Doe"
             value={data.fullName}
             onChange={(e) => onChange("fullName", e.target.value)}
-            className="bg-muted/50 border-border/50 focus:border-accent"
+            className="bg-background border-border/50 focus:border-accent"
           />
         </div>
 
         {/* Email */}
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-foreground">
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-sm text-muted-foreground">
             Email Address <span className="text-accent">*</span>
           </Label>
           <Input
@@ -76,13 +77,28 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
             placeholder="john@example.com"
             value={data.email}
             onChange={(e) => onChange("email", e.target.value)}
-            className="bg-muted/50 border-border/50 focus:border-accent"
+            className="bg-background border-border/50 focus:border-accent"
+          />
+        </div>
+
+        {/* Company Name - Optional */}
+        <div className="space-y-1.5">
+          <Label htmlFor="companyName" className="text-sm text-muted-foreground">
+            Company Name
+          </Label>
+          <Input
+            id="companyName"
+            type="text"
+            placeholder="Acme Inc."
+            value={data.companyName}
+            onChange={(e) => onChange("companyName", e.target.value)}
+            className="bg-background border-border/50 focus:border-accent"
           />
         </div>
 
         {/* Phone */}
-        <div className="space-y-2">
-          <Label htmlFor="phone" className="text-foreground">
+        <div className="space-y-1.5">
+          <Label htmlFor="phone" className="text-sm text-muted-foreground">
             Phone Number <span className="text-accent">*</span>
           </Label>
           <PhoneInput
@@ -95,11 +111,11 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
       </div>
 
       {/* Trust Badges */}
-      <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+      <div className="flex flex-wrap justify-center gap-6">
         {trustBadges.map((badge, index) => (
           <div key={index} className="flex items-center gap-2">
             <badge.icon className="w-4 h-4 text-accent" />
-            <span className="text-sm text-muted-foreground">{badge.text}</span>
+            <span className="text-xs text-muted-foreground">{badge.text}</span>
           </div>
         ))}
       </div>
