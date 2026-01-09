@@ -160,7 +160,7 @@ const PmsPricing = () => {
                 <Button
                   className={`w-full py-6 text-lg font-bold rounded-xl transition-all duration-300 group/btn ${
                     plan.popular
-                      ? 'bg-[hsl(38,100%,45%)] hover:bg-[hsl(38,100%,40%)] text-white glow-white'
+                      ? 'bg-gradient-to-r from-[hsl(45,100%,55%)] to-[hsl(38,100%,50%)] hover:from-[hsl(45,100%,50%)] hover:to-[hsl(38,100%,45%)] text-white glow-white'
                       : 'bg-muted hover:bg-muted/80 text-foreground border border-border/50'
                   }`}
                 >
