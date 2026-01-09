@@ -17,7 +17,9 @@ interface WizardData {
   phone: string;
   // Step 2
   saasType: string;
+  saasTypeOther: string;
   industry: string;
+  industryOther: string;
   description: string;
   // Step 3
   customerType: string;
@@ -36,7 +38,9 @@ const initialData: WizardData = {
   companyName: "",
   phone: "",
   saasType: "",
+  saasTypeOther: "",
   industry: "",
+  industryOther: "",
   description: "",
   customerType: "",
   marketSize: "",
@@ -72,11 +76,11 @@ const PmsWizard = () => {
           data.phone.length >= 8
         );
       case 2:
-        return (
-          data.saasType !== "" &&
-          data.industry !== "" &&
-          data.description.trim().length >= 20
-        );
+        const saasTypeValid = data.saasType !== "" && 
+          (data.saasType !== "other" || data.saasTypeOther.trim().length >= 2);
+        const industryValid = data.industry !== "" && 
+          (data.industry !== "other" || data.industryOther.trim().length >= 2);
+        return saasTypeValid && industryValid && data.description.trim().length >= 20;
       case 3:
         return data.customerType !== "" && data.marketSize !== "";
       case 4:
@@ -138,7 +142,9 @@ const PmsWizard = () => {
           <StepYourIdea
             data={{
               saasType: data.saasType,
+              saasTypeOther: data.saasTypeOther,
               industry: data.industry,
+              industryOther: data.industryOther,
               description: data.description,
             }}
             onChange={handleChange}
