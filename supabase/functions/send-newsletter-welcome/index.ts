@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@2.0.0?target=deno";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -202,12 +201,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending welcome email to ${email} (source: ${source || 'unknown'})`);
 
-    const emailResponse = await resend.emails.send({
-      from: "UaiCode <no-reply@uaicode.ai>",
-      to: [email],
-      subject: "Welcome to UaiCode Insights! 🚀",
-      html: generateWelcomeEmail(email),
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "UaiCode <no-reply@uaicode.ai>",
+        to: [email],
+        subject: "Welcome to UaiCode Insights! 🚀",
+        html: generateWelcomeEmail(email),
+      }),
     });
+
+    const emailResponse = await res.json();
+
+    if (!res.ok) {
+      throw new Error(emailResponse.message || "Failed to send email");
+    }
 
     console.log("Welcome email sent successfully:", emailResponse);
 
