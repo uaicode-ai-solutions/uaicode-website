@@ -132,7 +132,7 @@ const PmsPricing = () => {
                     <span className={`text-5xl font-bold ${plan.popular ? 'text-gradient-gold' : 'text-foreground'}`}>
                       {plan.price}
                     </span>
-                    <span className="text-muted-foreground">/{plan.period}</span>
+                    <span className={plan.popular ? "text-foreground/80" : "text-muted-foreground"}>/{plan.period}</span>
                   </div>
                   <p className={`text-sm ${plan.popular ? "text-foreground" : "text-muted-foreground"}`}>
                     {plan.description}
