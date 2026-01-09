@@ -84,7 +84,7 @@ const PmsWizard = () => {
       case 3:
         return data.customerTypes.length > 0 && data.marketSize !== "";
       case 4:
-        return true; // Features are optional
+        return data.selectedFeatures.length > 0;
       case 5:
         return data.goal !== "" && data.timeline !== "";
       default:
