@@ -1,5 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Zap, Rocket, CheckCircle } from "lucide-react";
+import sarahJohnsonImg from "@/assets/testimonial-sarah-johnson.webp";
+import emmaThompsonImg from "@/assets/testimonial-emma-thompson.webp";
+import johnSmithImg from "@/assets/testimonial-john-smith.webp";
+import mariaSantosImg from "@/assets/testimonial-maria-santos.webp";
+import carlosOliveiraImg from "@/assets/testimonial-carlos-oliveira.webp";
+
+const founderAvatars = [
+  { image: sarahJohnsonImg, name: "Sarah Johnson" },
+  { image: emmaThompsonImg, name: "Emma Thompson" },
+  { image: johnSmithImg, name: "John Smith" },
+  { image: mariaSantosImg, name: "Maria Santos" },
+  { image: carlosOliveiraImg, name: "Carlos Oliveira" },
+];
 
 const PmsCta = () => {
   const scrollToSection = (id: string) => {
@@ -68,14 +81,14 @@ const PmsCta = () => {
 
         {/* Social Proof */}
         <div className="flex items-center justify-center gap-4 mt-10">
-          <div className="flex -space-x-3">
-            {["SC", "MR", "EW", "JP", "AC"].map((initials, i) => (
-              <div
+        <div className="flex -space-x-3">
+            {founderAvatars.map((founder, i) => (
+              <img
                 key={i}
-                className="w-10 h-10 rounded-full bg-accent/20 border-2 border-background flex items-center justify-center text-accent text-xs font-bold"
-              >
-                {initials}
-              </div>
+                src={founder.image}
+                alt={founder.name}
+                className="w-10 h-10 rounded-full object-cover border-2 border-background"
+              />
             ))}
           </div>
           <div className="text-left">
