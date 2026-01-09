@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { X, Sparkles, ArrowLeft, ArrowRight } from "lucide-react";
+import { X, Sparkles, ArrowLeft, ArrowRight, User, Lightbulb, Users, Layers, Target } from "lucide-react";
 import WizardProgress from "./WizardProgress";
 
 interface WizardLayoutProps {
@@ -16,11 +16,11 @@ interface WizardLayoutProps {
 }
 
 const steps = [
-  { id: 1, label: "Your Info" },
-  { id: 2, label: "Your Idea" },
-  { id: 3, label: "Market" },
-  { id: 4, label: "Features" },
-  { id: 5, label: "Goals" },
+  { id: 1, label: "Your Info", icon: User },
+  { id: 2, label: "Your Idea", icon: Lightbulb },
+  { id: 3, label: "Market", icon: Users },
+  { id: 4, label: "Features", icon: Layers },
+  { id: 5, label: "Goals", icon: Target },
 ];
 
 const WizardLayout = ({
