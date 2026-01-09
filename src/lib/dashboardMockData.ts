@@ -29,18 +29,36 @@ export const executiveSummaryData = {
   projectName: "SalesFlow AI",
   viabilityScore: 87,
   complexityScore: 65,
+  
+  // Storytelling fields
+  verdictHeadline: "Strong potential – let's make it happen",
+  verdictSummary: "Your project shows strong market-product fit with favorable unit economics. The healthcare e-commerce space is growing rapidly, and your approach of connecting consumers with local suppliers fills a genuine market gap. Technical challenges are moderate and well within standard development scope.",
+  recommendAction: "proceed" as const,
+  benchmarkPercentile: 15,
+  
   keyHighlights: [
-    "Strong market demand with 23% YoY growth in sales automation sector",
-    "Clear differentiation opportunity with AI-powered lead scoring",
+    "High-growth market with 23% YoY expansion in health e-commerce",
+    "Strong LTV/CAC ratio of 11.5x indicates excellent unit economics",
     "Low competition in SMB-focused AI sales tools niche",
-    "Favorable unit economics with LTV/CAC ratio of 11.5x",
+    "Clear differentiation with AI-powered lead scoring",
     "First-mover advantage in conversational AI for sales",
   ],
   mainRisks: [
-    "Dependency on third-party AI APIs (OpenAI, Anthropic) for core features",
-    "Longer sales cycle expected in enterprise segment (3-6 months)",
-    "Potential regulatory changes in data privacy (GDPR, CCPA compliance)",
-    "Market education needed for AI-skeptic prospects",
+    {
+      risk: "Dependency on third-party AI APIs (OpenAI, Anthropic) for core features",
+      priority: "high" as const,
+      mitigation: "We implement multi-provider fallbacks and intelligent caching",
+    },
+    {
+      risk: "Longer sales cycle expected in enterprise segment (3-6 months)",
+      priority: "medium" as const,
+      mitigation: "PLG approach with freemium tier reduces friction",
+    },
+    {
+      risk: "Potential regulatory changes in data privacy (GDPR, CCPA compliance)",
+      priority: "medium" as const,
+      mitigation: "Built-in compliance workflows and audit trails from day one",
+    },
   ],
 };
 
