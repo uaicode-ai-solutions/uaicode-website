@@ -102,7 +102,7 @@ const PmsPricing = () => {
                 <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite]" />
               )}
 
-              <div className={`relative h-full flex flex-col ${plan.popular ? 'min-h-[640px]' : 'min-h-[600px]'} glass-card p-8 rounded-2xl border transition-all duration-300 ${
+              <div className={`relative h-full flex flex-col ${plan.popular ? 'h-[660px]' : 'h-[580px]'} glass-card p-8 rounded-2xl border transition-all duration-300 ${
                 plan.popular
                   ? "border-transparent shadow-lg shadow-accent/20"
                   : "border-border/50 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10"
@@ -140,7 +140,7 @@ const PmsPricing = () => {
                 </div>
 
                 {/* Features List */}
-                <ul className="space-y-4 mb-8 flex-grow">
+                <ul className="space-y-4 mb-8 flex-grow overflow-hidden">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
                       <div className={`w-5 h-5 rounded-full ${plan.popular ? 'bg-accent' : 'bg-muted-foreground/30'} flex items-center justify-center flex-shrink-0 mt-0.5`}>
