@@ -200,17 +200,29 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
     const hasEnterprise = selectedByTier.enterprise > 0;
     const hasAdvanced = selectedByTier.advanced > 0;
     
-    // Porcentagem mínima visual baseada no tier
-    let minVisualPercentage = 0;
-    
+    // Se tem Enterprise: zona 65% a 100%
     if (hasEnterprise) {
-      minVisualPercentage = 65; // Visualmente na zona "High" (laranja)
-    } else if (hasAdvanced) {
-      minVisualPercentage = 40; // Visualmente na zona "Medium" (amarelo)
+      const zoneMin = 65;
+      const zoneMax = 100;
+      const zoneRange = zoneMax - zoneMin; // 35%
+      
+      // Usa actualPercentage para determinar progresso dentro da zona
+      const progressInZone = Math.min(actualPercentage / 100, 1) * zoneRange;
+      return zoneMin + progressInZone;
     }
     
-    // Retorna o maior valor entre a % real e a mínima forçada pelo tier
-    return Math.max(actualPercentage, minVisualPercentage);
+    // Se tem Advanced: zona 40% a 80%
+    if (hasAdvanced) {
+      const zoneMin = 40;
+      const zoneMax = 80;
+      const zoneRange = zoneMax - zoneMin; // 40%
+      
+      const progressInZone = Math.min(actualPercentage / 100, 1) * zoneRange;
+      return zoneMin + progressInZone;
+    }
+    
+    // Apenas Essential: zona 0% a 40%
+    return Math.min(actualPercentage, 40);
   };
 
   const { percentage, selectedByTier } = calculateComplexity();
