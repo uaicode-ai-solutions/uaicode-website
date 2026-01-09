@@ -23,8 +23,8 @@ const SelectableCard = ({
       type="button"
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col items-center gap-3 p-6 rounded-xl transition-all duration-300",
-        "glass-card border hover:scale-[1.02]",
+        "group relative flex flex-col items-start gap-3 p-4 rounded-xl transition-all duration-300 text-left",
+        "bg-muted/30 border hover:scale-[1.02]",
         selected
           ? "border-accent bg-accent/10 shadow-lg shadow-accent/20"
           : "border-border/50 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10",
@@ -34,38 +34,41 @@ const SelectableCard = ({
       {/* Icon */}
       <div
         className={cn(
-          "w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300",
-          selected ? "bg-accent/20" : "bg-muted group-hover:bg-accent/10"
+          "w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-300",
+          selected ? "bg-accent/20" : "bg-muted/50 group-hover:bg-accent/10"
         )}
       >
         <Icon
           className={cn(
-            "w-6 h-6 transition-colors duration-300",
+            "w-5 h-5 transition-colors duration-300",
             selected ? "text-accent" : "text-muted-foreground group-hover:text-accent"
           )}
         />
       </div>
 
-      {/* Title */}
-      <span
-        className={cn(
-          "text-sm font-medium text-center transition-colors duration-300",
-          selected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-        )}
-      >
-        {title}
-      </span>
-
-      {/* Description */}
-      {description && (
-        <span className="text-xs text-muted-foreground text-center line-clamp-2">
-          {description}
+      {/* Content */}
+      <div className="space-y-1">
+        {/* Title */}
+        <span
+          className={cn(
+            "text-sm font-medium block transition-colors duration-300",
+            selected ? "text-foreground" : "text-foreground/90 group-hover:text-foreground"
+          )}
+        >
+          {title}
         </span>
-      )}
+
+        {/* Description */}
+        {description && (
+          <span className="text-xs text-muted-foreground line-clamp-2 block">
+            {description}
+          </span>
+        )}
+      </div>
 
       {/* Selected indicator */}
       {selected && (
-        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent animate-pulse" />
+        <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-accent animate-pulse" />
       )}
     </button>
   );
