@@ -72,6 +72,10 @@ const WizardLayout = ({
       {/* Progress bar */}
       <div className="py-6 border-b border-border/30">
         <WizardProgress steps={steps} currentStep={currentStep} />
+        {/* Step indicator below progress */}
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Step {currentStep} of {totalSteps}
+        </p>
       </div>
 
       {/* Main content */}
