@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
-import { Check } from "lucide-react";
+import { Check, LucideIcon } from "lucide-react";
 
 interface Step {
   id: number;
   label: string;
+  icon: LucideIcon;
 }
 
 interface WizardProgressProps {
@@ -44,7 +45,7 @@ const WizardProgress = ({ steps, currentStep }: WizardProgressProps) => {
                 {isCompleted ? (
                   <Check className="w-4 h-4" />
                 ) : (
-                  step.id
+                  <step.icon className="w-4 h-4" />
                 )}
               </div>
 
