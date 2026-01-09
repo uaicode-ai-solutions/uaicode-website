@@ -7,32 +7,37 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
+import sarahJohnsonImg from "@/assets/testimonial-sarah-johnson.webp";
+import marcusChenImg from "@/assets/author-marcus.webp";
+import emmaThompsonImg from "@/assets/testimonial-emma-thompson.webp";
+import johnSmithImg from "@/assets/testimonial-john-smith.webp";
+
 const testimonials = [
   {
-    name: "Sarah Chen",
-    role: "Founder, DataFlow",
-    avatar: "SC",
+    name: "Sarah Mitchell",
+    role: "CEO, Startup Innovate",
+    image: sarahJohnsonImg,
     rating: 5,
     text: "I was skeptical at first, but the validation report saved me from building a product no one wanted. The market analysis was spot-on!",
   },
   {
-    name: "Marcus Rodriguez",
-    role: "CEO, TechStart",
-    avatar: "MR",
+    name: "Robert Taylor",
+    role: "Founder, TechFlow Solutions",
+    image: marcusChenImg,
     rating: 5,
     text: "The brand kit alone was worth the price. Got a professional logo and mockups in minutes instead of weeks with a designer.",
   },
   {
-    name: "Emily Watson",
-    role: "Co-founder, SaaSify",
-    avatar: "EW",
+    name: "Emily Rodriguez",
+    role: "Product Director, CloudScale",
+    image: emmaThompsonImg,
     rating: 5,
     text: "Finally, a tool that gives real data, not just generic advice. Used the competitor analysis to find our unique positioning.",
   },
   {
-    name: "James Park",
-    role: "Solo Founder",
-    avatar: "JP",
+    name: "David Park",
+    role: "CTO, DataSync Pro",
+    image: johnSmithImg,
     rating: 5,
     text: "From idea to validated concept in under an hour. The ROI on this was incredible — saved me months of research.",
   },
@@ -88,9 +93,11 @@ const PmsTestimonials = () => {
               
               {/* Author */}
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm">
-                  {testimonial.avatar}
-                </div>
+                <img 
+                  src={testimonial.image} 
+                  alt={testimonial.name}
+                  className="w-10 h-10 rounded-full object-cover border border-accent/20"
+                />
                 <div>
                   <div className="font-semibold text-foreground text-sm">
                     {testimonial.name}
@@ -127,9 +134,11 @@ const PmsTestimonials = () => {
                     </p>
                     
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm">
-                        {testimonial.avatar}
-                      </div>
+                      <img 
+                        src={testimonial.image} 
+                        alt={testimonial.name}
+                        className="w-10 h-10 rounded-full object-cover border border-accent/20"
+                      />
                       <div>
                         <div className="font-semibold text-foreground text-sm">
                           {testimonial.name}
