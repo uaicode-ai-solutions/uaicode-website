@@ -11,6 +11,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import PlanningMySaas from "./pages/PlanningMySaas";
 import PmsWizard from "./pages/PmsWizard";
+import PmsDashboard from "./pages/PmsDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/planningmysaas" element={<PlanningMySaas />} />
           <Route path="/planningmysaas/wizard" element={<PmsWizard />} />
+          <Route path="/planningmysaas/dashboard" element={<PmsDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
