@@ -147,120 +147,105 @@ const PmsFooter = () => {
             </p>
           </div>
 
-          {/* Footer Content */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          {/* Footer Content - Centered Layout */}
+          <div className="text-center mb-12">
             {/* Brand */}
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-orange-500 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-background" />
-                </div>
-                <span className="text-xl font-bold text-foreground">
-                  Planning<span className="text-gradient-gold">My</span>SaaS
-                </span>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-orange-500 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-background" />
               </div>
-              <p className="text-muted-foreground max-w-sm mb-6">
-                AI-powered SaaS validation platform. From concept to market validation, 
-                branding, and launch-ready assets — all in minutes.
-              </p>
-              
-              {/* Social Links */}
-              <div className="flex items-center gap-3">
-                {[
-                  { Icon: Youtube, url: "https://www.youtube.com/@uaicodeai", label: "YouTube" },
-                  { Icon: Facebook, url: "https://web.facebook.com/uaicodeai", label: "Facebook" },
-                  { Icon: Instagram, url: "https://www.instagram.com/uaicode.ai/", label: "Instagram" },
-                  { Icon: Linkedin, url: "https://www.linkedin.com/company/uaicodeai/", label: "LinkedIn" },
-                  { Icon: Twitter, url: "https://x.com/uaicodeai", label: "X (Twitter)" },
-                ].map(({ Icon, url, label }, index) => (
-                  <a 
-                    key={index}
-                    href={url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent/30 transition-colors"
-                  >
-                    <Icon className="w-5 h-5" />
-                  </a>
-                ))}
-              </div>
+              <span className="text-xl font-bold text-foreground">
+                Planning<span className="text-gradient-gold">My</span>SaaS
+              </span>
             </div>
-
-            {/* Links */}
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Product</h4>
-              <ul className="space-y-3">
-                <li>
-                  <button 
-                    onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="text-muted-foreground hover:text-accent transition-colors"
-                  >
-                    Features
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="text-muted-foreground hover:text-accent transition-colors"
-                  >
-                    Pricing
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="text-muted-foreground hover:text-accent transition-colors"
-                  >
-                    FAQ
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
-              <ul className="space-y-3">
-                <li>
-                  <Link to="/terms" className="text-muted-foreground hover:text-accent transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/privacy" className="text-muted-foreground hover:text-accent transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <a 
-                    href="mailto:support@planningmysaas.com"
-                    className="text-muted-foreground hover:text-accent transition-colors"
-                  >
-                    Contact
-                  </a>
-                </li>
-              </ul>
+            
+            <p className="text-muted-foreground max-w-md mx-auto mb-6">
+              AI-powered SaaS validation platform. From concept to market validation, 
+              branding, and launch-ready assets — all in minutes.
+            </p>
+            
+            {/* Social Links - Centered */}
+            <div className="flex items-center justify-center gap-3">
+              {[
+                { Icon: Youtube, url: "https://www.youtube.com/@uaicodeai", label: "YouTube" },
+                { Icon: Facebook, url: "https://web.facebook.com/uaicodeai", label: "Facebook" },
+                { Icon: Instagram, url: "https://www.instagram.com/uaicode.ai/", label: "Instagram" },
+                { Icon: Linkedin, url: "https://www.linkedin.com/company/uaicodeai/", label: "LinkedIn" },
+                { Icon: Twitter, url: "https://x.com/uaicodeai", label: "X (Twitter)" },
+              ].map(({ Icon, url, label }, index) => (
+                <a 
+                  key={index}
+                  href={url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent/30 transition-colors"
+                >
+                  <Icon className="w-5 h-5" />
+                </a>
+              ))}
             </div>
           </div>
 
           {/* Bottom Bar */}
-          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Planning My SaaS. All rights reserved.
-            </p>
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              Made by 
-              <a 
-                href="https://uaicode.ai" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-foreground hover:text-accent transition-colors font-medium"
+          <div className="pt-8 border-t border-white/10">
+            {/* Navigation Links - Inline */}
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 mb-6 text-sm">
+              <button 
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-muted-foreground hover:text-accent transition-colors"
               >
-                Uaicode
-                <img src={uaicodeLogo} alt="Uaicode" className="w-4 h-4" />
+                Features
+              </button>
+              <span className="text-white/20">·</span>
+              <button 
+                onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-muted-foreground hover:text-accent transition-colors"
+              >
+                Pricing
+              </button>
+              <span className="text-white/20">·</span>
+              <button 
+                onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-muted-foreground hover:text-accent transition-colors"
+              >
+                FAQ
+              </button>
+              <span className="text-white/20">·</span>
+              <Link to="/terms" className="text-muted-foreground hover:text-accent transition-colors">
+                Terms
+              </Link>
+              <span className="text-white/20">·</span>
+              <Link to="/privacy" className="text-muted-foreground hover:text-accent transition-colors">
+                Privacy
+              </Link>
+              <span className="text-white/20">·</span>
+              <a 
+                href="mailto:support@planningmysaas.com"
+                className="text-muted-foreground hover:text-accent transition-colors"
+              >
+                Contact
               </a>
-              for founders everywhere
-            </p>
+            </div>
+            
+            {/* Copyright Row */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 text-sm text-muted-foreground">
+              <p>© {new Date().getFullYear()} Planning My SaaS. All rights reserved.</p>
+              <span className="hidden md:inline text-white/20">·</span>
+              <p className="flex items-center gap-1.5">
+                Made by 
+                <a 
+                  href="https://uaicode.ai" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-foreground hover:text-accent transition-colors font-medium"
+                >
+                  Uaicode
+                  <img src={uaicodeLogo} alt="Uaicode" className="w-4 h-4" />
+                </a>
+                for founders everywhere
+              </p>
+            </div>
           </div>
         </div>
       </footer>
