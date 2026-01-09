@@ -7,7 +7,12 @@ import {
   Palette, 
   Lock,
   ArrowRight,
-  CheckCircle
+  TrendingUp,
+  Target,
+  Zap,
+  DollarSign,
+  Layers,
+  Download
 } from "lucide-react";
 
 const tabs = [
@@ -17,46 +22,173 @@ const tabs = [
   { id: "brand", label: "Brand Assets", icon: Palette },
 ];
 
+// Score Ring Component
+const ScoreRing = ({ score, maxScore = 100, size = 80 }: { score: number; maxScore?: number; size?: number }) => {
+  const percentage = (score / maxScore) * 100;
+  const strokeWidth = 6;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="hsl(var(--muted))"
+          strokeWidth={strokeWidth}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="hsl(var(--accent))"
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          className="transition-all duration-1000 ease-out"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-lg font-bold text-foreground">{score}</span>
+      </div>
+    </div>
+  );
+};
+
+// Progress Bar Component
+const ProgressBar = ({ value, label }: { value: number; label?: string }) => (
+  <div className="w-full">
+    {label && <span className="text-xs text-muted-foreground mb-1 block">{label}</span>}
+    <div className="h-2 bg-muted rounded-full overflow-hidden">
+      <div 
+        className="h-full bg-gradient-to-r from-accent to-accent/70 rounded-full transition-all duration-1000 ease-out"
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  </div>
+);
+
+// Metric Card Component
+const MetricCard = ({ 
+  label, 
+  value, 
+  description, 
+  type = "text",
+  icon: Icon,
+  delay = 0 
+}: { 
+  label: string; 
+  value: string | number; 
+  description?: string; 
+  type?: "score" | "currency" | "percentage" | "text" | "badge";
+  icon?: React.ComponentType<{ className?: string }>;
+  delay?: number;
+}) => (
+  <div 
+    className="glass-premium rounded-xl p-4 border border-border/50 hover:border-accent/30 transition-all duration-300 animate-fade-in"
+    style={{ animationDelay: `${delay}ms` }}
+  >
+    <div className="flex items-start justify-between mb-2">
+      <span className="text-xs text-muted-foreground uppercase tracking-wider">{label}</span>
+      {Icon && <Icon className="w-4 h-4 text-accent" />}
+    </div>
+    
+    {type === "score" && typeof value === "number" ? (
+      <div className="flex items-center gap-3">
+        <ScoreRing score={value} size={56} />
+        <div>
+          <span className="text-2xl font-bold text-foreground">{value}/100</span>
+          {description && <p className="text-xs text-muted-foreground">{description}</p>}
+        </div>
+      </div>
+    ) : type === "percentage" && typeof value === "number" ? (
+      <div className="space-y-2">
+        <span className="text-2xl font-bold text-accent">{value}%</span>
+        <ProgressBar value={value} />
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      </div>
+    ) : type === "badge" ? (
+      <div>
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent border border-accent/30">
+          {value}
+        </span>
+        {description && <p className="text-xs text-muted-foreground mt-2">{description}</p>}
+      </div>
+    ) : (
+      <div>
+        <span className="text-2xl font-bold text-foreground">{value}</span>
+        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
+      </div>
+    )}
+  </div>
+);
+
+// Color Palette Preview Component
+const ColorPalettePreview = () => (
+  <div className="flex gap-2">
+    <div className="w-8 h-8 rounded-full bg-accent border-2 border-accent/50" />
+    <div className="w-8 h-8 rounded-full bg-foreground border-2 border-foreground/50" />
+    <div className="w-8 h-8 rounded-full bg-muted border-2 border-muted/50" />
+    <div className="w-8 h-8 rounded-full bg-card border-2 border-border" />
+  </div>
+);
+
+// Asset Preview Component
+const AssetPreview = ({ count, label, icon: Icon }: { count: number; label: string; icon: React.ComponentType<{ className?: string }> }) => (
+  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+    <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+      <Icon className="w-5 h-5 text-accent" />
+    </div>
+    <div>
+      <span className="text-lg font-bold text-foreground">{count}</span>
+      <p className="text-xs text-muted-foreground">{label}</p>
+    </div>
+  </div>
+);
+
 const tabContent = {
   overview: {
     title: "Executive Summary",
-    items: [
-      "Market Opportunity Score: 87/100",
-      "Estimated TAM: $4.2B by 2026",
-      "Competition Level: Moderate",
-      "Recommended Positioning: Premium B2B SaaS",
-      "Go-to-Market Strategy: Product-led Growth",
+    metrics: [
+      { label: "Market Opportunity", value: 87, type: "score" as const, description: "High potential", icon: Target },
+      { label: "Estimated TAM", value: "$4.2B", type: "text" as const, description: "by 2026", icon: DollarSign },
+      { label: "Competition Level", value: "Moderate", type: "badge" as const, description: "Room for differentiation", icon: Users },
+      { label: "Positioning", value: "Premium B2B", type: "text" as const, description: "SaaS Solution", icon: Layers },
+      { label: "Go-to-Market", value: "Product-led", type: "badge" as const, description: "Growth Strategy", icon: TrendingUp },
+      { label: "Viability Score", value: 94, type: "percentage" as const, description: "Ready for launch", icon: Zap },
     ],
   },
   market: {
     title: "Market Analysis",
-    items: [
-      "Market Size Growth: 23% YoY",
-      "Target Segments Identified: 4",
-      "Key Trends: AI Integration, Remote Work",
-      "Regulatory Considerations: GDPR Compliant",
-      "Market Entry Timing: Optimal",
+    metrics: [
+      { label: "YoY Growth", value: "23%", type: "text" as const, description: "Market expansion rate", icon: TrendingUp },
+      { label: "Target Segments", value: "4", type: "text" as const, description: "Identified niches", icon: Target },
+      { label: "Key Trends", value: "AI + Remote", type: "badge" as const, description: "Integration & Work", icon: Zap },
+      { label: "Compliance", value: "GDPR Ready", type: "badge" as const, description: "Regulatory aligned", icon: FileText },
+      { label: "Entry Timing", value: 92, type: "percentage" as const, description: "Optimal window", icon: BarChart3 },
+      { label: "Market Fit", value: 88, type: "score" as const, description: "Strong alignment", icon: Layers },
     ],
   },
   competitors: {
     title: "Competitor Landscape",
-    items: [
-      "Direct Competitors: 12 identified",
-      "Market Leaders: 3 dominant players",
-      "Pricing Range: $29 - $299/mo",
-      "Feature Gap Opportunities: 7 found",
-      "Differentiation Score: Strong",
+    metrics: [
+      { label: "Direct Competitors", value: "12", type: "text" as const, description: "Identified players", icon: Users },
+      { label: "Market Leaders", value: "3", type: "text" as const, description: "Dominant players", icon: Target },
+      { label: "Pricing Range", value: "$29 - $299", type: "text" as const, description: "Monthly plans", icon: DollarSign },
+      { label: "Feature Gaps", value: "7", type: "text" as const, description: "Opportunities found", icon: Zap },
+      { label: "Differentiation", value: 85, type: "score" as const, description: "Strong positioning", icon: Layers },
+      { label: "Win Probability", value: 78, type: "percentage" as const, description: "Against competition", icon: TrendingUp },
     ],
   },
   brand: {
     title: "Brand Kit Preview",
-    items: [
-      "Logo Variations: 3 concepts",
-      "Color Palette: Primary + 4 accents",
-      "Typography: Headers + Body fonts",
-      "Product Mockups: 5 screens",
-      "Landing Page Template: Included",
-    ],
+    metrics: [],
   },
 };
 
@@ -69,6 +201,8 @@ const PmsSampleReport = () => {
       element.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  const currentContent = tabContent[activeTab as keyof typeof tabContent];
 
   return (
     <section className="py-24 px-4 relative overflow-hidden">
@@ -117,25 +251,67 @@ const PmsSampleReport = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="p-8 relative min-h-[300px]">
+            <div className="p-6 md:p-8 relative min-h-[400px]">
               {/* Content */}
               <div className="relative z-10">
                 <h3 className="text-2xl font-bold text-foreground mb-6">
-                  {tabContent[activeTab as keyof typeof tabContent].title}
+                  {currentContent.title}
                 </h3>
                 
-                <ul className="space-y-4">
-                  {tabContent[activeTab as keyof typeof tabContent].items.map((item, index) => (
-                    <li 
-                      key={index}
-                      className="flex items-center gap-3 text-muted-foreground animate-fade-in"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <CheckCircle className="w-5 h-5 text-accent flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                {activeTab === "brand" ? (
+                  /* Brand Assets Special Layout */
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <AssetPreview count={3} label="Logo Variations" icon={Palette} />
+                      <AssetPreview count={5} label="Product Mockups" icon={Layers} />
+                      <AssetPreview count={1} label="Landing Template" icon={FileText} />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="glass-premium rounded-xl p-4 border border-border/50 animate-fade-in" style={{ animationDelay: "300ms" }}>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">Color Palette</span>
+                        <ColorPalettePreview />
+                        <p className="text-xs text-muted-foreground mt-2">Primary + 4 accent colors</p>
+                      </div>
+                      
+                      <div className="glass-premium rounded-xl p-4 border border-border/50 animate-fade-in" style={{ animationDelay: "400ms" }}>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">Typography</span>
+                        <div className="space-y-1">
+                          <p className="text-lg font-bold text-foreground">Display Font</p>
+                          <p className="text-sm text-muted-foreground">Body Font Style</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">Headers + Body fonts included</p>
+                      </div>
+                    </div>
+                    
+                    <div className="glass-premium rounded-xl p-4 border border-border/50 animate-fade-in" style={{ animationDelay: "500ms" }}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-xs text-muted-foreground uppercase tracking-wider">Complete Package</span>
+                          <p className="text-lg font-bold text-foreground mt-1">All assets in one download</p>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
+                          <Download className="w-6 h-6 text-accent" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Standard Metrics Grid */
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {currentContent.metrics.map((metric, index) => (
+                      <MetricCard 
+                        key={index}
+                        label={metric.label}
+                        value={metric.value}
+                        description={metric.description}
+                        type={metric.type}
+                        icon={metric.icon}
+                        delay={index * 100}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Blur Overlay */}
