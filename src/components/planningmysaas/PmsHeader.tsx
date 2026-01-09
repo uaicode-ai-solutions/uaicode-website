@@ -61,7 +61,7 @@ const PmsHeader = () => {
               onClick={() => scrollToSection("hero")}
               className="bg-accent hover:bg-accent/90 text-background font-semibold"
             >
-              Get Started Now
+              See Pricing
             </Button>
           </div>
 
@@ -105,7 +105,7 @@ const PmsHeader = () => {
               onClick={() => scrollToSection("hero")}
               className="bg-accent hover:bg-accent/90 text-background font-semibold w-full"
             >
-              Get Started Now
+              See Pricing
             </Button>
           </nav>
         )}
