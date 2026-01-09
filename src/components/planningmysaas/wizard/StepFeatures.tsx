@@ -191,8 +191,31 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
     return { label: "Very High", color: "red" };
   };
 
+  const getVisualPercentage = (
+    actualPercentage: number,
+    selectedByTier: Record<string, number>
+  ) => {
+    if (actualPercentage === 0) return 0;
+    
+    const hasEnterprise = selectedByTier.enterprise > 0;
+    const hasAdvanced = selectedByTier.advanced > 0;
+    
+    // Porcentagem mínima visual baseada no tier
+    let minVisualPercentage = 0;
+    
+    if (hasEnterprise) {
+      minVisualPercentage = 65; // Visualmente na zona "High" (laranja)
+    } else if (hasAdvanced) {
+      minVisualPercentage = 40; // Visualmente na zona "Medium" (amarelo)
+    }
+    
+    // Retorna o maior valor entre a % real e a mínima forçada pelo tier
+    return Math.max(actualPercentage, minVisualPercentage);
+  };
+
   const { percentage, selectedByTier } = calculateComplexity();
   const complexityLevel = getComplexityLevel(percentage, selectedByTier);
+  const visualPercentage = getVisualPercentage(percentage, selectedByTier);
 
   return (
     <TooltipProvider>
@@ -235,7 +258,7 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
             <div 
               className="h-full rounded-full transition-all duration-500 ease-out"
               style={{
-                width: `${percentage}%`,
+                width: `${visualPercentage}%`,
                 background: "linear-gradient(90deg, #22c55e 0%, #eab308 40%, #f97316 70%, #ef4444 100%)"
               }}
             />
