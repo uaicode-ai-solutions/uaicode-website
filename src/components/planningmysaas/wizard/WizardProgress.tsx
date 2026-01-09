@@ -14,14 +14,14 @@ interface WizardProgressProps {
 
 const WizardProgress = ({ steps, currentStep }: WizardProgressProps) => {
   return (
-    <div className="w-full max-w-3xl mx-auto px-4">
+    <div className="w-full max-w-2xl mx-auto px-4">
       <div className="flex items-center justify-between relative">
         {/* Progress line background */}
-        <div className="absolute left-0 right-0 top-6 md:top-7 h-1 bg-border/30 rounded-full" />
+        <div className="absolute left-0 right-0 top-5 h-0.5 bg-border/40" />
         
-        {/* Progress line filled with gradient and glow */}
+        {/* Progress line filled */}
         <div
-          className="absolute left-0 top-6 md:top-7 h-1 bg-gradient-to-r from-accent to-accent/80 rounded-full shadow-[0_0_10px_hsl(var(--accent)/0.5)] transition-all duration-700 ease-out"
+          className="absolute left-0 top-5 h-0.5 bg-accent transition-all duration-500"
           style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
         />
 
@@ -31,40 +31,30 @@ const WizardProgress = ({ steps, currentStep }: WizardProgressProps) => {
           const StepIcon = step.icon;
 
           return (
-            <div key={step.id} className="flex flex-col items-center relative z-10 group">
+            <div key={step.id} className="flex flex-col items-center relative z-10">
               {/* Step circle */}
               <div
                 className={cn(
-                  "w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-medium transition-all duration-300",
+                  "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300",
                   isCompleted
-                    ? "bg-accent text-accent-foreground shadow-[0_0_15px_hsl(var(--accent)/0.4)]"
+                    ? "bg-accent text-accent-foreground"
                     : isCurrent
-                    ? "bg-accent text-accent-foreground ring-4 ring-accent/40 shadow-[0_0_20px_hsl(var(--accent)/0.6)] animate-pulse"
-                    : "bg-card border-2 border-border/60 text-muted-foreground group-hover:border-accent/30 transition-colors"
+                    ? "border-2 border-dashed border-accent bg-transparent text-accent"
+                    : "border border-border/60 bg-card text-muted-foreground"
                 )}
               >
                 {isCompleted ? (
-                  <Check className="w-5 h-5 md:w-6 md:h-6" />
+                  <Check className="w-5 h-5" />
                 ) : (
-                  <StepIcon className="w-5 h-5 md:w-6 md:h-6" />
+                  <StepIcon className="w-5 h-5" />
                 )}
               </div>
-
-              {/* Step number */}
-              <span
-                className={cn(
-                  "mt-2 text-[10px] font-semibold uppercase tracking-wider transition-colors duration-300",
-                  isCurrent ? "text-accent" : isCompleted ? "text-accent/80" : "text-muted-foreground/60"
-                )}
-              >
-                Step {step.id}
-              </span>
 
               {/* Step label */}
               <span
                 className={cn(
-                  "text-[11px] sm:text-xs font-medium transition-colors duration-300 text-center max-w-[60px] sm:max-w-none",
-                  isCurrent ? "text-foreground" : isCompleted ? "text-foreground/80" : "text-muted-foreground"
+                  "mt-2 text-xs font-medium transition-colors duration-300 text-center max-w-[70px]",
+                  isCurrent ? "text-accent" : isCompleted ? "text-foreground" : "text-muted-foreground"
                 )}
               >
                 {step.label}
