@@ -93,10 +93,8 @@ const PmsPricing = () => {
           {plans.map((plan, index) => (
             <div
               key={index}
-            className={`relative group rounded-2xl transition-all duration-500 ${
-                plan.popular 
-                  ? 'scale-105 z-10 hover:scale-110 hover:-translate-y-1' 
-                  : 'hover:scale-[1.02] hover:-translate-y-1'
+            className={`relative group rounded-2xl transition-all duration-300 ${
+                plan.popular ? 'z-10' : ''
               }`}
             >
               {/* Animated Border for Popular Plan */}
@@ -148,7 +146,7 @@ const PmsPricing = () => {
                       <div className={`w-5 h-5 rounded-full ${plan.popular ? 'bg-accent' : 'bg-muted-foreground/30'} flex items-center justify-center flex-shrink-0 mt-0.5`}>
                         <Check className={`w-3 h-3 ${plan.popular ? 'text-background' : 'text-foreground'}`} />
                       </div>
-                      <span className={feature.startsWith("Everything in") ? "text-accent font-medium" : "text-muted-foreground"}>
+                      <span className={feature.startsWith("Everything in") && plan.popular ? "text-accent font-medium" : "text-muted-foreground"}>
                         {feature}
                       </span>
                     </li>
