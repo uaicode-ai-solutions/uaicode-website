@@ -1,33 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { useConfetti } from "@/hooks/useConfetti";
 import WizardLayout from "@/components/planningmysaas/wizard/WizardLayout";
 import StepYourInfo from "@/components/planningmysaas/wizard/StepYourInfo";
 import StepYourIdea from "@/components/planningmysaas/wizard/StepYourIdea";
 import StepTargetMarket from "@/components/planningmysaas/wizard/StepTargetMarket";
 import StepFeatures from "@/components/planningmysaas/wizard/StepFeatures";
 import StepGoals from "@/components/planningmysaas/wizard/StepGoals";
+import { useToast } from "@/hooks/use-toast";
+import { useConfetti } from "@/hooks/useConfetti";
 
 interface WizardData {
-  // Step 1
+  // Step 1: Your Info
   fullName: string;
   email: string;
   companyName: string;
   phone: string;
-  // Step 2
+  
+  // Step 2: Your Idea
   saasType: string;
   saasTypeOther: string;
   industry: string;
   industryOther: string;
   description: string;
-  // Step 3
+  
+  // Step 3: Target Market
   customerTypes: string[];
   marketSize: string;
-  // Step 4
+  
+  // Step 4: Features
   selectedFeatures: string[];
   selectedTier: string;
-  // Step 5
+  
+  // Step 5: Goals
   goal: string;
   budget: string;
   timeline: string;
@@ -52,17 +56,44 @@ const initialData: WizardData = {
   timeline: "",
 };
 
+const STORAGE_KEY = "pms-wizard-data";
+
+const getSavedData = (): { data: WizardData; currentStep: number } => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return {
+        data: { ...initialData, ...parsed.data },
+        currentStep: parsed.currentStep || 1,
+      };
+    }
+  } catch (e) {
+    console.error("Error loading saved wizard data:", e);
+  }
+  return { data: initialData, currentStep: 1 };
+};
+
 const PmsWizard = () => {
   const [searchParams] = useSearchParams();
-  const selectedPlan = searchParams.get("plan") || "pro";
+  const selectedPlan = searchParams.get("plan") || "starter";
+  const totalSteps = 5;
   
-  const [currentStep, setCurrentStep] = useState(1);
-  const [data, setData] = useState<WizardData>(initialData);
+  const savedState = getSavedData();
+  const [currentStep, setCurrentStep] = useState(savedState.currentStep);
+  const [data, setData] = useState<WizardData>(savedState.data);
   
   const { toast } = useToast();
   const { fireConfetti } = useConfetti();
 
-  const totalSteps = 5;
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      currentStep,
+      data,
+      savedAt: new Date().toISOString()
+    }));
+  }, [currentStep, data]);
 
   const handleChange = (field: string, value: string | string[]) => {
     setData((prev) => ({ ...prev, [field]: value }));
@@ -106,6 +137,13 @@ const PmsWizard = () => {
     }
   };
 
+  const handleStepClick = (stepId: number) => {
+    // Only allow going to completed steps or current step
+    if (stepId <= currentStep) {
+      setCurrentStep(stepId);
+    }
+  };
+
   const handleSubmit = () => {
     if (!validateStep(currentStep)) return;
 
@@ -114,6 +152,9 @@ const PmsWizard = () => {
       selectedPlan,
       ...data,
     });
+
+    // Clear saved data after successful submission
+    localStorage.removeItem(STORAGE_KEY);
 
     // Fire confetti
     fireConfetti();
@@ -195,6 +236,7 @@ const PmsWizard = () => {
       totalSteps={totalSteps}
       onNext={handleNext}
       onBack={handleBack}
+      onStepClick={handleStepClick}
       canGoNext={validateStep(currentStep)}
       isLastStep={currentStep === totalSteps}
       onSubmit={handleSubmit}
