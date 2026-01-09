@@ -22,7 +22,7 @@ interface WizardData {
   industryOther: string;
   description: string;
   // Step 3
-  customerType: string;
+  customerTypes: string[];
   marketSize: string;
   // Step 4
   selectedFeatures: string[];
@@ -42,7 +42,7 @@ const initialData: WizardData = {
   industry: "",
   industryOther: "",
   description: "",
-  customerType: "",
+  customerTypes: [],
   marketSize: "",
   selectedFeatures: [],
   selectedTier: "",
@@ -82,7 +82,7 @@ const PmsWizard = () => {
           (data.industry !== "other" || data.industryOther.trim().length >= 2);
         return saasTypeValid && industryValid && data.description.trim().length >= 20;
       case 3:
-        return data.customerType !== "" && data.marketSize !== "";
+        return data.customerTypes.length > 0 && data.marketSize !== "";
       case 4:
         return true; // Features are optional
       case 5:
@@ -154,7 +154,7 @@ const PmsWizard = () => {
         return (
           <StepTargetMarket
             data={{
-              customerType: data.customerType,
+              customerTypes: data.customerTypes,
               marketSize: data.marketSize,
             }}
             onChange={handleChange}
