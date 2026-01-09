@@ -89,12 +89,12 @@ const PmsPricing = () => {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
           {plans.map((plan, index) => (
             <div
               key={index}
-            className={`relative group rounded-2xl transition-all duration-300 ${
-                plan.popular ? 'z-10' : ''
+              className={`relative group rounded-2xl transition-all duration-300 ${
+                plan.popular ? 'z-10 md:scale-105 md:-translate-y-2' : ''
               }`}
             >
               {/* Animated Border for Popular Plan */}
@@ -102,7 +102,7 @@ const PmsPricing = () => {
                 <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite]" />
               )}
 
-              <div className={`relative h-full flex flex-col ${plan.popular ? 'h-[680px]' : 'h-[620px]'} glass-card p-8 rounded-2xl border transition-all duration-300 ${
+              <div className={`relative h-full flex flex-col glass-card p-8 rounded-2xl border transition-all duration-300 ${
                 plan.popular
                   ? "border-transparent shadow-lg shadow-accent/20"
                   : "border-border/50 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10"
