@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, Star, ArrowRight, Rocket, Zap, Crown } from "lucide-react";
 import { LucideIcon } from "lucide-react";
@@ -69,6 +70,12 @@ const plans: Plan[] = [
 ];
 
 const PmsPricing = () => {
+  const navigate = useNavigate();
+
+  const handleValidate = (planName: string) => {
+    navigate(`/planningmysaas/wizard?plan=${planName.toLowerCase()}`);
+  };
+
   return (
     <section id="pricing" className="py-24 px-4 relative overflow-hidden">
       {/* Background */}
@@ -158,6 +165,7 @@ const PmsPricing = () => {
 
                 {/* CTA Button */}
                 <Button
+                  onClick={() => handleValidate(plan.name)}
                   className={`w-full py-6 text-lg font-bold rounded-xl transition-all duration-300 group/btn ${
                     plan.popular
                       ? 'bg-gradient-to-r from-[hsl(45,100%,55%)] to-[hsl(38,100%,50%)] hover:from-[hsl(45,100%,50%)] hover:to-[hsl(38,100%,45%)] text-white glow-white'
