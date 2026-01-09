@@ -545,4 +545,54 @@ All colors MUST be HSL.
     );
     pointer-events: none;
   }
+
+  /* Marquee animation for trusted by logos */
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Float animations */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-slow {
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 7s ease-in-out infinite 2s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  /* Glow card effect */
+  .glow-card:hover {
+    box-shadow: 0 0 30px hsla(45, 100%, 55%, 0.1);
+  }
+
+  /* White glow for buttons */
+  .glow-white {
+    box-shadow: 0 0 20px hsla(45, 100%, 55%, 0.3);
+  }
+
+  .glow-white:hover {
+    box-shadow: 0 0 30px hsla(45, 100%, 55%, 0.5);
+  }
 }

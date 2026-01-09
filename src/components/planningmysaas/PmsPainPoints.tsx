@@ -59,7 +59,12 @@ const PmsPainPoints = () => {
               {/* Shimmer Effect */}
               <div className="absolute inset-0 rounded-2xl shimmer opacity-0 group-hover:opacity-100" />
               
-              <div className="relative z-10 flex items-start gap-4">
+              {/* Number Badge */}
+              <div className="absolute -top-3 -left-3 w-8 h-8 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center">
+                <span className="text-sm font-bold text-accent">0{index + 1}</span>
+              </div>
+              
+              <div className="relative z-10 flex items-start gap-4 pt-2">
                 <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300">
                   <point.icon className="w-7 h-7 text-accent" />
                 </div>

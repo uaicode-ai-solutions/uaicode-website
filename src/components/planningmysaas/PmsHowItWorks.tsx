@@ -60,64 +60,67 @@ const PmsHowItWorks = () => {
           </p>
         </div>
 
-        {/* Steps */}
-        <div className="space-y-24">
-          {steps.map((step, index) => (
-            <div
-              key={index}
-              className={`flex flex-col ${
-                index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'
-              } items-center gap-12`}
-            >
-              {/* Image Side */}
-              <div className="flex-1 relative group">
-                {/* Glow */}
-                <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-full scale-75 opacity-50 group-hover:opacity-80 transition-opacity duration-500" />
+        {/* Steps with Timeline */}
+        <div className="relative">
+          {/* Vertical Timeline Line */}
+          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-accent/50 via-accent/30 to-accent/10 hidden lg:block" />
+          
+          <div className="space-y-16 lg:space-y-24">
+            {steps.map((step, index) => (
+              <div
+                key={index}
+                className={`relative flex flex-col ${
+                  index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'
+                } items-center gap-8 lg:gap-12`}
+              >
+                {/* Timeline Node (Desktop) */}
+                <div className="absolute left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-accent/30 hidden lg:flex z-20 pulse-glow">
+                  <span className="text-lg font-bold text-background">{step.step}</span>
+                </div>
                 
-                {/* Image Container */}
-                <div className="relative glass-premium rounded-2xl p-3 border border-white/10 animate-fade-in-up">
-                  <img 
-                    src={step.image} 
-                    alt={step.title}
-                    className="w-full h-auto rounded-xl"
-                  />
+                {/* Image Side */}
+                <div className={`flex-1 relative group ${index % 2 === 0 ? 'lg:pr-16' : 'lg:pl-16'}`}>
+                  {/* Glow */}
+                  <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-full scale-75 opacity-50 group-hover:opacity-80 transition-opacity duration-500" />
                   
-                  {/* Step Number Badge */}
-                  <div className="absolute -top-4 -left-4 w-12 h-12 rounded-xl bg-accent flex items-center justify-center shadow-lg">
-                    <span className="text-xl font-bold text-background">{step.step}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Content Side */}
-              <div className="flex-1 text-center lg:text-left">
-                {/* Step Indicator */}
-                <div className="flex items-center gap-4 justify-center lg:justify-start mb-6">
-                  <div className="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/30 flex items-center justify-center shadow-lg pulse-glow">
-                    <step.icon className="w-8 h-8 text-accent" />
-                  </div>
-                  <div className="hidden sm:block">
-                    <div className="text-sm text-muted-foreground uppercase tracking-wider">Step {step.step}</div>
-                    <div className="w-24 h-1 bg-gradient-to-r from-accent to-transparent rounded-full mt-1" />
+                  {/* Image Container */}
+                  <div className="relative glass-premium rounded-2xl p-3 border border-white/10 animate-fade-in-up">
+                    <img 
+                      src={step.image} 
+                      alt={step.title}
+                      className="w-full h-auto rounded-xl"
+                    />
+                    
+                    {/* Step Number Badge (Mobile) */}
+                    <div className="lg:hidden absolute -top-4 -left-4 w-12 h-12 rounded-xl bg-accent flex items-center justify-center shadow-lg">
+                      <span className="text-xl font-bold text-background">{step.step}</span>
+                    </div>
                   </div>
                 </div>
 
-                <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-                  {step.title}
-                </h3>
-                <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0">
-                  {step.description}
-                </p>
-
-                {/* Connection Line (hidden on last step) */}
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block mt-8">
-                    <div className="h-px w-32 bg-gradient-to-r from-accent to-transparent opacity-30" />
+                {/* Content Side */}
+                <div className={`flex-1 text-center lg:text-left ${index % 2 === 0 ? 'lg:pl-16' : 'lg:pr-16'}`}>
+                  {/* Step Indicator */}
+                  <div className="flex items-center gap-4 justify-center lg:justify-start mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/30 flex items-center justify-center shadow-lg">
+                      <step.icon className="w-8 h-8 text-accent" />
+                    </div>
+                    <div className="hidden sm:block">
+                      <div className="text-sm text-accent uppercase tracking-wider font-semibold">Step {step.step}</div>
+                      <div className="w-24 h-1 bg-gradient-to-r from-accent to-transparent rounded-full mt-1" />
+                    </div>
                   </div>
-                )}
+
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+                    {step.title}
+                  </h3>
+                  <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0">
+                    {step.description}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Bottom CTA */}

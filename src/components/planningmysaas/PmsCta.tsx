@@ -72,25 +72,46 @@ const PmsCta = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-accent via-yellow-400 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite] opacity-0 group-hover:opacity-100 transition-opacity" />
             </Button>
 
-            {/* Trust Line */}
-            <div className="flex flex-wrap items-center justify-center gap-8 mt-10">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-accent" />
+            {/* Social Proof */}
+            <div className="flex flex-col items-center gap-6 mt-10">
+              {/* User Avatars */}
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-3">
+                  {["SC", "MR", "EW", "JP", "AC"].map((initials, i) => (
+                    <div
+                      key={i}
+                      className="w-10 h-10 rounded-full bg-accent/20 border-2 border-background flex items-center justify-center text-accent text-xs font-bold"
+                    >
+                      {initials}
+                    </div>
+                  ))}
                 </div>
-                <span className="text-sm">No credit card required</span>
+                <div className="text-left">
+                  <div className="text-foreground font-semibold">Join 2,500+ founders</div>
+                  <div className="text-sm text-muted-foreground">who validated their ideas</div>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-accent" />
+              
+              {/* Trust Badges */}
+              <div className="flex flex-wrap items-center justify-center gap-6">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Shield className="w-4 h-4 text-accent" />
+                  </div>
+                  <span className="text-sm">No credit card required</span>
                 </div>
-                <span className="text-sm">Results in under 5 minutes</span>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-accent" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-accent" />
+                  </div>
+                  <span className="text-sm">Results in under 5 minutes</span>
                 </div>
-                <span className="text-sm">60-day money-back guarantee</span>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Shield className="w-4 h-4 text-accent" />
+                  </div>
+                  <span className="text-sm">60-day money-back guarantee</span>
+                </div>
               </div>
             </div>
           </div>
