@@ -1,5 +1,5 @@
 // ============================================
-// NEW REPORT DATA - Storytelling-focused structure
+// REPORT DATA - English Version
 // ============================================
 
 // ==========================================
@@ -10,128 +10,128 @@ export const reportData = {
   // Hero Section
   projectName: "My Doctor Hub",
   viabilityScore: 87,
-  verdictHeadline: "Projeto com forte potencial de mercado",
+  verdictHeadline: "Project with strong market potential",
   keyMetrics: {
     marketSize: "$12.4B",
-    marketLabel: "Mercado Total",
+    marketLabel: "Total Market",
     expectedROI: "363%",
-    roiLabel: "ROI Esperado",
+    roiLabel: "Expected ROI",
     paybackMonths: 8,
-    paybackLabel: "Meses até Payback"
+    paybackLabel: "Months to Payback"
   },
 
   // Executive Verdict
-  executiveSummary: `Após analisar profundamente seu projeto My Doctor Hub, identificamos uma oportunidade sólida em um mercado de $12.4 bilhões que cresce 23% ao ano.
+  executiveSummary: `After deeply analyzing your My Doctor Hub project, we identified a solid opportunity in a $12.4 billion market growing at 23% per year.
 
-Seu diferencial de conectar consumidores com fornecedores locais de produtos de saúde e suplementos, combinado com gestão de estoque e delivery, posiciona você favoravelmente contra competidores que focam apenas em grandes redes.
+Your unique approach of connecting consumers with local health product and supplement suppliers, combined with inventory management and delivery, positions you favorably against competitors who focus only on large chains.
 
-O investimento estimado de $55.000 para o MVP tem potencial de retorno em 8 meses, com LTV/CAC de 11.5x indicando unit economics extremamente saudáveis.`,
+The estimated $55,000 MVP investment has the potential to break even in 8 months, with an LTV/CAC of 11.5x indicating extremely healthy unit economics.`,
   
-  recommendation: "Prosseguir com o desenvolvimento",
+  recommendation: "Proceed with development",
   
   highlights: [
     { 
       icon: "TrendingUp", 
-      text: "Mercado em crescimento de 23% ao ano",
-      detail: "Healthcare e-commerce é um dos setores que mais cresce" 
+      text: "Market growing 23% year-over-year",
+      detail: "Healthcare e-commerce is one of the fastest-growing sectors" 
     },
     { 
       icon: "PiggyBank", 
-      text: "Unit Economics favorável (LTV/CAC 11.5x)",
-      detail: "Indicadores financeiros acima da média do mercado" 
+      text: "Favorable unit economics (LTV/CAC 11.5x)",
+      detail: "Financial indicators above market average" 
     },
     { 
       icon: "Target", 
-      text: "Baixa competição no nicho de pequenos negócios",
-      detail: "Competidores focam em grandes redes, negligenciando SMBs" 
+      text: "Low competition in small business niche",
+      detail: "Competitors focus on large chains, neglecting SMBs" 
     },
     { 
       icon: "Clock", 
-      text: "Tecnicamente viável em 4-6 meses",
-      detail: "Stack moderno permite desenvolvimento ágil" 
+      text: "Technically viable in 4-6 months",
+      detail: "Modern stack enables agile development" 
     },
   ],
   
   risks: [
     { 
-      risk: "Dependência de APIs de terceiros para pagamentos e delivery",
+      risk: "Dependency on third-party APIs for payments and delivery",
       priority: "medium" as const,
-      mitigation: "Implementamos fallbacks multi-provider e cache inteligente" 
+      mitigation: "We implement multi-provider fallbacks and intelligent caching" 
     },
     { 
-      risk: "Ciclo de vendas mais longo para pequenos negócios",
+      risk: "Longer sales cycle for small businesses",
       priority: "medium" as const,
-      mitigation: "Abordagem PLG com freemium reduz atrito de adoção" 
+      mitigation: "PLG approach with freemium reduces adoption friction" 
     },
     { 
-      risk: "Regulamentações de saúde e alimentos funcionais",
+      risk: "Health and functional food regulations",
       priority: "low" as const,
-      mitigation: "Compliance integrado desde o dia 1 com validações ANVISA" 
+      mitigation: "Compliance integrated from day 1 with FDA validations" 
     },
   ],
 
   // Market Opportunity
   market: {
-    tam: { value: "$12.4B", label: "TAM", description: "Mercado Total Endereçável - Healthcare E-commerce Global" },
-    sam: { value: "$2.8B", label: "SAM", description: "Mercado Disponível - Segmento Brasil/LATAM" },
-    som: { value: "$180M", label: "SOM", description: "Mercado Obtível - Primeiros 3 anos" },
+    tam: { value: "$12.4B", label: "TAM", description: "Total Addressable Market - Global Healthcare E-commerce" },
+    sam: { value: "$2.8B", label: "SAM", description: "Serviceable Available Market - US/LATAM Segment" },
+    som: { value: "$180M", label: "SOM", description: "Serviceable Obtainable Market - First 3 years" },
     growthRate: "23%",
-    growthLabel: "Crescimento Anual",
-    conclusion: "Há espaço claro para um novo player focado em pequenos negócios de saúde e bem-estar na América Latina."
+    growthLabel: "Annual Growth",
+    conclusion: "There is clear room for a new player focused on small health and wellness businesses in the Americas."
   },
   
   competitors: [
     { 
-      name: "iFood/Rappi", 
-      price: "Comissão 15-25%", 
-      weakness: "Focados em alimentação geral, sem especialização em saúde",
-      yourAdvantage: "Especialização em produtos de saúde com compliance"
+      name: "DoorDash/Instacart", 
+      price: "15-25% Commission", 
+      weakness: "Focused on general food, no health specialization",
+      yourAdvantage: "Specialization in health products with compliance"
     },
     { 
-      name: "Farmácias Online", 
-      price: "Margem fixa", 
-      weakness: "Apenas grandes redes, sem suporte a pequenos",
-      yourAdvantage: "Plataforma para pequenos produtores e lojas"
+      name: "Online Pharmacies", 
+      price: "Fixed margin", 
+      weakness: "Only large chains, no support for small businesses",
+      yourAdvantage: "Platform for small producers and stores"
     },
     { 
-      name: "ERPs Genéricos", 
-      price: "$50-200/mês", 
-      weakness: "Sem delivery integrado, curva de aprendizado alta",
-      yourAdvantage: "Solução completa e simples de usar"
+      name: "Generic ERPs", 
+      price: "$50-200/month", 
+      weakness: "No integrated delivery, steep learning curve",
+      yourAdvantage: "Complete and easy-to-use solution"
     },
   ],
   
-  competitiveAdvantage: "Única plataforma que combina gestão de estoque, delivery local e compliance de produtos de saúde, focada em pequenos negócios.",
+  competitiveAdvantage: "The only platform that combines inventory management, local delivery, and health product compliance, focused on small businesses.",
 
   // Investment
   investment: {
     total: 55000,
     currency: "USD",
     breakdown: [
-      { name: "Desenvolvimento Frontend", value: 18000, percentage: 33 },
+      { name: "Frontend Development", value: 18000, percentage: 33 },
       { name: "Backend & API", value: 15000, percentage: 27 },
-      { name: "Integrações (Pagamento, Delivery)", value: 12000, percentage: 22 },
-      { name: "Infraestrutura (12 meses)", value: 5000, percentage: 9 },
-      { name: "Testes & QA", value: 5000, percentage: 9 },
+      { name: "Integrations (Payment, Delivery)", value: 12000, percentage: 22 },
+      { name: "Infrastructure (12 months)", value: 5000, percentage: 9 },
+      { name: "Testing & QA", value: 5000, percentage: 9 },
     ],
     included: [
-      "Desenvolvimento completo do MVP",
-      "12 meses de hospedagem e infraestrutura",
-      "Integrações com pagamento e delivery",
-      "App web responsivo (mobile-first)",
-      "Suporte pós-lançamento (30 dias)",
-      "Documentação técnica completa",
+      "Complete MVP development",
+      "12 months of hosting and infrastructure",
+      "Payment and delivery integrations",
+      "Responsive web app (mobile-first)",
+      "Post-launch support (30 days)",
+      "Complete technical documentation",
     ],
     notIncluded: [
-      "Marketing e aquisição de clientes",
-      "Apps nativos iOS/Android",
-      "Integrações customizadas adicionais",
-      "Suporte 24/7 após período inicial",
+      "Marketing and customer acquisition",
+      "Native iOS/Android apps",
+      "Additional custom integrations",
+      "24/7 support after initial period",
     ],
     comparison: {
       traditional: 120000,
       savings: "54%",
-      note: "Agência tradicional cobraria $120.000+ pelo mesmo escopo"
+      note: "Traditional agency would charge $120,000+ for the same scope"
     }
   },
 
@@ -146,21 +146,21 @@ O investimento estimado de $55.000 para o MVP tem potencial de retorno em 8 mese
     
     scenarios: [
       { 
-        name: "Conservador", 
+        name: "Conservative", 
         mrrMonth12: 45000, 
         arrYear1: 540000,
         breakEven: 11,
         probability: "70%"
       },
       { 
-        name: "Realista", 
+        name: "Realistic", 
         mrrMonth12: 69420, 
         arrYear1: 833000,
         breakEven: 8,
         probability: "60%"
       },
       { 
-        name: "Otimista", 
+        name: "Optimistic", 
         mrrMonth12: 95000, 
         arrYear1: 1140000,
         breakEven: 6,
@@ -189,33 +189,33 @@ O investimento estimado de $55.000 para o MVP tem potencial de retorno em 8 mese
     { 
       phase: 1,
       name: "Discovery", 
-      duration: "2-3 semanas",
-      description: "Refinamento de requisitos e arquitetura",
-      deliverables: ["PRD completo", "Wireframes", "Arquitetura técnica", "Cronograma detalhado"],
+      duration: "2-3 weeks",
+      description: "Requirements refinement and architecture",
+      deliverables: ["Complete PRD", "Wireframes", "Technical architecture", "Detailed timeline"],
       icon: "Search"
     },
     { 
       phase: 2,
       name: "MVP Build", 
-      duration: "10-14 semanas",
-      description: "Desenvolvimento das funcionalidades core",
-      deliverables: ["Auth e usuários", "Gestão de produtos", "Carrinho e pedidos", "Integrações"],
+      duration: "10-14 weeks",
+      description: "Core feature development",
+      deliverables: ["Auth & users", "Product management", "Cart & orders", "Integrations"],
       icon: "Code"
     },
     { 
       phase: 3,
       name: "Beta", 
-      duration: "4-6 semanas",
-      description: "Testes com usuários reais e iterações",
-      deliverables: ["Onboarding beta users", "Coleta de feedback", "Correções e melhorias", "Documentação"],
+      duration: "4-6 weeks",
+      description: "Real user testing and iterations",
+      deliverables: ["Beta user onboarding", "Feedback collection", "Fixes & improvements", "Documentation"],
       icon: "Users"
     },
     { 
       phase: 4,
       name: "Launch", 
-      duration: "2 semanas",
-      description: "Lançamento público e go-to-market",
-      deliverables: ["Deploy produção", "Marketing ativo", "Suporte ao cliente", "Monitoramento"],
+      duration: "2 weeks",
+      description: "Public launch and go-to-market",
+      deliverables: ["Production deploy", "Active marketing", "Customer support", "Monitoring"],
       icon: "Rocket"
     },
   ],
@@ -224,7 +224,7 @@ O investimento estimado de $55.000 para o MVP tem potencial de retorno em 8 mese
     { category: "Frontend", techs: ["React 18", "TypeScript", "TailwindCSS"] },
     { category: "Backend", techs: ["Node.js", "PostgreSQL", "Supabase"] },
     { category: "Infra", techs: ["Vercel", "AWS", "Docker"] },
-    { category: "Integrações", techs: ["Stripe", "API Delivery", "SendGrid"] },
+    { category: "Integrations", techs: ["Stripe", "Delivery API", "SendGrid"] },
   ],
 
   // Why Uaicode
@@ -236,23 +236,23 @@ O investimento estimado de $55.000 para o MVP tem potencial de retorno em 8 mese
     differentials: [
       { 
         icon: "Award", 
-        title: "94% Taxa de Sucesso", 
-        description: "Projetos entregues com sucesso em tempo e orçamento" 
+        title: "94% Success Rate", 
+        description: "Projects delivered successfully on time and budget" 
       },
       { 
         icon: "Users", 
-        title: "Time Especializado em SaaS", 
-        description: "Desenvolvedores seniores focados em produtos digitais" 
+        title: "SaaS-Specialized Team", 
+        description: "Senior developers focused on digital products" 
       },
       { 
         icon: "Zap", 
-        title: "Metodologia Ágil", 
-        description: "Entregas semanais com demos e comunicação transparente" 
+        title: "Agile Methodology", 
+        description: "Weekly deliveries with demos and transparent communication" 
       },
       { 
         icon: "HeadphonesIcon", 
-        title: "Suporte Pós-Lançamento", 
-        description: "30 dias de suporte incluído após o go-live" 
+        title: "Post-Launch Support", 
+        description: "30 days of support included after go-live" 
       },
     ],
     
@@ -261,66 +261,66 @@ O investimento estimado de $55.000 para o MVP tem potencial de retorno em 8 mese
         name: "Carlos Oliveira", 
         company: "FinTech Solutions", 
         avatar: "/testimonial-carlos.webp",
-        quote: "A Uaicode entregou nosso MVP em 12 semanas com qualidade superior ao esperado. Recomendo fortemente.",
+        quote: "Uaicode delivered our MVP in 12 weeks with quality that exceeded expectations. Highly recommend.",
         role: "CEO"
       },
       { 
         name: "Maria Santos", 
         company: "HealthTech Co", 
         avatar: "/testimonial-maria.webp",
-        quote: "Profissionais, ágeis e transparentes. Exatamente o que precisávamos para tirar nossa ideia do papel.",
-        role: "Fundadora"
+        quote: "Professional, agile, and transparent. Exactly what we needed to bring our idea to life.",
+        role: "Founder"
       },
     ],
     
     guarantees: [
-      "Demos semanais para acompanhamento",
-      "Preço fixo para o escopo do MVP",
-      "30 dias de suporte pós-lançamento",
-      "Código fonte 100% seu",
-      "Documentação completa",
+      "Weekly demos for progress tracking",
+      "Fixed price for MVP scope",
+      "30 days post-launch support",
+      "100% ownership of source code",
+      "Complete documentation",
     ],
   },
 
   // Next Steps
   nextSteps: {
-    verdictSummary: "Seu projeto está pronto para ser construído.",
+    verdictSummary: "Your project is ready to be built.",
     
     steps: [
       { 
         step: 1, 
-        title: "Reunião de Kickoff", 
-        description: "1 hora para alinhar expectativas e definir prioridades",
+        title: "Kickoff Meeting", 
+        description: "1 hour to align expectations and define priorities",
         icon: "Calendar"
       },
       { 
         step: 2, 
-        title: "Proposta e Contrato", 
-        description: "Documentação clara com escopo, prazo e investimento",
+        title: "Proposal & Contract", 
+        description: "Clear documentation with scope, timeline, and investment",
         icon: "FileText"
       },
       { 
         step: 3, 
-        title: "Início em 5 dias úteis", 
-        description: "Começamos o projeto logo após a aprovação",
+        title: "Start in 5 Business Days", 
+        description: "We begin the project right after approval",
         icon: "PlayCircle"
       },
       { 
         step: 4, 
-        title: "Primeira entrega em 2 semanas", 
-        description: "Você verá progresso real rapidamente",
+        title: "First Delivery in 2 Weeks", 
+        description: "You'll see real progress quickly",
         icon: "Package"
       },
     ],
     
     cta: {
-      primary: "Agendar Conversa",
-      secondary: "Baixar Relatório PDF",
+      primary: "Schedule a Call",
+      secondary: "Download PDF Report",
     },
     
     contact: {
-      email: "contato@uaicode.com.br",
-      whatsapp: "+55 31 99999-9999",
+      email: "contact@uaicode.dev",
+      whatsapp: "+1 (555) 123-4567",
       calendly: "https://calendly.com/uaicode",
     }
   }
@@ -334,59 +334,59 @@ export const assetsData = {
   // Screen Mockups
   screenMockups: [
     {
-      name: "Dashboard Principal",
-      description: "Visão geral com métricas, pedidos recentes e alertas de estoque",
+      name: "Main Dashboard",
+      description: "Overview with metrics, recent orders, and stock alerts",
       category: "Desktop",
-      features: ["KPIs em tempo real", "Gráficos de vendas", "Alertas inteligentes", "Ações rápidas"],
+      features: ["Real-time KPIs", "Sales charts", "Smart alerts", "Quick actions"],
       priority: "Core"
     },
     {
-      name: "Catálogo de Produtos",
-      description: "Gestão completa de produtos com categorias e variações",
+      name: "Product Catalog",
+      description: "Complete product management with categories and variations",
       category: "Desktop",
-      features: ["Grid/Lista view", "Filtros avançados", "Bulk actions", "Import/Export"],
+      features: ["Grid/List view", "Advanced filters", "Bulk actions", "Import/Export"],
       priority: "Core"
     },
     {
-      name: "Gestão de Pedidos",
-      description: "Fluxo completo de pedidos com status e tracking",
+      name: "Order Management",
+      description: "Complete order flow with status and tracking",
       category: "Desktop",
-      features: ["Pipeline visual", "Detalhes do pedido", "Histórico cliente", "Comunicação"],
+      features: ["Visual pipeline", "Order details", "Customer history", "Communication"],
       priority: "Core"
     },
     {
-      name: "App do Cliente",
-      description: "Interface do cliente para buscar e comprar produtos",
+      name: "Customer App",
+      description: "Customer interface to search and buy products",
       category: "Mobile",
-      features: ["Busca inteligente", "Carrinho", "Checkout", "Tracking"],
+      features: ["Smart search", "Cart", "Checkout", "Tracking"],
       priority: "Core"
     },
     {
-      name: "Controle de Estoque",
-      description: "Inventário com alertas e reposição automática",
+      name: "Inventory Control",
+      description: "Inventory with alerts and automatic replenishment",
       category: "Desktop",
-      features: ["Níveis de estoque", "Alertas low-stock", "Histórico", "Fornecedores"],
+      features: ["Stock levels", "Low-stock alerts", "History", "Suppliers"],
       priority: "Secondary"
     },
     {
-      name: "Relatórios",
-      description: "Analytics e relatórios de performance",
+      name: "Reports",
+      description: "Analytics and performance reports",
       category: "Desktop",
-      features: ["Vendas", "Produtos", "Clientes", "Exportação"],
+      features: ["Sales", "Products", "Customers", "Export"],
       priority: "Secondary"
     },
     {
       name: "Login & Onboarding",
-      description: "Fluxo de autenticação e configuração inicial",
+      description: "Authentication flow and initial setup",
       category: "Mobile",
-      features: ["Social login", "Wizard setup", "Verificação", "Tour guiado"],
+      features: ["Social login", "Setup wizard", "Verification", "Guided tour"],
       priority: "Core"
     },
     {
-      name: "Configurações",
-      description: "Configurações da loja, integrações e perfil",
+      name: "Settings",
+      description: "Store settings, integrations, and profile",
       category: "Desktop",
-      features: ["Dados da loja", "Pagamentos", "Delivery", "Notificações"],
+      features: ["Store data", "Payments", "Delivery", "Notifications"],
       priority: "Secondary"
     },
   ],
@@ -395,49 +395,49 @@ export const assetsData = {
   brandCopy: {
     brandName: "My Doctor Hub",
     
-    valueProposition: "Simplifique a gestão do seu negócio de saúde com uma plataforma completa de estoque, vendas e delivery.",
+    valueProposition: "Simplify your health business management with a complete platform for inventory, sales, and delivery.",
     
     voiceTone: {
-      primary: "Profissional e acessível",
+      primary: "Professional and approachable",
       characteristics: [
-        { trait: "Confiável", description: "Transmitimos segurança e expertise no setor" },
-        { trait: "Simples", description: "Comunicação clara, sem jargões técnicos" },
-        { trait: "Empático", description: "Entendemos os desafios do pequeno empreendedor" },
-        { trait: "Inovador", description: "Soluções modernas para problemas reais" },
+        { trait: "Trustworthy", description: "We convey security and expertise in the sector" },
+        { trait: "Simple", description: "Clear communication, no technical jargon" },
+        { trait: "Empathetic", description: "We understand the challenges of small entrepreneurs" },
+        { trait: "Innovative", description: "Modern solutions for real problems" },
       ],
     },
     
     taglines: [
-      { text: "Saúde ao alcance de todos", usage: "Principal", context: "Hero, campanhas" },
-      { text: "Seu negócio de saúde, simplificado", usage: "Secundária", context: "Features, social" },
-      { text: "Do estoque ao cliente, tudo em um só lugar", usage: "Descritiva", context: "Explicações" },
+      { text: "Health within everyone's reach", usage: "Primary", context: "Hero, campaigns" },
+      { text: "Your health business, simplified", usage: "Secondary", context: "Features, social" },
+      { text: "From inventory to customer, all in one place", usage: "Descriptive", context: "Explanations" },
     ],
     
-    elevatorPitch: "My Doctor Hub é a plataforma completa para pequenos negócios de saúde e bem-estar gerenciarem estoque, vendas e delivery em um só lugar. Diferente de ERPs genéricos ou apps de delivery, combinamos gestão inteligente com compliance de produtos de saúde, ajudando empreendedores a vender mais com menos esforço.",
+    elevatorPitch: "My Doctor Hub is the complete platform for small health and wellness businesses to manage inventory, sales, and delivery in one place. Unlike generic ERPs or delivery apps, we combine intelligent management with health product compliance, helping entrepreneurs sell more with less effort.",
     
     keyMessages: [
       { 
-        message: "Gestão de estoque inteligente evita perdas e rupturas", 
-        audience: "Donos de loja", 
-        proof: "Alertas automáticos de reposição" 
+        message: "Smart inventory management prevents losses and stockouts", 
+        audience: "Store owners", 
+        proof: "Automatic replenishment alerts" 
       },
       { 
-        message: "Delivery integrado aumenta seu alcance sem complicação", 
-        audience: "Pequenos produtores", 
-        proof: "Integração com principais apps" 
+        message: "Integrated delivery expands your reach without complications", 
+        audience: "Small producers", 
+        proof: "Integration with major apps" 
       },
       { 
-        message: "Compliance simplificado para produtos de saúde", 
-        audience: "Todos", 
-        proof: "Validações ANVISA automatizadas" 
+        message: "Simplified compliance for health products", 
+        audience: "All", 
+        proof: "Automated FDA validations" 
       },
     ],
     
     ctaExamples: [
-      { cta: "Comece Gratuitamente", context: "Landing page hero" },
-      { cta: "Ver Demo", context: "Página de features" },
-      { cta: "Falar com Especialista", context: "Enterprise/dúvidas" },
-      { cta: "Agendar Demonstração", context: "B2B" },
+      { cta: "Start for Free", context: "Landing page hero" },
+      { cta: "See Demo", context: "Features page" },
+      { cta: "Talk to an Expert", context: "Enterprise/questions" },
+      { cta: "Schedule a Demo", context: "B2B" },
     ],
   },
 
@@ -448,43 +448,43 @@ export const assetsData = {
         name: "Primary", 
         hex: "#10B981", 
         hsl: "160, 84%, 39%", 
-        usage: "CTAs, elementos principais, sucesso",
-        role: "Cor principal - transmite saúde e confiança"
+        usage: "CTAs, main elements, success",
+        role: "Main color - conveys health and trust"
       },
       { 
         name: "Secondary", 
         hex: "#1E293B", 
         hsl: "217, 33%, 17%", 
-        usage: "Textos, backgrounds escuros",
-        role: "Cor de suporte - profissionalismo"
+        usage: "Text, dark backgrounds",
+        role: "Support color - professionalism"
       },
       { 
         name: "Accent", 
         hex: "#3B82F6", 
         hsl: "217, 91%, 60%", 
-        usage: "Links, elementos interativos",
-        role: "Destaque - tecnologia e inovação"
+        usage: "Links, interactive elements",
+        role: "Highlight - technology and innovation"
       },
       { 
         name: "Background", 
         hex: "#F8FAFC", 
         hsl: "210, 40%, 98%", 
-        usage: "Fundos claros",
-        role: "Base - leveza e limpeza"
+        usage: "Light backgrounds",
+        role: "Base - lightness and cleanliness"
       },
       { 
         name: "Success", 
         hex: "#22C55E", 
         hsl: "142, 71%, 45%", 
-        usage: "Confirmações, status positivo",
-        role: "Feedback positivo"
+        usage: "Confirmations, positive status",
+        role: "Positive feedback"
       },
       { 
         name: "Warning", 
         hex: "#F59E0B", 
         hsl: "38, 92%, 50%", 
-        usage: "Alertas, atenção",
-        role: "Feedback de atenção"
+        usage: "Alerts, attention",
+        role: "Attention feedback"
       },
     ],
     
@@ -493,20 +493,20 @@ export const assetsData = {
       body: { font: "Inter", weight: "400", fallback: "system-ui, sans-serif" },
       accent: { font: "Inter", weight: "600", fallback: "system-ui, sans-serif" },
       scale: [
-        { name: "Display", size: "3rem", usage: "Títulos principais" },
-        { name: "H1", size: "2.25rem", usage: "Títulos de página" },
-        { name: "H2", size: "1.875rem", usage: "Seções" },
+        { name: "Display", size: "3rem", usage: "Main titles" },
+        { name: "H1", size: "2.25rem", usage: "Page titles" },
+        { name: "H2", size: "1.875rem", usage: "Sections" },
         { name: "H3", size: "1.5rem", usage: "Subsections" },
-        { name: "Body", size: "1rem", usage: "Texto principal" },
+        { name: "Body", size: "1rem", usage: "Main text" },
         { name: "Small", size: "0.875rem", usage: "Labels, captions" },
       ],
     },
     
     logoUsage: {
-      minSize: "32px de altura",
-      clearSpace: "Igual à altura da letra 'M' do logo",
-      backgrounds: ["Funciona em fundos escuros (preferido)", "Versão light para fundos claros"],
-      donts: ["Não distorcer", "Não alterar cores", "Não adicionar efeitos", "Não rotacionar"],
+      minSize: "32px height",
+      clearSpace: "Equal to the height of the letter 'M' in the logo",
+      backgrounds: ["Works on dark backgrounds (preferred)", "Light version for light backgrounds"],
+      donts: ["Don't distort", "Don't change colors", "Don't add effects", "Don't rotate"],
     },
     
     spacing: {
@@ -527,29 +527,29 @@ export const assetsData = {
   logos: [
     {
       variant: "Full Color",
-      description: "Logo completo com símbolo e wordmark em cores",
-      usage: "Website, materiais de marketing, apresentações",
+      description: "Complete logo with symbol and wordmark in color",
+      usage: "Website, marketing materials, presentations",
       preview: "gradient",
       colors: { primary: "#10B981", secondary: "#1E293B" }
     },
     {
       variant: "Icon Only",
-      description: "Apenas o símbolo, sem texto",
-      usage: "Favicon, app icon, espaços pequenos, redes sociais",
+      description: "Symbol only, no text",
+      usage: "Favicon, app icon, small spaces, social media",
       preview: "icon",
       colors: { primary: "#10B981" }
     },
     {
       variant: "Light Mode",
-      description: "Versão para fundos claros",
-      usage: "Materiais impressos, fundos brancos",
+      description: "Version for light backgrounds",
+      usage: "Print materials, white backgrounds",
       preview: "light",
       colors: { primary: "#1E293B", secondary: "#10B981" }
     },
     {
       variant: "Dark Mode",
-      description: "Versão para fundos escuros",
-      usage: "Headers escuros, modo noturno, overlays",
+      description: "Version for dark backgrounds",
+      usage: "Dark headers, night mode, overlays",
       preview: "dark",
       colors: { primary: "#FFFFFF", secondary: "#10B981" }
     },
@@ -560,64 +560,64 @@ export const assetsData = {
     sections: [
       { 
         name: "Hero", 
-        description: "Headline, proposta de valor, CTA principal e imagem/vídeo do produto",
-        keyElements: ["Headline impactante", "Subheadline com benefício", "CTA acima da dobra", "Prova social rápida"]
+        description: "Headline, value proposition, main CTA, and product image/video",
+        keyElements: ["Impactful headline", "Benefit-focused subheadline", "CTA above the fold", "Quick social proof"]
       },
       { 
-        name: "Problemas", 
-        description: "3 dores principais que o produto resolve",
-        keyElements: ["Ícones visuais", "Copy empático", "Conexão emocional"]
+        name: "Problems", 
+        description: "3 main pain points the product solves",
+        keyElements: ["Visual icons", "Empathetic copy", "Emotional connection"]
       },
       { 
-        name: "Solução", 
-        description: "Como o produto resolve cada problema",
-        keyElements: ["Screenshots do produto", "Benefícios claros", "Diferencial competitivo"]
+        name: "Solution", 
+        description: "How the product solves each problem",
+        keyElements: ["Product screenshots", "Clear benefits", "Competitive differentiator"]
       },
       { 
         name: "Features", 
-        description: "Funcionalidades principais em destaque",
-        keyElements: ["Grid de features", "Ícones", "Descrições curtas"]
+        description: "Main features highlighted",
+        keyElements: ["Feature grid", "Icons", "Short descriptions"]
       },
       { 
-        name: "Depoimentos", 
-        description: "Prova social com clientes reais",
-        keyElements: ["Fotos de clientes", "Quotes impactantes", "Logos de empresas"]
+        name: "Testimonials", 
+        description: "Social proof with real customers",
+        keyElements: ["Customer photos", "Impactful quotes", "Company logos"]
       },
       { 
-        name: "Preços", 
-        description: "Planos e pricing transparente",
-        keyElements: ["Comparativo de planos", "CTA por plano", "Destaque do plano popular"]
+        name: "Pricing", 
+        description: "Transparent plans and pricing",
+        keyElements: ["Plan comparison", "CTA per plan", "Popular plan highlight"]
       },
       { 
         name: "FAQ", 
-        description: "Perguntas frequentes",
-        keyElements: ["Accordion format", "Objeções comuns", "Link para suporte"]
+        description: "Frequently asked questions",
+        keyElements: ["Accordion format", "Common objections", "Support link"]
       },
       { 
-        name: "CTA Final", 
-        description: "Chamada final para ação",
-        keyElements: ["Urgência sutil", "CTA principal", "Opção secundária"]
+        name: "Final CTA", 
+        description: "Final call to action",
+        keyElements: ["Subtle urgency", "Main CTA", "Secondary option"]
       },
     ],
     
     conversionElements: [
-      "CTA visível acima da dobra",
-      "Prova social próxima aos CTAs",
-      "Design mobile-first",
-      "Carregamento rápido (<3s)",
-      "Chat widget para dúvidas",
-      "Exit-intent popup (opcional)",
+      "CTA visible above the fold",
+      "Social proof near CTAs",
+      "Mobile-first design",
+      "Fast loading (<3s)",
+      "Chat widget for questions",
+      "Exit-intent popup (optional)",
     ],
     
-    downloadNote: "Template completo de landing page incluído no pacote de download. Personalize com suas cores, copy e imagens."
+    downloadNote: "Complete landing page template included in the download package. Customize with your colors, copy, and images."
   },
 
   // Mockup Previews (additional assets)
   mockupPreviews: [
-    { type: "Cartões de Visita", description: "Frente e verso profissional", specs: "3.5\" x 2\", 350gsm" },
-    { type: "Kit Redes Sociais", description: "Perfil, capa e templates de post", specs: "LinkedIn, Instagram, Facebook" },
-    { type: "App Icon", description: "Ícones para iOS e Android", specs: "1024x1024 master + todos os tamanhos" },
-    { type: "Email Signature", description: "Assinatura HTML com logo", specs: "600px, versões light/dark" },
-    { type: "Apresentação", description: "Template de slides", specs: "16:9, Google Slides e PowerPoint" },
+    { type: "Business Cards", description: "Professional front and back", specs: "3.5\" x 2\", 350gsm" },
+    { type: "Social Media Kit", description: "Profile, cover, and post templates", specs: "LinkedIn, Instagram, Facebook" },
+    { type: "App Icon", description: "Icons for iOS and Android", specs: "1024x1024 master + all sizes" },
+    { type: "Email Signature", description: "HTML signature with logo", specs: "600px, light/dark versions" },
+    { type: "Presentation", description: "Slide template", specs: "16:9, Google Slides and PowerPoint" },
   ],
 };

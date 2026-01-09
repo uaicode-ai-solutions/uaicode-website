@@ -24,7 +24,7 @@ const BrandAssetsTab = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("Copiado para a área de transferência!");
+    toast.success("Copied to clipboard!");
   };
 
   return (
@@ -33,7 +33,7 @@ const BrandAssetsTab = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Brand Assets</h2>
-          <p className="text-sm text-muted-foreground">Entregáveis de marca e design incluídos no projeto</p>
+          <p className="text-sm text-muted-foreground">Brand and design deliverables included in the project</p>
         </div>
         <Button className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground">
           <Download className="h-4 w-4" />
@@ -127,7 +127,7 @@ const BrandAssetsTab = () => {
             {/* Value Proposition */}
             <Card className="bg-card/50 border-border/30">
               <CardContent className="p-6">
-                <h3 className="font-semibold text-foreground mb-4">Proposta de Valor</h3>
+                <h3 className="font-semibold text-foreground mb-4">Value Proposition</h3>
                 <div className="p-4 rounded-lg bg-accent/10 border border-accent/20 relative group">
                   <p className="text-foreground">{assetsData.brandCopy.valueProposition}</p>
                   <button 
@@ -143,7 +143,7 @@ const BrandAssetsTab = () => {
             {/* Voice & Tone */}
             <Card className="bg-card/50 border-border/30">
               <CardContent className="p-6">
-                <h3 className="font-semibold text-foreground mb-4">Voz e Tom</h3>
+                <h3 className="font-semibold text-foreground mb-4">Voice & Tone</h3>
                 <Badge variant="outline" className="mb-4 border-accent/30 text-accent">
                   {assetsData.brandCopy.voiceTone.primary}
                 </Badge>
@@ -201,7 +201,7 @@ const BrandAssetsTab = () => {
           {/* CTAs */}
           <Card className="bg-card/50 border-border/30">
             <CardContent className="p-6">
-              <h3 className="font-semibold text-foreground mb-4">Exemplos de CTAs</h3>
+              <h3 className="font-semibold text-foreground mb-4">CTA Examples</h3>
               <div className="flex flex-wrap gap-3">
                 {assetsData.brandCopy.ctaExamples.map((cta, idx) => (
                   <div 
@@ -225,7 +225,7 @@ const BrandAssetsTab = () => {
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-6">
                 <Palette className="h-5 w-5 text-accent" />
-                <h3 className="font-semibold text-foreground">Paleta de Cores</h3>
+                <h3 className="font-semibold text-foreground">Color Palette</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {assetsData.brandIdentity.colorPalette.map((color, idx) => (
@@ -255,7 +255,7 @@ const BrandAssetsTab = () => {
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-6">
                 <Type className="h-5 w-5 text-accent" />
-                <h3 className="font-semibold text-foreground">Tipografia</h3>
+                <h3 className="font-semibold text-foreground">Typography</h3>
               </div>
               <div className="grid md:grid-cols-3 gap-6 mb-6">
                 <div className="p-4 rounded-lg bg-muted/20 border border-border/30">
@@ -371,18 +371,18 @@ const BrandAssetsTab = () => {
           {/* Logo Usage Guidelines */}
           <Card className="mt-6 bg-card/50 border-border/30">
             <CardContent className="p-6">
-              <h3 className="font-semibold text-foreground mb-4">Regras de Uso do Logo</h3>
+              <h3 className="font-semibold text-foreground mb-4">Logo Usage Guidelines</h3>
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
-                  <p className="text-sm font-medium text-foreground mb-2">Tamanho Mínimo</p>
+                  <p className="text-sm font-medium text-foreground mb-2">Minimum Size</p>
                   <p className="text-sm text-muted-foreground">{assetsData.brandIdentity.logoUsage.minSize}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground mb-2">Área de Respiro</p>
+                  <p className="text-sm font-medium text-foreground mb-2">Clear Space</p>
                   <p className="text-sm text-muted-foreground">{assetsData.brandIdentity.logoUsage.clearSpace}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground mb-2">Não Fazer</p>
+                  <p className="text-sm font-medium text-foreground mb-2">Don'ts</p>
                   <ul className="space-y-1">
                     {assetsData.brandIdentity.logoUsage.donts.map((item, idx) => (
                       <li key={idx} className="text-sm text-red-400/80">• {item}</li>
@@ -399,7 +399,7 @@ const BrandAssetsTab = () => {
           {/* Sections */}
           <Card className="bg-card/50 border-border/30">
             <CardContent className="p-6">
-              <h3 className="font-semibold text-foreground mb-6">Estrutura da Landing Page</h3>
+              <h3 className="font-semibold text-foreground mb-6">Landing Page Structure</h3>
               <div className="space-y-4">
                 {assetsData.landingPage.sections.map((section, index) => (
                   <div 
@@ -432,7 +432,7 @@ const BrandAssetsTab = () => {
           {/* Conversion Elements */}
           <Card className="bg-card/50 border-border/30">
             <CardContent className="p-6">
-              <h3 className="font-semibold text-foreground mb-4">Elementos de Conversão</h3>
+              <h3 className="font-semibold text-foreground mb-4">Conversion Elements</h3>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {assetsData.landingPage.conversionElements.map((element, idx) => (
                   <div key={idx} className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
@@ -448,7 +448,7 @@ const BrandAssetsTab = () => {
           <Card className="bg-accent/10 border-accent/20">
             <CardContent className="p-6 flex items-center justify-between gap-4">
               <div>
-                <h3 className="font-semibold text-foreground mb-1">Template de Landing Page</h3>
+                <h3 className="font-semibold text-foreground mb-1">Landing Page Template</h3>
                 <p className="text-sm text-muted-foreground">{assetsData.landingPage.downloadNote}</p>
               </div>
               <Button className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground flex-shrink-0">
@@ -461,7 +461,7 @@ const BrandAssetsTab = () => {
           {/* Additional Assets */}
           <Card className="bg-card/50 border-border/30">
             <CardContent className="p-6">
-              <h3 className="font-semibold text-foreground mb-4">Assets Adicionais</h3>
+              <h3 className="font-semibold text-foreground mb-4">Additional Assets</h3>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {assetsData.mockupPreviews.map((preview, idx) => (
                   <div key={idx} className="p-4 rounded-lg bg-muted/20 border border-border/30">

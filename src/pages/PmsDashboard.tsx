@@ -72,11 +72,11 @@ const PmsDashboard = () => {
               className="gap-1.5 text-muted-foreground hover:text-foreground hover:bg-accent/10"
             >
               <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Meus Relatórios</span>
+              <span className="hidden sm:inline">My Reports</span>
             </Button>
             <div>
               <h1 className="text-lg font-bold text-foreground">{projectName}</h1>
-              <p className="text-xs text-muted-foreground">Relatório de Viabilidade</p>
+              <p className="text-xs text-muted-foreground">Viability Report</p>
             </div>
           </div>
 
@@ -102,7 +102,7 @@ const PmsDashboard = () => {
               <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-card/50 border border-border/30">
                 <TabsTrigger value="report" className="gap-2">
                   <FileText className="h-4 w-4" />
-                  Relatório
+                  Report
                 </TabsTrigger>
                 <TabsTrigger value="assets" className="gap-2">
                   <Palette className="h-4 w-4" />
@@ -164,7 +164,7 @@ const PmsDashboard = () => {
           className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg gap-2 h-12 px-6"
         >
           <Calendar className="h-5 w-5" />
-          <span className="hidden sm:inline">Agendar Conversa</span>
+          <span className="hidden sm:inline">Schedule a Call</span>
         </Button>
       </div>
     </div>
