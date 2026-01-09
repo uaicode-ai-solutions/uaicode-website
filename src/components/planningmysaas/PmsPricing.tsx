@@ -134,7 +134,7 @@ const PmsPricing = () => {
                     </span>
                     <span className="text-muted-foreground">/{plan.period}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className={`text-sm ${plan.popular ? "text-foreground" : "text-muted-foreground"}`}>
                     {plan.description}
                   </p>
                 </div>
