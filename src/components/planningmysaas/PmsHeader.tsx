@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, Sparkles, Youtube, Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+
+const socialLinks = [
+  { Icon: Youtube, url: "https://www.youtube.com/@uaicodeai", label: "Visit our YouTube channel" },
+  { Icon: Facebook, url: "https://web.facebook.com/uaicodeai", label: "Follow us on Facebook" },
+  { Icon: Instagram, url: "https://www.instagram.com/uaicode.ai/", label: "Follow us on Instagram" },
+  { Icon: Linkedin, url: "https://www.linkedin.com/company/uaicodeai/", label: "Connect on LinkedIn" },
+  { Icon: Twitter, url: "https://x.com/uaicodeai", label: "Follow us on X" },
+];
 
 const PmsHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -55,10 +63,24 @@ const PmsHeader = () => {
             </button>
           </nav>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
+          {/* Social Icons + CTA Button */}
+          <div className="hidden md:flex items-center gap-6">
+            <div className="flex items-center gap-3 pr-6 border-r border-border/30">
+              {socialLinks.map(({ Icon, url, label }, index) => (
+                <a 
+                  key={index}
+                  href={url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  aria-label={label}
+                  className="h-10 w-10 rounded-full border border-accent/30 bg-background hover:bg-accent hover:border-accent hover:shadow-[0_0_20px_rgba(250,204,21,0.5)] hover:scale-110 transition-all duration-300 group flex items-center justify-center"
+                >
+                  <Icon className="h-4 w-4 text-accent group-hover:text-background" />
+                </a>
+              ))}
+            </div>
             <Button
-              onClick={() => scrollToSection("hero")}
+              onClick={() => scrollToSection("pricing")}
               className="bg-accent hover:bg-accent/90 text-background font-semibold"
             >
               See Pricing
@@ -101,8 +123,22 @@ const PmsHeader = () => {
             >
               FAQ
             </button>
+            <div className="flex items-center gap-3 pt-4 border-t border-border/40">
+              {socialLinks.map(({ Icon, url, label }, index) => (
+                <a 
+                  key={index}
+                  href={url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  aria-label={label}
+                  className="h-10 w-10 rounded-full border border-accent/30 bg-background hover:bg-accent hover:border-accent hover:shadow-[0_0_20px_rgba(250,204,21,0.5)] hover:scale-110 transition-all duration-300 group flex items-center justify-center"
+                >
+                  <Icon className="h-4 w-4 text-accent group-hover:text-background" />
+                </a>
+              ))}
+            </div>
             <Button
-              onClick={() => scrollToSection("hero")}
+              onClick={() => scrollToSection("pricing")}
               className="bg-accent hover:bg-accent/90 text-background font-semibold w-full"
             >
               See Pricing
