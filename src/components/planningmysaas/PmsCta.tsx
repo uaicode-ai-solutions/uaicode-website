@@ -40,12 +40,6 @@ const PmsCta = () => {
               <Sparkles className="w-6 h-6" />
             </div>
 
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/30 mb-8">
-              <Zap className="w-4 h-4 text-accent" />
-              <span className="text-sm font-medium text-accent">Limited Time Offer</span>
-            </div>
-
             {/* Headline */}
             <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-6">
               Ready to Turn Your Idea
@@ -105,12 +99,6 @@ const PmsCta = () => {
                     <Zap className="w-4 h-4 text-accent" />
                   </div>
                   <span className="text-sm">Results in under 5 minutes</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                    <Shield className="w-4 h-4 text-accent" />
-                  </div>
-                  <span className="text-sm">60-day money-back guarantee</span>
                 </div>
               </div>
             </div>
