@@ -33,9 +33,9 @@ const ExecutiveVerdict = () => {
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {
-      case "high": return "Alto";
-      case "medium": return "Médio";
-      case "low": return "Baixo";
+      case "high": return "High";
+      case "medium": return "Medium";
+      case "low": return "Low";
       default: return priority;
     }
   };
@@ -48,8 +48,8 @@ const ExecutiveVerdict = () => {
           <ShieldCheck className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">O Veredicto</h2>
-          <p className="text-sm text-muted-foreground">Resumo executivo da análise</p>
+          <h2 className="text-2xl font-bold text-foreground">The Verdict</h2>
+          <p className="text-sm text-muted-foreground">Executive summary of the analysis</p>
         </div>
       </div>
 
@@ -67,7 +67,7 @@ const ExecutiveVerdict = () => {
           <div className="flex items-center gap-3 mb-8 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
             <CheckCircle2 className="h-6 w-6 text-green-400 flex-shrink-0" />
             <div>
-              <span className="text-sm text-muted-foreground">Recomendação:</span>
+              <span className="text-sm text-muted-foreground">Recommendation:</span>
               <span className="ml-2 text-lg font-semibold text-green-400">
                 {data.recommendation}
               </span>
@@ -78,7 +78,7 @@ const ExecutiveVerdict = () => {
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-accent" />
-              Pontos Fortes
+              Key Strengths
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
               {data.highlights.map((highlight, index) => {
@@ -105,7 +105,7 @@ const ExecutiveVerdict = () => {
           <div>
             <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-yellow-400" />
-              Riscos Identificados
+              Identified Risks
             </h3>
             <div className="space-y-4">
               {data.risks.map((item, index) => (
@@ -125,7 +125,7 @@ const ExecutiveVerdict = () => {
                   <div className="flex items-start gap-2 text-sm">
                     <ArrowRight className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
                     <p className="text-muted-foreground">
-                      <span className="text-green-400 font-medium">Mitigação:</span>{" "}
+                      <span className="text-green-400 font-medium">Mitigation:</span>{" "}
                       {item.mitigation}
                     </p>
                   </div>

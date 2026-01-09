@@ -25,19 +25,19 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
       icon: TrendingUp, 
       value: data.keyMetrics.marketSize, 
       label: data.keyMetrics.marketLabel,
-      sublabel: "TAM Global"
+      sublabel: "Global TAM"
     },
     { 
       icon: DollarSign, 
       value: data.keyMetrics.expectedROI, 
       label: data.keyMetrics.roiLabel,
-      sublabel: "Ano 1"
+      sublabel: "Year 1"
     },
     { 
       icon: Clock, 
-      value: `${data.keyMetrics.paybackMonths} meses`, 
+      value: `${data.keyMetrics.paybackMonths} months`, 
       label: data.keyMetrics.paybackLabel,
-      sublabel: "Até break-even"
+      sublabel: "To break-even"
     },
   ];
 
@@ -56,7 +56,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
         {/* Report Badge */}
         <Badge variant="outline" className="border-accent/30 text-accent gap-2 px-4 py-1.5">
           <Sparkles className="h-3.5 w-3.5" />
-          Relatório de Viabilidade
+          Viability Report
         </Badge>
 
         {/* Project Name */}
@@ -101,7 +101,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
                 <span className={`text-5xl font-bold ${getScoreColor(data.viabilityScore)}`}>
                   {data.viabilityScore}
                 </span>
-                <span className="text-sm text-muted-foreground">Viabilidade</span>
+                <span className="text-sm text-muted-foreground">Viability</span>
               </div>
             </div>
           </div>
@@ -138,7 +138,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
             onClick={onScheduleCall}
             className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 px-8"
           >
-            Vamos Construir Juntos
+            Let's Build This Together
           </Button>
           <Button 
             size="lg"
@@ -146,7 +146,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
             onClick={onExploreReport || scrollToContent}
             className="border-border/50 hover:border-accent/50 gap-2"
           >
-            Ver Análise Completa
+            See Full Analysis
           </Button>
         </div>
 

@@ -21,8 +21,8 @@ const WhyUaicodeSection = () => {
           <Award className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Por Que Uaicode</h2>
-          <p className="text-sm text-muted-foreground">Nosso diferencial e garantias</p>
+          <h2 className="text-2xl font-bold text-foreground">Why Uaicode</h2>
+          <p className="text-sm text-muted-foreground">Our differentials and guarantees</p>
         </div>
       </div>
 
@@ -32,15 +32,15 @@ const WhyUaicodeSection = () => {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-3xl md:text-4xl font-bold text-accent">{uaicode.successRate}%</div>
-              <p className="text-sm text-muted-foreground">Taxa de Sucesso</p>
+              <p className="text-sm text-muted-foreground">Success Rate</p>
             </div>
             <div>
               <div className="text-3xl md:text-4xl font-bold text-foreground">{uaicode.projectsDelivered}+</div>
-              <p className="text-sm text-muted-foreground">Projetos Entregues</p>
+              <p className="text-sm text-muted-foreground">Projects Delivered</p>
             </div>
             <div>
               <div className="text-3xl md:text-4xl font-bold text-foreground">{uaicode.avgDeliveryWeeks}</div>
-              <p className="text-sm text-muted-foreground">Semanas Média</p>
+              <p className="text-sm text-muted-foreground">Avg. Weeks</p>
             </div>
           </div>
         </CardContent>
@@ -50,7 +50,7 @@ const WhyUaicodeSection = () => {
         {/* Differentials */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-6">Nossos Diferenciais</h3>
+            <h3 className="font-semibold text-foreground mb-6">Our Differentials</h3>
             <div className="grid gap-4">
               {uaicode.differentials.map((diff, index) => {
                 const IconComponent = iconMap[diff.icon] || Award;
@@ -76,7 +76,7 @@ const WhyUaicodeSection = () => {
         {/* Testimonials */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-6">O Que Nossos Clientes Dizem</h3>
+            <h3 className="font-semibold text-foreground mb-6">What Our Clients Say</h3>
             <div className="space-y-4">
               {uaicode.testimonials.map((testimonial, index) => (
                 <div 
@@ -111,7 +111,7 @@ const WhyUaicodeSection = () => {
       {/* Guarantees */}
       <Card className="bg-card/50 border-border/30">
         <CardContent className="p-6">
-          <h3 className="font-semibold text-foreground mb-6 text-center">Nossas Garantias</h3>
+          <h3 className="font-semibold text-foreground mb-6 text-center">Our Guarantees</h3>
           <div className="flex flex-wrap justify-center gap-4">
             {uaicode.guarantees.map((guarantee, index) => (
               <div 

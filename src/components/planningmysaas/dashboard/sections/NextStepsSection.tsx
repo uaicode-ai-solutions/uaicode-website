@@ -32,7 +32,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
     <section id="next-steps" className="space-y-8">
       {/* Section Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-foreground mb-4">Próximos Passos</h2>
+        <h2 className="text-3xl font-bold text-foreground mb-4">Next Steps</h2>
         <p className="text-lg text-accent">{nextSteps.verdictSummary}</p>
       </div>
 
@@ -80,7 +80,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
             {/* Steps */}
             <div className="flex-1">
-              <h3 className="font-semibold text-foreground mb-6">O que acontece ao contratar:</h3>
+              <h3 className="font-semibold text-foreground mb-6">What happens when you hire us:</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {nextSteps.steps.map((step, index) => {
                   const IconComponent = iconMap[step.icon] || Calendar;
@@ -94,7 +94,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-accent font-medium">Passo {step.step}</span>
+                          <span className="text-xs text-accent font-medium">Step {step.step}</span>
                         </div>
                         <h4 className="font-medium text-foreground text-sm">{step.title}</h4>
                         <p className="text-xs text-muted-foreground mt-1">{step.description}</p>
@@ -133,7 +133,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       {/* Contact Info */}
       <Card className="bg-card/50 border-border/30">
         <CardContent className="p-6">
-          <h3 className="font-semibold text-foreground mb-4 text-center">Contato Direto</h3>
+          <h3 className="font-semibold text-foreground mb-4 text-center">Direct Contact</h3>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <a 
               href={`mailto:${nextSteps.contact.email}`}
@@ -160,12 +160,12 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="flex items-center justify-center gap-2 mb-4">
           <CheckCircle2 className="h-6 w-6 text-green-400" />
           <span className="text-lg font-medium text-foreground">
-            Estamos prontos para transformar sua ideia em realidade
+            We're ready to turn your idea into reality
           </span>
         </div>
         <p className="text-muted-foreground max-w-xl mx-auto">
-          Este relatório foi gerado com base nas informações fornecidas e análise de mercado. 
-          Os números são projeções e podem variar conforme a execução do projeto.
+          This report was generated based on the information provided and market analysis. 
+          The numbers are projections and may vary depending on project execution.
         </p>
       </div>
     </section>
