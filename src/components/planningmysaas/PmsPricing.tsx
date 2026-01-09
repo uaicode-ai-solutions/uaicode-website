@@ -102,7 +102,7 @@ const PmsPricing = () => {
                 <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite]" />
               )}
 
-              <div className={`relative h-full flex flex-col ${plan.popular ? 'min-h-[640px]' : 'min-h-[580px]'} glass-card p-8 rounded-2xl border transition-all duration-300 ${
+              <div className={`relative h-full flex flex-col ${plan.popular ? 'min-h-[640px]' : 'min-h-[600px]'} glass-card p-8 rounded-2xl border transition-all duration-300 ${
                 plan.popular
                   ? "border-transparent shadow-lg shadow-accent/20"
                   : "border-border/50 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10"
