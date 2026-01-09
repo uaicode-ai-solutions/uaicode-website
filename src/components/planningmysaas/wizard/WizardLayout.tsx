@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { X, Sparkles, ArrowLeft, ArrowRight, User, Lightbulb, Users, Layers, Target } from "lucide-react";
+import { X, Sparkles, ArrowLeft, ArrowRight, UserCircle, Rocket, Globe2, Puzzle, Flag } from "lucide-react";
 import WizardProgress from "./WizardProgress";
 
 interface WizardLayoutProps {
@@ -10,17 +10,18 @@ interface WizardLayoutProps {
   totalSteps: number;
   onNext: () => void;
   onBack: () => void;
+  onStepClick?: (stepId: number) => void;
   canGoNext: boolean;
   isLastStep: boolean;
   onSubmit?: () => void;
 }
 
 const steps = [
-  { id: 1, label: "Your Info", icon: User },
-  { id: 2, label: "Your Idea", icon: Lightbulb },
-  { id: 3, label: "Market", icon: Users },
-  { id: 4, label: "Features", icon: Layers },
-  { id: 5, label: "Goals", icon: Target },
+  { id: 1, label: "Your Info", icon: UserCircle },
+  { id: 2, label: "Your Idea", icon: Rocket },
+  { id: 3, label: "Market", icon: Globe2 },
+  { id: 4, label: "Features", icon: Puzzle },
+  { id: 5, label: "Goals", icon: Flag },
 ];
 
 const WizardLayout = ({
@@ -29,6 +30,7 @@ const WizardLayout = ({
   totalSteps,
   onNext,
   onBack,
+  onStepClick,
   canGoNext,
   isLastStep,
   onSubmit,
@@ -70,12 +72,12 @@ const WizardLayout = ({
       </header>
 
       {/* Progress bar */}
-      <div className="py-6 border-b border-border/30">
-        <WizardProgress steps={steps} currentStep={currentStep} />
-        {/* Step indicator below progress */}
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          Step {currentStep} of {totalSteps}
-        </p>
+      <div className="py-8 border-b border-border/30">
+        <WizardProgress 
+          steps={steps} 
+          currentStep={currentStep} 
+          onStepClick={onStepClick}
+        />
       </div>
 
       {/* Main content */}
