@@ -251,7 +251,7 @@ const PmsSampleReport = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="p-6 md:p-8 relative min-h-[400px]">
+            <div className="p-6 md:p-8 relative min-h-[480px] pb-32">
               {/* Content */}
               <div className="relative z-10">
                 <h3 className="text-2xl font-bold text-foreground mb-6">
@@ -314,8 +314,8 @@ const PmsSampleReport = () => {
                 )}
               </div>
 
-              {/* Blur Overlay */}
-              <div className="absolute inset-0 top-1/2 bg-gradient-to-t from-card via-card/80 to-transparent flex flex-col items-center justify-end pb-8">
+              {/* Blur Overlay - Fixed positioning */}
+              <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-card via-card/95 to-transparent flex flex-col items-center justify-center z-20">
                 <div className="flex items-center gap-2 text-muted-foreground mb-4">
                   <Lock className="w-5 h-5 text-accent" />
                   <span className="text-sm">Full report unlocked after purchase</span>
