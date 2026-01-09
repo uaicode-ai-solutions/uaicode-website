@@ -6,10 +6,7 @@ import {
   Sparkles, 
   Palette, 
   Monitor, 
-  Layout,
-  TrendingUp,
-  Star,
-  Clock
+  Layout
 } from "lucide-react";
 
 const features = [
@@ -55,12 +52,6 @@ const features = [
   },
 ];
 
-const stats = [
-  { icon: TrendingUp, value: "2,500+", label: "Ideas Validated" },
-  { icon: Star, value: "4.9/5", label: "Avg. Rating" },
-  { icon: Clock, value: "< 5 min", label: "Avg. Report Time" },
-];
-
 const PmsFeatures = () => {
   return (
     <section id="features" className="py-24 px-4 relative overflow-hidden">
@@ -91,7 +82,7 @@ const PmsFeatures = () => {
         </div>
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {features.map((feature, index) => (
             <div
               key={index}
@@ -121,24 +112,6 @@ const PmsFeatures = () => {
           ))}
         </div>
 
-        {/* Stats Section */}
-        <div className="glass-premium rounded-2xl border border-white/10 p-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center group">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent/10 border border-accent/20 mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <stat.icon className="w-7 h-7 text-accent" />
-                </div>
-                <div className="text-3xl md:text-4xl font-bold text-gradient-gold mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-muted-foreground font-medium">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
