@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Sparkles, Twitter, Linkedin, Github, Loader2 } from "lucide-react";
+import { Sparkles, Youtube, Facebook, Instagram, Linkedin, Twitter, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,30 +165,24 @@ const PmsFooter = () => {
               
               {/* Social Links */}
               <div className="flex items-center gap-3">
-                <a 
-                  href="https://twitter.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent/30 transition-colors"
-                >
-                  <Twitter className="w-5 h-5" />
-                </a>
-                <a 
-                  href="https://linkedin.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent/30 transition-colors"
-                >
-                  <Linkedin className="w-5 h-5" />
-                </a>
-                <a 
-                  href="https://github.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent/30 transition-colors"
-                >
-                  <Github className="w-5 h-5" />
-                </a>
+                {[
+                  { Icon: Youtube, url: "https://www.youtube.com/@uaicodeai", label: "YouTube" },
+                  { Icon: Facebook, url: "https://web.facebook.com/uaicodeai", label: "Facebook" },
+                  { Icon: Instagram, url: "https://www.instagram.com/uaicode.ai/", label: "Instagram" },
+                  { Icon: Linkedin, url: "https://www.linkedin.com/company/uaicodeai/", label: "LinkedIn" },
+                  { Icon: Twitter, url: "https://x.com/uaicodeai", label: "X (Twitter)" },
+                ].map(({ Icon, url, label }, index) => (
+                  <a 
+                    key={index}
+                    href={url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent/30 transition-colors"
+                  >
+                    <Icon className="w-5 h-5" />
+                  </a>
+                ))}
               </div>
             </div>
 
