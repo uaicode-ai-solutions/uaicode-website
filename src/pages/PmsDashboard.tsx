@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { getReportById, getProjectDisplayName, StoredReport } from "@/lib/reportsStorage";
 import { 
   Download, 
   FileText, 
@@ -69,9 +70,30 @@ const sections = [
 
 const PmsDashboard = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [activeSection, setActiveSection] = useState("executive-summary");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [report, setReport] = useState<StoredReport | null>(null);
+
+  // Load report by ID
+  useEffect(() => {
+    if (!id) {
+      navigate("/planningmysaas/reports");
+      return;
+    }
+    
+    const loadedReport = getReportById(id);
+    if (!loadedReport) {
+      navigate("/planningmysaas/reports");
+      return;
+    }
+    
+    setReport(loadedReport);
+  }, [id, navigate]);
+
+  // Get project name from report or fallback to mock data
+  const projectName = report ? getProjectDisplayName(report) : projectInfoData.projectName;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -123,13 +145,13 @@ const PmsDashboard = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/planningmysaas")}
+              onClick={() => navigate("/planningmysaas/reports")}
               className="hover:bg-accent/10"
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-lg font-bold text-foreground">{projectInfoData.projectName}</h1>
+              <h1 className="text-lg font-bold text-foreground">{projectName}</h1>
               <p className="text-xs text-muted-foreground">Launch Plan Dashboard</p>
             </div>
           </div>
