@@ -1,6 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import SelectableCard from "./SelectableCard";
 import {
   Users,
@@ -53,7 +54,9 @@ const industries = [
 interface StepYourIdeaProps {
   data: {
     saasType: string;
+    saasTypeOther: string;
     industry: string;
+    industryOther: string;
     description: string;
   };
   onChange: (field: string, value: string) => void;
@@ -94,6 +97,19 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
             />
           ))}
         </div>
+        {data.saasType === "other" && (
+          <div className="mt-3">
+            <Input
+              placeholder="Please specify your SaaS type..."
+              value={data.saasTypeOther}
+              onChange={(e) => onChange("saasTypeOther", e.target.value)}
+              className="bg-muted/30 border-border/50 focus:border-accent"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Minimum 2 characters required
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Industry */}
@@ -118,6 +134,19 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
             />
           ))}
         </div>
+        {data.industry === "other" && (
+          <div className="mt-3">
+            <Input
+              placeholder="Please specify your industry..."
+              value={data.industryOther}
+              onChange={(e) => onChange("industryOther", e.target.value)}
+              className="bg-muted/30 border-border/50 focus:border-accent"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Minimum 2 characters required
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Description */}
