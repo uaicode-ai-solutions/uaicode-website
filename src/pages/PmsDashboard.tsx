@@ -4,76 +4,32 @@ import { getReportById, getProjectDisplayName, StoredReport } from "@/lib/report
 import { 
   Download, 
   FileText, 
-  Palette, 
-  BarChart3, 
-  Target, 
-  Users, 
-  DollarSign,
-  Cpu,
-  TrendingUp,
-  Layout,
-  MessageSquare,
-  Image,
-  Globe,
+  Palette,
   ChevronLeft,
   Menu,
-  X
+  X,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { projectInfoData } from "@/lib/dashboardMockData";
+import { reportData } from "@/lib/reportMockData";
 
-// Dashboard section components
-import DashboardHero from "@/components/planningmysaas/dashboard/DashboardHero";
-import DashboardExecutiveSummary from "@/components/planningmysaas/dashboard/ExecutiveSummary";
-import DashboardMarketOpportunity from "@/components/planningmysaas/dashboard/MarketOpportunity";
-import DashboardMarketAnalysis from "@/components/planningmysaas/dashboard/MarketAnalysis";
-import DashboardCompetitiveAnalysis from "@/components/planningmysaas/dashboard/CompetitiveAnalysis";
-import DashboardPricingIntelligence from "@/components/planningmysaas/dashboard/PricingIntelligence";
-import DashboardInvestmentRecommendations from "@/components/planningmysaas/dashboard/InvestmentRecommendations";
-import DashboardUnitEconomics from "@/components/planningmysaas/dashboard/UnitEconomics";
-import DashboardMarketTrends from "@/components/planningmysaas/dashboard/MarketTrends";
-import DashboardTechnicalFeasibility from "@/components/planningmysaas/dashboard/TechnicalFeasibility";
-import DashboardTechnicalChallenges from "@/components/planningmysaas/dashboard/TechnicalChallenges";
-import DashboardFinancialProjections from "@/components/planningmysaas/dashboard/FinancialProjections";
-import DashboardROICharts from "@/components/planningmysaas/dashboard/ROICharts";
-import DashboardUserJourney from "@/components/planningmysaas/dashboard/UserJourneyChart";
-import DashboardEngagementLoops from "@/components/planningmysaas/dashboard/EngagementLoops";
-import DashboardScreenMockups from "@/components/planningmysaas/dashboard/ScreenMockups";
-import DashboardBrandCopyManual from "@/components/planningmysaas/dashboard/BrandCopyManual";
-import DashboardBrandIdentityManual from "@/components/planningmysaas/dashboard/BrandIdentityManual";
-import DashboardLogosSuggestions from "@/components/planningmysaas/dashboard/LogosSuggestions";
-import DashboardLandingPagePreview from "@/components/planningmysaas/dashboard/LandingPagePreview";
-
-const sections = [
-  { id: "executive-summary", label: "Executive Summary", icon: FileText },
-  { id: "market-opportunity", label: "Market Opportunity", icon: Target },
-  { id: "market-analysis", label: "Market Analysis", icon: BarChart3 },
-  { id: "competitive-analysis", label: "Competitive Analysis", icon: Users },
-  { id: "pricing-intelligence", label: "Pricing Intelligence", icon: DollarSign },
-  { id: "investment", label: "Investment Recommendations", icon: TrendingUp },
-  { id: "unit-economics", label: "Unit Economics", icon: DollarSign },
-  { id: "market-trends", label: "Market Trends", icon: TrendingUp },
-  { id: "technical-feasibility", label: "Technical Feasibility", icon: Cpu },
-  { id: "technical-challenges", label: "Technical Challenges", icon: Cpu },
-  { id: "financial-projections", label: "Financial Projections", icon: BarChart3 },
-  { id: "roi-charts", label: "ROI & Break-Even", icon: TrendingUp },
-  { id: "user-journey", label: "User Journey", icon: Users },
-  { id: "engagement-loops", label: "Engagement Loops", icon: Target },
-  { id: "screen-mockups", label: "Screen Mockups", icon: Layout },
-  { id: "brand-copy", label: "Brand Copy Manual", icon: MessageSquare },
-  { id: "brand-identity", label: "Brand Identity", icon: Palette },
-  { id: "logos", label: "Logo Suggestions", icon: Image },
-  { id: "landing-page", label: "Landing Page", icon: Globe },
-];
+// New Section Components
+import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHero";
+import ExecutiveVerdict from "@/components/planningmysaas/dashboard/sections/ExecutiveVerdict";
+import MarketOpportunitySection from "@/components/planningmysaas/dashboard/sections/MarketOpportunitySection";
+import InvestmentSection from "@/components/planningmysaas/dashboard/sections/InvestmentSection";
+import FinancialReturnSection from "@/components/planningmysaas/dashboard/sections/FinancialReturnSection";
+import ExecutionPlanSection from "@/components/planningmysaas/dashboard/sections/ExecutionPlanSection";
+import WhyUaicodeSection from "@/components/planningmysaas/dashboard/sections/WhyUaicodeSection";
+import NextStepsSection from "@/components/planningmysaas/dashboard/sections/NextStepsSection";
+import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/BrandAssetsTab";
 
 const PmsDashboard = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [activeSection, setActiveSection] = useState("executive-summary");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("report");
   const [report, setReport] = useState<StoredReport | null>(null);
 
   // Load report by ID
@@ -93,47 +49,14 @@ const PmsDashboard = () => {
   }, [id, navigate]);
 
   // Get project name from report or fallback to mock data
-  const projectName = report ? getProjectDisplayName(report) : projectInfoData.projectName;
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const sectionElements = sections.map(s => ({
-        id: s.id,
-        element: document.getElementById(s.id)
-      }));
-
-      for (const section of sectionElements) {
-        if (section.element) {
-          const rect = section.element.getBoundingClientRect();
-          if (rect.top <= 150 && rect.bottom >= 150) {
-            setActiveSection(section.id);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-      setActiveSection(id);
-      setMobileMenuOpen(false);
-    }
-  };
+  const projectName = report ? getProjectDisplayName(report) : reportData.projectName;
 
   const handleDownloadPDF = () => {
-    // PDF generation would go here
     console.log("Downloading Launch Plan PDF...");
   };
 
-  const handleDownloadAssets = () => {
-    // Assets download would go here
-    console.log("Downloading brand assets...");
+  const handleScheduleCall = () => {
+    window.open(reportData.nextSteps.contact.calendly, '_blank');
   };
 
   return (
@@ -149,199 +72,100 @@ const PmsDashboard = () => {
               className="gap-1.5 text-muted-foreground hover:text-foreground hover:bg-accent/10"
             >
               <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">My Reports</span>
+              <span className="hidden sm:inline">Meus Relatórios</span>
             </Button>
             <div>
               <h1 className="text-lg font-bold text-foreground">{projectName}</h1>
-              <p className="text-xs text-muted-foreground">Launch Plan Dashboard</p>
+              <p className="text-xs text-muted-foreground">Relatório de Viabilidade</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadAssets}
-              className="hidden md:flex gap-2"
-            >
-              <Palette className="h-4 w-4" />
-              Download Assets
-            </Button>
             <Button
               size="sm"
               onClick={handleDownloadPDF}
               className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
             >
               <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Download Launch Plan</span>
-              <span className="sm:hidden">PDF</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <span className="hidden sm:inline">Download PDF</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="flex pt-16">
-        {/* Sidebar - Desktop */}
-        <aside className={cn(
-          "fixed left-0 top-16 bottom-0 w-64 bg-card/50 border-r border-border/50 transition-transform duration-300 z-40",
-          "hidden lg:block",
-          !sidebarOpen && "-translate-x-full"
-        )}>
-          <ScrollArea className="h-full py-4">
-            <nav className="px-3 space-y-1">
-              {sections.map((section) => {
-                const Icon = section.icon;
-                const isActive = activeSection === section.id;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => scrollToSection(section.id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200",
-                      "hover:bg-accent/10 hover:text-accent",
-                      isActive 
-                        ? "bg-accent/15 text-accent font-medium border-l-2 border-accent" 
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    <Icon className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">{section.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </ScrollArea>
-        </aside>
+      {/* Main Content */}
+      <main className="pt-16">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8">
+          {/* Tabs */}
+          <div className="sticky top-16 z-40 bg-background/95 backdrop-blur-md py-4 border-b border-border/30">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-card/50 border border-border/30">
+                <TabsTrigger value="report" className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  Relatório
+                </TabsTrigger>
+                <TabsTrigger value="assets" className="gap-2">
+                  <Palette className="h-4 w-4" />
+                  Brand Assets
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 top-16 z-40 lg:hidden">
-            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-            <div className="absolute left-0 top-0 bottom-0 w-72 bg-card border-r border-border/50 overflow-y-auto">
-              <nav className="p-4 space-y-1">
-                {sections.map((section) => {
-                  const Icon = section.icon;
-                  const isActive = activeSection === section.id;
-                  return (
-                    <button
-                      key={section.id}
-                      onClick={() => scrollToSection(section.id)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
-                        isActive 
-                          ? "bg-accent/15 text-accent font-medium" 
-                          : "text-muted-foreground hover:bg-accent/10"
-                      )}
-                    >
-                      <Icon className="h-4 w-4 flex-shrink-0" />
-                      <span>{section.label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
+          {/* Tab Content */}
+          {activeTab === "report" ? (
+            <div className="py-8 space-y-24">
+              {/* Report Hero */}
+              <ReportHero 
+                projectName={projectName}
+                onScheduleCall={handleScheduleCall}
+              />
+
+              {/* Executive Verdict */}
+              <ExecutiveVerdict />
+
+              {/* Market Opportunity */}
+              <MarketOpportunitySection />
+
+              {/* Investment */}
+              <InvestmentSection />
+
+              {/* Financial Return */}
+              <FinancialReturnSection />
+
+              {/* Execution Plan */}
+              <ExecutionPlanSection />
+
+              {/* Why Uaicode */}
+              <WhyUaicodeSection />
+
+              {/* Next Steps */}
+              <NextStepsSection 
+                onScheduleCall={handleScheduleCall}
+                onDownloadPDF={handleDownloadPDF}
+              />
+
+              {/* Footer spacing */}
+              <div className="h-20" />
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="py-8">
+              <BrandAssetsTab />
+              <div className="h-20" />
+            </div>
+          )}
+        </div>
+      </main>
 
-        {/* Main Content */}
-        <main className={cn(
-          "flex-1 min-h-screen transition-all duration-300",
-          "lg:ml-64"
-        )}>
-          <div className="max-w-5xl mx-auto px-4 lg:px-8 py-8 space-y-16">
-            {/* Project Hero Section */}
-            <section id="project-overview">
-              <DashboardHero />
-            </section>
-
-            <section id="executive-summary">
-              <DashboardExecutiveSummary />
-            </section>
-
-            <section id="market-opportunity">
-              <DashboardMarketOpportunity />
-            </section>
-
-            <section id="market-analysis">
-              <DashboardMarketAnalysis />
-            </section>
-
-            <section id="competitive-analysis">
-              <DashboardCompetitiveAnalysis />
-            </section>
-
-            <section id="pricing-intelligence">
-              <DashboardPricingIntelligence />
-            </section>
-
-            <section id="investment">
-              <DashboardInvestmentRecommendations />
-            </section>
-
-            <section id="unit-economics">
-              <DashboardUnitEconomics />
-            </section>
-
-            <section id="market-trends">
-              <DashboardMarketTrends />
-            </section>
-
-            <section id="technical-feasibility">
-              <DashboardTechnicalFeasibility />
-            </section>
-
-            <section id="technical-challenges">
-              <DashboardTechnicalChallenges />
-            </section>
-
-            <section id="financial-projections">
-              <DashboardFinancialProjections />
-            </section>
-
-            <section id="roi-charts">
-              <DashboardROICharts />
-            </section>
-
-            <section id="user-journey">
-              <DashboardUserJourney />
-            </section>
-
-            <section id="engagement-loops">
-              <DashboardEngagementLoops />
-            </section>
-
-            <section id="screen-mockups">
-              <DashboardScreenMockups />
-            </section>
-
-            <section id="brand-copy">
-              <DashboardBrandCopyManual />
-            </section>
-
-            <section id="brand-identity">
-              <DashboardBrandIdentityManual />
-            </section>
-
-            <section id="logos">
-              <DashboardLogosSuggestions />
-            </section>
-
-            <section id="landing-page">
-              <DashboardLandingPagePreview />
-            </section>
-
-            {/* Footer spacing */}
-            <div className="h-20" />
-          </div>
-        </main>
+      {/* Floating CTA */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button 
+          onClick={handleScheduleCall}
+          className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg gap-2 h-12 px-6"
+        >
+          <Calendar className="h-5 w-5" />
+          <span className="hidden sm:inline">Agendar Conversa</span>
+        </Button>
       </div>
     </div>
   );
