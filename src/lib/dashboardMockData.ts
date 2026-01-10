@@ -31,7 +31,7 @@ export const executiveSummaryData = {
   complexityScore: 65,
   
   // Storytelling fields
-  verdictHeadline: "High viability, your idea has real traction potential — strong foundations and clear opportunity. Time to turn vision into product.",
+  verdictHeadline: "High viability, your idea has real traction potential — time to turn vision into product.",
   verdictSummary: "Your project shows strong market-product fit with favorable unit economics. The healthcare e-commerce space is growing rapidly, and your approach of connecting consumers with local suppliers fills a genuine market gap. Technical challenges are moderate and well within standard development scope.",
   recommendAction: "proceed" as const,
   benchmarkPercentile: 15,
