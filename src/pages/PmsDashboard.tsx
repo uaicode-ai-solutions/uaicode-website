@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getReportById, getProjectDisplayName, StoredReport } from "@/lib/reportsStorage";
+import { getReportById, getReports, getProjectDisplayName, StoredReport } from "@/lib/reportsStorage";
 import { 
   Download, 
   FileText, 
@@ -31,6 +31,12 @@ const PmsDashboard = () => {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState("report");
   const [report, setReport] = useState<StoredReport | null>(null);
+  const [reportsCount, setReportsCount] = useState(0);
+
+  // Load reports count
+  useEffect(() => {
+    setReportsCount(getReports().length);
+  }, []);
 
   // Load report by ID
   useEffect(() => {
@@ -84,7 +90,7 @@ const PmsDashboard = () => {
                   My Reports
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  View all reports
+                  {reportsCount} {reportsCount === 1 ? 'report' : 'reports'}
                 </p>
               </div>
             </div>
