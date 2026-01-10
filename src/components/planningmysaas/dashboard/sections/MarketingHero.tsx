@@ -72,25 +72,25 @@ const MarketingHero = ({ projectName, onScheduleCall, onExploreAnalysis }: Marke
           <div className="relative">
             {/* Score Ring - Reduced size */}
             <div className="relative w-32 h-32 md:w-36 md:h-36 mx-auto">
-              <svg className="w-full h-full transform -rotate-90">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                 <circle
-                  cx="50%"
-                  cy="50%"
-                  r="45%"
+                  cx="50"
+                  cy="50"
+                  r="42"
                   stroke="currentColor"
                   strokeWidth="6"
                   fill="transparent"
                   className="text-muted/30"
                 />
                 <circle
-                  cx="50%"
-                  cy="50%"
-                  r="45%"
+                  cx="50"
+                  cy="50"
+                  r="42"
                   stroke="url(#marketingScoreGradient)"
                   strokeWidth="6"
                   fill="transparent"
                   strokeLinecap="round"
-                  strokeDasharray={`${(marketingScore / 100) * 283} 283`}
+                  strokeDasharray={`${(marketingScore / 100) * 2 * Math.PI * 42} ${2 * Math.PI * 42}`}
                   className="transition-all duration-1000"
                 />
                 <defs>
