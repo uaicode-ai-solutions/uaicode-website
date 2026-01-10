@@ -6,8 +6,7 @@ import {
   FileText, 
   Palette,
   ChevronLeft,
-  Menu,
-  X,
+  TrendingUp,
   Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,13 +18,13 @@ import { reportData } from "@/lib/reportMockData";
 import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHero";
 import ExecutiveVerdict from "@/components/planningmysaas/dashboard/sections/ExecutiveVerdict";
 import MarketOpportunitySection from "@/components/planningmysaas/dashboard/sections/MarketOpportunitySection";
-import CompetitiveAnalysisSection from "@/components/planningmysaas/dashboard/sections/CompetitiveAnalysisSection";
 import InvestmentSection from "@/components/planningmysaas/dashboard/sections/InvestmentSection";
 import FinancialReturnSection from "@/components/planningmysaas/dashboard/sections/FinancialReturnSection";
 import ExecutionPlanSection from "@/components/planningmysaas/dashboard/sections/ExecutionPlanSection";
 import WhyUaicodeSection from "@/components/planningmysaas/dashboard/sections/WhyUaicodeSection";
 import NextStepsSection from "@/components/planningmysaas/dashboard/sections/NextStepsSection";
 import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/BrandAssetsTab";
+import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
 
 const PmsDashboard = () => {
   const navigate = useNavigate();
@@ -120,10 +119,14 @@ const PmsDashboard = () => {
           {/* Tabs */}
           <div className="sticky top-16 z-40 bg-background/95 backdrop-blur-md py-4 border-b border-border/30">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-card/50 border border-border/30">
+              <TabsList className="grid w-full max-w-xl mx-auto grid-cols-3 bg-card/50 border border-border/30">
                 <TabsTrigger value="report" className="gap-2">
                   <FileText className="h-4 w-4" />
                   Report
+                </TabsTrigger>
+                <TabsTrigger value="marketing" className="gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Marketing
                 </TabsTrigger>
                 <TabsTrigger value="assets" className="gap-2">
                   <Palette className="h-4 w-4" />
@@ -148,9 +151,6 @@ const PmsDashboard = () => {
               {/* Market Opportunity */}
               <MarketOpportunitySection />
 
-              {/* Competitive Intelligence */}
-              <CompetitiveAnalysisSection />
-
               {/* Investment */}
               <InvestmentSection />
 
@@ -170,6 +170,11 @@ const PmsDashboard = () => {
               />
 
               {/* Footer spacing */}
+              <div className="h-20" />
+            </div>
+          ) : activeTab === "marketing" ? (
+            <div className="py-8">
+              <MarketingAnalysisTab />
               <div className="h-20" />
             </div>
           ) : (
