@@ -49,8 +49,8 @@ const FourPsCards = () => {
                   {competitor.logo}
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-lg">{competitor.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{competitor.summary}</p>
+                  <CardTitle className="text-lg">{competitor.competitor}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{competitor.product.differentiators.join(" • ")}</p>
                 </div>
                 {/* Overall Scores */}
                 <div className="hidden md:flex items-center gap-4">

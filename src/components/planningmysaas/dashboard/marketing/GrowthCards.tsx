@@ -113,7 +113,7 @@ const GrowthCards = () => {
             <div className="flex flex-wrap items-center gap-2">
               {growthStrategy.engagement.onboardingSteps.map((step, idx) => (
                 <div key={idx} className="flex items-center">
-                  <Badge variant="secondary" className="text-xs">{step}</Badge>
+                  <Badge variant="secondary" className="text-xs">{step.action}</Badge>
                   {idx < growthStrategy.engagement.onboardingSteps.length - 1 && <ArrowRight className="h-3 w-3 text-muted-foreground mx-1" />}
                 </div>
               ))}
