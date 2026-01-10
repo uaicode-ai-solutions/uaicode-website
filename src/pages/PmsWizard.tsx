@@ -24,6 +24,7 @@ interface WizardData {
   industryOther: string;
   description: string;
   saasName: string;
+  saasLogo: string;
   
   // Step 3: Target Market
   customerTypes: string[];
@@ -50,6 +51,7 @@ const initialData: WizardData = {
   industryOther: "",
   description: "",
   saasName: "",
+  saasLogo: "",
   customerTypes: [],
   marketSize: "",
   selectedFeatures: [],
@@ -225,6 +227,7 @@ const PmsWizard = () => {
               industryOther: data.industryOther,
               description: data.description,
               saasName: data.saasName,
+              saasLogo: data.saasLogo,
             }}
             onChange={handleChange}
           />
