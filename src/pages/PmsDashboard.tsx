@@ -64,16 +64,30 @@ const PmsDashboard = () => {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
         <div className="flex items-center justify-between px-4 lg:px-6 h-16">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="flex items-center gap-3">
+            <div 
               onClick={() => navigate("/planningmysaas/reports")}
-              className="gap-1.5 text-muted-foreground hover:text-foreground hover:bg-accent/10"
+              className="flex items-center gap-3 cursor-pointer group"
             >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">My Reports</span>
-            </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover:bg-accent/10 h-8 w-8"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-accent" />
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">
+                  My Reports
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  View all reports
+                </p>
+              </div>
+            </div>
             <div>
               <h1 className="text-lg font-bold text-foreground">{projectName}</h1>
               <p className="text-xs text-muted-foreground">Viability Report</p>
