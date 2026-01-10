@@ -129,7 +129,7 @@ const PmsWizard = () => {
         return data.selectedFeatures.length > 0;
       case 5:
         const goalValid = data.goal !== "" && 
-          (data.goal !== "other" || data.goalOther.trim().length >= 2);
+          (data.goal !== "other" || (data.goalOther || "").trim().length >= 2);
         return goalValid && data.budget !== "" && data.timeline !== "";
       default:
         return false;
