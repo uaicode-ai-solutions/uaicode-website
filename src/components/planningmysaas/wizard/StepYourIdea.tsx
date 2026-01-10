@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import {
   Monitor,
   BarChart,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 
 const saasTypes = [
@@ -58,11 +60,33 @@ interface StepYourIdeaProps {
     industry: string;
     industryOther: string;
     description: string;
+    saasName: string;
   };
   onChange: (field: string, value: string) => void;
 }
 
 const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
+  const [isGeneratingName, setIsGeneratingName] = useState(false);
+
+  const isDescriptionValid = data.description.trim().length >= 20;
+
+  const handleSuggestName = async () => {
+    setIsGeneratingName(true);
+    
+    // Mock AI suggestion - simulates API call
+    setTimeout(() => {
+      const mockNames = [
+        "FlowSync", "TaskPilot", "DataBridge", "CloudNest", 
+        "SmartDesk", "LaunchPad", "GrowthHub", "NexGen",
+        "BizFlow", "SyncPro", "MetricHub", "InsightAI",
+        "PulseApp", "StreamLine", "VelocityHQ", "CoreStack"
+      ];
+      const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
+      onChange("saasName", randomName);
+      setIsGeneratingName(false);
+    }, 1500);
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -179,6 +203,61 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
             {data.description.length}/1000
           </span>
         </div>
+      </div>
+
+      {/* SaaS Name */}
+      <div className="space-y-3">
+        <div>
+          <Label htmlFor="saasName" className="text-foreground text-base font-medium">
+            Name your SaaS <span className="text-accent">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Choose a memorable name for your product (minimum 3 characters)
+          </p>
+        </div>
+        
+        <div className="flex gap-3">
+          <Input
+            id="saasName"
+            placeholder="e.g., TaskFlow, PayBuddy, HealthHub..."
+            value={data.saasName}
+            onChange={(e) => onChange("saasName", e.target.value.slice(0, 50))}
+            disabled={!isDescriptionValid}
+            className="bg-muted/30 border-border/50 focus:border-accent flex-1 
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+            maxLength={50}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!isDescriptionValid || isGeneratingName}
+            onClick={handleSuggestName}
+            className="border-accent text-accent hover:bg-accent/10 hover:text-accent
+                       disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+          >
+            {isGeneratingName ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Suggest with AI
+              </>
+            )}
+          </Button>
+        </div>
+        
+        {!isDescriptionValid ? (
+          <p className="text-xs text-muted-foreground italic">
+            Fill in the description above (minimum 20 characters) to enable this field
+          </p>
+        ) : (
+          <span className="text-xs text-muted-foreground">
+            {data.saasName.length}/50 characters
+          </span>
+        )}
       </div>
     </div>
   );

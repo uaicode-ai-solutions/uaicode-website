@@ -23,6 +23,7 @@ interface WizardData {
   industry: string;
   industryOther: string;
   description: string;
+  saasName: string;
   
   // Step 3: Target Market
   customerTypes: string[];
@@ -48,6 +49,7 @@ const initialData: WizardData = {
   industry: "",
   industryOther: "",
   description: "",
+  saasName: "",
   customerTypes: [],
   marketSize: "",
   selectedFeatures: [],
@@ -115,7 +117,8 @@ const PmsWizard = () => {
           (data.saasType !== "other" || data.saasTypeOther.trim().length >= 2);
         const industryValid = data.industry !== "" && 
           (data.industry !== "other" || data.industryOther.trim().length >= 2);
-        return saasTypeValid && industryValid && data.description.trim().length >= 20;
+        const saasNameValid = data.saasName.trim().length >= 3;
+        return saasTypeValid && industryValid && data.description.trim().length >= 20 && saasNameValid;
       case 3:
         return data.customerTypes.length > 0 && data.marketSize !== "";
       case 4:
@@ -153,10 +156,8 @@ const PmsWizard = () => {
     const reportId = generateReportId();
     const now = new Date().toISOString();
 
-    // Create project name from description or saasType
-    const projectName = data.description.slice(0, 50) || 
-      (data.saasType === "other" ? data.saasTypeOther : data.saasType) || 
-      "Untitled Project";
+    // Use saasName as the project name
+    const projectName = data.saasName.trim() || "Untitled Project";
 
     // Create the report object
     const newReport: StoredReport = {
@@ -223,6 +224,7 @@ const PmsWizard = () => {
               industry: data.industry,
               industryOther: data.industryOther,
               description: data.description,
+              saasName: data.saasName,
             }}
             onChange={handleChange}
           />
