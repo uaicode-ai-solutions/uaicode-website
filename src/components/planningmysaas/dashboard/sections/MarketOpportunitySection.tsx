@@ -57,38 +57,32 @@ const MarketOpportunitySection = () => {
         {/* Card 1: Concentric Circles Visualization */}
         <Card className="bg-card/50 border-border/30 overflow-hidden">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-sm font-medium text-foreground">Market Size</h3>
-              <Badge variant="outline" className="border-accent/30 text-accent gap-1">
-                <TrendingUp className="h-3 w-3" />
-                {market.growthRate} YoY
-              </Badge>
-            </div>
+            <h3 className="text-sm font-medium text-foreground mb-6">Market Size</h3>
 
             {/* Concentric Circles */}
             <div className="relative flex items-center justify-center py-4">
               {/* TAM - Outer Circle */}
-              <div className="relative w-72 h-72 rounded-full bg-gradient-to-br from-accent/5 to-accent/10 border border-accent/20 flex items-center justify-center shadow-[0_0_40px_rgba(249,115,22,0.08)] hover:shadow-[0_0_50px_rgba(249,115,22,0.15)] transition-all duration-500 group">
+              <div className="relative w-80 h-80 rounded-full bg-gradient-to-br from-accent/5 to-accent/10 border border-accent/20 flex items-center justify-center shadow-[0_0_40px_rgba(249,115,22,0.08)] hover:shadow-[0_0_50px_rgba(249,115,22,0.15)] transition-all duration-500 group">
                 {/* TAM Label - Top */}
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                  <span className="text-[10px] font-medium text-accent/70 uppercase tracking-wider">TAM</span>
-                  <span className="text-lg font-bold text-foreground">{market.tam.value}</span>
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                  <span className="text-xs font-medium text-accent/70 uppercase tracking-wider">TAM</span>
+                  <span className="text-xl font-bold text-foreground">{market.tam.value}</span>
                 </div>
 
                 {/* SAM - Middle Circle */}
-                <div className="relative w-52 h-52 rounded-full bg-gradient-to-br from-accent/10 to-accent/20 border border-accent/30 flex items-center justify-center shadow-[0_0_30px_rgba(249,115,22,0.1)] hover:shadow-[0_0_40px_rgba(249,115,22,0.2)] transition-all duration-500">
+                <div className="relative w-56 h-56 rounded-full bg-gradient-to-br from-accent/10 to-accent/20 border border-accent/30 flex items-center justify-center shadow-[0_0_30px_rgba(249,115,22,0.1)] hover:shadow-[0_0_40px_rgba(249,115,22,0.2)] transition-all duration-500">
                   {/* SAM Label - Top */}
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                    <span className="text-[10px] font-medium text-accent/80 uppercase tracking-wider">SAM</span>
-                    <span className="text-lg font-bold text-foreground">{market.sam.value}</span>
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                    <span className="text-xs font-medium text-accent/80 uppercase tracking-wider">SAM</span>
+                    <span className="text-xl font-bold text-foreground">{market.sam.value}</span>
                   </div>
 
                   {/* SOM - Inner Circle */}
-                  <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-accent/20 to-accent/35 border border-accent/50 flex items-center justify-center shadow-[0_0_25px_rgba(249,115,22,0.15)] hover:shadow-[0_0_35px_rgba(249,115,22,0.25)] transition-all duration-500">
+                  <div className="relative w-36 h-36 rounded-full bg-gradient-to-br from-accent/20 to-accent/35 border border-accent/50 flex items-center justify-center shadow-[0_0_25px_rgba(249,115,22,0.15)] hover:shadow-[0_0_35px_rgba(249,115,22,0.25)] transition-all duration-500">
                     {/* SOM Label - Centered */}
                     <div className="flex flex-col items-center">
-                      <span className="text-[10px] font-medium text-accent uppercase tracking-wider">SOM</span>
-                      <span className="text-xl font-bold text-foreground">{market.som.value}</span>
+                      <span className="text-xs font-medium text-accent uppercase tracking-wider">SOM</span>
+                      <span className="text-2xl font-bold text-foreground">{market.som.value}</span>
                     </div>
                   </div>
                 </div>
@@ -96,6 +90,13 @@ const MarketOpportunitySection = () => {
 
               {/* Decorative glow effect */}
               <div className="absolute inset-0 bg-gradient-radial from-accent/5 via-transparent to-transparent pointer-events-none" />
+            </div>
+
+            {/* Growth Legend */}
+            <div className="mt-4 flex items-center justify-center gap-2 text-sm">
+              <TrendingUp className="h-4 w-4 text-green-400" />
+              <span className="font-semibold text-green-400">{market.growthRate}</span>
+              <span className="text-muted-foreground">Year-over-Year market growth rate</span>
             </div>
           </CardContent>
         </Card>
