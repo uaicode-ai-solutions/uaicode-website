@@ -1,4 +1,4 @@
-import { TrendingUp, Clock, DollarSign, Target, BarChart3, Shield, Rocket } from "lucide-react";
+import { TrendingUp, Clock, DollarSign, Target, BarChart3, Shield, Rocket, CheckCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -251,27 +251,65 @@ const FinancialReturnSection = () => {
         </div>
       </div>
 
-      {/* Additional Metrics */}
-      <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap justify-center gap-6 md:gap-12">
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">LTV/CAC Ratio</span>
-              <InfoTooltip side="top" size="sm">
-                Customer Lifetime Value ÷ Customer Acquisition Cost. Above 3x is excellent.
-              </InfoTooltip>
-              <span className="font-bold text-green-400 text-lg">{financials.ltvCacRatio}x</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">Monthly Churn</span>
-              <InfoTooltip side="top" size="sm">
-                The percentage of customers who cancel each month. Lower is better.
-              </InfoTooltip>
-              <span className="font-medium text-foreground text-lg">{financials.monthlyChurn}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Unit Economics */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-accent" />
+          <h3 className="font-semibold text-accent text-sm">Unit Economics</h3>
+        </div>
+        
+        {/* 4 Cards Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Ideal Ticket */}
+          <Card className="bg-card/50 border-border/30">
+            <CardContent className="p-4 text-center">
+              <span className="text-xs text-muted-foreground">Ideal Ticket</span>
+              <div className="text-xl font-bold text-foreground mt-1">${financials.unitEconomics.idealTicket}</div>
+              <span className="text-xs text-muted-foreground">/month</span>
+            </CardContent>
+          </Card>
+          
+          {/* Payback Period */}
+          <Card className="bg-card/50 border-border/30">
+            <CardContent className="p-4 text-center">
+              <span className="text-xs text-muted-foreground">Payback Period</span>
+              <div className="text-xl font-bold text-foreground mt-1">{financials.unitEconomics.paybackPeriod}</div>
+              <span className="text-xs text-muted-foreground">months</span>
+            </CardContent>
+          </Card>
+          
+          {/* LTV */}
+          <Card className="bg-card/50 border-border/30">
+            <CardContent className="p-4 text-center">
+              <span className="text-xs text-muted-foreground">LTV (Lifetime Value)</span>
+              <div className="text-xl font-bold text-foreground mt-1">${financials.unitEconomics.ltv}</div>
+              <span className="text-xs text-muted-foreground">{financials.unitEconomics.ltvMonths} months</span>
+            </CardContent>
+          </Card>
+          
+          {/* LTV/CAC Ratio */}
+          <Card className="bg-card/50 border-border/30">
+            <CardContent className="p-4 text-center">
+              <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
+              <div className="flex items-center justify-center gap-1.5 mt-1">
+                <span className="text-xl font-bold text-foreground">{financials.unitEconomics.ltvCacRatio}x</span>
+                <CheckCircle className="h-4 w-4 text-accent" />
+              </div>
+              <span className="text-xs text-muted-foreground">healthy (&gt;3x)</span>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* How it works */}
+        <Card className="bg-accent/5 border-accent/20">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">How it works: </span>
+              {financials.unitEconomics.howItWorks}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </section>
   );
 };

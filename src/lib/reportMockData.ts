@@ -144,6 +144,16 @@ The estimated $55,000 MVP investment has the potential to break even in 8 months
     ltvCacRatio: 11.5,
     monthlyChurn: "5%",
     
+    unitEconomics: {
+      idealTicket: 33,
+      paybackPeriod: 4.5,
+      ltv: 792,
+      ltvMonths: 24,
+      cac: 150,
+      ltvCacRatio: 5.3,
+      howItWorks: "You invest $150 once to acquire a customer (CAC). They pay $33/month for an average of 24 months, generating $792 in total revenue (LTV). You recover your acquisition cost in 4.5 months, then profit for the remaining 19.5 months. This is a healthy business model with strong unit economics."
+    },
+    
     scenarios: [
       { 
         name: "Conservative", 
