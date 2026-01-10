@@ -95,70 +95,73 @@ const ExecutiveVerdict = () => {
         </CardContent>
       </Card>
 
-      {/* Card 2: Key Strengths */}
-      <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <h3 className="font-semibold text-foreground text-sm">Key Strengths</h3>
-            <InfoTooltip side="right" size="sm">
-              The main competitive advantages and strengths identified in your SaaS idea.
-            </InfoTooltip>
-          </div>
-          <div className="space-y-3">
-            {data.highlights.map((highlight, index) => (
-              <div 
-                key={index}
-                className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
-              >
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center mt-0.5">
-                  <span className="text-xs font-bold text-accent">{index + 1}</span>
+      {/* Cards lado a lado: Key Strengths + Identified Risks */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Card 2: Key Strengths */}
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="font-semibold text-foreground text-sm">Key Strengths</h3>
+              <InfoTooltip side="right" size="sm">
+                The main competitive advantages and strengths identified in your SaaS idea.
+              </InfoTooltip>
+            </div>
+            <div className="space-y-3">
+              {data.highlights.map((highlight, index) => (
+                <div 
+                  key={index}
+                  className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
+                >
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center mt-0.5">
+                    <span className="text-xs font-bold text-accent">{index + 1}</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground text-sm">{highlight.text}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{highlight.detail}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-foreground text-sm">{highlight.text}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{highlight.detail}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Card 3: Identified Risks */}
-      <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <h3 className="font-semibold text-foreground text-sm">Identified Risks</h3>
-            <InfoTooltip side="right" size="sm">
-              Proactively identified risks with planned mitigation strategies.
-            </InfoTooltip>
-          </div>
-          <div className="space-y-3">
-            {data.risks.map((item, index) => (
-              <div 
-                key={index}
-                className="p-4 rounded-lg bg-muted/10 border border-border/20"
-              >
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <p className="font-medium text-foreground text-sm">{item.risk}</p>
-                  <Badge 
-                    variant="outline" 
-                    className={`flex-shrink-0 text-xs ${getPriorityColor(item.priority)}`}
-                  >
-                    {getPriorityLabel(item.priority)}
-                  </Badge>
+        {/* Card 3: Identified Risks */}
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="font-semibold text-foreground text-sm">Identified Risks</h3>
+              <InfoTooltip side="right" size="sm">
+                Proactively identified risks with planned mitigation strategies.
+              </InfoTooltip>
+            </div>
+            <div className="space-y-3">
+              {data.risks.map((item, index) => (
+                <div 
+                  key={index}
+                  className="p-4 rounded-lg bg-muted/10 border border-border/20"
+                >
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <p className="font-medium text-foreground text-sm">{item.risk}</p>
+                    <Badge 
+                      variant="outline" 
+                      className={`flex-shrink-0 text-xs ${getPriorityColor(item.priority)}`}
+                    >
+                      {getPriorityLabel(item.priority)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <ArrowRight className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-muted-foreground">
+                      <span className="text-green-400 font-medium">Mitigation:</span>{" "}
+                      {item.mitigation}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-start gap-2 text-sm">
-                  <ArrowRight className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-muted-foreground">
-                    <span className="text-green-400 font-medium">Mitigation:</span>{" "}
-                    {item.mitigation}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </section>
   );
 };
