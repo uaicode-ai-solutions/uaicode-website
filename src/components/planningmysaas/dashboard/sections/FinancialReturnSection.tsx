@@ -76,7 +76,12 @@ const FinancialReturnSection = () => {
           <BarChart3 className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">The Return</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">The Return</h2>
+            <InfoTooltip side="right" size="sm">
+              Financial projections including ROI, break-even analysis, and unit economics for your SaaS business model.
+            </InfoTooltip>
+          </div>
           <p className="text-sm text-muted-foreground">Financial projections and scenarios</p>
         </div>
       </div>

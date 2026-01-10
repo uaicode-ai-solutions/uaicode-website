@@ -53,7 +53,12 @@ const ExecutiveVerdict = () => {
           <ShieldCheck className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">The Verdict</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">The Verdict</h2>
+            <InfoTooltip side="right" size="sm">
+              AI-powered executive summary analyzing your SaaS idea's viability, strengths, and potential risks.
+            </InfoTooltip>
+          </div>
           <p className="text-sm text-muted-foreground">Executive summary of the analysis</p>
         </div>
       </div>

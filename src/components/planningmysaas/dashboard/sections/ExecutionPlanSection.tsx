@@ -30,7 +30,12 @@ const ExecutionPlanSection = () => {
           <Rocket className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">The Plan</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">The Plan</h2>
+            <InfoTooltip side="right" size="sm">
+              Detailed execution timeline, tech stack recommendations, and development phases for your MVP.
+            </InfoTooltip>
+          </div>
           <p className="text-sm text-muted-foreground">How we build your project</p>
         </div>
       </div>
