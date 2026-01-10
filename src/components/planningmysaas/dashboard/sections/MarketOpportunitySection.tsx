@@ -7,28 +7,32 @@ import { reportData } from "@/lib/reportMockData";
 const MarketOpportunitySection = () => {
   const { market } = reportData;
 
-  const funnelData = [
+  const marketLevels = [
     { 
+      key: "tam",
+      label: "TAM",
+      fullName: "Total Addressable Market",
       ...market.tam, 
       icon: Globe,
-      gradient: "from-accent/20 to-accent/10",
-      tooltipText: "Total Addressable Market - The entire global market demand for your product/service category."
+      description: "The entire global market demand for your product/service category. This represents the total revenue opportunity if you achieved 100% market share."
     },
     { 
+      key: "sam",
+      label: "SAM",
+      fullName: "Serviceable Available Market",
       ...market.sam, 
       icon: Target,
-      gradient: "from-accent/40 to-accent/25",
-      tooltipText: "Serviceable Available Market - The segment of TAM you can realistically serve based on geography and capabilities."
+      description: "The segment of TAM you can realistically serve based on your geography, capabilities, and business model constraints."
     },
     { 
+      key: "som",
+      label: "SOM",
+      fullName: "Serviceable Obtainable Market",
       ...market.som, 
       icon: Crosshair,
-      gradient: "from-accent/60 to-accent/45",
-      tooltipText: "Serviceable Obtainable Market - The portion of SAM you can capture in the first 3 years."
+      description: "The portion of SAM you can realistically capture in the first 3 years. This is your immediate addressable opportunity."
     },
   ];
-
-  const pyramidWidths = ["100%", "75%", "50%"];
 
   return (
     <section id="market-opportunity" className="space-y-6 animate-fade-in">
@@ -48,84 +52,109 @@ const MarketOpportunitySection = () => {
         </div>
       </div>
 
-      {/* Market Funnel - Full Width */}
-      <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-foreground">Market Size</h3>
-            <Badge variant="outline" className="border-accent/30 text-accent gap-1">
-              <TrendingUp className="h-3 w-3" />
-              {market.growthRate} YoY
-            </Badge>
-          </div>
+      {/* Two Cards Grid */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Card 1: Concentric Circles Visualization */}
+        <Card className="bg-card/50 border-border/30 overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-semibold text-foreground">Market Size</h3>
+              <Badge variant="outline" className="border-accent/30 text-accent gap-1">
+                <TrendingUp className="h-3 w-3" />
+                {market.growthRate} YoY
+              </Badge>
+            </div>
 
-          {/* Pyramid Visualization */}
-          <div className="flex flex-col items-center gap-2 py-2">
-            {funnelData.map((item, index) => {
-              const IconComponent = item.icon;
-              return (
-                <div
-                  key={index}
-                  className="relative w-full transition-all duration-300"
-                  style={{ maxWidth: pyramidWidths[index] }}
-                >
+            {/* Concentric Circles */}
+            <div className="relative flex items-center justify-center py-4">
+              {/* TAM - Outer Circle */}
+              <div className="relative w-72 h-72 rounded-full bg-gradient-to-br from-accent/5 to-accent/10 border border-accent/20 flex items-center justify-center shadow-[0_0_40px_rgba(249,115,22,0.08)] hover:shadow-[0_0_50px_rgba(249,115,22,0.15)] transition-all duration-500 group">
+                {/* TAM Label - Top */}
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                  <span className="text-[10px] font-medium text-accent/70 uppercase tracking-wider">TAM</span>
+                  <span className="text-lg font-bold text-foreground">{market.tam.value}</span>
+                </div>
+
+                {/* SAM - Middle Circle */}
+                <div className="relative w-52 h-52 rounded-full bg-gradient-to-br from-accent/10 to-accent/20 border border-accent/30 flex items-center justify-center shadow-[0_0_30px_rgba(249,115,22,0.1)] hover:shadow-[0_0_40px_rgba(249,115,22,0.2)] transition-all duration-500">
+                  {/* SAM Label - Top */}
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                    <span className="text-[10px] font-medium text-accent/80 uppercase tracking-wider">SAM</span>
+                    <span className="text-lg font-bold text-foreground">{market.sam.value}</span>
+                  </div>
+
+                  {/* SOM - Inner Circle */}
+                  <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-accent/20 to-accent/35 border border-accent/50 flex items-center justify-center shadow-[0_0_25px_rgba(249,115,22,0.15)] hover:shadow-[0_0_35px_rgba(249,115,22,0.25)] transition-all duration-500">
+                    {/* SOM Label - Centered */}
+                    <div className="flex flex-col items-center">
+                      <span className="text-[10px] font-medium text-accent uppercase tracking-wider">SOM</span>
+                      <span className="text-xl font-bold text-foreground">{market.som.value}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Decorative glow effect */}
+              <div className="absolute inset-0 bg-gradient-radial from-accent/5 via-transparent to-transparent pointer-events-none" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 2: Understanding Market Size */}
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-6">
+            <h3 className="font-semibold text-foreground mb-5">Understanding Market Size</h3>
+
+            <div className="space-y-4">
+              {marketLevels.map((level, index) => {
+                const IconComponent = level.icon;
+                const intensities = [
+                  { bg: "bg-accent/5", border: "border-accent/30", iconBg: "bg-accent/10" },
+                  { bg: "bg-accent/10", border: "border-accent/40", iconBg: "bg-accent/15" },
+                  { bg: "bg-accent/15", border: "border-accent/50", iconBg: "bg-accent/20" },
+                ];
+                const intensity = intensities[index];
+
+                return (
                   <div
-                    className={`
-                      relative py-3 px-4 transition-all duration-300
-                      bg-gradient-to-r ${item.gradient}
-                      hover:scale-[1.02] hover:shadow-lg hover:shadow-accent/10
-                      border border-accent/20 hover:border-accent/40
-                      rounded-lg
-                    `}
+                    key={level.key}
+                    className={`p-4 rounded-xl ${intensity.bg} border-l-4 ${intensity.border} transition-all duration-300 hover:translate-x-1`}
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-background/30 backdrop-blur-sm flex items-center justify-center border border-accent/30">
-                          <IconComponent className="h-4 w-4 text-accent" />
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2 rounded-lg ${intensity.iconBg} flex-shrink-0`}>
+                        <IconComponent className="w-4 h-4 text-accent" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-foreground">{level.label}</span>
+                          <span className="text-sm text-muted-foreground">-</span>
+                          <span className="text-sm text-muted-foreground">{level.fullName}</span>
                         </div>
-                        <div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs text-foreground/60 font-medium uppercase tracking-wide">
-                              {item.label}
-                            </span>
-                            <InfoTooltip side="right" size="sm">
-                              {item.tooltipText}
-                            </InfoTooltip>
-                          </div>
-                          <div className="text-lg font-bold text-foreground">
-                            {item.value}
-                          </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {level.description}
+                        </p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-lg font-bold text-accent">{level.value}</span>
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Mobile-friendly description - always visible */}
-                    <p className="text-xs text-muted-foreground mt-2 lg:hidden">
-                      {item.description}
-                    </p>
                   </div>
-
-                  {/* Desktop tooltip on hover */}
-                  <div className="hidden lg:block absolute left-[105%] top-1/2 -translate-y-1/2 
-                                  opacity-0 hover:opacity-100 group-hover:opacity-100 pointer-events-none
-                                  bg-card border border-border/50 rounded-lg p-2.5 
-                                  shadow-xl z-20 w-44 transition-opacity">
-                    <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Conclusion */}
-          <div className="mt-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-            <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-foreground/90">{market.conclusion}</p>
+                );
+              })}
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Conclusion - Full Width */}
+      <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+        <div className="flex items-start gap-3">
+          <div className="p-1.5 rounded-lg bg-green-500/20 flex-shrink-0">
+            <CheckCircle2 className="h-4 w-4 text-green-400" />
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-sm text-foreground/90 leading-relaxed">{market.conclusion}</p>
+        </div>
+      </div>
     </section>
   );
 };
