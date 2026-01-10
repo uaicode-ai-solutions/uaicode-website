@@ -59,9 +59,19 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   return (
     <section id="next-steps" className="space-y-6 animate-fade-in">
       {/* Section Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-foreground mb-2">Next Steps</h2>
-        <p className="text-lg text-accent">{nextSteps.verdictSummary}</p>
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-accent/10">
+          <ArrowRight className="h-5 w-5 text-accent" />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">Next Steps</h2>
+            <InfoTooltip side="right" size="sm">
+              Clear action items to move forward with your project, including scheduling options and direct contact.
+            </InfoTooltip>
+          </div>
+          <p className="text-sm text-muted-foreground">Your project is ready to be built</p>
+        </div>
       </div>
 
       {/* Summary Card with Investment */}

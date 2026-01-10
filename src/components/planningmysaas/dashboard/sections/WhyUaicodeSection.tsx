@@ -1,6 +1,7 @@
 import { Award, Users, Zap, HeadphonesIcon, CheckCircle2, Quote, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { reportData } from "@/lib/reportMockData";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -33,7 +34,12 @@ const WhyUaicodeSection = () => {
           <Award className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Why Uaicode</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">Why Uaicode</h2>
+            <InfoTooltip side="right" size="sm">
+              Our track record, differentials, client testimonials, and guarantees for your project's success.
+            </InfoTooltip>
+          </div>
           <p className="text-sm text-muted-foreground">Our differentials and guarantees</p>
         </div>
       </div>

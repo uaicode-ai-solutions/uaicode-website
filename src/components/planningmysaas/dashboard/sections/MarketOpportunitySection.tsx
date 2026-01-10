@@ -38,7 +38,12 @@ const MarketOpportunitySection = () => {
           <Target className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">The Opportunity</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">The Opportunity</h2>
+            <InfoTooltip side="right" size="sm">
+              Market analysis including TAM, SAM, SOM calculations, competitor landscape, and your competitive advantages.
+            </InfoTooltip>
+          </div>
           <p className="text-sm text-muted-foreground">Market size and competition</p>
         </div>
       </div>
