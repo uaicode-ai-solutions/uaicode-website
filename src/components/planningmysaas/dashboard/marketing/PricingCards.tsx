@@ -132,7 +132,7 @@ const PricingCards = () => {
                   {gap.priority}
                 </Badge>
                 <div className="flex-1">
-                  <span className="font-medium text-foreground">{gap.gap}</span>
+                  <span className="font-medium text-foreground">{gap.range}</span>
                   <p className="text-sm text-muted-foreground">{gap.description}</p>
                 </div>
               </div>
@@ -193,7 +193,7 @@ const PricingCards = () => {
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-4 text-center">Est. conversion: {tier.conversionRate}</p>
+                  <p className="text-xs text-muted-foreground mt-4 text-center">Est. conversion: {tier.expectedConversion}</p>
                 </div>
               );
             })}
