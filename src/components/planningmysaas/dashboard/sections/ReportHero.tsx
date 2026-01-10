@@ -50,7 +50,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   };
 
   return (
-    <div className="relative min-h-[85vh] flex flex-col justify-center py-8">
+    <div className="relative min-h-[85vh] flex flex-col justify-center py-10">
       {/* Background Effects */}
       <div className="absolute inset-0 aurora-bg opacity-40" />
       <div className="absolute top-20 left-1/4 w-72 h-72 bg-accent/10 rounded-full blur-3xl" />
@@ -64,7 +64,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
         </Badge>
 
         {/* Project Name */}
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground">
           {displayName}
         </h1>
 
@@ -117,23 +117,23 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-2xl mx-auto mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mt-6">
           {metrics.map((metric, index) => (
             <Card 
               key={index}
-              className="bg-card/50 border-border/30 p-4 hover:border-accent/30 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5"
+              className="glass-premium border-accent/20 p-5 hover:border-accent/40 transition-colors"
             >
-              <div className="flex items-center justify-center gap-2 mb-1.5">
-                <div className="p-1.5 rounded-lg bg-accent/10">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <div className="p-2 rounded-lg bg-accent/10">
                   <metric.icon className="h-4 w-4 text-accent" />
                 </div>
-                <InfoTooltip side="top">
+                <InfoTooltip term={metric.label}>
                   {metric.tooltip}
                 </InfoTooltip>
               </div>
-              <div className="text-2xl font-bold text-foreground">{metric.value}</div>
+              <div className="text-2xl md:text-3xl font-bold text-foreground">{metric.value}</div>
               <div className="text-sm text-muted-foreground">{metric.label}</div>
-              <div className="text-xs text-muted-foreground/70">{metric.sublabel}</div>
+              <div className="text-xs text-muted-foreground/70 mt-0.5">{metric.sublabel}</div>
             </Card>
           ))}
         </div>
@@ -143,7 +143,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
           <Button 
             size="lg"
             onClick={onScheduleCall}
-            className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 px-6 shadow-lg shadow-accent/20"
+            className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 px-8"
           >
             Let's Build This Together
           </Button>
@@ -151,20 +151,15 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
             size="lg"
             variant="outline"
             onClick={onExploreReport || scrollToContent}
-            className="border-border/50 hover:border-accent/50 gap-2"
+            className="border-accent/30 hover:border-accent/50 hover:bg-accent/5 gap-2"
           >
             See Full Analysis
           </Button>
         </div>
 
-        {/* Urgency Text */}
-        <p className="text-sm text-muted-foreground">
-          <span className="text-accent">Limited availability</span> — We accept 2-3 new projects per month
-        </p>
-
         {/* Scroll Indicator */}
         <div 
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 cursor-pointer animate-bounce"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 cursor-pointer animate-bounce"
           onClick={scrollToContent}
         >
           <ChevronDown className="h-6 w-6 text-muted-foreground/50" />
