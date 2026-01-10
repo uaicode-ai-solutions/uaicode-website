@@ -1,6 +1,7 @@
-import { TrendingUp, Target, Shield, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
+import { TrendingUp, Target, Shield, AlertTriangle, CheckCircle2, Lightbulb, Rocket } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 const MarketingVerdict = () => {
   const highlights = [
@@ -41,8 +42,15 @@ const MarketingVerdict = () => {
     }
   ];
 
+  const summaryPoints = [
+    "Fragmented market with major players either serving enterprises or consumers",
+    "The $60-90/month SMB tier is significantly underserved",
+    "No competitor combines health compliance, integrated delivery, and modern UX",
+    "With $15K/month paid media budget, expect 3.5x ROAS in the first 6 months"
+  ];
+
   return (
-    <section id="marketing-verdict" className="space-y-8 scroll-mt-8">
+    <section id="marketing-verdict" className="space-y-6 scroll-mt-8">
       {/* Section Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10">
@@ -54,60 +62,86 @@ const MarketingVerdict = () => {
         </div>
       </div>
 
+      {/* Recommendation Banner */}
+      <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+        <div className="p-2 rounded-full bg-green-500/20">
+          <Rocket className="h-5 w-5 text-green-400" />
+        </div>
+        <div className="flex-1">
+          <Badge className="bg-green-500/20 text-green-400 border-green-500/30 mb-1">
+            Recommendation
+          </Badge>
+          <p className="text-foreground font-medium">Proceed with Differentiated Strategy</p>
+        </div>
+      </div>
+
       {/* Summary Card */}
       <Card className="glass-premium border-accent/20">
-        <CardContent className="p-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Recommendation Badge */}
-            <div className="flex-shrink-0 text-center lg:text-left">
-              <Badge className="bg-accent text-accent-foreground text-lg px-4 py-2 mb-4">
-                Proceed with Differentiated Strategy
-              </Badge>
-              <p className="text-muted-foreground max-w-xs">
-                The competitive analysis reveals significant opportunities for a focused market entry 
-                targeting underserved health SMBs with a modern, compliance-first approach.
-              </p>
-            </div>
-
-            {/* Summary Points */}
-            <div className="flex-1 space-y-4">
-              <p className="text-foreground leading-relaxed">
-                Your competitive analysis reveals a fragmented market where major players either 
-                serve large enterprises with complex solutions or target consumers with generic tools. 
-                The <span className="text-accent font-medium">$60-90/month SMB tier is underserved</span>, 
-                and no competitor effectively combines health compliance, integrated delivery, and modern UX.
-              </p>
-              <p className="text-foreground leading-relaxed">
-                With a recommended <span className="text-accent font-medium">$15K/month paid media budget</span> and 
-                focus on content marketing, you can achieve <span className="text-accent font-medium">3.5x ROAS</span> within 
-                the first 6 months while building a sustainable organic acquisition channel.
-              </p>
-            </div>
+        <CardContent className="p-6">
+          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-accent" />
+            Analysis Summary
+          </h3>
+          <div className="space-y-3">
+            {summaryPoints.map((point, index) => (
+              <div key={index} className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-accent">{index + 1}</span>
+                </div>
+                <p className="text-foreground text-sm leading-relaxed">
+                  {point.includes("SMB") ? (
+                    <>
+                      {point.split("SMB")[0]}
+                      <span className="text-accent font-medium">
+                        SMB
+                        <InfoTooltip term="SMB" size="sm">
+                          Small and Medium Businesses — typically companies with 10-500 employees and $1M-$50M in annual revenue.
+                        </InfoTooltip>
+                      </span>
+                      {point.split("SMB")[1]}
+                    </>
+                  ) : point.includes("ROAS") ? (
+                    <>
+                      {point.split("ROAS")[0]}
+                      <span className="text-accent font-medium">
+                        ROAS
+                        <InfoTooltip term="ROAS" size="sm">
+                          Return on Ad Spend — a metric that measures revenue generated for every dollar spent on advertising.
+                        </InfoTooltip>
+                      </span>
+                      {point.split("ROAS")[1]}
+                    </>
+                  ) : (
+                    point
+                  )}
+                </p>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
       {/* Highlights & Risks Grid */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4">
         {/* Key Opportunities */}
         <Card className="bg-card/50 border-accent/20">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-6 flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-accent" />
+          <CardContent className="p-5">
+            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-accent" />
               Key Competitive Opportunities
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {highlights.map((item, index) => (
                 <div 
                   key={index}
-                  className="flex gap-4 p-4 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/30 transition-colors"
+                  className="flex gap-3 p-3 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/30 transition-colors"
                 >
-                  <div className="p-2 rounded-lg bg-accent/10 h-fit">
-                    <item.icon className="h-5 w-5 text-accent" />
+                  <div className="p-1.5 rounded-lg bg-accent/10 h-fit">
+                    <item.icon className="h-4 w-4 text-accent" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-foreground">{item.title}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                    <h4 className="font-medium text-foreground text-sm">{item.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
                   </div>
                 </div>
               ))}
@@ -117,24 +151,24 @@ const MarketingVerdict = () => {
 
         {/* Risks & Mitigations */}
         <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-6 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+          <CardContent className="p-5">
+            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-yellow-500" />
               Risks & Mitigations
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {risks.map((item, index) => (
                 <div 
                   key={index}
-                  className="p-4 rounded-lg bg-muted/20 border border-border/30"
+                  className="p-3 rounded-lg bg-muted/20 border border-border/30"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-yellow-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-yellow-500">{index + 1}</span>
+                    <div className="w-5 h-5 rounded-full bg-yellow-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-[10px] font-bold text-yellow-500">{index + 1}</span>
                     </div>
                     <div>
-                      <h4 className="font-medium text-foreground">{item.risk}</h4>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <h4 className="font-medium text-foreground text-sm">{item.risk}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         <span className="text-accent">Mitigation:</span> {item.mitigation}
                       </p>
                     </div>

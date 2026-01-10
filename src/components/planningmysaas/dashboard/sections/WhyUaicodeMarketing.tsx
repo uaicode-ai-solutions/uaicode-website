@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 const WhyUaicodeMarketing = () => {
   const stats = {
@@ -40,14 +41,14 @@ const WhyUaicodeMarketing = () => {
       name: "Sarah Chen",
       role: "CMO",
       company: "HealthFlow",
-      avatar: ""
+      initials: "SC"
     },
     {
       quote: "Their understanding of B2B SaaS marketing is unmatched. ROI exceeded our expectations.",
       name: "Michael Torres",
       role: "Founder",
       company: "MedStack",
-      avatar: ""
+      initials: "MT"
     }
   ];
 
@@ -68,7 +69,7 @@ const WhyUaicodeMarketing = () => {
   ];
 
   return (
-    <section id="why-uaicode-marketing" className="space-y-8">
+    <section id="why-uaicode-marketing" className="space-y-6">
       {/* Section Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10">
@@ -80,21 +81,21 @@ const WhyUaicodeMarketing = () => {
         </div>
       </div>
 
-      {/* Stats Bar */}
-      <Card className="glass-premium border-accent/20">
-        <CardContent className="p-6">
+      {/* Stats Bar - with subtle animation */}
+      <Card className="glass-premium border-accent/20 overflow-hidden">
+        <CardContent className="p-5">
           <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-accent">{stats.successRate}%</div>
-              <p className="text-sm text-muted-foreground">Client Success Rate</p>
+            <div className="animate-fade-in" style={{ animationDelay: '0ms' }}>
+              <div className="text-2xl md:text-3xl font-bold text-accent">{stats.successRate}%</div>
+              <p className="text-xs text-muted-foreground">Client Success Rate</p>
             </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.campaignsLaunched}+</div>
-              <p className="text-sm text-muted-foreground">Campaigns Launched</p>
+            <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+              <div className="text-2xl md:text-3xl font-bold text-foreground">{stats.campaignsLaunched}+</div>
+              <p className="text-xs text-muted-foreground">Campaigns Launched</p>
             </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.avgROAS}</div>
-              <p className="text-sm text-muted-foreground">Avg. ROAS Achieved</p>
+            <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <div className="text-2xl md:text-3xl font-bold text-foreground">{stats.avgROAS}</div>
+              <p className="text-xs text-muted-foreground">Avg. ROAS Achieved</p>
             </div>
           </div>
         </CardContent>
@@ -103,38 +104,41 @@ const WhyUaicodeMarketing = () => {
       {/* Pricing Card - $3,000/month */}
       <Card className="glass-premium border-accent/30 overflow-hidden relative">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-accent/5 to-transparent" />
-        <CardContent className="p-8 relative">
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
+        <CardContent className="p-6 relative">
+          <div className="grid lg:grid-cols-2 gap-6 items-center">
             <div>
-              <Badge className="bg-accent/20 text-accent border-accent/30 mb-4">
+              <Badge className="bg-accent/20 text-accent border-accent/30 mb-3 text-xs">
                 Full-Service Marketing
               </Badge>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-5xl font-bold text-accent">$3,000</span>
-                <span className="text-xl text-muted-foreground">/month</span>
+              <div className="flex items-baseline gap-2 mb-1.5">
+                <span className="text-4xl font-bold text-accent">$3,000</span>
+                <span className="text-lg text-muted-foreground">/month</span>
               </div>
-              <p className="text-muted-foreground mb-6">
-                Complete marketing execution for your SaaS. Ad spend budget managed separately.
+              <p className="text-sm text-muted-foreground mb-4">
+                Complete marketing execution for your SaaS.
+                <InfoTooltip size="sm">
+                  Ad spend budget is managed separately and billed directly to your ad accounts. We manage campaigns on your behalf without markup.
+                </InfoTooltip>
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                  <Phone className="h-4 w-4 mr-2" />
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                  <Phone className="h-3.5 w-3.5 mr-1.5" />
                   Schedule Strategy Call
                 </Button>
-                <Button variant="outline" className="border-accent/30 text-accent hover:bg-accent/10">
-                  <Mail className="h-4 w-4 mr-2" />
+                <Button size="sm" variant="outline" className="border-accent/30 text-accent hover:bg-accent/10">
+                  <Mail className="h-3.5 w-3.5 mr-1.5" />
                   contato@uaicode.io
                 </Button>
               </div>
             </div>
-            <div className="space-y-3">
-              <h4 className="font-semibold text-foreground mb-4">What's Included:</h4>
+            <div className="space-y-2">
+              <h4 className="font-semibold text-foreground text-sm mb-3">What's Included:</h4>
               {serviceInclusions.map((item, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-lg bg-accent/10">
-                    <item.icon className="h-4 w-4 text-accent" />
+                <div key={index} className="flex items-center gap-2">
+                  <div className="p-1 rounded-lg bg-accent/10">
+                    <item.icon className="h-3.5 w-3.5 text-accent" />
                   </div>
-                  <span className="text-foreground">{item.text}</span>
+                  <span className="text-foreground text-sm">{item.text}</span>
                 </div>
               ))}
             </div>
@@ -142,23 +146,23 @@ const WhyUaicodeMarketing = () => {
         </CardContent>
       </Card>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4">
         {/* Differentials */}
         <Card className="bg-card/50 border-accent/20">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-6">Our Marketing Differentials</h3>
-            <div className="grid gap-4">
+          <CardContent className="p-5">
+            <h3 className="font-semibold text-foreground mb-4 text-sm">Our Marketing Differentials</h3>
+            <div className="grid gap-3">
               {differentials.map((diff, index) => (
                 <div 
                   key={index}
-                  className="flex gap-4 p-4 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/30 transition-colors"
+                  className="flex gap-3 p-3 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/30 transition-colors"
                 >
-                  <div className="p-2 rounded-lg bg-accent/10 h-fit">
-                    <diff.icon className="h-5 w-5 text-accent" />
+                  <div className="p-1.5 rounded-lg bg-accent/10 h-fit">
+                    <diff.icon className="h-4 w-4 text-accent" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-foreground">{diff.title}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">{diff.description}</p>
+                    <h4 className="font-medium text-foreground text-sm">{diff.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{diff.description}</p>
                   </div>
                 </div>
               ))}
@@ -168,28 +172,27 @@ const WhyUaicodeMarketing = () => {
 
         {/* Testimonials */}
         <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-6">What Our Clients Say</h3>
-            <div className="space-y-4">
+          <CardContent className="p-5">
+            <h3 className="font-semibold text-foreground mb-4 text-sm">What Our Clients Say</h3>
+            <div className="space-y-3">
               {testimonials.map((testimonial, index) => (
                 <div 
                   key={index}
-                  className="p-4 rounded-lg bg-muted/20 border border-border/30"
+                  className="p-3 rounded-lg bg-muted/20 border border-border/30"
                 >
-                  <Quote className="h-6 w-6 text-accent/50 mb-3" />
-                  <p className="text-foreground/90 italic mb-4">
+                  <Quote className="h-4 w-4 text-accent/50 mb-2" />
+                  <p className="text-foreground/90 italic text-sm mb-3">
                     "{testimonial.quote}"
                   </p>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                      <AvatarFallback className="bg-accent/20 text-accent">
-                        {testimonial.name.split(' ').map(n => n[0]).join('')}
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8 border border-accent/20">
+                      <AvatarFallback className="bg-accent/20 text-accent text-xs font-medium">
+                        {testimonial.initials}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium text-foreground text-sm">{testimonial.name}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-medium text-foreground text-xs">{testimonial.name}</p>
+                      <p className="text-[10px] text-muted-foreground">
                         {testimonial.role}, {testimonial.company}
                       </p>
                     </div>
@@ -203,16 +206,16 @@ const WhyUaicodeMarketing = () => {
 
       {/* Guarantees */}
       <Card className="bg-card/50 border-accent/20">
-        <CardContent className="p-6">
-          <h3 className="font-semibold text-foreground mb-6 text-center">Our Guarantees</h3>
-          <div className="flex flex-wrap justify-center gap-4">
+        <CardContent className="p-5">
+          <h3 className="font-semibold text-foreground mb-4 text-center text-sm">Our Guarantees</h3>
+          <div className="flex flex-wrap justify-center gap-3">
             {guarantees.map((guarantee, index) => (
               <div 
                 key={index}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20"
               >
-                <CheckCircle2 className="h-4 w-4 text-accent" />
-                <span className="text-sm text-foreground">{guarantee}</span>
+                <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
+                <span className="text-xs text-foreground">{guarantee}</span>
               </div>
             ))}
           </div>

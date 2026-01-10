@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Users, Zap, DollarSign, Heart, Target, TrendingUp, CheckCircle, ArrowRight } from "lucide-react";
 import { competitorAnalysisData } from "@/lib/competitorAnalysisMockData";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 const pillarConfig = {
   acquisition: { icon: Users, label: "Acquisition" },
@@ -15,79 +16,107 @@ const GrowthCards = () => {
   const { growthStrategy, competitiveAdvantages } = competitorAnalysisData;
 
   const overviewData = [
-    { key: "acquisition", value: growthStrategy.acquisition.targetCAC, label: "Target CAC" },
-    { key: "engagement", value: growthStrategy.engagement.activationTarget, label: "Activation Target" },
-    { key: "monetization", value: growthStrategy.monetization.conversionTarget, label: "Conversion Target" },
-    { key: "retention", value: growthStrategy.retention.targetChurn, label: "Target Churn" }
+    { 
+      key: "acquisition", 
+      value: growthStrategy.acquisition.targetCAC, 
+      label: "Target CAC",
+      tooltip: "Maximum cost to acquire a customer while remaining profitable based on LTV calculations."
+    },
+    { 
+      key: "engagement", 
+      value: growthStrategy.engagement.activationTarget, 
+      label: "Activation Target",
+      tooltip: "Percentage of users who reach the 'aha moment' — the key action that indicates they've found value."
+    },
+    { 
+      key: "monetization", 
+      value: growthStrategy.monetization.conversionTarget, 
+      label: "Conversion Target",
+      tooltip: "Free to paid conversion rate goal based on industry benchmarks and pricing strategy."
+    },
+    { 
+      key: "retention", 
+      value: growthStrategy.retention.targetChurn, 
+      label: "Target Churn",
+      tooltip: "Monthly customer loss rate goal. Lower churn dramatically increases customer lifetime value."
+    }
   ];
 
   return (
     <section className="space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="p-3 rounded-xl bg-accent/10 border border-accent/20">
-          <TrendingUp className="h-6 w-6 text-accent" />
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-accent/10">
+          <TrendingUp className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Growth Strategy (AEMR Framework)</h2>
-          <p className="text-muted-foreground">Acquisition, Engagement, Monetization, and Retention pillars</p>
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            Growth Strategy
+            <InfoTooltip term="AEMR Framework">
+              Acquisition (getting users), Engagement (activating them), Monetization (converting to paid), Retention (keeping them) — the four pillars of sustainable SaaS growth.
+            </InfoTooltip>
+          </h2>
+          <p className="text-sm text-muted-foreground">Acquisition, Engagement, Monetization, and Retention pillars</p>
         </div>
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {overviewData.map((item) => {
           const config = pillarConfig[item.key as keyof typeof pillarConfig];
           const Icon = config.icon;
           return (
             <Card key={item.key} className="glass-premium border-accent/20">
-              <CardContent className="pt-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon className="h-5 w-5 text-accent" />
-                  <span className="font-medium text-foreground">{config.label}</span>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Icon className="h-4 w-4 text-accent" />
+                  <span className="font-medium text-foreground text-sm">{config.label}</span>
+                  <InfoTooltip size="sm">
+                    {item.tooltip}
+                  </InfoTooltip>
                 </div>
-                <p className="text-2xl font-bold text-accent">{item.value}</p>
-                <p className="text-xs text-muted-foreground">{item.label}</p>
+                <p className="text-xl font-bold text-accent">{item.value}</p>
+                <p className="text-[10px] text-muted-foreground">{item.label}</p>
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      {/* Detailed Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Detailed Cards - 2x2 Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Acquisition */}
         <Card className="glass-premium border-accent/20">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2 pt-4 px-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-accent/10">
-                <Users className="h-5 w-5 text-accent" />
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <Users className="h-4 w-4 text-accent" />
               </div>
               <div>
-                <CardTitle className="text-lg">Acquisition Strategy</CardTitle>
-                <p className="text-xs text-muted-foreground">Target CAC: {growthStrategy.acquisition.targetCAC}</p>
+                <CardTitle className="text-base">Acquisition Strategy</CardTitle>
+                <p className="text-[10px] text-muted-foreground">Target CAC: {growthStrategy.acquisition.targetCAC}</p>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              {growthStrategy.acquisition.channels.map((channel, idx) => (
+          <CardContent className="p-4 pt-2 space-y-3">
+            <div className="space-y-2">
+              {growthStrategy.acquisition.channels.slice(0, 3).map((channel, idx) => (
                 <div key={idx} className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-xs">
                     <span className="text-foreground">{channel.name}</span>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs border-accent/20 text-accent">{channel.investment}</Badge>
-                      <span className="text-muted-foreground">CAC: {channel.expectedCAC}</span>
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="outline" className="text-[10px] border-accent/20 text-accent">{channel.investment}</Badge>
+                      <span className="text-muted-foreground text-[10px]">CAC: {channel.expectedCAC}</span>
                     </div>
                   </div>
-                  <Progress value={channel.investment === "High" ? 80 : channel.investment === "Medium" ? 50 : 30} className="h-1.5 [&>div]:bg-accent" />
+                  <Progress value={channel.investment === "High" ? 80 : channel.investment === "Medium" ? 50 : 30} className="h-1 [&>div]:bg-accent" />
                 </div>
               ))}
             </div>
-            <div className="pt-3 border-t border-accent/10">
-              <div className="grid grid-cols-2 gap-2">
-                {growthStrategy.acquisition.tactics.map((tactic, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-xs">
-                    <CheckCircle className="h-3 w-3 text-accent flex-shrink-0" />
+            <div className="pt-2 border-t border-accent/10">
+              <div className="grid grid-cols-2 gap-1.5">
+                {growthStrategy.acquisition.tactics.slice(0, 4).map((tactic, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5 text-[10px]">
+                    <CheckCircle className="h-2.5 w-2.5 text-accent flex-shrink-0" />
                     <span className="text-muted-foreground">{tactic}</span>
                   </div>
                 ))}
@@ -98,35 +127,35 @@ const GrowthCards = () => {
 
         {/* Engagement */}
         <Card className="glass-premium border-accent/20">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2 pt-4 px-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-accent/10">
-                <Zap className="h-5 w-5 text-accent" />
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <Zap className="h-4 w-4 text-accent" />
               </div>
               <div>
-                <CardTitle className="text-lg">Engagement Strategy</CardTitle>
-                <p className="text-xs text-muted-foreground">Activation Target: {growthStrategy.engagement.activationTarget}</p>
+                <CardTitle className="text-base">Engagement Strategy</CardTitle>
+                <p className="text-[10px] text-muted-foreground">Activation Target: {growthStrategy.engagement.activationTarget}</p>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              {growthStrategy.engagement.onboardingSteps.map((step, idx) => (
+          <CardContent className="p-4 pt-2 space-y-3">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {growthStrategy.engagement.onboardingSteps.slice(0, 4).map((step, idx) => (
                 <div key={idx} className="flex items-center">
-                  <Badge variant="secondary" className="text-xs bg-accent/10 text-accent border-accent/20">{step.action}</Badge>
-                  {idx < growthStrategy.engagement.onboardingSteps.length - 1 && <ArrowRight className="h-3 w-3 text-accent/50 mx-1" />}
+                  <Badge variant="secondary" className="text-[10px] bg-accent/10 text-accent border-accent/20">{step.action}</Badge>
+                  {idx < Math.min(growthStrategy.engagement.onboardingSteps.length, 4) - 1 && <ArrowRight className="h-2.5 w-2.5 text-accent/50 mx-0.5" />}
                 </div>
               ))}
             </div>
-            <div className="p-3 rounded-lg bg-accent/5 border border-accent/10">
-              <span className="text-xs text-muted-foreground">Activation Metric</span>
-              <p className="text-sm font-medium text-foreground">{growthStrategy.engagement.activationMetric}</p>
+            <div className="p-2.5 rounded-lg bg-accent/5 border border-accent/10">
+              <span className="text-[10px] text-muted-foreground">Activation Metric</span>
+              <p className="text-xs font-medium text-foreground">{growthStrategy.engagement.activationMetric}</p>
             </div>
-            <div className="pt-3 border-t border-accent/10">
-              <div className="grid grid-cols-2 gap-2">
-                {growthStrategy.engagement.tactics.map((tactic, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-xs">
-                    <CheckCircle className="h-3 w-3 text-accent flex-shrink-0" />
+            <div className="pt-2 border-t border-accent/10">
+              <div className="grid grid-cols-2 gap-1.5">
+                {growthStrategy.engagement.tactics.slice(0, 4).map((tactic, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5 text-[10px]">
+                    <CheckCircle className="h-2.5 w-2.5 text-accent flex-shrink-0" />
                     <span className="text-muted-foreground">{tactic}</span>
                   </div>
                 ))}
@@ -137,34 +166,34 @@ const GrowthCards = () => {
 
         {/* Monetization */}
         <Card className="glass-premium border-accent/20">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2 pt-4 px-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-accent/10">
-                <DollarSign className="h-5 w-5 text-accent" />
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <DollarSign className="h-4 w-4 text-accent" />
               </div>
               <div>
-                <CardTitle className="text-lg">Monetization Strategy</CardTitle>
-                <p className="text-xs text-muted-foreground">Conversion Target: {growthStrategy.monetization.conversionTarget}</p>
+                <CardTitle className="text-base">Monetization Strategy</CardTitle>
+                <p className="text-[10px] text-muted-foreground">Conversion Target: {growthStrategy.monetization.conversionTarget}</p>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
+          <CardContent className="p-4 pt-2 space-y-3">
+            <div className="space-y-2">
               {growthStrategy.monetization.revenueStreams.map((stream, idx) => (
                 <div key={idx} className="flex items-center justify-between p-2 rounded bg-accent/5 border border-accent/10">
-                  <span className="text-sm text-foreground">{stream.stream}</span>
-                  <span className="text-sm font-medium text-accent">{stream.percentage}%</span>
+                  <span className="text-xs text-foreground">{stream.stream}</span>
+                  <span className="text-xs font-medium text-accent">{stream.percentage}%</span>
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <span className="text-xs text-muted-foreground">Avg Contract Value</span>
-                <p className="text-lg font-bold text-accent">{growthStrategy.monetization.averageContractValue}</p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2.5 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-[10px] text-muted-foreground">Avg Contract Value</span>
+                <p className="text-base font-bold text-accent">{growthStrategy.monetization.averageContractValue}</p>
               </div>
-              <div className="p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <span className="text-xs text-muted-foreground">Expansion Target</span>
-                <p className="text-lg font-bold text-accent">{growthStrategy.monetization.expansionRevenueTarget}</p>
+              <div className="p-2.5 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-[10px] text-muted-foreground">Expansion Target</span>
+                <p className="text-base font-bold text-accent">{growthStrategy.monetization.expansionRevenueTarget}</p>
               </div>
             </div>
           </CardContent>
@@ -172,33 +201,38 @@ const GrowthCards = () => {
 
         {/* Retention */}
         <Card className="glass-premium border-accent/20">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2 pt-4 px-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-accent/10">
-                <Heart className="h-5 w-5 text-accent" />
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <Heart className="h-4 w-4 text-accent" />
               </div>
               <div>
-                <CardTitle className="text-lg">Retention Strategy</CardTitle>
-                <p className="text-xs text-muted-foreground">Target Churn: {growthStrategy.retention.targetChurn}</p>
+                <CardTitle className="text-base">Retention Strategy</CardTitle>
+                <p className="text-[10px] text-muted-foreground">Target Churn: {growthStrategy.retention.targetChurn}</p>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <span className="text-xs text-muted-foreground">NPS Target</span>
-                <p className="text-lg font-bold text-accent">{growthStrategy.retention.npsTarget}+</p>
+          <CardContent className="p-4 pt-2 space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2.5 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  NPS Target
+                  <InfoTooltip size="sm">
+                    Net Promoter Score — measures customer satisfaction and loyalty on a scale of -100 to 100.
+                  </InfoTooltip>
+                </span>
+                <p className="text-base font-bold text-accent">{growthStrategy.retention.npsTarget}+</p>
               </div>
-              <div className="p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <span className="text-xs text-muted-foreground">Churn Reasons</span>
-                <p className="text-lg font-bold text-accent">{growthStrategy.retention.churnReasons.length} identified</p>
+              <div className="p-2.5 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-[10px] text-muted-foreground">Churn Reasons</span>
+                <p className="text-base font-bold text-accent">{growthStrategy.retention.churnReasons.length} identified</p>
               </div>
             </div>
-            <div className="space-y-2">
-              {growthStrategy.retention.strategies.slice(0, 3).map((strategy, idx) => (
+            <div className="space-y-1.5">
+              {growthStrategy.retention.strategies.slice(0, 2).map((strategy, idx) => (
                 <div key={idx} className="p-2 rounded bg-accent/5 border border-accent/10">
-                  <span className="text-xs font-medium text-foreground">{strategy.strategy}</span>
-                  <p className="text-xs text-muted-foreground">{strategy.description}</p>
+                  <span className="text-[10px] font-medium text-foreground">{strategy.strategy}</span>
+                  <p className="text-[10px] text-muted-foreground">{strategy.description}</p>
                 </div>
               ))}
             </div>
@@ -206,20 +240,21 @@ const GrowthCards = () => {
         </Card>
       </div>
 
-      {/* Competitive Advantages */}
-      <Card className="glass-premium border-accent/30">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Target className="h-5 w-5 text-accent" />Your Competitive Advantages
+      {/* Competitive Advantages - More prominent */}
+      <Card className="glass-premium border-accent/30 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent" />
+        <CardHeader className="pb-2 pt-4 px-4 relative">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="h-4 w-4 text-accent" />Your Competitive Advantages
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <CardContent className="p-4 pt-2 relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {competitiveAdvantages.map((adv, idx) => (
-              <div key={idx} className="p-4 rounded-lg bg-accent/5 border border-accent/20">
-                <h4 className="font-medium text-accent mb-2">{adv.advantage}</h4>
-                <p className="text-sm text-muted-foreground mb-2">{adv.description}</p>
-                <Badge variant="outline" className="text-xs border-accent/20 text-accent">{adv.impact}</Badge>
+              <div key={idx} className="p-3 rounded-lg bg-accent/5 border border-accent/20 hover:border-accent/40 transition-colors">
+                <h4 className="font-medium text-accent text-sm mb-1">{adv.advantage}</h4>
+                <p className="text-xs text-muted-foreground mb-2">{adv.description}</p>
+                <Badge variant="outline" className="text-[10px] border-accent/20 text-accent">{adv.impact}</Badge>
               </div>
             ))}
           </div>
