@@ -117,7 +117,7 @@ const PmsWizard = () => {
           (data.saasType !== "other" || data.saasTypeOther.trim().length >= 2);
         const industryValid = data.industry !== "" && 
           (data.industry !== "other" || data.industryOther.trim().length >= 2);
-        const saasNameValid = data.saasName.trim().length >= 3;
+        const saasNameValid = (data.saasName || "").trim().length >= 3;
         return saasTypeValid && industryValid && data.description.trim().length >= 20 && saasNameValid;
       case 3:
         return data.customerTypes.length > 0 && data.marketSize !== "";
