@@ -1,23 +1,7 @@
-import { 
-  Calendar, 
-  FileText, 
-  Megaphone, 
-  TrendingUp, 
-  ArrowRight, 
-  Download,
-  Mail,
-  MessageCircle,
-  CheckCircle2
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Calendar, Download, Mail, MessageCircle, CheckCircle2, Sparkles, Target, TrendingUp, BarChart3, Zap, DollarSign } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-
-const iconMap: Record<string, React.ElementType> = {
-  FileText,
-  Megaphone,
-  TrendingUp,
-  Calendar,
-};
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface MarketingNextStepsProps {
   onScheduleCall?: () => void;
@@ -25,56 +9,83 @@ interface MarketingNextStepsProps {
 }
 
 const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStepsProps) => {
+  const iconMap: { [key: string]: React.ElementType } = {
+    Target,
+    TrendingUp,
+    BarChart3,
+    Zap
+  };
+
   const marketingScore = 72;
   
-  const steps = [
+  const nextSteps = [
     {
       step: 1,
-      icon: "FileText",
-      title: "Strategy Workshop",
-      description: "Deep dive into your competitive positioning and ideal customer profile"
+      title: "Schedule Strategy Call",
+      description: "30-minute consultation to discuss your marketing goals and current challenges",
+      icon: "Target"
     },
     {
       step: 2,
-      icon: "Megaphone",
-      title: "Campaign Setup",
-      description: "Build your paid media infrastructure with tracking and creative assets"
+      title: "Custom Marketing Plan",
+      description: "Receive a detailed 90-day marketing strategy tailored to your ICP",
+      icon: "TrendingUp"
     },
     {
       step: 3,
-      icon: "TrendingUp",
-      title: "Launch & Optimize",
-      description: "Go live with campaigns and begin weekly optimization cycles"
+      title: "Campaign Launch",
+      description: "Go live with optimized campaigns across all recommended channels",
+      icon: "BarChart3"
     },
     {
       step: 4,
-      icon: "Calendar",
-      title: "Scale & Expand",
-      description: "Double down on winning channels and expand to new opportunities"
+      title: "Continuous Optimization",
+      description: "Weekly performance reviews and ongoing campaign improvements",
+      icon: "Zap"
     }
   ];
 
-  const contact = {
-    email: "marketing@uaicode.com",
-    whatsapp: "+1 (555) 123-4567"
+  const handleScheduleCall = () => {
+    if (onScheduleCall) {
+      onScheduleCall();
+    } else {
+      window.open("https://cal.com/uaicode", "_blank");
+    }
+  };
+
+  const handleWhatsApp = () => {
+    window.open("https://wa.me/5531999999999?text=Hi!%20I%20want%20to%20learn%20more%20about%20Uaicode%27s%20marketing%20services.", "_blank");
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-400";
+    if (score >= 60) return "text-accent";
+    if (score >= 40) return "text-amber-400";
+    return "text-red-400";
   };
 
   return (
     <section id="marketing-next-steps" className="space-y-8">
       {/* Section Header */}
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-foreground mb-4">Ready to Dominate Your Market?</h2>
-        <p className="text-lg text-accent">Let's turn these insights into results</p>
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-accent/10">
+          <ArrowRight className="h-5 w-5 text-accent" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Ready to Transform Your Marketing?</h2>
+          <p className="text-sm text-muted-foreground">Your next steps to dominate the market</p>
+        </div>
       </div>
 
-      {/* Summary Card */}
-      <Card className="glass-premium border-accent/20">
-        <CardContent className="p-8">
-          <div className="flex flex-col lg:flex-row items-center gap-8">
-            {/* Score Recap */}
-            <div className="flex-shrink-0 text-center">
-              <div className="relative w-32 h-32 mx-auto mb-4">
-                <svg className="w-full h-full transform -rotate-90">
+      {/* Investment Summary Card */}
+      <Card className="glass-premium border-accent/30 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-accent/5 to-transparent" />
+        <CardContent className="p-8 relative">
+          <div className="grid lg:grid-cols-3 gap-8 items-center">
+            {/* Score */}
+            <div className="text-center">
+              <div className="relative inline-flex items-center justify-center">
+                <svg className="w-32 h-32 transform -rotate-90">
                   <circle
                     cx="64"
                     cy="64"
@@ -82,125 +93,182 @@ const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStep
                     stroke="currentColor"
                     strokeWidth="8"
                     fill="transparent"
-                    className="text-muted/30"
+                    className="text-muted/20"
                   />
                   <circle
                     cx="64"
                     cy="64"
                     r="56"
-                    stroke="url(#marketingNextStepsGradient)"
+                    stroke="url(#marketingGradient)"
                     strokeWidth="8"
                     fill="transparent"
-                    strokeLinecap="round"
                     strokeDasharray={`${(marketingScore / 100) * 352} 352`}
+                    strokeLinecap="round"
+                    className="transition-all duration-1000"
                   />
                   <defs>
-                    <linearGradient id="marketingNextStepsGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <linearGradient id="marketingGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                       <stop offset="0%" stopColor="hsl(var(--accent))" />
-                      <stop offset="100%" stopColor="hsl(45, 100%, 45%)" />
+                      <stop offset="100%" stopColor="#22c55e" />
                     </linearGradient>
                   </defs>
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold text-accent">{marketingScore}</span>
-                  <span className="text-xs text-muted-foreground">Score</span>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className={`text-3xl font-bold ${getScoreColor(marketingScore)}`}>{marketingScore}</span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground max-w-xs">
-                Strong position with untapped opportunities
+              <p className="text-sm text-muted-foreground mt-2">Marketing Score</p>
+            </div>
+
+            {/* Investment */}
+            <div className="text-center lg:text-left">
+              <Badge className="bg-accent/20 text-accent border-accent/30 mb-3">
+                <DollarSign className="h-3 w-3 mr-1" />
+                Monthly Investment
+              </Badge>
+              <div className="flex items-baseline gap-2 justify-center lg:justify-start">
+                <span className="text-4xl font-bold text-accent">$3,000</span>
+                <span className="text-muted-foreground">/month</span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Full-service marketing execution + dedicated team
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                *Ad spend budget managed separately
               </p>
             </div>
 
-            {/* Steps */}
-            <div className="flex-1">
-              <h3 className="font-semibold text-foreground mb-6">What happens when you hire us:</h3>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {steps.map((step, index) => {
-                  const IconComponent = iconMap[step.icon] || Calendar;
-                  return (
-                    <div 
-                      key={index}
-                      className="flex items-start gap-3 p-4 rounded-lg bg-accent/5 border border-accent/10"
-                    >
-                      <div className="p-2 rounded-lg bg-accent/10">
-                        <IconComponent className="h-4 w-4 text-accent" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-accent font-medium">Step {step.step}</span>
-                        </div>
-                        <h4 className="font-medium text-foreground text-sm">{step.title}</h4>
-                        <p className="text-xs text-muted-foreground mt-1">{step.description}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            {/* CTA */}
+            <div className="flex flex-col gap-3">
+              <Button 
+                size="lg" 
+                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                onClick={handleScheduleCall}
+              >
+                <Calendar className="h-5 w-5 mr-2" />
+                Schedule Strategy Call
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="w-full border-accent/30 text-accent hover:bg-accent/10"
+                onClick={onDownloadPDF}
+              >
+                <Download className="h-5 w-5 mr-2" />
+                Download Marketing Report
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* CTAs */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button 
-          size="lg"
-          onClick={onScheduleCall}
-          className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 px-8 h-14 text-lg"
-        >
-          <Calendar className="h-5 w-5" />
-          Get Your Marketing Strategy
-          <ArrowRight className="h-5 w-5" />
-        </Button>
-        <Button 
-          size="lg"
-          variant="outline"
-          onClick={onDownloadPDF}
-          className="border-accent/30 hover:border-accent/50 hover:bg-accent/5 gap-2 h-14"
-        >
-          <Download className="h-5 w-5" />
-          Download Marketing Report
-        </Button>
-      </div>
-
-      {/* Contact Info */}
+      {/* Process Steps */}
       <Card className="bg-card/50 border-accent/20">
         <CardContent className="p-6">
-          <h3 className="font-semibold text-foreground mb-4 text-center">Direct Contact</h3>
-          <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <a 
-              href={`mailto:${contact.email}`}
-              className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors"
-            >
-              <Mail className="h-4 w-4" />
-              <span>{contact.email}</span>
-            </a>
-            <a 
-              href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-muted-foreground hover:text-green-400 transition-colors"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span>{contact.whatsapp}</span>
-            </a>
+          <h3 className="font-semibold text-foreground mb-6 text-center">What Happens Next</h3>
+          <div className="grid md:grid-cols-4 gap-4">
+            {nextSteps.map((step) => {
+              const IconComponent = iconMap[step.icon] || Target;
+              return (
+                <div 
+                  key={step.step}
+                  className="relative p-4 rounded-lg bg-accent/5 border border-accent/20 text-center"
+                >
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-accent text-accent-foreground">
+                      Step {step.step}
+                    </Badge>
+                  </div>
+                  <div className="pt-4">
+                    <div className="p-3 rounded-full bg-accent/10 inline-flex mb-3">
+                      <IconComponent className="h-6 w-6 text-accent" />
+                    </div>
+                    <h4 className="font-semibold text-foreground mb-2">{step.title}</h4>
+                    <p className="text-sm text-muted-foreground">{step.description}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
 
-      {/* Final Message */}
-      <div className="text-center py-8">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <CheckCircle2 className="h-6 w-6 text-accent" />
-          <span className="text-lg font-medium text-foreground">
-            We're ready to accelerate your growth
-          </span>
-        </div>
-        <p className="text-muted-foreground max-w-xl mx-auto">
-          This analysis was generated based on competitive data and market research. 
-          Results may vary based on execution, budget, and market conditions.
-        </p>
+      {/* Contact Options */}
+      <div className="grid md:grid-cols-3 gap-4">
+        <Card 
+          className="bg-card/50 border-accent/20 cursor-pointer hover:border-accent/40 transition-colors"
+          onClick={handleScheduleCall}
+        >
+          <CardContent className="p-6 text-center">
+            <div className="p-3 rounded-full bg-accent/10 inline-flex mb-3">
+              <Calendar className="h-6 w-6 text-accent" />
+            </div>
+            <h4 className="font-semibold text-foreground mb-1">Schedule a Call</h4>
+            <p className="text-sm text-muted-foreground">30-min strategy session</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/50 border-border/30 cursor-pointer hover:border-accent/40 transition-colors">
+          <CardContent className="p-6 text-center">
+            <div className="p-3 rounded-full bg-accent/10 inline-flex mb-3">
+              <Mail className="h-6 w-6 text-accent" />
+            </div>
+            <h4 className="font-semibold text-foreground mb-1">Email Us</h4>
+            <p className="text-sm text-accent">contato@uaicode.io</p>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className="bg-card/50 border-border/30 cursor-pointer hover:border-green-500/40 transition-colors"
+          onClick={handleWhatsApp}
+        >
+          <CardContent className="p-6 text-center">
+            <div className="p-3 rounded-full bg-green-500/10 inline-flex mb-3">
+              <MessageCircle className="h-6 w-6 text-green-500" />
+            </div>
+            <h4 className="font-semibold text-foreground mb-1">WhatsApp</h4>
+            <p className="text-sm text-green-500">Chat with us now</p>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Final CTA */}
+      <Card className="glass-premium border-accent/20 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-transparent to-accent/5" />
+        <CardContent className="p-8 relative text-center">
+          <Sparkles className="h-10 w-10 text-accent mx-auto mb-4" />
+          <h3 className="text-2xl font-bold text-foreground mb-2">
+            Start Growing Today
+          </h3>
+          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+            Join 150+ successful SaaS companies that have transformed their marketing with Uaicode. 
+            For just <span className="text-accent font-semibold">$3,000/month</span>, get a dedicated team focused on your growth.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 mb-6">
+            {["Strategy", "Paid Media", "Content", "Optimization", "Reporting"].map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-accent" />
+                <span className="text-foreground">{item}</span>
+              </div>
+            ))}
+          </div>
+          <Button 
+            size="lg" 
+            className="bg-accent hover:bg-accent/90 text-accent-foreground px-8"
+            onClick={handleScheduleCall}
+          >
+            <Calendar className="h-5 w-5 mr-2" />
+            Get Your Marketing Strategy
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Disclaimer */}
+      <p className="text-xs text-muted-foreground text-center">
+        * This analysis is based on competitive research and industry benchmarks. 
+        Actual results may vary based on market conditions and execution quality. 
+        Marketing service fee of $3,000/month does not include ad spend budget.
+      </p>
     </section>
   );
 };

@@ -1,6 +1,8 @@
-import { Award, Megaphone, TrendingUp, Zap, CheckCircle2, Quote } from "lucide-react";
+import { Award, Megaphone, TrendingUp, Zap, CheckCircle2, Quote, DollarSign, Users, BarChart3, Palette, Target, LineChart, Mail, Phone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const WhyUaicodeMarketing = () => {
   const stats = {
@@ -56,6 +58,15 @@ const WhyUaicodeMarketing = () => {
     "Weekly optimization calls"
   ];
 
+  const serviceInclusions = [
+    { icon: Target, text: "Strategy development & planning" },
+    { icon: Megaphone, text: "Paid media management (Google, Meta, LinkedIn)" },
+    { icon: Palette, text: "Content creation & copywriting" },
+    { icon: LineChart, text: "Weekly optimization & reporting" },
+    { icon: Users, text: "Dedicated account manager" },
+    { icon: BarChart3, text: "A/B testing & creative iteration" }
+  ];
+
   return (
     <section id="why-uaicode-marketing" className="space-y-8">
       {/* Section Header */}
@@ -84,6 +95,48 @@ const WhyUaicodeMarketing = () => {
             <div>
               <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.avgROAS}</div>
               <p className="text-sm text-muted-foreground">Avg. ROAS Achieved</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Pricing Card - $3,000/month */}
+      <Card className="glass-premium border-accent/30 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-accent/5 to-transparent" />
+        <CardContent className="p-8 relative">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <Badge className="bg-accent/20 text-accent border-accent/30 mb-4">
+                Full-Service Marketing
+              </Badge>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-5xl font-bold text-accent">$3,000</span>
+                <span className="text-xl text-muted-foreground">/month</span>
+              </div>
+              <p className="text-muted-foreground mb-6">
+                Complete marketing execution for your SaaS. Ad spend budget managed separately.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                  <Phone className="h-4 w-4 mr-2" />
+                  Schedule Strategy Call
+                </Button>
+                <Button variant="outline" className="border-accent/30 text-accent hover:bg-accent/10">
+                  <Mail className="h-4 w-4 mr-2" />
+                  contato@uaicode.io
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <h4 className="font-semibold text-foreground mb-4">What's Included:</h4>
+              {serviceInclusions.map((item, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-lg bg-accent/10">
+                    <item.icon className="h-4 w-4 text-accent" />
+                  </div>
+                  <span className="text-foreground">{item.text}</span>
+                </div>
+              ))}
             </div>
           </div>
         </CardContent>
