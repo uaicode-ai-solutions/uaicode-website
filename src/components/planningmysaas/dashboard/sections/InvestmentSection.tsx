@@ -1,8 +1,8 @@
-import { DollarSign, Check, X, TrendingDown, PieChart } from "lucide-react";
+import { DollarSign, Check, X, PieChart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { reportData } from "@/lib/reportMockData";
+import PricingComparisonSlider from "../PricingComparisonSlider";
 import {
   PieChart as RechartsPieChart,
   Pie,
@@ -66,9 +66,9 @@ const InvestmentSection = () => {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-4">
-        {/* Main Investment Card */}
-        <Card className="lg:col-span-3 bg-card/50 border-border/30 ring-1 ring-accent/10">
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Main Investment Card with Chart */}
+        <Card className="bg-card/50 border-border/30 ring-1 ring-accent/10">
           <CardContent className="p-5">
             {/* Total Investment */}
             <div className="text-center mb-6">
@@ -119,84 +119,58 @@ const InvestmentSection = () => {
                       />
                       <span className="text-muted-foreground text-xs">{item.name}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-foreground font-medium text-xs">
-                        {formatCurrency(item.value)}
-                      </span>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                        {item.percentage}%
-                      </Badge>
-                    </div>
+                    <span className="text-foreground font-medium text-xs">
+                      {formatCurrency(item.value)}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Comparison */}
-            <div className="mt-5 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-              <div className="flex items-center gap-3">
-                <TrendingDown className="h-5 w-5 text-green-400 flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Traditional agency would charge{" "}
-                    <span className="text-red-400 line-through font-medium">
-                      {formatCurrency(investment.comparison.traditional)}
-                    </span>
-                  </p>
-                  <p className="text-green-400 font-bold text-lg">
-                    You save {investment.comparison.savings} with Uaicode
-                  </p>
-                </div>
+            {/* Included / Not Included */}
+            <div className="mt-5 pt-5 border-t border-border/30 grid md:grid-cols-2 gap-4">
+              {/* Included */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-green-400" />
+                  What's Included
+                  <InfoTooltip side="top" size="sm">
+                    Everything included in your investment with no hidden costs.
+                  </InfoTooltip>
+                </h3>
+                <ul className="space-y-1.5">
+                  {investment.included.slice(0, 4).map((item, index) => (
+                    <li key={index} className="flex items-start gap-2 text-xs">
+                      <Check className="h-3 w-3 text-green-400 mt-0.5 flex-shrink-0" />
+                      <span className="text-foreground/90">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Not Included */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2 text-sm">
+                  <X className="h-4 w-4 text-muted-foreground" />
+                  Not Included
+                </h3>
+                <ul className="space-y-1.5">
+                  {investment.notIncluded.slice(0, 4).map((item, index) => (
+                    <li key={index} className="flex items-start gap-2 text-xs">
+                      <X className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Included / Not Included */}
-        <Card className="lg:col-span-2 bg-card/50 border-border/30">
-          <CardContent className="p-5 space-y-4">
-            {/* Included */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-400" />
-                What's Included
-                <InfoTooltip side="top" size="sm">
-                  Everything included in your investment with no hidden costs.
-                </InfoTooltip>
-              </h3>
-              <ul className="space-y-2">
-                {investment.included.map((item, index) => (
-                  <li key={index} className="flex items-start gap-2 text-sm">
-                    <Check className="h-3.5 w-3.5 text-green-400 mt-0.5 flex-shrink-0" />
-                    <span className="text-foreground/90 text-xs">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-border/30" />
-
-            {/* Not Included */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                <X className="h-4 w-4 text-muted-foreground" />
-                Not Included
-              </h3>
-              <ul className="space-y-2">
-                {investment.notIncluded.map((item, index) => (
-                  <li key={index} className="flex items-start gap-2 text-sm">
-                    <X className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-xs">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Note */}
-            <p className="text-xs text-muted-foreground italic pt-2">
-              * Items not included can be contracted separately
-            </p>
+        {/* Interactive Comparison Slider */}
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-5">
+            <PricingComparisonSlider />
           </CardContent>
         </Card>
       </div>
