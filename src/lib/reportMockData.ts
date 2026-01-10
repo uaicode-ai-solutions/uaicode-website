@@ -82,23 +82,72 @@ The estimated $55,000 MVP investment has the potential to break even in 8 months
   
   competitors: [
     { 
-      name: "DoorDash/Instacart", 
-      price: "15-25% Commission", 
+      name: "DoorDash Health", 
+      description: "Delivery platform with health and wellness vertical, focused on large chains and pharmacies with same-day delivery.",
+      price: 39,
+      priceModel: "tiered",
+      targetMarket: "All",
       weakness: "Focused on general food, no health specialization",
       yourAdvantage: "Specialization in health products with compliance"
     },
     { 
-      name: "Online Pharmacies", 
-      price: "Fixed margin", 
+      name: "Instacart Rx", 
+      description: "Pharmacy and health product delivery service integrated with Instacart, focused on mid-market retailers.",
+      price: 39,
+      priceModel: "tiered",
+      targetMarket: "Mid-Market",
       weakness: "Only large chains, no support for small businesses",
       yourAdvantage: "Platform for small producers and stores"
     },
     { 
-      name: "Generic ERPs", 
-      price: "$50-200/month", 
-      weakness: "No integrated delivery, steep learning curve",
-      yourAdvantage: "Complete and easy-to-use solution"
+      name: "Amazon Pharmacy", 
+      description: "Amazon's pharmacy service with Prime delivery, offering prescription management and OTC products.",
+      price: 39,
+      priceModel: "tiered",
+      targetMarket: "SMB",
+      weakness: "Complex onboarding, not SMB friendly",
+      yourAdvantage: "Simple setup in minutes, not months"
     },
+    { 
+      name: "CVS Digital", 
+      description: "CVS's digital platform for pharmacies with inventory and prescription management tools.",
+      price: 0,
+      priceModel: "freemium",
+      targetMarket: "SMB",
+      weakness: "Limited features in free tier, vendor lock-in",
+      yourAdvantage: "Full features from day one, no lock-in"
+    },
+    { 
+      name: "Walgreens Connect", 
+      description: "B2B platform for independent pharmacies to connect with Walgreens distribution network.",
+      price: 49,
+      priceModel: "tiered",
+      targetMarket: "SMB",
+      weakness: "Requires Walgreens partnership, limited autonomy",
+      yourAdvantage: "Complete independence and flexibility"
+    },
+    { 
+      name: "GoodRx Pro", 
+      description: "Professional tools for pharmacies including pricing analytics and patient engagement features.",
+      price: 27,
+      priceModel: "tiered",
+      targetMarket: "SMB",
+      weakness: "Only pricing tools, no inventory or delivery",
+      yourAdvantage: "Complete end-to-end solution"
+    },
+  ],
+  
+  competitiveAdvantages: [
+    "Simple Database CRUD Operations",
+    "Email Notifications & Alerts",
+    "Payment Processing & Billing",
+    "Basic Reporting & Analytics",
+    "Advanced Analytics Dashboard",
+    "Advanced Search & Filtering",
+    "Inventory Management System",
+    "Multi-location Support",
+    "API Integrations",
+    "Mobile-first Design"
   ],
   
   competitiveAdvantage: "The only platform that combines inventory management, local delivery, and health product compliance, focused on small businesses.",
