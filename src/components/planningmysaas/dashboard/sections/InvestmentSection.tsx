@@ -1,8 +1,15 @@
 import { DollarSign, Check, X, TrendingDown, PieChart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { reportData } from "@/lib/reportMockData";
+import {
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 const InvestmentSection = () => {
   const { investment } = reportData;
@@ -16,8 +23,38 @@ const InvestmentSection = () => {
     }).format(value);
   };
 
+  // Colors for donut chart
+  const COLORS = [
+    'hsl(var(--accent))',
+    'hsl(45, 100%, 45%)',
+    'hsl(var(--accent) / 0.7)',
+    'hsl(45, 80%, 55%)',
+    'hsl(var(--accent) / 0.5)',
+  ];
+
+  const chartData = investment.breakdown.map((item, index) => ({
+    name: item.name,
+    value: item.value,
+    percentage: item.percentage,
+    fill: COLORS[index % COLORS.length],
+  }));
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-card border border-border/50 rounded-lg p-3 shadow-lg">
+          <p className="font-medium text-foreground text-sm">{data.name}</p>
+          <p className="text-accent font-bold">{formatCurrency(data.value)}</p>
+          <p className="text-xs text-muted-foreground">{data.percentage}% of total</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <section id="investment" className="space-y-8">
+    <section id="investment" className="space-y-6 animate-fade-in">
       {/* Section Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10">
@@ -29,50 +66,76 @@ const InvestmentSection = () => {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-6">
+      <div className="grid lg:grid-cols-5 gap-4">
         {/* Main Investment Card */}
-        <Card className="lg:col-span-3 bg-card/50 border-border/30">
-          <CardContent className="p-6">
+        <Card className="lg:col-span-3 bg-card/50 border-border/30 ring-1 ring-accent/10">
+          <CardContent className="p-5">
             {/* Total Investment */}
-            <div className="text-center mb-8">
-              <p className="text-sm text-muted-foreground mb-2">Total MVP Investment</p>
-              <div className="text-5xl font-bold text-gradient-gold">
+            <div className="text-center mb-6">
+              <p className="text-sm text-muted-foreground mb-1">Total MVP Investment</p>
+              <div className="text-4xl md:text-5xl font-bold text-gradient-gold">
                 {formatCurrency(investment.total)}
               </div>
+              <p className="text-xs text-muted-foreground mt-1">One-time payment</p>
             </div>
 
-            {/* Breakdown */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <PieChart className="h-5 w-5 text-accent" />
-                <h3 className="font-semibold text-foreground">Investment Breakdown</h3>
+            {/* Breakdown with Donut Chart */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Donut Chart */}
+              <div className="h-48 md:h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={75}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="transparent"
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
               </div>
-              
-              {investment.breakdown.map((item, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{item.name}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-foreground font-medium">
+
+              {/* Legend */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <PieChart className="h-4 w-4 text-accent" />
+                  <h4 className="font-medium text-foreground text-sm">Breakdown</h4>
+                </div>
+                {investment.breakdown.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <span className="text-muted-foreground text-xs">{item.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-foreground font-medium text-xs">
                         {formatCurrency(item.value)}
                       </span>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                         {item.percentage}%
                       </Badge>
                     </div>
                   </div>
-                  <Progress 
-                    value={item.percentage} 
-                    className="h-2 bg-muted/30"
-                  />
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* Comparison */}
-            <div className="mt-8 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+            <div className="mt-5 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
               <div className="flex items-center gap-3">
-                <TrendingDown className="h-5 w-5 text-green-400" />
+                <TrendingDown className="h-5 w-5 text-green-400 flex-shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Traditional agency would charge{" "}
@@ -80,7 +143,7 @@ const InvestmentSection = () => {
                       {formatCurrency(investment.comparison.traditional)}
                     </span>
                   </p>
-                  <p className="text-green-400 font-medium">
+                  <p className="text-green-400 font-bold text-lg">
                     You save {investment.comparison.savings} with Uaicode
                   </p>
                 </div>
@@ -91,18 +154,21 @@ const InvestmentSection = () => {
 
         {/* Included / Not Included */}
         <Card className="lg:col-span-2 bg-card/50 border-border/30">
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-5 space-y-4">
             {/* Included */}
             <div>
-              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Check className="h-5 w-5 text-green-400" />
+              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-400" />
                 What's Included
+                <InfoTooltip side="top" size="sm">
+                  Everything included in your investment with no hidden costs.
+                </InfoTooltip>
               </h3>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {investment.included.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3 text-sm">
-                    <Check className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                    <span className="text-foreground/90">{item}</span>
+                  <li key={index} className="flex items-start gap-2 text-sm">
+                    <Check className="h-3.5 w-3.5 text-green-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-foreground/90 text-xs">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -113,22 +179,22 @@ const InvestmentSection = () => {
 
             {/* Not Included */}
             <div>
-              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                <X className="h-5 w-5 text-muted-foreground" />
+              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                <X className="h-4 w-4 text-muted-foreground" />
                 Not Included
               </h3>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {investment.notIncluded.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3 text-sm">
-                    <X className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground">{item}</span>
+                  <li key={index} className="flex items-start gap-2 text-sm">
+                    <X className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground text-xs">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Note */}
-            <p className="text-xs text-muted-foreground italic">
+            <p className="text-xs text-muted-foreground italic pt-2">
               * Items not included can be contracted separately
             </p>
           </CardContent>

@@ -1,6 +1,7 @@
-import { TrendingUp, Clock, DollarSign, Target, BarChart3 } from "lucide-react";
+import { TrendingUp, Clock, DollarSign, Target, BarChart3, Shield, Rocket } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { reportData } from "@/lib/reportMockData";
 import {
   AreaChart,
@@ -26,6 +27,12 @@ const FinancialReturnSection = () => {
     return `$${value}`;
   };
 
+  const scenarioIcons: Record<string, React.ElementType> = {
+    Conservative: Shield,
+    Realistic: Target,
+    Optimistic: Rocket,
+  };
+
   const metrics = [
     {
       icon: Clock,
@@ -33,6 +40,7 @@ const FinancialReturnSection = () => {
       value: `${financials.breakEvenMonths} months`,
       sublabel: "Until investment payoff",
       highlight: true,
+      tooltip: "The month when your cumulative revenue exceeds your total investment and operational costs."
     },
     {
       icon: TrendingUp,
@@ -40,6 +48,7 @@ const FinancialReturnSection = () => {
       value: `${financials.roiYear1}%`,
       sublabel: "Return on investment",
       highlight: false,
+      tooltip: "Return on Investment - The projected percentage gain on your investment in the first year."
     },
     {
       icon: DollarSign,
@@ -47,6 +56,7 @@ const FinancialReturnSection = () => {
       value: formatCurrency(financials.mrrMonth12),
       sublabel: "Monthly recurring revenue",
       highlight: false,
+      tooltip: "Monthly Recurring Revenue - The predictable monthly revenue from subscriptions at month 12."
     },
     {
       icon: Target,
@@ -54,11 +64,12 @@ const FinancialReturnSection = () => {
       value: formatCurrency(financials.arrProjected),
       sublabel: "Annual recurring revenue",
       highlight: false,
+      tooltip: "Annual Recurring Revenue - The yearly value of your recurring subscriptions (MRR × 12)."
     },
   ];
 
   return (
-    <section id="financial-return" className="space-y-8">
+    <section id="financial-return" className="space-y-6 animate-fade-in">
       {/* Section Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10">
@@ -71,34 +82,49 @@ const FinancialReturnSection = () => {
       </div>
 
       {/* Key Metrics Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {metrics.map((metric, index) => (
           <Card 
             key={index}
-            className={`bg-card/50 border-border/30 ${metric.highlight ? 'ring-1 ring-accent/30' : ''}`}
+            className={`bg-card/50 border-border/30 transition-all duration-300 hover:shadow-md ${metric.highlight ? 'ring-1 ring-accent/30' : ''}`}
           >
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className={`p-1.5 rounded-lg ${metric.highlight ? 'bg-accent/20' : 'bg-muted/30'}`}>
-                  <metric.icon className={`h-4 w-4 ${metric.highlight ? 'text-accent' : 'text-muted-foreground'}`} />
+            <CardContent className="p-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <div className={`p-1 rounded-lg ${metric.highlight ? 'bg-accent/20' : 'bg-muted/30'}`}>
+                  <metric.icon className={`h-3.5 w-3.5 ${metric.highlight ? 'text-accent' : 'text-muted-foreground'}`} />
                 </div>
                 <span className="text-xs text-muted-foreground">{metric.label}</span>
+                <InfoTooltip side="top" size="sm">
+                  {metric.tooltip}
+                </InfoTooltip>
               </div>
-              <div className={`text-2xl font-bold ${metric.highlight ? 'text-accent' : 'text-foreground'}`}>
+              <div className={`text-xl font-bold ${metric.highlight ? 'text-accent' : 'text-foreground'}`}>
                 {metric.value}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">{metric.sublabel}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{metric.sublabel}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4">
         {/* Revenue vs Costs Chart */}
         <Card className="lg:col-span-2 bg-card/50 border-border/30">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-6">Revenue vs Costs (12 months)</h3>
-            <div className="h-72">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-foreground text-sm">Revenue vs Costs (12 months)</h3>
+              <div className="flex items-center gap-3 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-accent" />
+                  <span className="text-muted-foreground">Revenue</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-red-400" />
+                  <span className="text-muted-foreground">Costs</span>
+                </div>
+              </div>
+            </div>
+            <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={financials.projectionData}>
                   <defs>
@@ -114,19 +140,21 @@ const FinancialReturnSection = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                   />
                   <YAxis 
                     tickFormatter={(value) => formatCurrency(value)}
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
+                    width={50}
                   />
                   <Tooltip 
                     contentStyle={{ 
                       backgroundColor: 'hsl(var(--card))', 
                       border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
+                      borderRadius: '8px',
+                      fontSize: '12px'
                     }}
                     formatter={(value: number, name: string) => [
                       formatCurrency(value),
@@ -137,7 +165,7 @@ const FinancialReturnSection = () => {
                     x="M8" 
                     stroke="hsl(var(--accent))" 
                     strokeDasharray="5 5"
-                    label={{ value: 'Break-even', fill: 'hsl(var(--accent))', fontSize: 11 }}
+                    label={{ value: 'Break-even', fill: 'hsl(var(--accent))', fontSize: 10 }}
                   />
                   <Area
                     type="monotone"
@@ -163,60 +191,83 @@ const FinancialReturnSection = () => {
 
         {/* Scenarios */}
         <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-6">Projection Scenarios</h3>
-            <div className="space-y-4">
-              {financials.scenarios.map((scenario, index) => (
-                <div 
-                  key={index}
-                  className={`p-4 rounded-lg border ${
-                    scenario.name === 'Realistic' 
-                      ? 'bg-accent/10 border-accent/30' 
-                      : 'bg-muted/20 border-border/30'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`font-medium ${
-                      scenario.name === 'Realistic' ? 'text-accent' : 'text-foreground'
-                    }`}>
-                      {scenario.name}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      {scenario.probability} prob.
-                    </Badge>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="font-semibold text-foreground text-sm">Projection Scenarios</h3>
+              <InfoTooltip side="left" size="sm">
+                Three scenarios based on different market conditions and execution quality.
+              </InfoTooltip>
+            </div>
+            <div className="space-y-3">
+              {financials.scenarios.map((scenario, index) => {
+                const ScenarioIcon = scenarioIcons[scenario.name] || Target;
+                return (
+                  <div 
+                    key={index}
+                    className={`p-3 rounded-lg border transition-all duration-300 ${
+                      scenario.name === 'Realistic' 
+                        ? 'bg-accent/10 border-accent/30 ring-1 ring-accent/20' 
+                        : 'bg-muted/20 border-border/30 hover:border-border/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <ScenarioIcon className={`h-4 w-4 ${
+                          scenario.name === 'Realistic' ? 'text-accent' : 'text-muted-foreground'
+                        }`} />
+                        <span className={`font-medium text-sm ${
+                          scenario.name === 'Realistic' ? 'text-accent' : 'text-foreground'
+                        }`}>
+                          {scenario.name}
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {scenario.probability}
+                      </Badge>
+                    </div>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Month 12 MRR</span>
+                        <span className="font-medium text-foreground">
+                          {formatCurrency(scenario.mrrMonth12)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Year 1 ARR</span>
+                        <span className="font-medium text-foreground">
+                          {formatCurrency(scenario.arrYear1)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Break-even</span>
+                        <span className="font-medium text-foreground">
+                          {scenario.breakEven} months
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Month 12 MRR</span>
-                      <span className="font-medium text-foreground">
-                        {formatCurrency(scenario.mrrMonth12)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Year 1 ARR</span>
-                      <span className="font-medium text-foreground">
-                        {formatCurrency(scenario.arrYear1)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Break-even</span>
-                      <span className="font-medium text-foreground">
-                        {scenario.breakEven} months
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Additional Metrics */}
-            <div className="mt-6 pt-6 border-t border-border/30 space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">LTV/CAC Ratio</span>
-                <span className="font-medium text-green-400">{financials.ltvCacRatio}x</span>
+            <div className="mt-4 pt-4 border-t border-border/30 space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground text-xs">LTV/CAC Ratio</span>
+                  <InfoTooltip side="left" size="sm">
+                    Customer Lifetime Value ÷ Customer Acquisition Cost. Above 3x is excellent.
+                  </InfoTooltip>
+                </div>
+                <span className="font-bold text-green-400">{financials.ltvCacRatio}x</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Monthly Churn</span>
+              <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground text-xs">Monthly Churn</span>
+                  <InfoTooltip side="left" size="sm">
+                    The percentage of customers who cancel each month. Lower is better.
+                  </InfoTooltip>
+                </div>
                 <span className="font-medium text-foreground">{financials.monthlyChurn}</span>
               </div>
             </div>
