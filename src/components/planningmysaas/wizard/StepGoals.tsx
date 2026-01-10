@@ -49,11 +49,12 @@ const goals = [
 ];
 
 const budgets = [
+  { id: "5k-10k", title: "$5K - $10K", description: "Micro MVP" },
   { id: "10k-25k", title: "$10K - $25K", description: "Basic MVP" },
   { id: "25k-50k", title: "$25K - $50K", description: "Complete MVP" },
   { id: "50k-100k", title: "$50K - $100K", description: "Robust product" },
   { id: "100k+", title: "$100K+", description: "Enterprise solution" },
-  { id: "guidance", title: "I need guidance", description: "Help with budgeting" },
+  { id: "guidance", title: "I need guidance", description: "Help me decide" },
 ];
 
 const timelines = [
@@ -94,7 +95,7 @@ const StepGoals = ({ data, onChange }: StepGoalsProps) => {
           <p className="text-sm text-muted-foreground">Select the main objective for your SaaS</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {goals.map((goal) => (
             <SelectableCard
               key={goal.id}
@@ -103,6 +104,7 @@ const StepGoals = ({ data, onChange }: StepGoalsProps) => {
               description={goal.description}
               selected={data.goal === goal.id}
               onClick={() => onChange("goal", goal.id)}
+              className="p-4"
             />
           ))}
         </div>
@@ -174,12 +176,18 @@ const StepGoals = ({ data, onChange }: StepGoalsProps) => {
         </div>
         
         <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
-          Ready to see your personalized feasibility study?
+          Don't risk launching without a solid plan
         </h3>
         
-        <p className="text-muted-foreground max-w-lg mx-auto">
-          Our AI will analyze your responses and generate a comprehensive report 
-          with market analysis, technical feasibility, and financial projections.
+        <p className="text-muted-foreground max-w-xl mx-auto mb-4">
+          <strong className="text-foreground">9 out of 10 startups fail</strong> due to lack of market validation 
+          and poor planning. Get your personalized feasibility study with market analysis, 
+          competitive insights, and financial projections — everything you need to 
+          <strong className="text-foreground"> launch with confidence</strong>.
+        </p>
+        
+        <p className="text-sm text-accent font-medium">
+          ✓ Reduce risk before investing your time and money
         </p>
       </div>
     </div>
