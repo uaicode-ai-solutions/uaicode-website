@@ -21,15 +21,15 @@ const ExecutionPlanSection = () => {
           <Rocket className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">O Plano</h2>
-          <p className="text-sm text-muted-foreground">Como construímos seu projeto</p>
+          <h2 className="text-2xl font-bold text-foreground">The Plan</h2>
+          <p className="text-sm text-muted-foreground">How we build your project</p>
         </div>
       </div>
 
       {/* Timeline */}
       <Card className="bg-card/50 border-border/30">
         <CardContent className="p-6">
-          <h3 className="font-semibold text-foreground mb-8">Timeline de Execução</h3>
+          <h3 className="font-semibold text-foreground mb-8">Execution Timeline</h3>
           
           {/* Desktop Timeline - Horizontal */}
           <div className="hidden lg:block">
@@ -46,7 +46,7 @@ const ExecutionPlanSection = () => {
                       <div className="flex justify-center mb-4">
                         <div className="relative z-10 w-24 h-24 rounded-full bg-card border-2 border-accent flex flex-col items-center justify-center">
                           <IconComponent className="h-8 w-8 text-accent mb-1" />
-                          <span className="text-xs text-muted-foreground">Fase {phase.phase}</span>
+                          <span className="text-xs text-muted-foreground">Phase {phase.phase}</span>
                         </div>
                       </div>
 
@@ -68,7 +68,7 @@ const ExecutionPlanSection = () => {
                           ))}
                           {phase.deliverables.length > 3 && (
                             <span className="text-xs text-accent">
-                              +{phase.deliverables.length - 3} mais
+                              +{phase.deliverables.length - 3} more
                             </span>
                           )}
                         </div>
@@ -127,7 +127,7 @@ const ExecutionPlanSection = () => {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 mb-6">
             <Cpu className="h-5 w-5 text-accent" />
-            <h3 className="font-semibold text-foreground">Stack Tecnológico</h3>
+            <h3 className="font-semibold text-foreground">Technology Stack</h3>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -150,7 +150,7 @@ const ExecutionPlanSection = () => {
           </div>
 
           <p className="text-xs text-muted-foreground mt-4 italic">
-            * Stack moderno e escalável, escolhido com base nas necessidades específicas do projeto
+            * Modern and scalable stack, chosen based on specific project needs
           </p>
         </CardContent>
       </Card>

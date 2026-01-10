@@ -35,8 +35,8 @@ const MarketOpportunitySection = () => {
           <Target className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">A Oportunidade</h2>
-          <p className="text-sm text-muted-foreground">Tamanho do mercado e competição</p>
+          <h2 className="text-2xl font-bold text-foreground">The Opportunity</h2>
+          <p className="text-sm text-muted-foreground">Market size and competition</p>
         </div>
       </div>
 
@@ -45,10 +45,10 @@ const MarketOpportunitySection = () => {
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-semibold text-foreground">Tamanho do Mercado</h3>
+              <h3 className="font-semibold text-foreground">Market Size</h3>
               <Badge variant="outline" className="border-accent/30 text-accent gap-1">
                 <TrendingUp className="h-3 w-3" />
-                {market.growthRate} ao ano
+                {market.growthRate} YoY
               </Badge>
             </div>
 
@@ -89,7 +89,7 @@ const MarketOpportunitySection = () => {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-6">
               <Users className="h-5 w-5 text-accent" />
-              <h3 className="font-semibold text-foreground">Competidores & Diferencial</h3>
+              <h3 className="font-semibold text-foreground">Competitors & Differentiation</h3>
             </div>
 
             {/* Competitors List */}
@@ -106,12 +106,12 @@ const MarketOpportunitySection = () => {
                     </Badge>
                   </div>
                   <p className="text-sm text-red-400/80 mb-2">
-                    <span className="text-muted-foreground">Fraqueza:</span> {competitor.weakness}
+                    <span className="text-muted-foreground">Weakness:</span> {competitor.weakness}
                   </p>
                   <div className="flex items-start gap-2 text-sm">
                     <ArrowRight className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
                     <p className="text-green-400/90">
-                      <span className="font-medium">Sua vantagem:</span> {competitor.yourAdvantage}
+                      <span className="font-medium">Your advantage:</span> {competitor.yourAdvantage}
                     </p>
                   </div>
                 </div>
@@ -120,7 +120,7 @@ const MarketOpportunitySection = () => {
 
             {/* Your Competitive Advantage */}
             <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-              <h4 className="text-sm font-medium text-accent mb-2">Seu Diferencial Competitivo</h4>
+              <h4 className="text-sm font-medium text-accent mb-2">Your Competitive Advantage</h4>
               <p className="text-foreground">{competitiveAdvantage}</p>
             </div>
           </CardContent>

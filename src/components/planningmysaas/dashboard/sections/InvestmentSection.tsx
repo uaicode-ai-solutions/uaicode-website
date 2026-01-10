@@ -24,8 +24,8 @@ const InvestmentSection = () => {
           <DollarSign className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">O Investimento</h2>
-          <p className="text-sm text-muted-foreground">Quanto custa construir seu MVP</p>
+          <h2 className="text-2xl font-bold text-foreground">The Investment</h2>
+          <p className="text-sm text-muted-foreground">How much it costs to build your MVP</p>
         </div>
       </div>
 
@@ -35,7 +35,7 @@ const InvestmentSection = () => {
           <CardContent className="p-6">
             {/* Total Investment */}
             <div className="text-center mb-8">
-              <p className="text-sm text-muted-foreground mb-2">Investimento Total MVP</p>
+              <p className="text-sm text-muted-foreground mb-2">Total MVP Investment</p>
               <div className="text-5xl font-bold text-gradient-gold">
                 {formatCurrency(investment.total)}
               </div>
@@ -45,7 +45,7 @@ const InvestmentSection = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-4">
                 <PieChart className="h-5 w-5 text-accent" />
-                <h3 className="font-semibold text-foreground">Breakdown do Investimento</h3>
+                <h3 className="font-semibold text-foreground">Investment Breakdown</h3>
               </div>
               
               {investment.breakdown.map((item, index) => (
@@ -75,13 +75,13 @@ const InvestmentSection = () => {
                 <TrendingDown className="h-5 w-5 text-green-400" />
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Agência tradicional cobraria{" "}
+                    Traditional agency would charge{" "}
                     <span className="text-red-400 line-through font-medium">
                       {formatCurrency(investment.comparison.traditional)}
                     </span>
                   </p>
                   <p className="text-green-400 font-medium">
-                    Você economiza {investment.comparison.savings} com a Uaicode
+                    You save {investment.comparison.savings} with Uaicode
                   </p>
                 </div>
               </div>
@@ -96,7 +96,7 @@ const InvestmentSection = () => {
             <div>
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Check className="h-5 w-5 text-green-400" />
-                O que está incluso
+                What's Included
               </h3>
               <ul className="space-y-3">
                 {investment.included.map((item, index) => (
@@ -115,7 +115,7 @@ const InvestmentSection = () => {
             <div>
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <X className="h-5 w-5 text-muted-foreground" />
-                Não incluso
+                Not Included
               </h3>
               <ul className="space-y-3">
                 {investment.notIncluded.map((item, index) => (
@@ -129,7 +129,7 @@ const InvestmentSection = () => {
 
             {/* Note */}
             <p className="text-xs text-muted-foreground italic">
-              * Itens não inclusos podem ser contratados separadamente
+              * Items not included can be contracted separately
             </p>
           </CardContent>
         </Card>
