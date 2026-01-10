@@ -8,6 +8,7 @@ import {
   Target
 } from "lucide-react";
 import SelectableCard from "./SelectableCard";
+import { Input } from "@/components/ui/input";
 
 const goals = [
   { 
@@ -67,6 +68,7 @@ const timelines = [
 interface StepGoalsProps {
   data: {
     goal: string;
+    goalOther: string;
     budget: string;
     timeline: string;
   };
@@ -108,6 +110,21 @@ const StepGoals = ({ data, onChange }: StepGoalsProps) => {
             />
           ))}
         </div>
+
+        {data.goal === "other" && (
+          <div className="mt-3 animate-fade-in">
+            <Input
+              placeholder="Please describe your primary goal..."
+              value={data.goalOther}
+              onChange={(e) => onChange("goalOther", e.target.value)}
+              className="bg-muted/30 border-border/50 focus:border-accent"
+              maxLength={200}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Minimum 2 characters required
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Budget Section */}
