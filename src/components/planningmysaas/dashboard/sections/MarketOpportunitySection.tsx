@@ -58,7 +58,7 @@ const MarketOpportunitySection = () => {
         <Card className="bg-card/50 border-border/30 overflow-hidden">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-semibold text-foreground">Market Size</h3>
+              <h3 className="text-sm font-medium text-foreground">Market Size</h3>
               <Badge variant="outline" className="border-accent/30 text-accent gap-1">
                 <TrendingUp className="h-3 w-3" />
                 {market.growthRate} YoY
@@ -103,7 +103,7 @@ const MarketOpportunitySection = () => {
         {/* Card 2: Understanding Market Size */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-5">Understanding Market Size</h3>
+            <h3 className="text-sm font-medium text-foreground mb-5">Understanding Market Size</h3>
 
             <div className="space-y-4">
               {marketLevels.map((level, index) => {
@@ -133,9 +133,6 @@ const MarketOpportunitySection = () => {
                         <p className="text-sm text-muted-foreground leading-relaxed">
                           {level.description}
                         </p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className="text-lg font-bold text-accent">{level.value}</span>
-                        </div>
                       </div>
                     </div>
                   </div>
