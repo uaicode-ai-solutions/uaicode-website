@@ -2,6 +2,7 @@ import { ChevronDown, TrendingUp, DollarSign, Clock, Sparkles } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { reportData } from "@/lib/reportMockData";
 
 interface ReportHeroProps {
@@ -25,19 +26,22 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
       icon: TrendingUp, 
       value: data.keyMetrics.marketSize, 
       label: data.keyMetrics.marketLabel,
-      sublabel: "Global TAM"
+      sublabel: "Global TAM",
+      tooltip: "Total Addressable Market - The total global market demand for your product or service."
     },
     { 
       icon: DollarSign, 
       value: data.keyMetrics.expectedROI, 
       label: data.keyMetrics.roiLabel,
-      sublabel: "Year 1"
+      sublabel: "Year 1",
+      tooltip: "Return on Investment - The projected percentage gain on your investment in the first year."
     },
     { 
       icon: Clock, 
       value: `${data.keyMetrics.paybackMonths} months`, 
       label: data.keyMetrics.paybackLabel,
-      sublabel: "To break-even"
+      sublabel: "To break-even",
+      tooltip: "The estimated time until your cumulative revenue exceeds your total investment."
     },
   ];
 
@@ -46,13 +50,13 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   };
 
   return (
-    <div className="relative min-h-[90vh] flex flex-col justify-center py-12">
+    <div className="relative min-h-[85vh] flex flex-col justify-center py-8">
       {/* Background Effects */}
-      <div className="absolute inset-0 aurora-bg opacity-60" />
-      <div className="absolute top-20 left-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-1/4 w-72 h-72 bg-accent/5 rounded-full blur-3xl" />
+      <div className="absolute inset-0 aurora-bg opacity-40" />
+      <div className="absolute top-20 left-1/4 w-72 h-72 bg-accent/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-1/4 w-56 h-56 bg-accent/5 rounded-full blur-3xl" />
 
-      <div className="relative z-10 text-center space-y-8">
+      <div className="relative z-10 text-center space-y-6 animate-fade-in">
         {/* Report Badge */}
         <Badge variant="outline" className="border-accent/30 text-accent gap-2 px-4 py-1.5">
           <Sparkles className="h-3.5 w-3.5" />
@@ -60,34 +64,34 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
         </Badge>
 
         {/* Project Name */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
           {displayName}
         </h1>
 
         {/* Viability Score */}
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-3">
           <div className="relative">
             {/* Score Ring */}
-            <div className="relative w-40 h-40 mx-auto">
+            <div className="relative w-32 h-32 md:w-36 md:h-36 mx-auto">
               <svg className="w-full h-full transform -rotate-90">
                 <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
+                  cx="50%"
+                  cy="50%"
+                  r="45%"
                   stroke="currentColor"
-                  strokeWidth="8"
+                  strokeWidth="6"
                   fill="transparent"
                   className="text-muted/30"
                 />
                 <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
+                  cx="50%"
+                  cy="50%"
+                  r="45%"
                   stroke="url(#scoreGradient)"
-                  strokeWidth="8"
+                  strokeWidth="6"
                   fill="transparent"
                   strokeLinecap="round"
-                  strokeDasharray={`${(data.viabilityScore / 100) * 440} 440`}
+                  strokeDasharray={`${(data.viabilityScore / 100) * 283} 283`}
                   className="transition-all duration-1000"
                 />
                 <defs>
@@ -98,45 +102,48 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
                 </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`text-5xl font-bold ${getScoreColor(data.viabilityScore)}`}>
+                <span className={`text-4xl md:text-5xl font-bold ${getScoreColor(data.viabilityScore)}`}>
                   {data.viabilityScore}
                 </span>
-                <span className="text-sm text-muted-foreground">Viability</span>
+                <span className="text-xs text-muted-foreground">Viability</span>
               </div>
             </div>
           </div>
 
           {/* Verdict Headline */}
-          <p className="text-xl md:text-2xl text-accent font-medium max-w-xl">
+          <p className="text-lg md:text-xl text-accent font-medium max-w-lg">
             {data.verdictHeadline}
           </p>
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-2xl mx-auto mt-6">
           {metrics.map((metric, index) => (
             <Card 
               key={index}
-              className="bg-card/50 border-border/30 p-6 hover:border-accent/30 transition-colors"
+              className="bg-card/50 border-border/30 p-4 hover:border-accent/30 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5"
             >
-              <div className="flex items-center justify-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-accent/10">
-                  <metric.icon className="h-5 w-5 text-accent" />
+              <div className="flex items-center justify-center gap-2 mb-1.5">
+                <div className="p-1.5 rounded-lg bg-accent/10">
+                  <metric.icon className="h-4 w-4 text-accent" />
                 </div>
+                <InfoTooltip side="top">
+                  {metric.tooltip}
+                </InfoTooltip>
               </div>
-              <div className="text-3xl font-bold text-foreground">{metric.value}</div>
+              <div className="text-2xl font-bold text-foreground">{metric.value}</div>
               <div className="text-sm text-muted-foreground">{metric.label}</div>
-              <div className="text-xs text-muted-foreground/70 mt-1">{metric.sublabel}</div>
+              <div className="text-xs text-muted-foreground/70">{metric.sublabel}</div>
             </Card>
           ))}
         </div>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
           <Button 
             size="lg"
             onClick={onScheduleCall}
-            className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 px-8"
+            className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 px-6 shadow-lg shadow-accent/20"
           >
             Let's Build This Together
           </Button>
@@ -150,12 +157,17 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
           </Button>
         </div>
 
+        {/* Urgency Text */}
+        <p className="text-sm text-muted-foreground">
+          <span className="text-accent">Limited availability</span> — We accept 2-3 new projects per month
+        </p>
+
         {/* Scroll Indicator */}
         <div 
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer animate-bounce"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 cursor-pointer animate-bounce"
           onClick={scrollToContent}
         >
-          <ChevronDown className="h-8 w-8 text-muted-foreground/50" />
+          <ChevronDown className="h-6 w-6 text-muted-foreground/50" />
         </div>
       </div>
     </div>
