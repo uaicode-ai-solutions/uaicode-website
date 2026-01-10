@@ -1,5 +1,6 @@
 import MarketingHero from "./MarketingHero";
 import MarketingVerdict from "./MarketingVerdict";
+import ICPCard from "../marketing/ICPCard";
 import FourPsCards from "../marketing/FourPsCards";
 import PaidMediaCards from "../marketing/PaidMediaCards";
 import PricingCards from "../marketing/PricingCards";
@@ -27,6 +28,9 @@ const MarketingAnalysisTab = ({ projectName, onScheduleCall, onDownloadPDF }: Ma
 
       {/* Executive Summary */}
       <MarketingVerdict />
+
+      {/* Ideal Customer Profile */}
+      <ICPCard />
 
       {/* 4Ps Analysis */}
       <FourPsCards />
