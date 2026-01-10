@@ -259,8 +259,10 @@ const FinancialReturnSection = () => {
       {/* Unit Economics */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-accent" />
-          <h3 className="font-semibold text-accent text-sm">Unit Economics</h3>
+          <h3 className="font-semibold text-foreground text-sm">Unit Economics</h3>
+          <InfoTooltip side="right" size="sm">
+            Key metrics showing your customer acquisition efficiency and lifetime value analysis.
+          </InfoTooltip>
         </div>
         
         {/* 4 Cards Grid */}
