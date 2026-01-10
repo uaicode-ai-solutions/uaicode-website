@@ -19,6 +19,7 @@ import { reportData } from "@/lib/reportMockData";
 import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHero";
 import ExecutiveVerdict from "@/components/planningmysaas/dashboard/sections/ExecutiveVerdict";
 import MarketOpportunitySection from "@/components/planningmysaas/dashboard/sections/MarketOpportunitySection";
+import CompetitiveAnalysisSection from "@/components/planningmysaas/dashboard/sections/CompetitiveAnalysisSection";
 import InvestmentSection from "@/components/planningmysaas/dashboard/sections/InvestmentSection";
 import FinancialReturnSection from "@/components/planningmysaas/dashboard/sections/FinancialReturnSection";
 import ExecutionPlanSection from "@/components/planningmysaas/dashboard/sections/ExecutionPlanSection";
@@ -146,6 +147,9 @@ const PmsDashboard = () => {
 
               {/* Market Opportunity */}
               <MarketOpportunitySection />
+
+              {/* Competitive Intelligence */}
+              <CompetitiveAnalysisSection />
 
               {/* Investment */}
               <InvestmentSection />
