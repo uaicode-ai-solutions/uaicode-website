@@ -25,6 +25,9 @@ import {
   BarChart,
   Sparkles,
   Loader2,
+  Upload,
+  X,
+  Image as ImageIcon,
 } from "lucide-react";
 
 const saasTypes = [
@@ -61,6 +64,7 @@ interface StepYourIdeaProps {
     industryOther: string;
     description: string;
     saasName: string;
+    saasLogo: string;
   };
   onChange: (field: string, value: string) => void;
 }
@@ -258,6 +262,91 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
             {data.saasName.length}/50 characters
           </span>
         )}
+      </div>
+
+      {/* Logo Upload - Optional */}
+      <div className="space-y-3">
+        <div>
+          <Label className="text-foreground text-base font-medium">
+            Upload your Logo <span className="text-muted-foreground text-sm font-normal">(optional)</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            If you don't have a logo yet, don't worry — we'll create one for you!
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          {/* Logo Preview */}
+          {data.saasLogo ? (
+            <div className="relative">
+              <div className="w-20 h-20 rounded-lg border-2 border-accent/50 overflow-hidden bg-muted/30 flex items-center justify-center">
+                <img 
+                  src={data.saasLogo} 
+                  alt="Logo preview" 
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                onClick={() => onChange("saasLogo", "")}
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          ) : (
+            <div className="w-20 h-20 rounded-lg border-2 border-dashed border-border/50 bg-muted/20 flex items-center justify-center">
+              <ImageIcon className="w-8 h-8 text-muted-foreground/50" />
+            </div>
+          )}
+          
+          {/* Upload Button */}
+          <div className="flex-1">
+            <input
+              type="file"
+              id="logo-upload"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                
+                // Validate file size (max 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                  alert("File size must be less than 2MB");
+                  return;
+                }
+                
+                // Validate file type
+                if (!file.type.startsWith("image/")) {
+                  alert("Please upload an image file");
+                  return;
+                }
+                
+                // Convert to base64 for preview and storage
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  onChange("saasLogo", reader.result as string);
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById('logo-upload')?.click()}
+              className="border-border/50 hover:border-accent hover:bg-accent/10"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {data.saasLogo ? "Change Logo" : "Upload Logo"}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              PNG, JPG or SVG. Max 2MB. Recommended: 512×512px
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
