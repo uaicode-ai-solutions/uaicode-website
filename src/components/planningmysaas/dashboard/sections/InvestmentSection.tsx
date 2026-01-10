@@ -61,7 +61,12 @@ const InvestmentSection = () => {
           <DollarSign className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">The Investment</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">The Investment</h2>
+            <InfoTooltip side="right" size="sm">
+              Your total MVP investment includes development, design, and project management. This is a one-time payment with no hidden costs.
+            </InfoTooltip>
+          </div>
           <p className="text-sm text-muted-foreground">How much it costs to build your MVP</p>
         </div>
       </div>
