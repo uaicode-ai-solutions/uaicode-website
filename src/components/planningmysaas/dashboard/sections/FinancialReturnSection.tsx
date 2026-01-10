@@ -30,29 +30,29 @@ const FinancialReturnSection = () => {
     {
       icon: Clock,
       label: "Break-even",
-      value: `${financials.breakEvenMonths} meses`,
-      sublabel: "Até pagar o investimento",
+      value: `${financials.breakEvenMonths} months`,
+      sublabel: "Until investment payoff",
       highlight: true,
     },
     {
       icon: TrendingUp,
-      label: "ROI Ano 1",
+      label: "Year 1 ROI",
       value: `${financials.roiYear1}%`,
-      sublabel: "Retorno sobre investimento",
+      sublabel: "Return on investment",
       highlight: false,
     },
     {
       icon: DollarSign,
-      label: "MRR Mês 12",
+      label: "Month 12 MRR",
       value: formatCurrency(financials.mrrMonth12),
-      sublabel: "Receita mensal recorrente",
+      sublabel: "Monthly recurring revenue",
       highlight: false,
     },
     {
       icon: Target,
-      label: "ARR Projetado",
+      label: "Projected ARR",
       value: formatCurrency(financials.arrProjected),
-      sublabel: "Receita anual recorrente",
+      sublabel: "Annual recurring revenue",
       highlight: false,
     },
   ];
@@ -65,8 +65,8 @@ const FinancialReturnSection = () => {
           <BarChart3 className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">O Retorno</h2>
-          <p className="text-sm text-muted-foreground">Projeções financeiras e cenários</p>
+          <h2 className="text-2xl font-bold text-foreground">The Return</h2>
+          <p className="text-sm text-muted-foreground">Financial projections and scenarios</p>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ const FinancialReturnSection = () => {
         {/* Revenue vs Costs Chart */}
         <Card className="lg:col-span-2 bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-6">Receita vs Custos (12 meses)</h3>
+            <h3 className="font-semibold text-foreground mb-6">Revenue vs Costs (12 months)</h3>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={financials.projectionData}>
@@ -130,7 +130,7 @@ const FinancialReturnSection = () => {
                     }}
                     formatter={(value: number, name: string) => [
                       formatCurrency(value),
-                      name === 'revenue' ? 'Receita' : 'Custos'
+                      name === 'revenue' ? 'Revenue' : 'Costs'
                     ]}
                   />
                   <ReferenceLine 
@@ -164,20 +164,20 @@ const FinancialReturnSection = () => {
         {/* Scenarios */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-foreground mb-6">Cenários de Projeção</h3>
+            <h3 className="font-semibold text-foreground mb-6">Projection Scenarios</h3>
             <div className="space-y-4">
               {financials.scenarios.map((scenario, index) => (
                 <div 
                   key={index}
                   className={`p-4 rounded-lg border ${
-                    scenario.name === 'Realista' 
+                    scenario.name === 'Realistic' 
                       ? 'bg-accent/10 border-accent/30' 
                       : 'bg-muted/20 border-border/30'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className={`font-medium ${
-                      scenario.name === 'Realista' ? 'text-accent' : 'text-foreground'
+                      scenario.name === 'Realistic' ? 'text-accent' : 'text-foreground'
                     }`}>
                       {scenario.name}
                     </span>
@@ -187,13 +187,13 @@ const FinancialReturnSection = () => {
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">MRR Mês 12</span>
+                      <span className="text-muted-foreground">Month 12 MRR</span>
                       <span className="font-medium text-foreground">
                         {formatCurrency(scenario.mrrMonth12)}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">ARR Ano 1</span>
+                      <span className="text-muted-foreground">Year 1 ARR</span>
                       <span className="font-medium text-foreground">
                         {formatCurrency(scenario.arrYear1)}
                       </span>
@@ -201,7 +201,7 @@ const FinancialReturnSection = () => {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Break-even</span>
                       <span className="font-medium text-foreground">
-                        {scenario.breakEven} meses
+                        {scenario.breakEven} months
                       </span>
                     </div>
                   </div>
@@ -216,7 +216,7 @@ const FinancialReturnSection = () => {
                 <span className="font-medium text-green-400">{financials.ltvCacRatio}x</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Churn Mensal</span>
+                <span className="text-muted-foreground">Monthly Churn</span>
                 <span className="font-medium text-foreground">{financials.monthlyChurn}</span>
               </div>
             </div>
