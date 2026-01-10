@@ -7,10 +7,14 @@ import {
   Download,
   Mail,
   MessageCircle,
-  CheckCircle2
+  CheckCircle2,
+  DollarSign,
+  Sparkles,
+  Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { reportData } from "@/lib/reportMockData";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -20,13 +24,29 @@ const iconMap: Record<string, React.ElementType> = {
   Package,
 };
 
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
 interface NextStepsSectionProps {
   onScheduleCall?: () => void;
   onDownloadPDF?: () => void;
 }
 
 const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionProps) => {
-  const { nextSteps, viabilityScore, verdictHeadline } = reportData;
+  const { nextSteps, viabilityScore, verdictHeadline, investment } = reportData;
+
+  const investmentHighlights = [
+    "Complete MVP development",
+    "12 months hosting included",
+    "30 days post-launch support",
+    "Full documentation & training"
+  ];
 
   return (
     <section id="next-steps" className="space-y-8">
@@ -36,7 +56,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <p className="text-lg text-accent">{nextSteps.verdictSummary}</p>
       </div>
 
-      {/* Summary Card */}
+      {/* Summary Card with Investment */}
       <Card className="bg-gradient-to-br from-accent/10 via-card to-card border-accent/20">
         <CardContent className="p-8">
           <div className="flex flex-col lg:flex-row items-center gap-8">
@@ -76,6 +96,33 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </div>
               </div>
               <p className="text-sm text-muted-foreground max-w-xs">{verdictHeadline}</p>
+            </div>
+
+            {/* Investment Display - NEW */}
+            <div className="flex-shrink-0 text-center lg:text-left lg:border-l lg:border-r lg:border-border/30 lg:px-8">
+              <Badge className="bg-accent/10 text-accent border-accent/20 mb-3">
+                <DollarSign className="h-3 w-3 mr-1" />
+                Total MVP Investment
+              </Badge>
+              <div className="text-4xl lg:text-5xl font-bold text-accent mb-2">
+                {formatCurrency(investment.total)}
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">One-time payment</p>
+              <ul className="space-y-2">
+                {investmentHighlights.map((item, index) => (
+                  <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 text-green-400 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              {investment.comparison && (
+                <div className="mt-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <p className="text-sm text-green-400">
+                    <span className="font-bold">{investment.comparison.savings}</span> savings vs traditional agency
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Steps */}
@@ -155,19 +202,35 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         </CardContent>
       </Card>
 
-      {/* Final Message */}
-      <div className="text-center py-8">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <CheckCircle2 className="h-6 w-6 text-green-400" />
-          <span className="text-lg font-medium text-foreground">
-            We're ready to turn your idea into reality
-          </span>
-        </div>
-        <p className="text-muted-foreground max-w-xl mx-auto">
-          This report was generated based on the information provided and market analysis. 
-          The numbers are projections and may vary depending on project execution.
-        </p>
-      </div>
+      {/* Final Message with Investment */}
+      <Card className="bg-gradient-to-br from-accent/5 via-card to-accent/5 border-accent/20">
+        <CardContent className="p-8 text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Sparkles className="h-6 w-6 text-accent" />
+            <span className="text-lg font-medium text-foreground">
+              We're ready to turn your idea into reality
+            </span>
+          </div>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+            For just <span className="text-accent font-bold text-lg">{formatCurrency(investment.total)}</span>, 
+            get your complete MVP developed by Uaicode's expert team. This includes full development, 
+            hosting, documentation, and post-launch support.
+          </p>
+          <Button 
+            size="lg"
+            onClick={onScheduleCall}
+            className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"
+          >
+            <Calendar className="h-5 w-5" />
+            Start Your Project Today
+            <ArrowRight className="h-5 w-5" />
+          </Button>
+          <p className="text-xs text-muted-foreground mt-6 max-w-xl mx-auto">
+            This report was generated based on the information provided and market analysis. 
+            The numbers are projections and may vary depending on project execution.
+          </p>
+        </CardContent>
+      </Card>
     </section>
   );
 };
