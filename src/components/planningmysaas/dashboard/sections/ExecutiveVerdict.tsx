@@ -1,25 +1,12 @@
 import { 
-  TrendingUp, 
-  PiggyBank, 
-  Target, 
-  Clock, 
-  AlertTriangle, 
   CheckCircle2,
   ShieldCheck,
-  ArrowRight,
-  Lightbulb
+  ArrowRight
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { reportData } from "@/lib/reportMockData";
-
-const iconMap: Record<string, React.ElementType> = {
-  TrendingUp,
-  PiggyBank,
-  Target,
-  Clock,
-};
 
 const ExecutiveVerdict = () => {
   const data = reportData;
@@ -76,99 +63,99 @@ const ExecutiveVerdict = () => {
         </div>
       </div>
 
-      {/* Main Summary Card */}
+      {/* Card 1: Analysis Summary */}
       <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-6">
-          {/* Narrative Summary - Scannable format */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Lightbulb className="h-5 w-5 text-accent" />
-              <h3 className="font-semibold text-foreground">Analysis Summary</h3>
-            </div>
-            <div className="space-y-4">
-              {summaryParagraphs.map((paragraph, index) => (
-                <div 
-                  key={index}
-                  className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
-                >
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center mt-0.5">
-                    <span className="text-xs font-bold text-accent">{index + 1}</span>
-                  </div>
-                  <p className="text-foreground/90 text-sm leading-relaxed">
-                    {paragraph}
-                    {/* Add tooltip for LTV/CAC if mentioned */}
-                    {paragraph.includes('LTV/CAC') && (
-                      <InfoTooltip term="LTV/CAC Ratio" side="top">
-                        Customer Lifetime Value divided by Customer Acquisition Cost. A ratio above 3x indicates healthy unit economics.
-                      </InfoTooltip>
-                    )}
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="font-semibold text-foreground text-sm">Analysis Summary</h3>
+            <InfoTooltip side="right" size="sm">
+              AI-generated executive summary of your SaaS idea's viability and market potential.
+            </InfoTooltip>
+          </div>
+          <div className="space-y-3">
+            {summaryParagraphs.map((paragraph, index) => (
+              <div 
+                key={index}
+                className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
+              >
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center mt-0.5">
+                  <span className="text-xs font-bold text-accent">{index + 1}</span>
+                </div>
+                <p className="text-foreground/90 text-sm leading-relaxed">
+                  {paragraph}
+                  {paragraph.includes('LTV/CAC') && (
+                    <InfoTooltip term="LTV/CAC Ratio" side="top">
+                      Customer Lifetime Value divided by Customer Acquisition Cost. A ratio above 3x indicates healthy unit economics.
+                    </InfoTooltip>
+                  )}
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Card 2: Key Strengths */}
+      <Card className="bg-card/50 border-border/30">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="font-semibold text-foreground text-sm">Key Strengths</h3>
+            <InfoTooltip side="right" size="sm">
+              The main competitive advantages and strengths identified in your SaaS idea.
+            </InfoTooltip>
+          </div>
+          <div className="space-y-3">
+            {data.highlights.map((highlight, index) => (
+              <div 
+                key={index}
+                className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
+              >
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center mt-0.5">
+                  <span className="text-xs font-bold text-accent">{index + 1}</span>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground text-sm">{highlight.text}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{highlight.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Card 3: Identified Risks */}
+      <Card className="bg-card/50 border-border/30">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="font-semibold text-foreground text-sm">Identified Risks</h3>
+            <InfoTooltip side="right" size="sm">
+              Proactively identified risks with planned mitigation strategies.
+            </InfoTooltip>
+          </div>
+          <div className="space-y-3">
+            {data.risks.map((item, index) => (
+              <div 
+                key={index}
+                className="p-4 rounded-lg bg-muted/10 border border-border/20"
+              >
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <p className="font-medium text-foreground text-sm">{item.risk}</p>
+                  <Badge 
+                    variant="outline" 
+                    className={`flex-shrink-0 text-xs ${getPriorityColor(item.priority)}`}
+                  >
+                    {getPriorityLabel(item.priority)}
+                  </Badge>
+                </div>
+                <div className="flex items-start gap-2 text-sm">
+                  <ArrowRight className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-muted-foreground">
+                    <span className="text-green-400 font-medium">Mitigation:</span>{" "}
+                    {item.mitigation}
                   </p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Highlights Grid */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-accent" />
-              Key Strengths
-            </h3>
-            <div className="grid md:grid-cols-2 gap-3">
-              {data.highlights.map((highlight, index) => {
-                const IconComponent = iconMap[highlight.icon] || CheckCircle2;
-                return (
-                  <div 
-                    key={index}
-                    className="flex gap-3 p-4 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/30 transition-all duration-300 hover:shadow-md hover:shadow-accent/5"
-                  >
-                    <div className="p-2 rounded-lg bg-accent/10 h-fit">
-                      <IconComponent className="h-4 w-4 text-accent" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground text-sm">{highlight.text}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{highlight.detail}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Risks Section */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-400" />
-              Identified Risks
-              <InfoTooltip side="right">
-                We proactively identify risks so they can be mitigated during development. Each risk has a planned mitigation strategy.
-              </InfoTooltip>
-            </h3>
-            <div className="space-y-3">
-              {data.risks.map((item, index) => (
-                <div 
-                  key={index}
-                  className="p-4 rounded-lg bg-card border border-border/30 hover:border-border/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <p className="font-medium text-foreground text-sm">{item.risk}</p>
-                    <Badge 
-                      variant="outline" 
-                      className={`flex-shrink-0 text-xs ${getPriorityColor(item.priority)}`}
-                    >
-                      {getPriorityLabel(item.priority)}
-                    </Badge>
-                  </div>
-                  <div className="flex items-start gap-2 text-sm">
-                    <ArrowRight className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-muted-foreground">
-                      <span className="text-green-400 font-medium">Mitigation:</span>{" "}
-                      {item.mitigation}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
