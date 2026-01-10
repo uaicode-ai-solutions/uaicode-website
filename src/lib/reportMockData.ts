@@ -10,7 +10,7 @@ export const reportData = {
   // Hero Section
   projectName: "My Doctor Hub",
   viabilityScore: 87,
-  verdictHeadline: "High viability, your idea has real traction potential — strong foundations and clear opportunity. Time to turn vision into product.",
+  verdictHeadline: "High viability, your idea has real traction potential — time to turn vision into product.",
   keyMetrics: {
     marketSize: "$12.4B",
     marketLabel: "Total Market",
