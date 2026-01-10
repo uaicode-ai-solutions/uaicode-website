@@ -174,7 +174,11 @@ const PmsDashboard = () => {
             </div>
           ) : activeTab === "marketing" ? (
             <div className="py-8">
-              <MarketingAnalysisTab />
+              <MarketingAnalysisTab 
+                projectName={projectName}
+                onScheduleCall={handleScheduleCall}
+                onDownloadPDF={handleDownloadPDF}
+              />
               <div className="h-20" />
             </div>
           ) : (
