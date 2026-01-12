@@ -323,16 +323,16 @@ The estimated $55,000 MVP investment has the potential to break even in 8 months
     
     testimonials: [
       { 
-        name: "Carlos Oliveira", 
-        company: "FinTech Solutions", 
-        avatar: "/testimonial-carlos.webp",
+        name: "Sarah Mitchell", 
+        company: "Startup Innovate", 
+        avatar: "/testimonial-sarah-johnson.webp",
         quote: "Uaicode delivered our MVP in 12 weeks with quality that exceeded expectations. Highly recommend.",
         role: "CEO"
       },
       { 
-        name: "Maria Santos", 
-        company: "HealthTech Co", 
-        avatar: "/testimonial-maria.webp",
+        name: "Robert Taylor", 
+        company: "TechFlow Solutions", 
+        avatar: "/testimonial-marcus.webp",
         quote: "Professional, agile, and transparent. Exactly what we needed to bring our idea to life.",
         role: "Founder"
       },
