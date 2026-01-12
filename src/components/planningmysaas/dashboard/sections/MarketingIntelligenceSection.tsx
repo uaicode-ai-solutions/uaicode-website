@@ -6,8 +6,6 @@ import {
   ArrowRight, 
   Sparkles, 
   User, 
-  AlertTriangle, 
-  Zap, 
   Users, 
   Heart,
   Building2,
@@ -116,7 +114,7 @@ const { growthStrategy } = competitorAnalysisData;
 
 const acquisitionMetrics = [
   { icon: DollarSign, value: growthStrategy.acquisition.targetCAC, label: "Target CAC" },
-  { icon: Zap, value: growthStrategy.engagement.activationTarget, label: "Activation" }
+  { icon: TrendingUp, value: growthStrategy.engagement.activationTarget, label: "Activation" }
 ];
 
 const monetizationMetrics = [
@@ -340,55 +338,6 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
           </div>
         </CardContent>
       </Card>
-
-      {/* ICP Row 2: Pain Points + Buying Triggers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Pain Points Card */}
-        <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="h-4 w-4 text-red-400" />
-              <h4 className="font-medium text-sm text-foreground">Pain Points</h4>
-            </div>
-            
-            <div className="space-y-2.5">
-              {icpData.painPoints.map((item, i) => (
-                <div 
-                  key={i} 
-                  className="flex items-center justify-between text-sm p-3 rounded-lg bg-red-500/5 border border-red-500/10"
-                >
-                  <span className="text-foreground">{item.pain}</span>
-                  <Badge className={`text-[10px] ${getSeverityColor(item.severity)}`}>
-                    {item.severity}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Buying Triggers Card */}
-        <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Zap className="h-4 w-4 text-accent" />
-              <h4 className="font-medium text-sm text-foreground">Buying Triggers</h4>
-            </div>
-            
-            <div className="space-y-2.5">
-              {icpData.buyingTriggers.map((trigger, i) => (
-                <div 
-                  key={i} 
-                  className="flex items-center gap-2 text-sm p-3 rounded-lg bg-accent/5 border border-accent/10"
-                >
-                  <div className="h-1.5 w-1.5 rounded-full bg-accent" />
-                  <span className="text-foreground">{trigger}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Growth Targets (AEMR) - Subtitle */}
       <div className="flex items-center gap-2 mt-8">
