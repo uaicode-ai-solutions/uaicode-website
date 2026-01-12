@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Mail, Lock, Shield, Sparkles, X } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Shield, Sparkles, ArrowLeft } from "lucide-react";
+import pmsDashboardImage from "@/assets/pms-hero-dashboard.webp";
 
 const STORAGE_KEY = "pms-wizard-data";
 
@@ -12,17 +13,13 @@ const PmsLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
 
   const isValidEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidPassword = password && password.length >= 6;
   const canSubmit = isValidEmail && isValidPassword;
 
-  const handleClose = () => {
-    navigate("/planningmysaas");
-  };
-
   const saveLoginDataAndProceed = (loginEmail: string, fullName: string = "") => {
-    // Save login data to localStorage for the wizard to use
     const existingData = localStorage.getItem(STORAGE_KEY);
     let wizardData = {};
     
@@ -58,58 +55,81 @@ const PmsLogin = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Mock Google login
     saveLoginDataAndProceed("user@gmail.com", "Google User");
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Background */}
-      <div className="fixed inset-0 mesh-gradient opacity-30 pointer-events-none" />
-
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="container mx-auto px-4 py-4">
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Left side - Image with overlay */}
+      <div className="relative w-full lg:w-1/2 h-56 sm:h-72 lg:h-auto lg:min-h-screen">
+        <img
+          src={pmsDashboardImage}
+          alt="PlanningMySaaS Dashboard"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/85 to-accent/30" />
+        
+        {/* Content over image */}
+        <div className="relative z-10 flex flex-col justify-between h-full p-6 sm:p-8 lg:p-12">
+          {/* Logo and back button */}
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-background" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-background" />
               </div>
-              <span className="text-xl font-bold text-foreground hidden sm:block">
+              <span className="text-lg sm:text-xl font-bold text-foreground">
                 Planning<span className="text-accent">My</span>SaaS
               </span>
             </div>
-
-            {/* Close button */}
-            <button
-              onClick={handleClose}
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/planningmysaas")}
+              className="text-muted-foreground hover:text-foreground"
             >
-              <X className="w-5 h-5" />
-            </button>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
           </div>
+          
+          {/* Inspirational text - hidden on mobile, visible on desktop */}
+          <div className="hidden lg:block space-y-4 max-w-lg">
+            <h2 className="text-3xl xl:text-4xl font-bold text-foreground leading-tight">
+              Transform Your SaaS Idea Into Reality
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Get a complete validation report and launch roadmap powered by AI in just minutes. 
+              Stop guessing, start building with confidence.
+            </p>
+          </div>
+          
+          {/* Footer - hidden on mobile */}
+          <p className="hidden lg:block text-sm text-muted-foreground">
+            © 2025 Uaicode. All rights reserved.
+          </p>
         </div>
-      </header>
+      </div>
 
-      {/* Main content */}
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md space-y-8 animate-fade-in relative z-10">
-          {/* Header */}
+      {/* Right side - Form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12 bg-background">
+        <div className="w-full max-w-md space-y-8 animate-fade-in">
+          {/* CTA Header */}
           <div className="text-center space-y-3">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/60 mb-2">
-              <Lock className="w-8 h-8 text-background" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent/60 mb-2">
+              <Lock className="w-7 h-7 text-background" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Sign in to continue
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              {isLogin ? "Welcome Back" : "Start Your Journey"}
             </h1>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Access your personalized SaaS validation report and launch plan
+            <p className="text-muted-foreground max-w-sm mx-auto">
+              {isLogin
+                ? "Sign in to create your personalized SaaS validation report"
+                : "Create an account to validate your SaaS idea with AI"}
             </p>
           </div>
 
           {/* Login Form Card */}
-          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-8 space-y-6">
+          <div className="space-y-6">
             <form onSubmit={handleEmailLogin} className="space-y-4">
               {/* Email */}
               <div className="space-y-2">
@@ -124,7 +144,7 @@ const PmsLogin = () => {
                     placeholder="john@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 bg-background border-border/50 focus:border-accent"
+                    className="pl-10 h-12 bg-muted/30 border-border/50 focus:border-accent"
                     required
                   />
                 </div>
@@ -143,7 +163,7 @@ const PmsLogin = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 bg-background border-border/50 focus:border-accent"
+                    className="pl-10 pr-10 h-12 bg-muted/30 border-border/50 focus:border-accent"
                     required
                     minLength={6}
                   />
@@ -166,10 +186,10 @@ const PmsLogin = () => {
               <Button
                 type="submit"
                 disabled={!canSubmit}
-                className="w-full bg-accent hover:bg-accent/90 text-background font-semibold h-11"
+                className="w-full bg-accent hover:bg-accent/90 text-background font-semibold h-12"
               >
                 <Mail className="w-4 h-4 mr-2" />
-                Continue with Email
+                {isLogin ? "Sign In" : "Create Account"}
               </Button>
             </form>
 
@@ -179,7 +199,7 @@ const PmsLogin = () => {
                 <div className="w-full border-t border-border/50"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card/50 px-3 text-muted-foreground">or</span>
+                <span className="bg-background px-3 text-muted-foreground">or</span>
               </div>
             </div>
 
@@ -188,7 +208,7 @@ const PmsLogin = () => {
               type="button"
               variant="outline"
               onClick={handleGoogleLogin}
-              className="w-full h-11 border-border/50 hover:bg-muted/50"
+              className="w-full h-12 border-border/50 hover:bg-muted/50"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -213,26 +233,24 @@ const PmsLogin = () => {
 
             {/* Sign up link */}
             <p className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
               <button
                 type="button"
                 className="text-accent hover:underline font-medium"
-                onClick={() => {
-                  // For now, just proceed - full auth will be implemented later
-                }}
+                onClick={() => setIsLogin(!isLogin)}
               >
-                Sign up
+                {isLogin ? "Sign up" : "Sign in"}
               </button>
             </p>
           </div>
 
           {/* Trust Badge */}
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-4">
             <Shield className="w-4 h-4 text-accent" />
             <span>Your data is secure and encrypted</span>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
