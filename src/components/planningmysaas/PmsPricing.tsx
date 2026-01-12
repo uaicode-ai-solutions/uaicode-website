@@ -1,19 +1,44 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, ArrowRight, Rocket } from "lucide-react";
+import { Check, ArrowRight, Sparkles, Shield, ChartBar, Palette, Target, Zap } from "lucide-react";
 
-const features = [
-  "Complete Market Validation Report",
-  "In-depth Competitor Analysis",
-  "Target Audience Insights",
-  "Complete Brand Manual",
-  "AI-Generated Logo (3 options)",
-  "Color Palette & Typography",
-  "Product Mockups",
-  "Landing Page Blueprint",
-  "Go-to-Market Strategy",
-  "PDF Export",
-  "Priority Support",
+const featureCategories = [
+  {
+    icon: ChartBar,
+    title: "Validation",
+    features: [
+      "Market Validation Report",
+      "Competitor Analysis",
+      "Financial Projections",
+    ],
+  },
+  {
+    icon: Palette,
+    title: "Brand Assets",
+    features: [
+      "Complete Brand Manual",
+      "AI-Generated Logo",
+      "Product Mockups",
+    ],
+  },
+  {
+    icon: Target,
+    title: "Strategy",
+    features: [
+      "Marketing Intelligence",
+      "Go-to-Market Plan",
+      "Landing Page Blueprint",
+    ],
+  },
+  {
+    icon: Zap,
+    title: "Extras",
+    features: [
+      "Target Audience (ICP)",
+      "PDF Export",
+      "Priority Support",
+    ],
+  },
 ];
 
 const PmsPricing = () => {
@@ -43,56 +68,87 @@ const PmsPricing = () => {
         </div>
 
         {/* Single Pricing Card */}
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="relative group">
             {/* Animated Border */}
-            <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite]" />
+            <div className="absolute -inset-[2px] rounded-3xl bg-gradient-to-r from-accent via-yellow-400 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite]" />
+            
+            {/* Glow Effect */}
+            <div className="absolute -inset-4 rounded-3xl bg-accent/20 blur-2xl opacity-50 group-hover:opacity-70 transition-opacity duration-500" />
 
-            <div className="relative h-full flex flex-col glass-card p-8 rounded-2xl border border-transparent shadow-lg shadow-accent/20">
+            <div className="relative h-full flex flex-col bg-gradient-to-br from-background via-background to-accent/5 p-10 md:p-12 rounded-3xl border border-transparent shadow-2xl">
               
-              {/* Plan Icon */}
-              <div className="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center mx-auto mb-6">
-                <Rocket className="w-7 h-7 text-accent" />
+              {/* Badge */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-accent to-yellow-400 text-background font-bold text-sm shadow-lg shadow-accent/30">
+                  <Sparkles className="w-4 h-4" />
+                  ALL-INCLUSIVE
+                </div>
               </div>
 
-              {/* Plan Info */}
-              <div className="text-center mb-8">
-                <div className="flex items-baseline justify-center gap-2 mb-2">
-                  <span className="text-5xl font-bold text-gradient-gold">
+              {/* Price Section */}
+              <div className="text-center mb-10 pt-4">
+                <div className="flex items-baseline justify-center gap-3 mb-3">
+                  <span className="text-2xl text-muted-foreground line-through">$499</span>
+                  <span className="text-6xl md:text-7xl font-bold text-gradient-gold">
                     $199
                   </span>
-                  <span className="text-foreground/80">/one-time</span>
                 </div>
-                <p className="text-foreground">
-                  Everything you need to validate and launch your SaaS idea
+                <p className="text-lg text-muted-foreground">
+                  One-time payment • Lifetime access
                 </p>
               </div>
 
-              {/* Features List */}
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 flex-grow">
-                {features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check className="w-3 h-3 text-background" />
+              {/* Separator */}
+              <div className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent mb-10" />
+
+              {/* Features Grid by Category */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+                {featureCategories.map((category, catIndex) => (
+                  <div key={catIndex} className="space-y-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                        <category.icon className="w-4 h-4 text-accent" />
+                      </div>
+                      <span className="font-semibold text-foreground">{category.title}</span>
                     </div>
-                    <span className="text-foreground">
-                      {feature}
-                    </span>
-                  </li>
+                    <ul className="space-y-3">
+                      {category.features.map((feature, featIndex) => (
+                        <li key={featIndex} className="flex items-start gap-2">
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-accent to-yellow-400 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm shadow-accent/30">
+                            <Check className="w-3 h-3 text-background" />
+                          </div>
+                          <span className="text-sm text-foreground/90">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
+              </div>
 
               {/* Separator */}
-              <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-6" />
+              <div className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent mb-8" />
+
+              {/* Guarantee */}
+              <div className="flex items-center justify-center gap-2 mb-8 text-muted-foreground">
+                <Shield className="w-5 h-5 text-accent" />
+                <span className="text-sm">30-Day Money Back Guarantee</span>
+              </div>
 
               {/* CTA Button */}
               <Button
                 onClick={handleValidate}
-                className="w-full py-6 text-lg font-bold rounded-xl transition-all duration-300 group/btn bg-gradient-to-r from-[hsl(45,100%,55%)] to-[hsl(38,100%,50%)] hover:from-[hsl(45,100%,50%)] hover:to-[hsl(38,100%,45%)] text-white glow-white"
+                size="lg"
+                className="w-full py-7 text-lg font-bold rounded-2xl transition-all duration-300 group/btn bg-gradient-to-r from-accent via-yellow-400 to-accent hover:from-yellow-400 hover:via-accent hover:to-yellow-400 text-background shadow-xl shadow-accent/30 hover:shadow-accent/50 hover:scale-[1.02]"
               >
-                Validate My Idea
+                Validate My Idea Now
                 <ArrowRight className="ml-2 w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
               </Button>
+
+              {/* Helper Text */}
+              <p className="text-center text-sm text-muted-foreground mt-4">
+                Takes only 5 minutes to start • No credit card required
+              </p>
             </div>
           </div>
         </div>
