@@ -97,8 +97,10 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         "Dedicated account manager"
       ],
       marketingNote: {
-        monthly: marketingMonthly,
-        note: "Starts after MVP launch"
+        contract: 3000,
+        recommendedAds: 5000,
+        total: 8000,
+        note: "Annual contract • Starts after MVP launch"
       },
       recommended: true
     }
@@ -225,14 +227,31 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
               {/* Marketing Note */}
               {option.marketingNote && (
-                <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 mb-4">
-                  <div className="flex items-center gap-2 mb-1">
+                <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 mb-4 space-y-2">
+                  {/* Total */}
+                  <div className="flex items-center gap-2">
                     <Zap className="h-4 w-4 text-accent" />
                     <span className="text-sm font-medium text-foreground">
-                      + {formatCurrency(option.marketingNote.monthly)}/month
+                      + {formatCurrency(option.marketingNote.total)}/month
                     </span>
                   </div>
-                  <p className="text-xs text-accent/80">{option.marketingNote.note}</p>
+                  
+                  {/* Breakdown */}
+                  <div className="pl-6 space-y-1 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-foreground/70">Marketing contract (annual)</span>
+                      <span className="text-foreground font-medium">{formatCurrency(option.marketingNote.contract)}/mo</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-foreground/70">Recommended ad spend</span>
+                      <span className="text-accent font-medium">{formatCurrency(option.marketingNote.recommendedAds)}/mo*</span>
+                    </div>
+                  </div>
+                  
+                  {/* Note */}
+                  <p className="text-xs text-accent/80 pl-6">
+                    *Suggested investment • {option.marketingNote.note}
+                  </p>
                 </div>
               )}
 
@@ -258,11 +277,17 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       </div>
 
       {/* Marketing Billing Notice */}
-      <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-muted/30 border border-border/50">
-        <AlertCircle className="h-4 w-4 text-accent flex-shrink-0" />
-        <p className="text-sm text-foreground">
-          <span className="font-medium">Important:</span> Marketing costs ({formatCurrency(marketingMonthly)}/month) 
-          are <span className="text-accent font-semibold">only charged after your MVP is launched</span>
+      <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/30 border border-border/50">
+        <div className="flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-accent flex-shrink-0" />
+          <p className="text-sm text-foreground">
+            <span className="font-medium">Important:</span> Marketing costs are 
+            <span className="text-accent font-semibold"> only charged after your MVP is launched</span>
+          </p>
+        </div>
+        <p className="text-xs text-foreground/60 text-center">
+          The {formatCurrency(3000)}/month contract is an annual commitment. 
+          The {formatCurrency(5000)}/month ad spend is a recommendation and can be adjusted based on your budget.
         </p>
       </div>
 
