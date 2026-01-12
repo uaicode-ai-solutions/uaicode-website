@@ -168,10 +168,10 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
           return (
             <Card 
               key={index} 
-              className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5 relative overflow-hidden group"
+              className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5 relative group"
             >
               {/* Gradient corner decoration */}
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
               
               <CardContent className="p-5 relative">
                 {/* Icon and Tooltip */}
