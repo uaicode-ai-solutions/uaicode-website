@@ -1,4 +1,3 @@
-import PmsHeader from "@/components/planningmysaas/PmsHeader";
 import PmsHero from "@/components/planningmysaas/PmsHero";
 import PmsTrustedBy from "@/components/planningmysaas/PmsTrustedBy";
 import PmsPainPoints from "@/components/planningmysaas/PmsPainPoints";
@@ -13,7 +12,6 @@ import PmsFooter from "@/components/planningmysaas/PmsFooter";
 const PlanningMySaas = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <PmsHeader />
       <main>
         <PmsHero />
         <PmsTrustedBy />
