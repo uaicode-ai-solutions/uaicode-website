@@ -1,4 +1,3 @@
-import MarketingHero from "./MarketingHero";
 import MarketingVerdict from "./MarketingVerdict";
 import ICPCard from "../marketing/ICPCard";
 import FourPsCards from "../marketing/FourPsCards";
@@ -16,15 +15,14 @@ interface MarketingAnalysisTabProps {
 
 const MarketingAnalysisTab = ({ projectName, onScheduleCall, onDownloadPDF }: MarketingAnalysisTabProps) => {
   return (
-    <div className="space-y-16">
-      {/* Hero Section */}
-      <MarketingHero 
-        projectName={projectName}
-        onScheduleCall={onScheduleCall}
-        onExploreAnalysis={() => {
-          document.getElementById('marketing-verdict')?.scrollIntoView({ behavior: 'smooth' });
-        }}
-      />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Marketing Intelligence</h2>
+          <p className="text-sm text-muted-foreground">Competitive analysis and go-to-market strategy</p>
+        </div>
+      </div>
 
       {/* Executive Summary */}
       <MarketingVerdict />
