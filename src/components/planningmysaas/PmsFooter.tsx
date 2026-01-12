@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Sparkles, Youtube, Facebook, Instagram, Linkedin, Twitter, Loader2 } from "lucide-react";
+import { Youtube, Facebook, Instagram, Linkedin, Twitter, Loader2 } from "lucide-react";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -152,9 +152,11 @@ const PmsFooter = () => {
           <div className="text-center mb-12">
             {/* Brand */}
             <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-orange-500 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-background" />
-              </div>
+            <img 
+              src={uaicodeLogo} 
+              alt="Uaicode" 
+              className="w-10 h-10 object-contain" 
+            />
               <span className="text-xl font-bold text-foreground">
                 Planning<span className="text-gradient-gold">My</span>SaaS
               </span>
