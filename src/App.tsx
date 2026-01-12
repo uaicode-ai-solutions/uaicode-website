@@ -10,6 +10,7 @@ import BlogPost from "./pages/BlogPost";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import PlanningMySaas from "./pages/PlanningMySaas";
+import PmsLogin from "./pages/PmsLogin";
 import PmsWizard from "./pages/PmsWizard";
 import PmsReports from "./pages/PmsReports";
 import PmsDashboard from "./pages/PmsDashboard";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/planningmysaas" element={<PlanningMySaas />} />
+          <Route path="/planningmysaas/login" element={<PmsLogin />} />
           <Route path="/planningmysaas/wizard" element={<PmsWizard />} />
           <Route path="/planningmysaas/reports" element={<PmsReports />} />
           <Route path="/planningmysaas/dashboard/:id" element={<PmsDashboard />} />
