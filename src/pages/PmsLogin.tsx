@@ -74,12 +74,15 @@ const PmsLogin = () => {
         <div className="relative z-10 flex flex-col justify-between h-full p-6 sm:p-8 lg:p-12">
           {/* Logo and back button */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            <div className="flex items-center gap-2 sm:gap-3">
               <img 
                 src={uaicodeLogo} 
                 alt="Uaicode" 
-                className="h-10 sm:h-12 w-auto"
+                className="h-8 sm:h-10 w-auto"
               />
+              <span className="text-lg sm:text-xl font-bold text-foreground">
+                Planning<span className="text-accent">My</span>SaaS
+              </span>
             </div>
             <Button
               variant="ghost"
