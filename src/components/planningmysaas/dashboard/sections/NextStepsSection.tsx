@@ -16,7 +16,8 @@ import {
   AlertCircle,
   Star,
   Zap,
-  CreditCard
+  CreditCard,
+  HandCoins
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -406,7 +407,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       : 'bg-muted/50 hover:bg-muted text-foreground border border-border/50'
                   }`}
                 >
-                  <Zap className="h-4 w-4" />
+                  <HandCoins className="h-4 w-4 text-yellow-400" />
                   Claim Your Discount Now
                 </Button>
                 
