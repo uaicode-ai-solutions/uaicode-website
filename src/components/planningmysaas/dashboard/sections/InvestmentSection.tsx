@@ -321,6 +321,64 @@ const InvestmentSection = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Total First Year Investment - Subtitle */}
+      <div className="flex items-center gap-2 mt-8">
+        <h3 className="font-semibold text-foreground text-sm">Total First Year Investment</h3>
+        <InfoTooltip side="right" size="sm">
+          Complete first year investment including MVP development and marketing.
+        </InfoTooltip>
+      </div>
+
+      <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
+        <CardContent className="p-6">
+          {/* Total Amount */}
+          <div className="text-center mb-6">
+            <p className="text-sm text-muted-foreground mb-2">Complete First Year Investment</p>
+            <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+              {formatCurrency(investment.total + marketingInvestment.uaicode.yearlyTotal)}
+            </div>
+          </div>
+
+          {/* Breakdown Grid */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="text-center p-4 rounded-lg bg-background/50">
+              <div className="text-xl md:text-2xl font-bold text-foreground">
+                {formatCurrency(investment.total)}
+              </div>
+              <div className="text-xs text-muted-foreground">MVP Development</div>
+              <div className="text-[10px] text-muted-foreground/70">(one-time)</div>
+            </div>
+            <div className="text-center p-4 rounded-lg bg-background/50">
+              <div className="text-xl md:text-2xl font-bold text-foreground">
+                {formatCurrency(marketingInvestment.uaicode.yearlyTotal)}
+              </div>
+              <div className="text-xs text-muted-foreground">Marketing (12 mo)</div>
+              <div className="text-[10px] text-muted-foreground/70">($18K × 12)</div>
+            </div>
+            <div className="text-center p-4 rounded-lg bg-accent/10">
+              <div className="text-xl md:text-2xl font-bold text-accent">
+                {formatCurrency(investment.total + marketingInvestment.uaicode.yearlyTotal)}
+              </div>
+              <div className="text-xs text-muted-foreground">Total</div>
+              <div className="text-[10px] text-muted-foreground/70">(1st year)</div>
+            </div>
+          </div>
+
+          {/* After Year 1 Callout */}
+          <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+            <div className="flex items-center justify-center gap-2">
+              <Sparkles className="h-4 w-4 text-green-500" />
+              <span className="text-sm font-medium text-green-500">
+                After Year 1: Only {formatCurrency(marketingInvestment.uaicode.yearlyTotal)}/year
+              </span>
+            </div>
+            <p className="text-xs text-center text-muted-foreground mt-1">
+              No more MVP costs - your product is already built!
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </section>
   );
 };
