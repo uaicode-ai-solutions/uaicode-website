@@ -6,12 +6,12 @@ import {
   FileText, 
   Palette,
   ChevronLeft,
-  TrendingUp,
-  Calendar
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { reportData } from "@/lib/reportMockData";
+import { BackToTopButton } from "@/components/blog/BackToTopButton";
 
 // Section Components
 import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHero";
@@ -208,16 +208,8 @@ const PmsDashboard = () => {
         </div>
       </main>
 
-      {/* Floating CTA */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <Button 
-          onClick={handleScheduleCall}
-          className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg gap-2 h-10 px-4"
-        >
-          <Calendar className="h-4 w-4" />
-          <span className="hidden sm:inline text-sm">Schedule a Call</span>
-        </Button>
-      </div>
+      {/* Back to Top Button */}
+      <BackToTopButton />
     </div>
   );
 };
