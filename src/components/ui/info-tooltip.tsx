@@ -48,7 +48,7 @@ const InfoTooltip = ({
         </TooltipTrigger>
         <TooltipContent 
           side={side}
-          className="max-w-xs bg-card border-border/50 shadow-lg z-50"
+          className="max-w-xs bg-card border-border/50 shadow-lg"
         >
           {term && (
             <p className="font-medium text-accent text-sm mb-1">{term}</p>
