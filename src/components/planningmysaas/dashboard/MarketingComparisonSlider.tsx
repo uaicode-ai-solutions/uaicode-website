@@ -18,11 +18,11 @@ interface ComparisonData {
 }
 
 const comparisonData: ComparisonData = {
-  uaicode: 8000,
+  uaicode: 10000,
   traditional: 17375, // Average of $13,750 - $21,000
-  savings: "54%",
-  savingsAmountMin: 69000,
-  savingsAmountMax: 156000,
+  savings: "42%",
+  savingsAmountMin: 88500,
+  savingsAmountMax: 132000,
   savingsContext: "Reinvest in paid media for faster growth!",
   features: [
     {
@@ -151,7 +151,7 @@ const MarketingComparisonSlider = () => {
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent/60 to-accent/40 rounded-lg transition-all duration-1000 ease-out delay-300 flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? `${uaicodeWidth}%` : '0%' }}
             >
-              <span className="text-xs font-medium text-accent-foreground">$8K</span>
+              <span className="text-xs font-medium text-accent-foreground">$10K</span>
             </div>
           </div>
         </div>

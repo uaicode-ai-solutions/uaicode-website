@@ -73,7 +73,7 @@ const WhyUaicodeMarketing = () => {
               {/* Pricing */}
               <div className="p-4 rounded-xl bg-accent/10 border border-accent/30">
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl font-bold text-accent">$3,000</span>
+                  <span className="text-2xl font-bold text-accent">$5,000</span>
                   <span className="text-sm text-muted-foreground">/month</span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">Full-service marketing execution</p>

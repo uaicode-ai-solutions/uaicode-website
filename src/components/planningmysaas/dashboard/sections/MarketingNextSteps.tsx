@@ -121,7 +121,7 @@ const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStep
 
       {/* Disclaimer */}
       <p className="text-[9px] text-muted-foreground text-center">
-        * Analysis based on competitive research. $3,000/mo service fee excludes ad spend budget.
+        * Analysis based on competitive research. $5,000/mo service fee excludes ad spend budget.
       </p>
     </section>
   );
