@@ -335,6 +335,18 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       {seconds.toString().padStart(2, '0')}
                     </span>
                   </div>
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPackage(option.id);
+                      onScheduleCall?.();
+                    }}
+                    size="sm"
+                    className="w-full mt-2 gap-2 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-black font-semibold"
+                  >
+                    <HandCoins className="h-4 w-4 text-black" />
+                    Get Now
+                  </Button>
                 </div>
               </div>
 
@@ -395,17 +407,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-2 mt-auto pt-4">
-                <Button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedPackage(option.id);
-                    onScheduleCall?.();
-                  }}
-                  className="w-full gap-2 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-black border border-yellow-500/40 shadow-lg shadow-yellow-500/20"
-                >
-                  <HandCoins className="h-4 w-4 text-black" />
-                  Claim Your Discount Now
-                </Button>
                 
                 <Button 
                   variant="outline"
