@@ -23,8 +23,43 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { reportData } from "@/lib/reportMockData";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
+
+// Countdown Timer Hook
+const useCountdownTimer = () => {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('pms_offer_expiry_24h');
+    if (saved) {
+      const remaining = parseInt(saved) - Date.now();
+      return remaining > 0 ? remaining : 24 * 60 * 60 * 1000;
+    }
+    const expiry = Date.now() + 24 * 60 * 60 * 1000;
+    localStorage.setItem('pms_offer_expiry_24h', expiry.toString());
+    return 24 * 60 * 60 * 1000;
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        const newTime = prev - 1000;
+        if (newTime <= 0) {
+          const newExpiry = Date.now() + 24 * 60 * 60 * 1000;
+          localStorage.setItem('pms_offer_expiry_24h', newExpiry.toString());
+          return 24 * 60 * 60 * 1000;
+        }
+        return newTime;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+  return { hours, minutes, seconds };
+};
 const iconMap: Record<string, React.ElementType> = {
   Calendar,
   FileText,
@@ -51,6 +86,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   const [selectedPackage, setSelectedPackage] = useState<'mvp-only' | 'mvp-marketing'>('mvp-marketing');
   const [kyleDialogOpen, setKyleDialogOpen] = useState(false);
   const [selectedConsultPackage, setSelectedConsultPackage] = useState<string>('');
+  const { hours, minutes, seconds } = useCountdownTimer();
 
   // Calculate total weeks from timeline
   const totalWeeks = timeline.reduce((acc, phase) => {
@@ -278,6 +314,27 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                     Save {formatCurrency(option.discount.savings)}
                   </Badge>
                 )}
+                
+                {/* Urgency Timer */}
+                <div className="mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                  <div className="flex items-center justify-center gap-2 text-red-400">
+                    <Clock className="h-3 w-3" />
+                    <span className="text-xs font-medium">Offer expires in:</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <span className="bg-red-500/20 px-2 py-1 rounded text-sm font-bold text-red-400">
+                      {hours.toString().padStart(2, '0')}
+                    </span>
+                    <span className="text-red-400 font-bold">:</span>
+                    <span className="bg-red-500/20 px-2 py-1 rounded text-sm font-bold text-red-400">
+                      {minutes.toString().padStart(2, '0')}
+                    </span>
+                    <span className="text-red-400 font-bold">:</span>
+                    <span className="bg-red-500/20 px-2 py-1 rounded text-sm font-bold text-red-400">
+                      {seconds.toString().padStart(2, '0')}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Payment Terms */}
@@ -358,8 +415,8 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       : 'bg-muted/50 hover:bg-muted text-foreground border border-border/50'
                   }`}
                 >
-                  <Calendar className="h-4 w-4" />
-                  Schedule a Call
+                  <Zap className="h-4 w-4" />
+                  Claim Your Discount Now
                 </Button>
                 
                 <Button 
