@@ -24,6 +24,7 @@ import FinancialReturnSection from "@/components/planningmysaas/dashboard/sectio
 import ExecutionPlanSection from "@/components/planningmysaas/dashboard/sections/ExecutionPlanSection";
 import WhyUaicodeSection from "@/components/planningmysaas/dashboard/sections/WhyUaicodeSection";
 import NextStepsSection from "@/components/planningmysaas/dashboard/sections/NextStepsSection";
+import ScheduleCallSection from "@/components/planningmysaas/dashboard/sections/ScheduleCallSection";
 import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/BrandAssetsTab";
 import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
 
@@ -63,7 +64,10 @@ const PmsDashboard = () => {
   };
 
   const handleScheduleCall = () => {
-    window.open(reportData.nextSteps.contact.calendly, '_blank');
+    const scheduleSection = document.getElementById('schedule-call');
+    if (scheduleSection) {
+      scheduleSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (
@@ -175,6 +179,9 @@ const PmsDashboard = () => {
                 onScheduleCall={handleScheduleCall}
                 onDownloadPDF={handleDownloadPDF}
               />
+
+              {/* Schedule Call Section */}
+              <ScheduleCallSection projectName={projectName} />
 
               {/* Footer spacing */}
               <div className="h-16" />
