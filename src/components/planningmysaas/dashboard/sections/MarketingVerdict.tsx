@@ -57,8 +57,8 @@ const MarketingVerdict = () => {
           <TrendingUp className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Executive Summary</h2>
-          <p className="text-sm text-muted-foreground">Competitive landscape analysis & recommendations</p>
+        <h2 className="text-2xl font-bold text-foreground">Marketing Intelligence</h2>
+        <p className="text-sm text-muted-foreground">Competitive analysis and go-to-market strategy</p>
         </div>
       </div>
 
