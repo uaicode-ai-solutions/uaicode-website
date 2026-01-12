@@ -276,8 +276,7 @@ const InvestmentSection = () => {
 
             {/* Included Benefits */}
             <div className="mb-4">
-              <h5 className="font-medium text-foreground text-xs mb-2 flex items-center gap-2">
-                <Check className="h-3 w-3 text-green-400" />
+              <h5 className="font-medium text-foreground text-xs mb-2">
                 What's Included
               </h5>
               <ul className="space-y-1.5">
