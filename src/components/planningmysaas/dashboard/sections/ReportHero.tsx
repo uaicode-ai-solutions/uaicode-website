@@ -16,8 +16,8 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   const displayName = projectName || data.projectName;
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-400";
-    if (score >= 60) return "text-yellow-400";
+    if (score >= 80) return "text-amber-400";
+    if (score >= 60) return "text-amber-500";
     return "text-red-400";
   };
 
@@ -72,37 +72,46 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
             {/* Score Ring */}
-            <div className="relative w-32 h-32 md:w-36 md:h-36 mx-auto">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+            <div className="relative w-32 h-32 md:w-36 md:h-36 mx-auto drop-shadow-[0_0_20px_rgba(251,191,36,0.25)]">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                 <circle
                   cx="50"
                   cy="50"
                   r="42"
                   stroke="currentColor"
-                  strokeWidth="6"
+                  strokeWidth="7"
                   fill="transparent"
-                  className="text-muted/30"
+                  className="text-muted/20"
                 />
                 <circle
                   cx="50"
                   cy="50"
                   r="42"
                   stroke="url(#scoreGradient)"
-                  strokeWidth="6"
+                  strokeWidth="7"
                   fill="transparent"
                   strokeLinecap="round"
                   strokeDasharray={`${(data.viabilityScore / 100) * 2 * Math.PI * 42} ${2 * Math.PI * 42}`}
                   className="transition-all duration-1000"
+                  filter="url(#glow)"
                 />
                 <defs>
-                  <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="hsl(var(--accent))" />
-                    <stop offset="100%" stopColor="hsl(45, 100%, 45%)" />
+                  <linearGradient id="scoreGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#F59E0B" />
+                    <stop offset="50%" stopColor="#FBBF24" />
+                    <stop offset="100%" stopColor="#FCD34D" />
                   </linearGradient>
+                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
                 </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`text-4xl md:text-5xl font-bold ${getScoreColor(data.viabilityScore)}`}>
+                <span className="text-4xl md:text-5xl font-bold bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent">
                   {data.viabilityScore}
                 </span>
                 <span className="text-xs text-muted-foreground">Viability</span>
