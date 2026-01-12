@@ -119,7 +119,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         "Complete MVP development",
         `10% discount (save ${formatCurrency(mvpDevSavings)})`,
         "12 months hosting included",
-        "30 days post-launch support",
+        "30 days post-launch premium support",
         "Full documentation & training",
         "Source code ownership",
         "Priority bug fixes"
