@@ -244,46 +244,52 @@ The estimated $55,000 MVP investment has the potential to break even in 8 months
   },
 
   // Execution Plan
+  recommendedPlan: "growth" as const,
   timeline: [
     { 
       phase: 1,
       name: "Discovery", 
       duration: "2-3 weeks",
-      description: "Requirements refinement and architecture",
-      deliverables: ["Complete PRD", "Wireframes", "Technical architecture", "Detailed timeline"],
+      description: "Research, planning and architecture",
+      deliverables: ["Complete PRD", "Wireframes", "Architecture design", "Project timeline"],
       icon: "Search"
     },
     { 
       phase: 2,
       name: "MVP Build", 
-      duration: "10-14 weeks",
-      description: "Core feature development",
-      deliverables: ["Auth & users", "Product management", "Cart & orders", "Integrations"],
+      duration: "6-8 weeks",
+      planDurations: {
+        starter: "4-6 weeks",
+        growth: "6-8 weeks",
+        enterprise: "8-12 weeks"
+      },
+      description: "AI-accelerated development",
+      deliverables: ["Authentication & users", "Core features", "Database & API", "Integrations", "Admin panel"],
       icon: "Code"
     },
     { 
       phase: 3,
       name: "Beta", 
       duration: "4-6 weeks",
-      description: "Real user testing and iterations",
-      deliverables: ["Beta user onboarding", "Feedback collection", "Fixes & improvements", "Documentation"],
+      description: "Testing and iteration",
+      deliverables: ["Beta users onboarding", "Feedback collection", "Bug fixes", "Performance optimization"],
       icon: "Users"
     },
     { 
       phase: 4,
       name: "Launch", 
       duration: "2 weeks",
-      description: "Public launch and go-to-market",
-      deliverables: ["Production deploy", "Active marketing", "Customer support", "Monitoring"],
+      description: "Go-to-market execution",
+      deliverables: ["Production deploy", "Marketing assets", "Support setup", "Monitoring & analytics"],
       icon: "Rocket"
     },
   ],
   
   techStack: [
-    { category: "Frontend", techs: ["React 18", "TypeScript", "TailwindCSS"] },
-    { category: "Backend", techs: ["Node.js", "PostgreSQL", "Supabase"] },
-    { category: "Infra", techs: ["Vercel", "AWS", "Docker"] },
-    { category: "Integrations", techs: ["Stripe", "Delivery API", "SendGrid"] },
+    { category: "Frontend", items: ["React 18", "TypeScript", "TailwindCSS"] },
+    { category: "Backend", items: ["Node.js", "PostgreSQL", "Supabase"] },
+    { category: "Infra", items: ["Vercel", "AWS", "Docker"] },
+    { category: "Integrations", items: ["Stripe", "Delivery API", "SendGrid"] },
   ],
 
   // Why Uaicode
