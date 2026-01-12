@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Mail, Sparkles, Send } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -134,7 +134,10 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
           <DialogTitle className="text-2xl font-bold text-center">
             Send Us a <span className="text-gradient-gold">Message</span>
           </DialogTitle>
-          <p className="text-muted-foreground text-sm mt-2 text-center">
+          <DialogDescription className="sr-only">
+            Fill out the form below to send us a message. We'll respond within 24 hours.
+          </DialogDescription>
+          <p className="text-muted-foreground text-sm mt-2 text-center" aria-hidden="true">
             We'll respond within 24 hours
           </p>
         </DialogHeader>
