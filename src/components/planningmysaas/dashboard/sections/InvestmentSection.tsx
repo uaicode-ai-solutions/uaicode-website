@@ -350,9 +350,14 @@ const InvestmentSection = () => {
                 <p className="text-[9px] text-muted-foreground/70">(one-time)</p>
               </div>
               <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[70px]">
-                <p className="text-[10px] text-muted-foreground">Marketing</p>
-                <p className="text-sm font-bold text-foreground">{formatCurrency(marketingInvestment.uaicode.yearlyTotal)}</p>
-                <p className="text-[9px] text-muted-foreground/70">($8K × 12)</p>
+                <p className="text-[10px] text-muted-foreground">Marketing Sub.</p>
+                <p className="text-sm font-bold text-foreground">{formatCurrency(marketingInvestment.uaicode.subscription * 12)}</p>
+                <p className="text-[9px] text-muted-foreground/70">($3K × 12)</p>
+              </div>
+              <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[70px]">
+                <p className="text-[10px] text-muted-foreground">Paid Media*</p>
+                <p className="text-sm font-bold text-foreground">{formatCurrency(marketingInvestment.uaicode.suggestedPaidMedia * 12)}</p>
+                <p className="text-[9px] text-muted-foreground/70">($5K × 12)</p>
               </div>
               <div className="px-3 py-2 bg-accent/20 rounded-lg border border-accent/30 text-center min-w-[70px]">
                 <p className="text-[10px] text-accent/80">Total</p>
