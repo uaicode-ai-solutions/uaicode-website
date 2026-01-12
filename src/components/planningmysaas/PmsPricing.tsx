@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, ArrowRight, Sparkles, Shield, ChartBar, Palette, Target, Zap } from "lucide-react";
+import { Check, ArrowRight, Sparkles, ChartBar, Palette, Target, Zap } from "lucide-react";
 
 const featureCategories = [
   {
@@ -126,14 +126,6 @@ const PmsPricing = () => {
                 ))}
               </div>
 
-              {/* Separator */}
-              <div className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent mb-8" />
-
-              {/* Guarantee */}
-              <div className="flex items-center justify-center gap-2 mb-8 text-muted-foreground">
-                <Shield className="w-5 h-5 text-accent" />
-                <span className="text-sm">30-Day Money Back Guarantee</span>
-              </div>
 
               {/* CTA Button */}
               <Button
