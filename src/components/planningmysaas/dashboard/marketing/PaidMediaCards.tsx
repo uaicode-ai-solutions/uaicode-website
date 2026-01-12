@@ -95,27 +95,25 @@ const PaidMediaCards = () => {
           <CardContent className="p-4">
             <h3 className="text-sm font-semibold text-foreground mb-4">Your Budget Allocation</h3>
             
-            {/* Container Premium - Fundo escuro sólido com anel dourado */}
+            {/* Container Premium - Fundo escuro com gradiente */}
             <div className="relative flex items-center justify-center py-2">
-              {/* Fundo escuro circular */}
-              <div className="relative w-48 h-48 rounded-full bg-[#1a1a1a] flex items-center justify-center">
+              {/* Fundo escuro circular com gradiente e glow sutil */}
+              <div className="relative w-56 h-56 rounded-full bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] flex items-center justify-center shadow-[0_0_40px_rgba(249,115,22,0.08)] hover:shadow-[0_0_50px_rgba(249,115,22,0.12)] transition-all duration-500">
                 
-                {/* Anel dourado externo */}
-                <div className="absolute inset-1 rounded-full border-2 border-accent/50" />
-                
-                {/* PieChart Container */}
-                <div className="w-40 h-40">
+                {/* PieChart Container - Maior */}
+                <div className="w-52 h-52">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie 
                         data={budgetData} 
                         cx="50%" 
                         cy="50%" 
-                        innerRadius={35} 
-                        outerRadius={60} 
+                        innerRadius={50} 
+                        outerRadius={85} 
                         paddingAngle={2} 
                         dataKey="value"
-                        stroke="none"
+                        stroke="rgba(0,0,0,0.3)"
+                        strokeWidth={1}
                       >
                         {budgetData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
@@ -132,13 +130,6 @@ const PaidMediaCards = () => {
                       />
                     </PieChart>
                   </ResponsiveContainer>
-                </div>
-                
-                {/* Valor Central - Total Budget */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[9px] text-muted-foreground uppercase tracking-widest">Total</span>
-                  <span className="text-xl font-bold text-accent">{paidMediaActionPlan.totalBudget.replace('/mo', '')}</span>
-                  <span className="text-[9px] text-muted-foreground">/month</span>
                 </div>
               </div>
             </div>
