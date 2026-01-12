@@ -8,7 +8,6 @@ import PmsFeatures from "@/components/planningmysaas/PmsFeatures";
 import PmsTestimonials from "@/components/planningmysaas/PmsTestimonials";
 import PmsPricing from "@/components/planningmysaas/PmsPricing";
 import PmsFaq from "@/components/planningmysaas/PmsFaq";
-import PmsCta from "@/components/planningmysaas/PmsCta";
 import PmsFooter from "@/components/planningmysaas/PmsFooter";
 
 const PlanningMySaas = () => {
@@ -25,7 +24,6 @@ const PlanningMySaas = () => {
         <PmsTestimonials />
         <PmsPricing />
         <PmsFaq />
-        <PmsCta />
       </main>
       <PmsFooter />
     </div>
