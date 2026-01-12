@@ -1,8 +1,9 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { X, Sparkles, ArrowLeft, ArrowRight, UserCircle, Rocket, Globe2, Puzzle, Flag } from "lucide-react";
+import { X, ArrowLeft, ArrowRight, UserCircle, Rocket, Globe2, Puzzle, Flag } from "lucide-react";
 import WizardProgress from "./WizardProgress";
+import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 interface WizardLayoutProps {
   children: ReactNode;
@@ -51,9 +52,11 @@ const WizardLayout = ({
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-background" />
-              </div>
+              <img 
+                src={uaicodeLogo} 
+                alt="Uaicode" 
+                className="w-10 h-10 rounded-lg object-contain"
+              />
               <span className="text-xl font-bold text-foreground hidden sm:block">
                 Planning<span className="text-accent">My</span>SaaS
               </span>
