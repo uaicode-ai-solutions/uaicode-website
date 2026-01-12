@@ -173,6 +173,55 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         </CardContent>
       </Card>
 
+      {/* What happens when you hire us - Premium Cards */}
+      <div className="space-y-6">
+        <h3 className="font-semibold text-foreground text-center text-xl">
+          What happens when you hire us
+        </h3>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {nextSteps.steps.map((step, index) => {
+            const IconComponent = iconMap[step.icon] || Calendar;
+            return (
+              <Card 
+                key={index}
+                className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 hover:shadow-accent/10"
+              >
+                {/* Decorative glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                {/* Corner decoration */}
+                <div className="absolute top-0 right-0 w-12 h-12 bg-accent/10 rounded-bl-[30px] -mr-3 -mt-3" />
+                
+                <CardContent className="relative p-5 text-center">
+                  {/* Step Number Badge */}
+                  <div className="absolute top-3 left-3">
+                    <div className="w-6 h-6 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
+                      <span className="text-xs font-bold text-accent">{step.step}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Icon */}
+                  <div className="mx-auto mb-3 w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                    <IconComponent className="h-6 w-6 text-accent" />
+                  </div>
+                  
+                  {/* Title */}
+                  <h4 className="font-semibold text-foreground text-sm mb-2">
+                    {step.title}
+                  </h4>
+                  
+                  {/* Description */}
+                  <p className="text-xs text-muted-foreground">
+                    {step.description}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Pricing Options */}
       <div className="grid md:grid-cols-2 gap-4">
         {pricingOptions.map((option) => (
@@ -317,34 +366,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
           <span className="text-accent font-semibold">Start this week</span> and launch in approximately {totalWeeks} weeks
         </p>
       </div>
-
-      {/* What happens when you hire us */}
-      <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-6">
-          <h3 className="font-semibold text-foreground mb-4 text-sm text-center">What happens when you hire us:</h3>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {nextSteps.steps.map((step, index) => {
-              const IconComponent = iconMap[step.icon] || Calendar;
-              return (
-                <div 
-                  key={index}
-                  className="flex items-start gap-2 p-3 rounded-lg bg-muted/10 border border-border/30 hover:border-accent/30 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-bold text-accent">{step.step}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-foreground text-xs">{step.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">{step.description}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
