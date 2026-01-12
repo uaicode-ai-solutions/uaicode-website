@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 const WhyUaicodeMarketing = () => {
   const stats = [
@@ -36,25 +37,33 @@ const WhyUaicodeMarketing = () => {
   const guarantees = ["Transparent reporting", "No lock-in contracts", "Dedicated manager", "Weekly calls"];
 
   return (
-    <section id="why-uaicode-marketing" className="space-y-4">
-      {/* Section Header - Compact */}
-      <div className="flex items-center gap-2">
-        <div className="p-1.5 rounded-lg bg-accent/10">
-          <Award className="h-4 w-4 text-accent" />
+    <section id="why-uaicode-marketing" className="space-y-6 animate-fade-in">
+      {/* Section Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-accent/10">
+          <Award className="h-5 w-5 text-accent" />
         </div>
-        <h2 className="text-xl font-bold text-foreground">Why Uaicode for Marketing</h2>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">Why Uaicode for Marketing</h2>
+            <InfoTooltip size="sm">
+              Our marketing services track record and differentials.
+            </InfoTooltip>
+          </div>
+          <p className="text-sm text-muted-foreground">Full-service marketing execution for SaaS</p>
+        </div>
       </div>
 
-      {/* Hero Card: Stats + Pricing Combined */}
-      <Card className="glass-premium border-accent/30 overflow-hidden">
-        <CardContent className="p-5">
+      {/* Main Card */}
+      <Card className="bg-card/50 border-border/30">
+        <CardContent className="p-6">
           <div className="grid lg:grid-cols-2 gap-6 items-center">
             {/* Left: Stats + Pricing */}
             <div>
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-4 mb-4">
                 {stats.map((stat, i) => (
-                  <div key={i} className="text-center">
+                  <div key={i} className="text-center p-3 rounded-lg bg-muted/10 border border-border/20">
                     <div className="text-xl font-bold text-accent">{stat.value}</div>
                     <p className="text-[10px] text-muted-foreground">{stat.label}</p>
                   </div>
@@ -83,7 +92,7 @@ const WhyUaicodeMarketing = () => {
               {/* Guarantees */}
               <div className="flex flex-wrap gap-2 mt-3">
                 {guarantees.map((g, i) => (
-                  <Badge key={i} variant="outline" className="text-[10px] border-accent/20 text-muted-foreground">
+                  <Badge key={i} variant="outline" className="text-[10px] border-border/30 text-muted-foreground">
                     <CheckCircle2 className="h-2.5 w-2.5 mr-1 text-accent" />
                     {g}
                   </Badge>
@@ -96,7 +105,7 @@ const WhyUaicodeMarketing = () => {
               {/* Differentials Grid */}
               <div className="grid grid-cols-2 gap-2">
                 {differentials.map((diff, i) => (
-                  <div key={i} className="flex items-center gap-2 p-2.5 rounded-lg bg-accent/5 border border-accent/10">
+                  <div key={i} className="flex items-center gap-2 p-3 rounded-lg bg-muted/10 border border-border/20">
                     <diff.icon className="h-4 w-4 text-accent flex-shrink-0" />
                     <span className="text-xs text-foreground">{diff.title}</span>
                   </div>
@@ -110,7 +119,7 @@ const WhyUaicodeMarketing = () => {
                     <Quote className="h-3 w-3 text-accent/50 mb-1" />
                     <p className="text-xs text-foreground italic mb-2">"{t.quote}"</p>
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6 border border-accent/20">
+                      <Avatar className="h-6 w-6 border border-border/30">
                         <AvatarFallback className="bg-accent/20 text-accent text-[10px]">{t.initials}</AvatarFallback>
                       </Avatar>
                       <div>

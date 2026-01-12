@@ -46,27 +46,30 @@ const ICPCard = () => {
   ];
 
   return (
-    <section id="icp-section" className="space-y-4">
-      {/* Section Header - Compact */}
-      <div className="flex items-center gap-2">
-        <div className="p-1.5 rounded-lg bg-accent/10">
-          <Target className="h-4 w-4 text-accent" />
+    <section id="icp-section" className="space-y-6 animate-fade-in">
+      {/* Section Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-accent/10">
+          <Target className="h-5 w-5 text-accent" />
         </div>
-        <h2 className="text-xl font-bold text-foreground">
-          Ideal Customer Profile
-          <InfoTooltip term="ICP" size="sm">
-            Detailed description of the perfect customer for maximum conversion.
-          </InfoTooltip>
-        </h2>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">Ideal Customer Profile</h2>
+            <InfoTooltip term="ICP" size="sm">
+              Detailed description of the perfect customer for maximum conversion.
+            </InfoTooltip>
+          </div>
+          <p className="text-sm text-muted-foreground">Target customer persona and buying behavior</p>
+        </div>
       </div>
 
-      {/* Two Main Cards - Equal Height */}
-      <div className="grid lg:grid-cols-2 gap-4">
+      {/* Two Main Cards */}
+      <div className="grid lg:grid-cols-2 gap-6">
         {/* Card 1: Persona + Demographics */}
-        <Card className="glass-premium border-accent/30 min-h-[320px]">
+        <Card className="bg-card/50 border-border/30">
           <CardContent className="p-5">
             {/* Persona Header */}
-            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-accent/10">
+            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-border/20">
               <Avatar className="h-14 w-14 border-2 border-accent/30">
                 <AvatarFallback className="bg-accent/20 text-accent text-lg font-bold">
                   {persona.initials}
@@ -84,7 +87,7 @@ const ICPCard = () => {
             {/* Demographics Grid */}
             <div className="grid grid-cols-2 gap-2 mb-4">
               {demographics.map((item, i) => (
-                <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-accent/5 border border-accent/10">
+                <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/10 border border-border/20">
                   <item.icon className="h-3.5 w-3.5 text-accent flex-shrink-0" />
                   <span className="text-xs text-foreground truncate">{item.label}</span>
                 </div>
@@ -106,7 +109,7 @@ const ICPCard = () => {
         </Card>
 
         {/* Card 2: Pain Points + Behavior */}
-        <Card className="glass-premium border-accent/20 min-h-[320px]">
+        <Card className="bg-card/50 border-border/30">
           <CardContent className="p-5">
             {/* Pain Points with Visual Bars */}
             <div className="mb-4">
@@ -147,10 +150,10 @@ const ICPCard = () => {
               </div>
             </div>
 
-            {/* Where to Find - Compact */}
+            {/* Where to Find */}
             <div className="flex items-center gap-2">
               {channels.map((ch, i) => (
-                <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded bg-accent/5 border border-accent/10">
+                <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded bg-muted/10 border border-border/20">
                   <ch.icon className="h-3 w-3 text-accent" />
                   <span className="text-[10px] text-foreground">{ch.name}</span>
                 </div>
@@ -160,16 +163,16 @@ const ICPCard = () => {
         </Card>
       </div>
 
-      {/* Messaging Hooks - Horizontal */}
-      <Card className="bg-accent/5 border-accent/20">
-        <CardContent className="p-3">
-          <div className="flex items-center gap-2 mb-2">
+      {/* Messaging Hooks */}
+      <Card className="bg-card/50 border-border/30">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
             <MessageSquare className="h-3.5 w-3.5 text-accent" />
-            <span className="text-xs font-medium text-foreground">Messaging That Converts</span>
+            <span className="text-sm font-medium text-foreground">Messaging That Converts</span>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {messages.map((msg, i) => (
-              <div key={i} className="p-2 rounded bg-background/50 border border-accent/10 text-center">
+              <div key={i} className="p-3 rounded-lg bg-muted/10 border border-border/20 text-center">
                 <p className="text-xs text-foreground font-medium">"{msg}"</p>
               </div>
             ))}

@@ -15,15 +15,7 @@ interface MarketingAnalysisTabProps {
 
 const MarketingAnalysisTab = ({ projectName, onScheduleCall, onDownloadPDF }: MarketingAnalysisTabProps) => {
   return (
-    <div className="space-y-4">
-      {/* Header - Compact */}
-      <div className="flex items-center justify-between pb-2 border-b border-accent/10">
-        <div>
-          <h2 className="text-xl font-bold text-foreground">Marketing Intelligence</h2>
-          <p className="text-xs text-muted-foreground">Competitive analysis and go-to-market strategy</p>
-        </div>
-      </div>
-
+    <div className="space-y-8">
       {/* Executive Summary */}
       <MarketingVerdict />
 

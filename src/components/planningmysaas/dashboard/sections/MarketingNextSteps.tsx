@@ -29,14 +29,14 @@ const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStep
   };
 
   return (
-    <section id="marketing-next-steps" className="space-y-4">
-      {/* CTA Banner - Compact Hero */}
-      <Card className="glass-premium border-accent/30 overflow-hidden">
+    <section id="marketing-next-steps" className="space-y-6 animate-fade-in">
+      {/* CTA Banner */}
+      <Card className="bg-card/50 border-border/30">
         <CardContent className="p-5">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-accent/10">
-                <Sparkles className="h-6 w-6 text-accent" />
+              <div className="p-2 rounded-lg bg-accent/10">
+                <Sparkles className="h-5 w-5 text-accent" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-foreground">Ready to Transform Your Marketing?</h2>
@@ -57,13 +57,13 @@ const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStep
         </CardContent>
       </Card>
 
-      {/* Process Steps - Horizontal */}
-      <div className="grid grid-cols-4 gap-2">
+      {/* Process Steps */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {steps.map((step, idx) => (
-          <Card key={idx} className="bg-accent/5 border-accent/20 relative overflow-hidden">
+          <Card key={idx} className="bg-card/50 border-border/30 relative">
             <CardContent className="p-4 text-center">
               {idx < steps.length - 1 && (
-                <ArrowRight className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 h-4 w-4 text-accent/40 z-10 hidden lg:block" />
+                <ArrowRight className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 h-4 w-4 text-muted-foreground z-10 hidden lg:block" />
               )}
               <Badge className="bg-accent text-accent-foreground text-[9px] mb-2">Step {idx + 1}</Badge>
               <step.icon className="h-5 w-5 text-accent mx-auto mb-1" />
@@ -74,14 +74,14 @@ const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStep
         ))}
       </div>
 
-      {/* Contact Options - Compact Row */}
+      {/* Contact Options */}
       <div className="grid grid-cols-3 gap-3">
         <Card 
-          className="bg-accent/5 border-accent/20 cursor-pointer hover:border-accent/40 transition-all"
+          className="bg-card/50 border-border/30 cursor-pointer hover:border-accent/40 transition-all"
           onClick={handleScheduleCall}
         >
           <CardContent className="p-3 flex items-center gap-3">
-            <div className="p-2 rounded-full bg-accent/10">
+            <div className="p-2 rounded-lg bg-accent/10">
               <Calendar className="h-4 w-4 text-accent" />
             </div>
             <div>
@@ -93,7 +93,7 @@ const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStep
 
         <Card className="bg-card/50 border-border/30 cursor-pointer hover:border-accent/40 transition-all">
           <CardContent className="p-3 flex items-center gap-3">
-            <div className="p-2 rounded-full bg-accent/10">
+            <div className="p-2 rounded-lg bg-accent/10">
               <Mail className="h-4 w-4 text-accent" />
             </div>
             <div>
@@ -108,7 +108,7 @@ const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStep
           onClick={handleWhatsApp}
         >
           <CardContent className="p-3 flex items-center gap-3">
-            <div className="p-2 rounded-full bg-green-500/10">
+            <div className="p-2 rounded-lg bg-green-500/10">
               <MessageCircle className="h-4 w-4 text-green-500" />
             </div>
             <div>
@@ -119,7 +119,7 @@ const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStep
         </Card>
       </div>
 
-      {/* Disclaimer - Minimal */}
+      {/* Disclaimer */}
       <p className="text-[9px] text-muted-foreground text-center">
         * Analysis based on competitive research. $3,000/mo service fee excludes ad spend budget.
       </p>
