@@ -107,7 +107,7 @@ const CompetitorsDifferentiationSection = () => {
               </InfoTooltip>
             </div>
             <div className="grid md:grid-cols-2 gap-x-6 gap-y-2">
-              {competitiveAdvantages.slice(0, 6).map((advantage, index) => (
+              {competitiveAdvantages.map((advantage, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <div className="p-1 rounded bg-accent/10">
                     <Zap className="w-3 h-3 text-accent" />
@@ -116,11 +116,6 @@ const CompetitorsDifferentiationSection = () => {
                 </div>
               ))}
             </div>
-            {competitiveAdvantages.length > 6 && (
-              <button className="text-xs text-accent hover:text-accent/80 mt-4 font-medium transition-colors">
-                +{competitiveAdvantages.length - 6} more features
-              </button>
-            )}
           </CardContent>
         </Card>
       </div>
