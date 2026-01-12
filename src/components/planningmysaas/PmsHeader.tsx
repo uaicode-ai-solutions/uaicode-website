@@ -17,8 +17,7 @@ const PmsHeader = () => {
   const navigate = useNavigate();
 
   const handleValidate = () => {
-    navigate("/planningmysaas/wizard?plan=pro");
-    setIsMenuOpen(false);
+    scrollToSection("pricing");
   };
 
   const scrollToSection = (id: string) => {
