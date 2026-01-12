@@ -52,7 +52,7 @@ const PmsLogin = () => {
       savedAt: new Date().toISOString()
     }));
 
-    navigate("/planningmysaas/wizard");
+    navigate("/planningmysaas/reports");
   };
 
   const handleEmailLogin = (e: React.FormEvent) => {

@@ -37,7 +37,7 @@ const WizardLayout = ({
   const navigate = useNavigate();
 
   const handleClose = () => {
-    navigate("/planningmysaas");
+    navigate("/planningmysaas/reports");
   };
 
   return (
