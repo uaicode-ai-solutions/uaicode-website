@@ -6,12 +6,12 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 
-// Paleta monocromática dourada - variações de intensidade
-const COLORS = [
-  "hsl(38, 92%, 50%)",   // Dourado intenso
-  "hsl(38, 85%, 58%)",   // Dourado médio
-  "hsl(38, 75%, 65%)",   // Dourado claro
-  "hsl(38, 65%, 72%)"    // Dourado suave
+// Gradientes premium para cada fatia do donut
+const GRADIENTS = [
+  { id: "budgetGrad0", start: "hsl(32, 95%, 44%)", end: "hsl(45, 100%, 55%)" },   // Laranja -> Dourado
+  { id: "budgetGrad1", start: "hsl(38, 90%, 48%)", end: "hsl(50, 95%, 60%)" },    // Dourado -> Amarelo
+  { id: "budgetGrad2", start: "hsl(35, 85%, 52%)", end: "hsl(48, 90%, 62%)" },    // Dourado médio
+  { id: "budgetGrad3", start: "hsl(40, 80%, 56%)", end: "hsl(52, 85%, 68%)" },    // Dourado claro
 ];
 
 const PaidMediaCards = () => {
@@ -20,7 +20,7 @@ const PaidMediaCards = () => {
   const budgetData = paidMediaActionPlan.channels.map((channel, idx) => ({
     name: channel.name,
     value: channel.allocation,
-    color: COLORS[idx % COLORS.length],
+    gradientId: `url(#${GRADIENTS[idx % GRADIENTS.length].id})`,
     budget: channel.budget,
   }));
 
@@ -95,28 +95,49 @@ const PaidMediaCards = () => {
           <CardContent className="p-4">
             <h3 className="text-sm font-semibold text-foreground mb-4">Your Budget Allocation</h3>
             
-            {/* Container Premium - Fundo escuro com gradiente */}
-            <div className="relative flex items-center justify-center py-2">
-              {/* Fundo escuro circular com gradiente e glow sutil */}
-              <div className="relative w-56 h-56 rounded-full bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] flex items-center justify-center shadow-[0_0_40px_rgba(249,115,22,0.08)] hover:shadow-[0_0_50px_rgba(249,115,22,0.12)] transition-all duration-500">
+            {/* Container Premium */}
+            <div className="relative flex items-center justify-center py-4">
+              {/* Fundo escuro circular premium */}
+              <div className="relative w-64 h-64 rounded-full bg-gradient-to-br from-[#1c1917] via-[#0f0f0f] to-[#1c1917] flex items-center justify-center shadow-[0_0_60px_rgba(249,115,22,0.12),inset_0_0_30px_rgba(0,0,0,0.5)] transition-all duration-500">
                 
-                {/* PieChart Container - Maior */}
-                <div className="w-52 h-52">
+                {/* PieChart Container */}
+                <div className="w-60 h-60">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
+                      {/* Definições de gradientes SVG */}
+                      <defs>
+                        {GRADIENTS.map((grad) => (
+                          <linearGradient key={grad.id} id={grad.id} x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor={grad.start} />
+                            <stop offset="100%" stopColor={grad.end} />
+                          </linearGradient>
+                        ))}
+                        <filter id="budgetGlow" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                          <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                          </feMerge>
+                        </filter>
+                      </defs>
                       <Pie 
                         data={budgetData} 
                         cx="50%" 
                         cy="50%" 
-                        innerRadius={50} 
-                        outerRadius={85} 
-                        paddingAngle={2} 
+                        innerRadius={45} 
+                        outerRadius={100} 
+                        paddingAngle={1} 
                         dataKey="value"
-                        stroke="rgba(0,0,0,0.3)"
-                        strokeWidth={1}
+                        stroke="hsl(var(--background))"
+                        strokeWidth={2}
+                        cornerRadius={6}
                       >
                         {budgetData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry.gradientId}
+                            style={{ filter: 'url(#budgetGlow)' }}
+                          />
                         ))}
                       </Pie>
                       <Tooltip 
@@ -131,27 +152,34 @@ const PaidMediaCards = () => {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
+                
+                {/* Centro vazio com acabamento premium */}
+                <div className="absolute w-20 h-20 rounded-full bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-accent/10 shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]" />
               </div>
             </div>
             
-            {/* Legenda monocromática dourada */}
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {paidMediaActionPlan.channels.map((channel, idx) => {
-                const opacities = ["border-l-[hsl(38,92%,50%)]", "border-l-[hsl(38,85%,58%)]", "border-l-[hsl(38,75%,65%)]", "border-l-[hsl(38,65%,72%)]"];
-                
-                return (
-                  <div 
-                    key={idx} 
-                    className={`p-2.5 rounded-lg bg-accent/5 border-l-4 ${opacities[idx % 4]} transition-all duration-200 hover:bg-accent/10`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-foreground">{channel.name}</span>
-                      <span className="text-xs font-bold text-accent">{channel.budget}</span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground">{channel.allocation}% of budget</span>
+            {/* Legenda premium com gradientes */}
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {paidMediaActionPlan.channels.map((channel, idx) => (
+                <div 
+                  key={idx} 
+                  className="p-3 rounded-xl bg-gradient-to-r from-accent/10 to-accent/5 border border-accent/20 transition-all duration-300 hover:border-accent/40 hover:shadow-[0_0_20px_rgba(249,115,22,0.1)]"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <div 
+                      className="w-3 h-3 rounded-full shadow-lg"
+                      style={{ 
+                        background: `linear-gradient(135deg, ${GRADIENTS[idx % GRADIENTS.length].start}, ${GRADIENTS[idx % GRADIENTS.length].end})` 
+                      }}
+                    />
+                    <span className="text-xs font-semibold text-foreground">{channel.name}</span>
                   </div>
-                );
-              })}
+                  <div className="flex items-center justify-between pl-5">
+                    <span className="text-sm font-bold text-accent">{channel.budget}</span>
+                    <span className="text-[10px] text-muted-foreground bg-accent/10 px-1.5 py-0.5 rounded-full">{channel.allocation}%</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
