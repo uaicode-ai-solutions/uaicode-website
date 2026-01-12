@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { Check, Users, Sparkles, Shield } from "lucide-react";
+import { Check, Users, Sparkles, Shield, Mail, User } from "lucide-react";
 
 interface StepYourInfoProps {
   data: {
@@ -32,10 +32,10 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
       {/* Hero Section */}
       <div className="text-center space-y-3">
         <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-          Unlock Your <span className="text-gradient-gold">SaaS Potential</span> in 5 Minutes
+          Complete Your <span className="text-gradient-gold">Profile</span>
         </h2>
         <p className="text-muted-foreground text-base max-w-xl mx-auto">
-          Get a comprehensive feasibility study tailored to your idea. Our AI-powered analysis will help you understand your market opportunity.
+          Help us personalize your SaaS validation report with a few more details.
         </p>
       </div>
 
@@ -51,6 +51,18 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
 
       {/* Form Card */}
       <div className="bg-muted/30 border border-border/30 rounded-xl p-6 space-y-5">
+        {/* Email - Read-only from login */}
+        <div className="space-y-1.5">
+          <Label className="text-sm text-muted-foreground flex items-center gap-2">
+            <Mail className="w-3.5 h-3.5" />
+            Email Address
+          </Label>
+          <div className="bg-muted/50 border border-border/30 rounded-md px-3 py-2.5 text-foreground flex items-center gap-2">
+            <span className="text-sm">{data.email || "From login"}</span>
+            <span className="text-xs text-muted-foreground ml-auto">✓ Verified</span>
+          </div>
+        </div>
+
         {/* Full Name */}
         <div className="space-y-1.5">
           <Label htmlFor="fullName" className="text-sm text-muted-foreground">
@@ -62,21 +74,6 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
             placeholder="John Doe"
             value={data.fullName}
             onChange={(e) => onChange("fullName", e.target.value)}
-            className="bg-background border-border/50 focus:border-accent"
-          />
-        </div>
-
-        {/* Email */}
-        <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-sm text-muted-foreground">
-            Email Address <span className="text-accent">*</span>
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="john@example.com"
-            value={data.email}
-            onChange={(e) => onChange("email", e.target.value)}
             className="bg-background border-border/50 focus:border-accent"
           />
         </div>
