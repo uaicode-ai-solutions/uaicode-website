@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Mail, Lock, Shield, ArrowLeft } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Eye, EyeOff, Mail, Lock, Shield, ArrowLeft, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import pmsDashboardImage from "@/assets/pms-hero-dashboard.webp";
 
@@ -15,6 +18,10 @@ const PmsLogin = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   const isValidEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidPassword = password && password.length >= 6;
@@ -57,6 +64,23 @@ const PmsLogin = () => {
 
   const handleGoogleLogin = () => {
     saveLoginDataAndProceed("user@gmail.com", "Google User");
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/planningmysaas/reset-password`,
+    });
+    
+    if (error) {
+      toast.error("Failed to send reset email. Please try again.");
+    } else {
+      setResetSuccess(true);
+    }
+    
+    setResetLoading(false);
   };
 
   return (
@@ -185,6 +209,20 @@ const PmsLogin = () => {
                 )}
               </div>
 
+              {/* Forgot Password Link */}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="text-sm text-accent hover:underline"
+                  onClick={() => {
+                    setResetEmail(email);
+                    setShowForgotPassword(true);
+                  }}
+                >
+                  Forgot password?
+                </button>
+              </div>
+
               {/* Submit Button */}
               <Button
                 type="submit"
@@ -254,6 +292,57 @@ const PmsLogin = () => {
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={showForgotPassword} onOpenChange={(open) => {
+        setShowForgotPassword(open);
+        if (!open) setResetSuccess(false);
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {resetSuccess ? (
+            <div className="text-center py-4 space-y-4">
+              <CheckCircle className="w-12 h-12 text-accent mx-auto" />
+              <p className="text-foreground">
+                Check your email for a password reset link.
+              </p>
+              <Button onClick={() => {
+                setShowForgotPassword(false);
+                setResetSuccess(false);
+              }}>
+                Close
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">Email Address</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  placeholder="john@example.com"
+                  required
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={resetLoading}
+              >
+                {resetLoading ? "Sending..." : "Send Reset Link"}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
