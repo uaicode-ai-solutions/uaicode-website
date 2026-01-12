@@ -21,7 +21,11 @@ const sourceLabels: Record<string, string> = {
   'planningmysaas': '🚀 PlanningMySaaS',
   'website_uaicode': '🌐 Website UaiCode',
   'email_contact_popup': '💬 Email Contact Popup',
+  'pms_sales_contact': '💼 PMS Sales Contact',
 };
+
+// Sources that should be sent to sales team
+const salesSources = ['pms_sales_contact', 'planningmysaas'];
 
 serve(async (req) => {
   console.log("=== SEND EMAIL CONTACT STARTED ===");
@@ -36,7 +40,8 @@ serve(async (req) => {
   try {
     const formData: ContactFormData = await req.json();
     const sourceLabel = sourceLabels[formData.source || 'website_uaicode'] || formData.source || 'Website';
-    console.log("Form data received:", JSON.stringify({ name: formData.name, email: formData.email, source: formData.source }));
+    const teamEmail = salesSources.includes(formData.source || '') ? "sales@uaicode.ai" : "hello@uaicode.ai";
+    console.log("Form data received:", JSON.stringify({ name: formData.name, email: formData.email, source: formData.source, teamEmail }));
 
     // Client confirmation email
     const clientRes = await fetch("https://api.resend.com/emails", {
@@ -96,7 +101,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: "Website UaiCode <no-reply@uaicode.ai>",
-        to: ["hello@uaicode.ai"],
+        to: [teamEmail],
         reply_to: formData.email,
         subject: `${sourceLabel} - New contact - ${formData.name}`,
         html: `
