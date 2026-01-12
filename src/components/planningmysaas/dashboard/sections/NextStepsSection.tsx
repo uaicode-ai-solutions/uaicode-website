@@ -231,7 +231,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
           <Card 
             key={option.id}
             onClick={() => setSelectedPackage(option.id)}
-            className={`relative cursor-pointer transition-all duration-300 ${
+            className={`relative cursor-pointer transition-all duration-300 h-full ${
               option.recommended 
                 ? 'bg-gradient-to-br from-accent/15 via-card to-card border-accent/40 ring-2 ring-accent/20' 
                 : 'bg-card/50 border-border/30 hover:border-border/50'
@@ -249,7 +249,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </Badge>
               </div>
             )}
-            <CardContent className={`p-6 ${option.badge ? 'pt-8' : ''}`}>
+            <CardContent className={`p-6 flex flex-col h-full ${option.badge ? 'pt-8' : ''}`}>
               {/* Package Name */}
               <h3 className="text-lg font-bold text-foreground mb-4 text-center">{option.name}</h3>
               
@@ -336,7 +336,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
               )}
 
               {/* Action Buttons */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 mt-auto pt-4">
                 <Button 
                   onClick={(e) => {
                     e.stopPropagation();
