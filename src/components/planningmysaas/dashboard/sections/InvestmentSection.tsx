@@ -19,10 +19,10 @@ const InvestmentSection = () => {
   // Marketing Investment Data
   const marketingInvestment = {
     uaicode: {
-      subscription: 3000,
+      subscription: 5000,
       suggestedPaidMedia: 5000,
-      total: 8000,
-      yearlyTotal: 96000,
+      total: 10000,
+      yearlyTotal: 120000,
       included: [
         "Full-stack marketing team",
         "Strategy + Execution included",
@@ -352,7 +352,7 @@ const InvestmentSection = () => {
               <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[70px]">
                 <p className="text-[10px] text-muted-foreground">Marketing Sub.</p>
                 <p className="text-sm font-bold text-foreground">{formatCurrency(marketingInvestment.uaicode.subscription * 12)}</p>
-                <p className="text-[9px] text-muted-foreground/70">($3K × 12)</p>
+                <p className="text-[9px] text-muted-foreground/70">($5K × 12)</p>
               </div>
               <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[70px]">
                 <p className="text-[10px] text-muted-foreground">Paid Media*</p>

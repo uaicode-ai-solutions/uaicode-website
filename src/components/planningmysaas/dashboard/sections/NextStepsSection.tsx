@@ -102,7 +102,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   // MVP + Marketing - 20% discount on MVP
   const mvpMarketingDiscountedPrice = Math.round(investment.total * 0.8);
   const mvpMarketingSavings = mvpPrice - mvpMarketingDiscountedPrice;
-  const marketingMonthly = 8000;
+  const marketingMonthly = 10000;
 
   const pricingOptions = [
     {
@@ -150,9 +150,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         "Dedicated account manager"
       ],
       marketingNote: {
-        contract: 3000,
+        contract: 5000,
         recommendedAds: 5000,
-        total: 8000,
+        total: 10000,
         note: "Annual contract • Starts after MVP launch"
       },
       recommended: true
