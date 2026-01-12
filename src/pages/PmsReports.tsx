@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, ChevronLeft, FileText } from "lucide-react";
+import { Plus, FileText, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Card, CardContent } from "@/components/ui/card";
 import ReportCard from "@/components/planningmysaas/reports/ReportCard";
 import EmptyReports from "@/components/planningmysaas/reports/EmptyReports";
@@ -24,6 +31,14 @@ const PmsReports = () => {
   useEffect(() => {
     setReports(getReports());
   }, []);
+
+  const handleLogout = () => {
+    navigate("/planningmysaas/login");
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
+  };
 
   const handleDeleteClick = (id: string) => {
     const report = reports.find((r) => r.id === id);
@@ -52,35 +67,56 @@ const PmsReports = () => {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
         <div className="max-w-6xl mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/planningmysaas")}
-                className="hover:bg-accent/10"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-accent" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-semibold text-foreground">My Reports</h1>
-                  <p className="text-xs text-muted-foreground">
-                    {reports.length} {reports.length === 1 ? 'report' : 'reports'}
-                  </p>
-                </div>
+            {/* Left side - Title */}
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-accent" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold text-foreground">My Reports</h1>
+                <p className="text-xs text-muted-foreground">
+                  {reports.length} {reports.length === 1 ? 'report' : 'reports'}
+                </p>
               </div>
             </div>
 
-            <Button 
-              onClick={() => navigate("/planningmysaas/wizard")}
-              className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">New Report</span>
-            </Button>
+            {/* Right side - Actions */}
+            <div className="flex items-center gap-3">
+              {/* New Report Button */}
+              <Button 
+                onClick={() => navigate("/planningmysaas/wizard")}
+                className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">New Report</span>
+              </Button>
+
+              {/* User Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="hover:bg-accent/10">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 bg-background border border-border">
+                  <DropdownMenuItem 
+                    onClick={() => navigate("/planningmysaas/profile")}
+                    className="cursor-pointer"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="cursor-pointer text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </header>
