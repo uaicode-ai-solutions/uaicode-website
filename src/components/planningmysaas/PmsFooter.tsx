@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import NewsletterSuccessDialog from "@/components/newsletter/NewsletterSuccessDialog";
-import EmailContactDialog from "@/components/chat/EmailContactDialog";
+
 
 const newsletterSchema = z.object({
   email: z.string()
@@ -28,7 +28,7 @@ type NewsletterFormData = z.infer<typeof newsletterSchema>;
 
 const PmsFooter = () => {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  
 
   const {
     register,
@@ -191,37 +191,6 @@ const PmsFooter = () => {
 
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-white/10">
-            {/* Navigation Links - Inline */}
-            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 mb-6 text-sm">
-              <button 
-                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                className="text-muted-foreground hover:text-accent transition-colors"
-              >
-                Features
-              </button>
-              <span className="text-white/20">·</span>
-              <button 
-                onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-                className="text-muted-foreground hover:text-accent transition-colors"
-              >
-                Pricing
-              </button>
-              <span className="text-white/20">·</span>
-              <button 
-                onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
-                className="text-muted-foreground hover:text-accent transition-colors"
-              >
-                FAQ
-              </button>
-              <span className="text-white/20">·</span>
-              <button 
-                onClick={() => setShowEmailDialog(true)}
-                className="text-muted-foreground hover:text-accent transition-colors"
-              >
-                Contact
-              </button>
-            </div>
-            
             {/* Copyright Row */}
             <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 text-sm text-muted-foreground">
               <p>© {new Date().getFullYear()} Planning My SaaS. All rights reserved.</p>
@@ -243,11 +212,6 @@ const PmsFooter = () => {
           </div>
         </div>
 
-        <EmailContactDialog 
-          open={showEmailDialog} 
-          onOpenChange={setShowEmailDialog} 
-          source="pms_footer"
-        />
       </footer>
     </>
   );
