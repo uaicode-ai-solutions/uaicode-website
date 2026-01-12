@@ -23,7 +23,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { reportData } from "@/lib/reportMockData";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
 const iconMap: Record<string, React.ElementType> = {
   Calendar,
@@ -51,6 +51,42 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   const [selectedPackage, setSelectedPackage] = useState<'mvp-only' | 'mvp-marketing'>('mvp-marketing');
   const [kyleDialogOpen, setKyleDialogOpen] = useState(false);
   const [selectedConsultPackage, setSelectedConsultPackage] = useState<string>('');
+
+  // Countdown Timer - 4 hours offer
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('pms_dashboard_offer_expiry');
+    if (saved) {
+      const remaining = parseInt(saved) - Date.now();
+      return remaining > 0 ? remaining : 4 * 60 * 60 * 1000;
+    }
+    const expiry = Date.now() + 4 * 60 * 60 * 1000;
+    localStorage.setItem('pms_dashboard_offer_expiry', expiry.toString());
+    return 4 * 60 * 60 * 1000;
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        const newTime = prev - 1000;
+        if (newTime <= 0) {
+          const newExpiry = Date.now() + 4 * 60 * 60 * 1000;
+          localStorage.setItem('pms_dashboard_offer_expiry', newExpiry.toString());
+          return 4 * 60 * 60 * 1000;
+        }
+        return newTime;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (ms: number) => {
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+    return { hours, minutes, seconds };
+  };
+
+  const { hours, minutes, seconds } = formatTime(timeLeft);
 
   // Calculate total weeks from timeline
   const totalWeeks = timeline.reduce((acc, phase) => {
@@ -394,29 +430,103 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       </div>
 
 
-      {/* Final Message */}
-      <Card className="bg-gradient-to-br from-accent/5 via-card to-accent/5 border-accent/20">
-        <CardContent className="p-6 text-center">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Sparkles className="h-5 w-5 text-accent" />
-            <span className="text-base font-medium text-foreground">
-              We're ready to turn your idea into reality
-            </span>
+      {/* Final Message - Urgency CTA */}
+      <Card className="relative overflow-hidden bg-gradient-to-br from-accent/10 via-card to-accent/10 border-accent/30">
+        {/* Animated background effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-transparent to-accent/5 animate-pulse" />
+        
+        <CardContent className="relative p-8 text-center">
+          {/* Urgency Badge */}
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Badge className="bg-red-500/20 text-red-400 border-red-500/30 animate-pulse px-3 py-1">
+              <Clock className="w-3 h-3 mr-1" />
+              Limited Time Offer
+            </Badge>
           </div>
-          <p className="text-muted-foreground max-w-xl mx-auto mb-4 text-sm">
-            Choose between <span className="text-foreground font-medium">MVP only</span> at {formatCurrency(mvpPrice)} or 
-            get <span className="text-accent font-bold">MVP + Marketing</span> with 10% discount at {formatCurrency(mvpDiscountedPrice)}. 
-            Marketing services start only after your MVP launches.
+
+          {/* Headline */}
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Sparkles className="h-6 w-6 text-accent" />
+            <h3 className="text-xl font-bold text-foreground">
+              Lock In Your <span className="text-accent">10% Discount</span> Now
+            </h3>
+          </div>
+
+          {/* Countdown Timer */}
+          <div className="flex items-center justify-center gap-3 my-6">
+            <div className="text-center">
+              <div className="bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/30 rounded-lg px-4 py-3 min-w-[70px]">
+                <span className="text-2xl font-bold text-accent">{hours.toString().padStart(2, '0')}</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground mt-1 block">HOURS</span>
+            </div>
+            <span className="text-xl text-accent font-bold pb-4">:</span>
+            <div className="text-center">
+              <div className="bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/30 rounded-lg px-4 py-3 min-w-[70px]">
+                <span className="text-2xl font-bold text-accent">{minutes.toString().padStart(2, '0')}</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground mt-1 block">MINUTES</span>
+            </div>
+            <span className="text-xl text-accent font-bold pb-4">:</span>
+            <div className="text-center">
+              <div className="bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/30 rounded-lg px-4 py-3 min-w-[70px]">
+                <span className="text-2xl font-bold text-accent">{seconds.toString().padStart(2, '0')}</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground mt-1 block">SECONDS</span>
+            </div>
+          </div>
+
+          {/* Pricing Comparison */}
+          <div className="flex flex-col items-center gap-3 my-6">
+            <div className="flex items-center gap-3 flex-wrap justify-center">
+              <span className="text-lg text-muted-foreground">MVP only:</span>
+              <span className="text-xl font-semibold text-foreground">{formatCurrency(mvpPrice)}</span>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap justify-center">
+              <span className="text-lg text-accent font-medium">MVP + Marketing:</span>
+              <span className="text-lg text-muted-foreground line-through">{formatCurrency(mvpPrice)}</span>
+              <ArrowRight className="w-4 h-4 text-accent" />
+              <span className="text-2xl font-bold text-accent">{formatCurrency(mvpDiscountedPrice)}</span>
+            </div>
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 mt-1">
+              <Check className="w-3 h-3 mr-1" />
+              You save {formatCurrency(mvpSavings)} with this offer
+            </Badge>
+          </div>
+
+          {/* Urgency Text */}
+          <p className="text-muted-foreground max-w-lg mx-auto mb-6 text-sm">
+            <span className="text-red-400 font-medium">⚠️ This discount expires when the timer hits zero.</span>
+            {" "}Don't miss the opportunity to launch your MVP with full marketing support at the best price.
           </p>
+
+          {/* CTA Button */}
           <Button 
             size="lg"
             onClick={onScheduleCall}
-            className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"
+            className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 text-base px-8 py-6 animate-pulse"
           >
-            <Calendar className="h-4 w-4" />
-            Start Your Project Today
-            <ArrowRight className="h-4 w-4" />
+            <Calendar className="h-5 w-5" />
+            Claim Your 10% Discount Now
+            <ArrowRight className="h-5 w-5" />
           </Button>
+
+          {/* Trust indicators */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <CheckCircle2 className="w-3 h-3 text-green-500" />
+              60-day money-back guarantee
+            </div>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <CheckCircle2 className="w-3 h-3 text-green-500" />
+              No hidden fees
+            </div>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <CheckCircle2 className="w-3 h-3 text-green-500" />
+              Marketing starts after launch
+            </div>
+          </div>
+
           <p className="text-xs text-muted-foreground mt-4 max-w-lg mx-auto">
             This report was generated based on the information provided and market analysis. 
             The numbers are projections and may vary depending on project execution.
