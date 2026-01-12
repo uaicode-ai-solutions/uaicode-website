@@ -198,7 +198,10 @@ const PmsSampleReport = () => {
   const navigate = useNavigate();
 
   const handleValidate = () => {
-    navigate("/planningmysaas/wizard?plan=pro");
+    const element = document.getElementById("pricing");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   const currentContent = tabContent[activeTab as keyof typeof tabContent];
