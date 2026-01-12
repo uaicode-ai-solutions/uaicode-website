@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sparkles, Youtube, Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import { Menu, X, Youtube, Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 const socialLinks = [
   { Icon: Youtube, url: "https://www.youtube.com/@uaicodeai", label: "Visit our YouTube channel" },
@@ -34,9 +35,11 @@ const PmsHeader = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-background" />
-            </div>
+            <img 
+              src={uaicodeLogo} 
+              alt="Uaicode" 
+              className="w-10 h-10 object-contain" 
+            />
             <span className="text-xl font-bold text-foreground">
               Planning<span className="text-accent">My</span>SaaS
             </span>
