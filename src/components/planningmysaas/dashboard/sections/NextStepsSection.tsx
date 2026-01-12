@@ -75,6 +75,10 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         "Source code ownership",
         "Priority bug fixes"
       ],
+      maintenanceNote: {
+        afterMonths: 12,
+        note: "After 12 months, hosting + priority bug fixes will be covered by a new infrastructure maintenance contract"
+      },
       marketingNote: null,
       recommended: false
     },
@@ -224,6 +228,21 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   </li>
                 ))}
               </ul>
+
+              {/* Maintenance Note - for MVP Development */}
+              {option.maintenanceNote && (
+                <div className="p-3 rounded-lg bg-muted/30 border border-border/50 mb-4">
+                  <div className="flex items-start gap-2">
+                    <Calendar className="h-4 w-4 text-foreground/70 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-foreground/70">
+                        <span className="font-medium text-foreground">After {option.maintenanceNote.afterMonths} months:</span>{" "}
+                        Hosting infrastructure + priority bug fixes will be covered by a new maintenance contract.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Marketing Note */}
               {option.marketingNote && (
