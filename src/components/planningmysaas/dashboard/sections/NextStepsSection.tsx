@@ -338,8 +338,8 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   <Button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedPackage(option.id);
-                      onScheduleCall?.();
+                      setSelectedConsultPackage(option.name);
+                      setKyleDialogOpen(true);
                     }}
                     size="sm"
                     className="w-full mt-2 gap-2 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-black font-semibold"
