@@ -63,9 +63,9 @@ const ICPCard = () => {
         </div>
       </div>
 
-      {/* Two Main Cards */}
+      {/* Two Main Cards - Balanced */}
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Card 1: Persona + Demographics */}
+        {/* Card 1: Persona Profile */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-5">
             {/* Persona Header */}
@@ -85,19 +85,22 @@ const ICPCard = () => {
             </div>
 
             {/* Demographics Grid */}
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {demographics.map((item, i) => (
-                <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/10 border border-border/20">
-                  <item.icon className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  <span className="text-xs text-foreground truncate">{item.label}</span>
-                </div>
-              ))}
+            <div className="mb-4">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Demographics</span>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {demographics.map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/10 border border-border/20">
+                    <item.icon className="h-3.5 w-3.5 text-accent flex-shrink-0" />
+                    <span className="text-xs text-foreground truncate">{item.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Goals */}
             <div>
-              <span className="text-xs text-muted-foreground font-medium">Goals</span>
-              <div className="flex flex-wrap gap-1.5 mt-1.5">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Goals</span>
+              <div className="flex flex-wrap gap-1.5 mt-2">
                 {goals.map((goal, i) => (
                   <Badge key={i} variant="secondary" className="text-xs bg-accent/10 text-foreground border-accent/20">
                     {goal}
@@ -108,17 +111,17 @@ const ICPCard = () => {
           </CardContent>
         </Card>
 
-        {/* Card 2: Pain Points + Behavior */}
+        {/* Card 2: Buyer Journey (Pain Points + Triggers + Channels + Messaging) */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-5">
-            {/* Pain Points with Visual Bars */}
+            {/* Pain Points */}
             <div className="mb-4">
-              <div className="flex items-center gap-1 mb-3">
+              <div className="flex items-center gap-1 mb-2">
                 <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
-                <span className="text-xs font-medium text-foreground">Pain Points</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Pain Points</span>
               </div>
-              <div className="space-y-2.5">
-                {painPoints.map((item, i) => (
+              <div className="space-y-2">
+                {painPoints.slice(0, 3).map((item, i) => (
                   <div key={i} className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-foreground">{item.pain}</span>
@@ -128,57 +131,53 @@ const ICPCard = () => {
                     </div>
                     <Progress 
                       value={item.severity} 
-                      className={`h-1.5 ${item.severity >= 80 ? '[&>div]:bg-red-400' : '[&>div]:bg-amber-400'}`} 
+                      className={`h-1 ${item.severity >= 80 ? '[&>div]:bg-red-400' : '[&>div]:bg-amber-400'}`} 
                     />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Buying Triggers */}
+            {/* Buying Triggers + Channels inline */}
             <div className="mb-4">
               <div className="flex items-center gap-1 mb-2">
                 <Zap className="h-3.5 w-3.5 text-accent" />
-                <span className="text-xs font-medium text-foreground">Buying Triggers</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Triggers & Channels</span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {triggers.map((trigger, i) => (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {triggers.slice(0, 3).map((trigger, i) => (
                   <Badge key={i} variant="outline" className="text-[10px] border-accent/20 text-accent">
                     {trigger}
                   </Badge>
                 ))}
               </div>
+              <div className="flex items-center gap-2">
+                {channels.map((ch, i) => (
+                  <div key={i} className="flex items-center gap-1 px-2 py-1 rounded bg-muted/10 border border-border/20">
+                    <ch.icon className="h-3 w-3 text-accent" />
+                    <span className="text-[10px] text-foreground">{ch.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Where to Find */}
-            <div className="flex items-center gap-2">
-              {channels.map((ch, i) => (
-                <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded bg-muted/10 border border-border/20">
-                  <ch.icon className="h-3 w-3 text-accent" />
-                  <span className="text-[10px] text-foreground">{ch.name}</span>
-                </div>
-              ))}
+            {/* Messaging That Converts - Integrated */}
+            <div>
+              <div className="flex items-center gap-1 mb-2">
+                <MessageSquare className="h-3.5 w-3.5 text-accent" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Messaging Hooks</span>
+              </div>
+              <div className="space-y-1.5">
+                {messages.map((msg, i) => (
+                  <div key={i} className="p-2 rounded-lg bg-muted/10 border border-border/20">
+                    <p className="text-xs text-foreground">"{msg}"</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Messaging Hooks */}
-      <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <MessageSquare className="h-3.5 w-3.5 text-accent" />
-            <span className="text-sm font-medium text-foreground">Messaging That Converts</span>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {messages.map((msg, i) => (
-              <div key={i} className="p-3 rounded-lg bg-muted/10 border border-border/20 text-center">
-                <p className="text-xs text-foreground font-medium">"{msg}"</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </section>
   );
 };
