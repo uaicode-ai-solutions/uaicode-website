@@ -420,18 +420,18 @@ export const technicalChallenges = [
 ];
 
 export const financialProjections = {
-  totalFirstYearInvestment: "$162,400",
+  totalFirstYearInvestment: "$167,900",
   breakdown: {
-    developmentCost: "$55,000",
+    developmentCost: "$60,500",
     marketingYear: "$102,000",
     infrastructureYear: "$5,400",
   },
   developmentBreakdown: [
-    { name: "Frontend Development", value: 18000, percentage: 33 },
-    { name: "Backend & API", value: 15000, percentage: 27 },
-    { name: "AI/ML Features", value: 12000, percentage: 22 },
-    { name: "Infrastructure & DevOps", value: 5000, percentage: 9 },
-    { name: "Testing & QA", value: 5000, percentage: 9 },
+    { name: "Frontend Development", value: 19800, percentage: 33 },
+    { name: "Backend & API", value: 16500, percentage: 27 },
+    { name: "AI/ML Features", value: 13200, percentage: 22 },
+    { name: "Infrastructure & DevOps", value: 5500, percentage: 9 },
+    { name: "Testing & QA", value: 5500, percentage: 9 },
   ],
   marketingBreakdown: [
     { name: "Content & SEO", value: 30600, percentage: 30 },

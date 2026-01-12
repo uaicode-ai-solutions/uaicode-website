@@ -28,7 +28,7 @@ export const reportData = {
 
 Your unique approach of connecting consumers with local health product and supplement suppliers, combined with inventory management and delivery, positions you favorably against competitors who focus only on large chains.
 
-The estimated $55,000 MVP investment has the potential to break even in 8 months, with an LTV/CAC of 11.5x indicating extremely healthy unit economics.`,
+The estimated $60,500 MVP investment has the potential to break even in 8 months, with an LTV/CAC of 11.5x indicating extremely healthy unit economics.`,
   
   recommendation: "Proceed with development",
   
@@ -157,14 +157,14 @@ The estimated $55,000 MVP investment has the potential to break even in 8 months
 
   // Investment
   investment: {
-    total: 55000,
+    total: 60500,
     currency: "USD",
     breakdown: [
-      { name: "Frontend Development", value: 18000, percentage: 33 },
-      { name: "Backend & API", value: 15000, percentage: 27 },
-      { name: "Integrations (Payment, Delivery)", value: 12000, percentage: 22 },
-      { name: "Infrastructure (12 months)", value: 5000, percentage: 9 },
-      { name: "Testing & QA", value: 5000, percentage: 9 },
+      { name: "Frontend Development", value: 19800, percentage: 33 },
+      { name: "Backend & API", value: 16500, percentage: 27 },
+      { name: "Integrations (Payment, Delivery)", value: 13200, percentage: 22 },
+      { name: "Infrastructure (12 months)", value: 5500, percentage: 9 },
+      { name: "Testing & QA", value: 5500, percentage: 9 },
     ],
     included: [
       "Complete MVP development",
@@ -181,9 +181,9 @@ The estimated $55,000 MVP investment has the potential to break even in 8 months
       "24/7 support after initial period",
     ],
     comparison: {
-      traditional: 120000,
+      traditional: 132000,
       savings: "54%",
-      note: "Traditional agency would charge $120,000+ for the same scope"
+      note: "Traditional agency would charge $132,000+ for the same scope"
     }
   },
 
