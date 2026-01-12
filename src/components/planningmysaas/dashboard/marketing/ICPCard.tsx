@@ -95,7 +95,7 @@ const ICPCard = () => {
           </div>
           <Card className="glass-premium border-accent/30 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent" />
-            <CardContent className="p-5 relative">
+            <CardContent className="p-6 relative">
               <div className="flex items-start gap-4">
                 <Avatar className="h-16 w-16 border-2 border-accent/30">
                   <AvatarFallback className="bg-accent/20 text-accent text-xl font-bold">
@@ -103,31 +103,31 @@ const ICPCard = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <h4 className="text-base font-bold text-foreground">{icp.persona.name}</h4>
+                  <h4 className="text-lg font-bold text-foreground">{icp.persona.name}</h4>
                   <p className="text-sm text-muted-foreground">{icp.persona.age} years old</p>
-                  <Badge variant="outline" className="mt-1.5 border-accent/30 text-accent text-xs">
+                  <Badge variant="outline" className="mt-2 border-accent/30 text-accent text-sm">
                     {icp.persona.role}
                   </Badge>
-                  <p className="text-xs text-muted-foreground mt-1">{icp.persona.businessType}</p>
+                  <p className="text-sm text-muted-foreground mt-1.5">{icp.persona.businessType}</p>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-2">
+              <div className="mt-5 space-y-3">
                 <div>
-                  <span className="text-xs text-accent font-medium">Goals</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <span className="text-sm text-accent font-medium">Goals</span>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {icp.psychographics.goals.map((goal, i) => (
-                      <Badge key={i} variant="secondary" className="text-[10px] bg-accent/10 text-foreground border-accent/20">
+                      <Badge key={i} variant="secondary" className="text-xs bg-accent/10 text-foreground border-accent/20">
                         {goal}
                       </Badge>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <span className="text-xs text-muted-foreground font-medium">Values</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <span className="text-sm text-muted-foreground font-medium">Values</span>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {icp.psychographics.values.map((value, i) => (
-                      <Badge key={i} variant="secondary" className="text-[10px] bg-muted/20 text-foreground border-border/30">
+                      <Badge key={i} variant="secondary" className="text-xs bg-muted/20 text-foreground border-border/30">
                         {value}
                       </Badge>
                     ))}
