@@ -237,9 +237,10 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
 
       {/* Your Ideal Customer - Subtitle */}
       <div className="flex items-center gap-2 mt-8">
-        <User className="h-4 w-4 text-accent" />
-        <h3 className="text-lg font-semibold text-foreground">Your Ideal Customer</h3>
-        <InfoTooltip>Detailed profile of your most valuable customer segment.</InfoTooltip>
+        <h3 className="font-semibold text-foreground text-sm">Your Ideal Customer</h3>
+        <InfoTooltip side="right" size="sm">
+          Detailed profile of your most valuable customer segment.
+        </InfoTooltip>
       </div>
 
       {/* ICP Row 1: Customer Avatar + Company Profile */}
@@ -377,10 +378,10 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
 
       {/* Growth Targets (AEMR) - Subtitle */}
       <div className="flex items-center gap-2 mt-8">
-        <TrendingUp className="h-4 w-4 text-accent" />
-        <h3 className="text-lg font-semibold text-foreground">Growth Targets</h3>
-        <Badge className="text-[10px] bg-accent/10 text-accent border-accent/30">AEMR</Badge>
-        <InfoTooltip>Acquisition, Engagement, Monetization, Retention framework metrics.</InfoTooltip>
+        <h3 className="font-semibold text-foreground text-sm">Growth Targets (AEMR)</h3>
+        <InfoTooltip side="right" size="sm">
+          Acquisition, Engagement, Monetization, Retention framework metrics.
+        </InfoTooltip>
       </div>
 
       {/* AEMR Row 1: Acquisition & Engagement + Monetization & Retention */}
