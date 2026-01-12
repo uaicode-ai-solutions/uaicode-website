@@ -359,14 +359,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         </p>
       </div>
 
-      {/* Urgency Banner */}
-      <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-accent/5 border border-accent/20">
-        <Clock className="h-4 w-4 text-accent" />
-        <p className="text-sm text-foreground">
-          <span className="text-accent font-semibold">Start this week</span> and launch in approximately {totalWeeks} weeks
-        </p>
-      </div>
-
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Button 
