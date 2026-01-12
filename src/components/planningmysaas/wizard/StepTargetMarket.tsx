@@ -5,12 +5,15 @@ import {
   Building2,
   Landmark,
   User,
+  Users,
   Rocket,
   Heart,
   MapPin,
   Flag,
   Globe,
   HelpCircle,
+  Briefcase,
+  Home,
 } from "lucide-react";
 
 const customerTypes = [
@@ -29,10 +32,24 @@ const marketSizes = [
   { id: "unsure", title: "I'm not sure yet", description: "", icon: HelpCircle },
 ];
 
+const targetAudiences = [
+  { id: "male", title: "Male", description: "Primarily male audience", icon: User },
+  { id: "female", title: "Female", description: "Primarily female audience", icon: User },
+  { id: "any", title: "Any Gender", description: "Gender-neutral product", icon: Users },
+];
+
+const marketTypes = [
+  { id: "b2b", title: "B2B", description: "Business to Business", icon: Briefcase },
+  { id: "b2c", title: "B2C", description: "Business to Consumer", icon: User },
+  { id: "internal", title: "Internal", description: "SaaS for internal company use", icon: Home },
+];
+
 interface StepTargetMarketProps {
   data: {
     customerTypes: string[];
     marketSize: string;
+    targetAudience: string;
+    marketType: string;
   };
   onChange: (field: string, value: string | string[]) => void;
 }
@@ -102,6 +119,54 @@ const StepTargetMarket = ({ data, onChange }: StepTargetMarketProps) => {
               description={size.description}
               selected={data.marketSize === size.id}
               onClick={() => onChange("marketSize", size.id)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Target Audience - Single Select */}
+      <div className="space-y-4">
+        <div>
+          <Label className="text-foreground text-lg">
+            Who is your target audience? <span className="text-accent">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select your primary demographic focus
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          {targetAudiences.map((audience) => (
+            <SelectableCard
+              key={audience.id}
+              icon={audience.icon}
+              title={audience.title}
+              description={audience.description}
+              selected={data.targetAudience === audience.id}
+              onClick={() => onChange("targetAudience", audience.id)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Market Type - Single Select */}
+      <div className="space-y-4">
+        <div>
+          <Label className="text-foreground text-lg">
+            What type of market are you targeting? <span className="text-accent">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select your business model type
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          {marketTypes.map((type) => (
+            <SelectableCard
+              key={type.id}
+              icon={type.icon}
+              title={type.title}
+              description={type.description}
+              selected={data.marketType === type.id}
+              onClick={() => onChange("marketType", type.id)}
             />
           ))}
         </div>
