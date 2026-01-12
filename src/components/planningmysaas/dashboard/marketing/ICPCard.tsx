@@ -85,148 +85,160 @@ const ICPCard = () => {
 
       {/* Customer Avatar & Demographics */}
       <div className="grid lg:grid-cols-2 gap-4">
-        {/* Persona Card - Enhanced */}
-        <Card className="glass-premium border-accent/30 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent" />
-          <CardContent className="p-5 relative">
-            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-              <User className="h-4 w-4 text-accent" />
-              Customer Avatar
-            </h3>
-            <div className="flex items-start gap-4">
-              <Avatar className="h-16 w-16 border-2 border-accent/30">
-                <AvatarFallback className="bg-accent/20 text-accent text-xl font-bold">
-                  {icp.persona.name.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <h4 className="text-lg font-bold text-foreground">{icp.persona.name}</h4>
-                <p className="text-sm text-muted-foreground">{icp.persona.age} years old</p>
-                <Badge variant="outline" className="mt-1.5 border-accent/30 text-accent text-xs">
-                  {icp.persona.role}
-                </Badge>
-                <p className="text-xs text-muted-foreground mt-1">{icp.persona.businessType}</p>
+        {/* Persona Card */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium text-foreground">Customer Avatar</h3>
+            <InfoTooltip size="sm">
+              A fictional representation of your ideal customer based on market research and data.
+            </InfoTooltip>
+          </div>
+          <Card className="glass-premium border-accent/30 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent" />
+            <CardContent className="p-5 relative">
+              <div className="flex items-start gap-4">
+                <Avatar className="h-16 w-16 border-2 border-accent/30">
+                  <AvatarFallback className="bg-accent/20 text-accent text-xl font-bold">
+                    {icp.persona.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h4 className="text-base font-bold text-foreground">{icp.persona.name}</h4>
+                  <p className="text-sm text-muted-foreground">{icp.persona.age} years old</p>
+                  <Badge variant="outline" className="mt-1.5 border-accent/30 text-accent text-xs">
+                    {icp.persona.role}
+                  </Badge>
+                  <p className="text-xs text-muted-foreground mt-1">{icp.persona.businessType}</p>
+                </div>
               </div>
-            </div>
 
-            <div className="mt-4 space-y-2">
-              <div>
-                <span className="text-xs text-accent font-medium">Goals</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {icp.psychographics.goals.map((goal, i) => (
-                    <Badge key={i} variant="secondary" className="text-[10px] bg-accent/10 text-foreground border-accent/20">
-                      {goal}
-                    </Badge>
-                  ))}
+              <div className="mt-4 space-y-2">
+                <div>
+                  <span className="text-xs text-accent font-medium">Goals</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {icp.psychographics.goals.map((goal, i) => (
+                      <Badge key={i} variant="secondary" className="text-[10px] bg-accent/10 text-foreground border-accent/20">
+                        {goal}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground font-medium">Values</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {icp.psychographics.values.map((value, i) => (
+                      <Badge key={i} variant="secondary" className="text-[10px] bg-muted/20 text-foreground border-border/30">
+                        {value}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div>
-                <span className="text-xs text-muted-foreground font-medium">Values</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {icp.psychographics.values.map((value, i) => (
-                    <Badge key={i} variant="secondary" className="text-[10px] bg-muted/20 text-foreground border-border/30">
-                      {value}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Company Profile Card */}
-        <Card className="bg-card/50 border-accent/20">
-          <CardContent className="p-5">
-            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-accent" />
-              Company Profile
-            </h3>
-            <div className="space-y-2">
-              {[
-                { label: "Company Size", value: icp.demographics.companySize, icon: Users },
-                { label: "Annual Revenue", value: icp.demographics.annualRevenue, icon: TrendingUp },
-                { label: "Industry", value: icp.demographics.industry, icon: Building2 },
-                { label: "Location", value: icp.demographics.location, icon: MapPin },
-                { label: "Business Stage", value: icp.demographics.businessStage, icon: Calendar }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/10 border border-border/20">
-                  <div className="p-1.5 rounded-lg bg-accent/10">
-                    <item.icon className="h-3.5 w-3.5 text-accent" />
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium text-foreground">Company Profile</h3>
+            <InfoTooltip size="sm">
+              Demographic characteristics of target companies including size, revenue, and industry.
+            </InfoTooltip>
+          </div>
+          <Card className="bg-card/50 border-accent/20">
+            <CardContent className="p-5">
+              <div className="space-y-2">
+                {[
+                  { label: "Company Size", value: icp.demographics.companySize, icon: Users },
+                  { label: "Annual Revenue", value: icp.demographics.annualRevenue, icon: TrendingUp },
+                  { label: "Industry", value: icp.demographics.industry, icon: Building2 },
+                  { label: "Location", value: icp.demographics.location, icon: MapPin },
+                  { label: "Business Stage", value: icp.demographics.businessStage, icon: Calendar }
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/10 border border-border/20">
+                    <div className="p-1.5 rounded-lg bg-accent/10">
+                      <item.icon className="h-3.5 w-3.5 text-accent" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                      <p className="text-sm font-medium text-foreground">{item.value}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground">{item.label}</p>
-                    <p className="text-sm font-medium text-foreground">{item.value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Pain Points & Buying Triggers */}
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Pain Points */}
-        <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-5">
-            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-400" />
-              Pain Points
-              <InfoTooltip term="Pain Points">
-                The specific problems and frustrations your target customer experiences. Understanding these helps craft compelling messaging.
-              </InfoTooltip>
-            </h3>
-            <div className="space-y-2">
-              {icp.painPoints.map((item, i) => (
-                <div 
-                  key={i} 
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-muted/10 border border-border/20"
-                >
-                  <span className="text-sm text-foreground">{item.pain}</span>
-                  <Badge className={`${getSeverityColor(item.severity)} capitalize text-[10px]`}>
-                    {item.severity}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium text-foreground">Pain Points</h3>
+            <InfoTooltip size="sm">
+              The specific problems and frustrations your target customer experiences. Understanding these helps craft compelling messaging.
+            </InfoTooltip>
+          </div>
+          <Card className="bg-card/50 border-border/30">
+            <CardContent className="p-5">
+              <div className="space-y-2">
+                {icp.painPoints.map((item, i) => (
+                  <div 
+                    key={i} 
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-muted/10 border border-border/20"
+                  >
+                    <span className="text-sm text-foreground">{item.pain}</span>
+                    <Badge className={`${getSeverityColor(item.severity)} capitalize text-[10px]`}>
+                      {item.severity}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Buying Triggers */}
-        <Card className="bg-card/50 border-accent/20">
-          <CardContent className="p-5">
-            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Zap className="h-4 w-4 text-accent" />
-              Buying Triggers
-              <InfoTooltip term="Buying Triggers">
-                Events or circumstances that activate purchase intent. Target your outreach when these triggers occur for higher conversion rates.
-              </InfoTooltip>
-            </h3>
-            <div className="space-y-2">
-              {icp.buyingTriggers.map((trigger, i) => (
-                <div 
-                  key={i} 
-                  className="flex items-center gap-2 p-2.5 rounded-lg bg-accent/5 border border-accent/20"
-                >
-                  <div className="h-1.5 w-1.5 rounded-full bg-accent" />
-                  <span className="text-sm text-foreground">{trigger}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium text-foreground">Buying Triggers</h3>
+            <InfoTooltip size="sm">
+              Events or circumstances that activate purchase intent. Target your outreach when these triggers occur for higher conversion rates.
+            </InfoTooltip>
+          </div>
+          <Card className="bg-card/50 border-accent/20">
+            <CardContent className="p-5">
+              <div className="space-y-2">
+                {icp.buyingTriggers.map((trigger, i) => (
+                  <div 
+                    key={i} 
+                    className="flex items-center gap-2 p-2.5 rounded-lg bg-accent/5 border border-accent/20"
+                  >
+                    <div className="h-1.5 w-1.5 rounded-full bg-accent" />
+                    <span className="text-sm text-foreground">{trigger}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Where to Find & Messaging - Combined */}
-      <Card className="bg-card/50 border-accent/20">
-        <CardContent className="p-5">
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Where to Find */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-accent" />
-                Where to Find Them
-              </h3>
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Where to Find */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium text-foreground">Where to Find Them</h3>
+            <InfoTooltip size="sm">
+              Channels and platforms where your target customers are most active and reachable.
+            </InfoTooltip>
+          </div>
+          <Card className="bg-card/50 border-accent/20">
+            <CardContent className="p-5">
               <div className="space-y-2">
                 {icp.whereToFind.map((item, i) => (
                   <div 
@@ -243,14 +255,20 @@ const ICPCard = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </div>
 
-            {/* Messaging Hooks */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-accent" />
-                Messaging That Works
-              </h3>
+        {/* Messaging Hooks */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium text-foreground">Messaging That Works</h3>
+            <InfoTooltip size="sm">
+              Proven messaging hooks that resonate with your target audience and drive action.
+            </InfoTooltip>
+          </div>
+          <Card className="bg-card/50 border-accent/20">
+            <CardContent className="p-5">
               <div className="space-y-2">
                 {icp.messagingHooks.map((hook, i) => (
                   <div 
@@ -261,41 +279,42 @@ const ICPCard = () => {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Decision Makers */}
-      <Card className="bg-card/50 border-accent/20">
-        <CardContent className="p-5">
-          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Users className="h-4 w-4 text-accent" />
-            Decision Makers
-            <InfoTooltip term="Decision Makers">
-              Key stakeholders involved in the purchasing decision. Understanding who influences the buy helps tailor your sales approach.
-            </InfoTooltip>
-          </h3>
-          <div className="grid grid-cols-3 gap-3">
-            {icp.decisionMakers.map((dm, i) => (
-              <div 
-                key={i} 
-                className="text-center p-3 rounded-lg bg-accent/5 border border-accent/20"
-              >
-                <Avatar className="h-10 w-10 mx-auto mb-2 border border-accent/30">
-                  <AvatarFallback className="bg-accent/20 text-accent text-xs">
-                    {dm.role.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <p className="font-medium text-foreground text-sm">{dm.role}</p>
-                <Badge variant="outline" className="mt-1.5 text-[10px] border-accent/30 text-muted-foreground">
-                  {dm.influence}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium text-foreground">Decision Makers</h3>
+          <InfoTooltip size="sm">
+            Key stakeholders involved in the purchasing decision. Understanding who influences the buy helps tailor your sales approach.
+          </InfoTooltip>
+        </div>
+        <Card className="bg-card/50 border-accent/20">
+          <CardContent className="p-5">
+            <div className="grid grid-cols-3 gap-3">
+              {icp.decisionMakers.map((dm, i) => (
+                <div 
+                  key={i} 
+                  className="text-center p-3 rounded-lg bg-accent/5 border border-accent/20"
+                >
+                  <Avatar className="h-10 w-10 mx-auto mb-2 border border-accent/30">
+                    <AvatarFallback className="bg-accent/20 text-accent text-xs">
+                      {dm.role.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="font-medium text-foreground text-sm">{dm.role}</p>
+                  <Badge variant="outline" className="mt-1.5 text-[10px] border-accent/30 text-muted-foreground">
+                    {dm.influence}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </section>
   );
 };
