@@ -353,35 +353,6 @@ const FinancialReturnSection = () => {
           </Card>
         </div>
 
-        {/* Total First Year Investment Bar */}
-        <Card className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent border-accent/30">
-          <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              {/* Left side - Total */}
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Total First Year Investment</p>
-                <p className="text-2xl font-bold text-foreground">{financialProjections.totalFirstYearInvestment}</p>
-                <p className="text-xs text-accent">Dev + Marketing + Infrastructure (Enterprise)</p>
-              </div>
-              
-              {/* Right side - Breakdown */}
-              <div className="flex gap-3">
-                <div className="px-4 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[80px]">
-                  <p className="text-[10px] text-muted-foreground">Dev Cost</p>
-                  <p className="text-sm font-bold text-foreground">{financialProjections.breakdown.developmentCost}</p>
-                </div>
-                <div className="px-4 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[80px]">
-                  <p className="text-[10px] text-muted-foreground">Marketing/Year</p>
-                  <p className="text-sm font-bold text-foreground">{financialProjections.breakdown.marketingYear}</p>
-                </div>
-                <div className="px-4 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[80px]">
-                  <p className="text-[10px] text-muted-foreground">Infra/Year</p>
-                  <p className="text-sm font-bold text-foreground">{financialProjections.breakdown.infrastructureYear}</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Scenario Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
