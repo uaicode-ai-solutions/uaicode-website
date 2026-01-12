@@ -363,7 +363,13 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   }}
                   className="w-full gap-2 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground"
                 >
-                  <Phone className="h-4 w-4 text-accent" />
+                  <div className="relative">
+                    <Phone className="h-4 w-4 text-accent" />
+                    <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                  </div>
                   Talk to Our Consultant
                 </Button>
               </div>
