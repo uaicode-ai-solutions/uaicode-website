@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import marcusAvatar from "@/assets/author-marcus.webp";
+import kyleAvatar from "@/assets/kyle-avatar.webp";
 
 interface KyleAvatarProps {
   isActive?: boolean;
@@ -62,7 +62,7 @@ const KyleAvatar = ({ isActive = false, isSpeaking = false, size = "md" }: KyleA
         } transition-all duration-300`}
       >
         <img 
-          src={marcusAvatar}
+          src={kyleAvatar}
           alt="Kyle - AI Sales Consultant"
           className="w-full h-full object-cover"
         />
