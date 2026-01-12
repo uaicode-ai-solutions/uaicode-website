@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Megaphone, CheckCircle, AlertTriangle, ArrowRight } from "lucide-react";
+import { Megaphone, CheckCircle, AlertTriangle, ArrowRight, Calendar, Zap } from "lucide-react";
 import { competitorAnalysisData } from "@/lib/competitorAnalysisMockData";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -185,26 +185,64 @@ const PaidMediaCards = () => {
         </Card>
       </div>
 
-      {/* 90-Day Timeline - Horizontal */}
-      <Card className="bg-accent/5 border-accent/20">
-        <CardContent className="p-4">
-          <h3 className="text-sm font-semibold text-foreground mb-4 text-center">90-Day Implementation</h3>
-          <div className="flex items-center justify-between">
+      {/* 90-Day Timeline - Premium Cards Grid */}
+      <Card className="bg-gradient-to-b from-accent/8 to-transparent border-accent/20 overflow-hidden">
+        <CardContent className="p-5">
+          {/* Header with Icon + Badge */}
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                <Calendar className="h-4 w-4 text-accent" />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground">90-Day Implementation</h3>
+            </div>
+            <Badge variant="outline" className="border-accent/30 text-accent text-[10px]">
+              <Zap className="h-3 w-3 mr-1" />
+              AI-Accelerated
+            </Badge>
+          </div>
+
+          {/* Grid of Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {timeline.map((item, idx) => (
-              <div key={idx} className="flex items-center flex-1">
-                <div className="flex flex-col items-center text-center flex-1">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${
-                    item.status === 'active' 
-                      ? 'bg-accent text-accent-foreground' 
-                      : 'bg-muted/30 text-muted-foreground'
+              <div 
+                key={idx} 
+                className={`group relative p-4 rounded-xl border transition-all duration-300 hover:-translate-y-1 ${
+                  item.status === 'active' 
+                    ? 'bg-gradient-to-b from-accent/15 to-accent/5 border-accent/40 shadow-[0_0_20px_rgba(249,115,22,0.15)]' 
+                    : 'bg-gradient-to-b from-accent/5 to-transparent border-accent/15 hover:border-accent/30'
+                }`}
+              >
+                {/* Phase Number with Icon */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                    item.status === 'active'
+                      ? 'bg-gradient-to-br from-accent to-amber-400 border-accent/50 shadow-[0_0_15px_rgba(249,115,22,0.3)]'
+                      : 'bg-accent/10 border-accent/20 group-hover:border-accent/40'
                   }`}>
-                    <span className="text-xs font-bold">{idx + 1}</span>
+                    {item.status === 'active' 
+                      ? <Zap className="h-4 w-4 text-white" />
+                      : <span className="text-sm font-bold text-accent">{idx + 1}</span>
+                    }
                   </div>
-                  <span className="text-[10px] font-medium text-accent">{item.week}</span>
-                  <span className="text-xs text-foreground">{item.milestone}</span>
+                  {item.status === 'active' && (
+                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px] animate-pulse">
+                      Current
+                    </Badge>
+                  )}
                 </div>
+                
+                {/* Timeline Info */}
+                <div className="space-y-1">
+                  <span className="text-xs font-medium text-accent">{item.week}</span>
+                  <p className="text-sm font-medium text-foreground">{item.milestone}</p>
+                </div>
+                
+                {/* Connector Arrow (desktop only) */}
                 {idx < timeline.length - 1 && (
-                  <ArrowRight className="h-4 w-4 text-accent/30 mx-1" />
+                  <div className="hidden lg:flex absolute -right-1.5 top-1/2 -translate-y-1/2 z-10">
+                    <ArrowRight className="h-3 w-3 text-accent/40" />
+                  </div>
                 )}
               </div>
             ))}
