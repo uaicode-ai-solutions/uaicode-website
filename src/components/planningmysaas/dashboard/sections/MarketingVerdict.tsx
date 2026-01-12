@@ -24,6 +24,11 @@ const MarketingVerdict = () => {
       icon: Lightbulb,
       title: "Content Marketing Gap",
       description: "Limited quality content targeting health business owners in search results"
+    },
+    {
+      icon: CheckCircle2,
+      title: "First-Mover Advantage",
+      description: "No dominant player in health SMB niche allows for early market capture"
     }
   ];
 
@@ -39,6 +44,14 @@ const MarketingVerdict = () => {
     {
       risk: "Price Sensitivity in SMB",
       mitigation: "Emphasize ROI and time savings over features"
+    },
+    {
+      risk: "Long Sales Cycles",
+      mitigation: "Offer freemium trial and self-service onboarding"
+    },
+    {
+      risk: "Feature Parity Catch-up",
+      mitigation: "Focus on core differentiators and iterate based on user feedback"
     }
   ];
 
