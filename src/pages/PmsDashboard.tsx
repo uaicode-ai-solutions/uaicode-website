@@ -25,6 +25,7 @@ import ExecutionPlanSection from "@/components/planningmysaas/dashboard/sections
 import WhyUaicodeSection from "@/components/planningmysaas/dashboard/sections/WhyUaicodeSection";
 import NextStepsSection from "@/components/planningmysaas/dashboard/sections/NextStepsSection";
 import ScheduleCallSection from "@/components/planningmysaas/dashboard/sections/ScheduleCallSection";
+import DirectContactSection from "@/components/planningmysaas/dashboard/sections/DirectContactSection";
 import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/BrandAssetsTab";
 import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
 
@@ -182,6 +183,9 @@ const PmsDashboard = () => {
 
               {/* Schedule Call Section */}
               <ScheduleCallSection projectName={projectName} />
+
+              {/* Direct Contact Section */}
+              <DirectContactSection />
 
               {/* Footer spacing */}
               <div className="h-16" />
