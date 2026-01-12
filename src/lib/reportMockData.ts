@@ -2,6 +2,9 @@
 // REPORT DATA - English Version
 // ============================================
 
+import sarahJohnsonAvatar from "@/assets/testimonial-sarah-johnson.webp";
+import marcusAvatar from "@/assets/author-marcus.webp";
+
 // ==========================================
 // REPORT DATA (Viability Report Tab)
 // ==========================================
@@ -325,14 +328,14 @@ The estimated $55,000 MVP investment has the potential to break even in 8 months
       { 
         name: "Sarah Mitchell", 
         company: "Startup Innovate", 
-        avatar: "/testimonial-sarah-johnson.webp",
+        avatar: sarahJohnsonAvatar,
         quote: "Uaicode delivered our MVP in 12 weeks with quality that exceeded expectations. Highly recommend.",
         role: "CEO"
       },
       { 
         name: "Robert Taylor", 
         company: "TechFlow Solutions", 
-        avatar: "/testimonial-marcus.webp",
+        avatar: marcusAvatar,
         quote: "Professional, agile, and transparent. Exactly what we needed to bring our idea to life.",
         role: "Founder"
       },
