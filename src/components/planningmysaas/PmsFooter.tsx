@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Youtube, Facebook, Instagram, Linkedin, Twitter, Loader2 } from "lucide-react";
+import { Youtube, Facebook, Instagram, Linkedin, Loader2 } from "lucide-react";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -174,7 +174,6 @@ const PmsFooter = () => {
                 { Icon: Facebook, url: "https://web.facebook.com/uaicodeai", label: "Facebook" },
                 { Icon: Instagram, url: "https://www.instagram.com/uaicode.ai/", label: "Instagram" },
                 { Icon: Linkedin, url: "https://www.linkedin.com/company/uaicodeai/", label: "LinkedIn" },
-                { Icon: Twitter, url: "https://x.com/uaicodeai", label: "X (Twitter)" },
               ].map(({ Icon, url, label }, index) => (
                 <a 
                   key={index}
