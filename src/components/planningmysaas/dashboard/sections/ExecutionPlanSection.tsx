@@ -80,7 +80,7 @@ const ExecutionPlanSection = () => {
                 <Clock className="h-5 w-5 text-accent" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Execution Timeline</h3>
+                <h3 className="text-sm font-medium text-foreground">Execution Timeline</h3>
                 <p className="text-xs text-muted-foreground">AI-accelerated development process</p>
               </div>
             </div>
@@ -92,10 +92,6 @@ const ExecutionPlanSection = () => {
 
           {/* Desktop Timeline - Horizontal Cards */}
           <div className="hidden lg:block relative">
-            {/* Connection Line */}
-            <div className="absolute top-14 left-[8%] right-[8%] h-0.5 z-0">
-              <div className="h-full bg-gradient-to-r from-accent/10 via-accent/40 to-accent/10 rounded-full" />
-            </div>
 
             {/* Phases Grid */}
             <div className="grid grid-cols-4 gap-4 relative z-10">
@@ -125,9 +121,9 @@ const ExecutionPlanSection = () => {
 
                       {/* Phase Info */}
                       <div className="space-y-2 mb-4">
-                        <h4 className="font-semibold text-foreground">{phase.name}</h4>
+                        <h4 className="text-sm font-medium text-foreground">{phase.name}</h4>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-lg font-bold text-accent">{duration}</span>
+                          <span className="text-sm font-semibold text-accent">{duration}</span>
                           {isCurrentPlan && (
                             <Badge className={`text-[10px] px-1.5 py-0 ${planColors[recommendedPlan]}`}>
                               {planLabels[recommendedPlan]}
@@ -192,12 +188,12 @@ const ExecutionPlanSection = () => {
                   {/* Card */}
                   <div className="bg-gradient-to-b from-accent/5 to-transparent border border-accent/20 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-foreground">{phase.name}</h4>
+                      <h4 className="text-sm font-medium text-foreground">{phase.name}</h4>
                       <span className="text-xs text-muted-foreground">Phase {phase.phase}</span>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <span className="text-base font-bold text-accent">{duration}</span>
+                      <span className="text-sm font-semibold text-accent">{duration}</span>
                       {isCurrentPlan && (
                         <Badge className={`text-[10px] px-1.5 py-0 ${planColors[recommendedPlan]}`}>
                           {planLabels[recommendedPlan]}
