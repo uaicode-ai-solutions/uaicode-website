@@ -31,16 +31,16 @@ const CompetitorsDifferentiationSection = () => {
       {/* Competitors Grid - 3x2 */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {competitors.map((competitor, index) => (
-          <Card key={index} className="metric-card-premium bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
-            <CardContent className="p-4">
+          <Card key={index} className="metric-card-premium bg-card/50 border-border/30 hover:border-accent/30 transition-colors flex flex-col h-full">
+            <CardContent className="p-4 flex flex-col flex-1">
               <div className="flex justify-between items-start mb-2">
                 <span className="font-semibold text-foreground text-sm">{competitor.name}</span>
                 <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-accent cursor-pointer transition-colors" />
               </div>
-              <p className="text-xs text-muted-foreground line-clamp-2 mb-4 min-h-[2.5rem]">
+              <p className="text-xs text-muted-foreground mb-4 flex-1">
                 {competitor.description}
               </p>
-              <div className="flex justify-between items-end">
+              <div className="flex justify-between items-end mt-auto">
                 <div>
                   <span className="text-2xl font-bold text-foreground">${competitor.price}</span>
                   <span className="text-xs text-muted-foreground">/month</span>
