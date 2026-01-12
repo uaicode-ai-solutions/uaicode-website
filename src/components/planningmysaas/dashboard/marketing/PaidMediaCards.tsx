@@ -6,7 +6,12 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Progress } from "@/components/ui/progress";
 
-const COLORS = ["hsl(var(--accent))", "hsl(45, 100%, 45%)", "hsl(142, 76%, 36%)", "hsl(280, 67%, 60%)"];
+const COLORS = [
+  "hsl(var(--accent))",      // Dourado Uaicode - Google Ads
+  "hsl(45, 100%, 55%)",      // Amarelo - Meta Ads
+  "hsl(142, 76%, 40%)",      // Verde - LinkedIn
+  "hsl(280, 70%, 55%)"       // Roxo - TikTok
+];
 
 const PaidMediaCards = () => {
   const { paidMediaDiagnosis, paidMediaActionPlan } = competitorAnalysisData;
@@ -84,48 +89,87 @@ const PaidMediaCards = () => {
           </CardContent>
         </Card>
 
-        {/* Budget Allocation */}
+        {/* Budget Allocation - Premium Design */}
         <Card className="glass-premium border-accent/20">
-          <CardContent className="p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Your Budget Allocation</h3>
-            <div className="flex items-center gap-4">
-              <div className="w-32 h-32">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie 
-                      data={budgetData} 
-                      cx="50%" 
-                      cy="50%" 
-                      innerRadius={30} 
-                      outerRadius={50} 
-                      paddingAngle={3} 
-                      dataKey="value"
-                    >
-                      {budgetData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: number, name: string, props: { payload: { budget: string } }) => [props.payload.budget, name]}
-                      contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--accent) / 0.2)", borderRadius: "8px", fontSize: "11px" }} 
+          <CardContent className="p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Your Budget Allocation</h3>
+            
+            {/* Gráfico Maior - Centralizado */}
+            <div className="relative h-48 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie 
+                    data={budgetData} 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius={55} 
+                    outerRadius={80} 
+                    paddingAngle={2} 
+                    dataKey="value"
+                    strokeWidth={0}
+                  >
+                    {budgetData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color}
+                        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: number, name: string, props: { payload: { budget: string } }) => [props.payload.budget, name]}
+                    contentStyle={{ 
+                      backgroundColor: "hsl(var(--card))", 
+                      border: "1px solid hsl(var(--accent) / 0.3)", 
+                      borderRadius: "12px", 
+                      fontSize: "12px",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                    }} 
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              
+              {/* Valor Central - Total Budget */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Total</span>
+                <span className="text-2xl font-bold text-accent">{paidMediaActionPlan.totalBudget.replace('/mo', '')}</span>
+                <span className="text-[10px] text-muted-foreground">/month</span>
+              </div>
+            </div>
+            
+            {/* Legenda Horizontal Abaixo */}
+            <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-border/30">
+              {paidMediaActionPlan.channels.map((channel, idx) => (
+                <div key={idx} className="flex items-center justify-between bg-muted/10 rounded-lg p-2.5 hover:bg-muted/20 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full shadow-sm" 
+                      style={{ backgroundColor: COLORS[idx % COLORS.length] }} 
                     />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex-1 space-y-2">
-                {paidMediaActionPlan.channels.map((channel, idx) => (
-                  <div key={idx} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
-                      <span className="text-xs text-foreground">{channel.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Progress value={channel.allocation} className="w-12 h-1.5 [&>div]:bg-accent" />
-                      <span className="text-xs font-medium text-accent w-10 text-right">{channel.budget}</span>
-                    </div>
+                    <span className="text-xs font-medium text-foreground">{channel.name}</span>
                   </div>
-                ))}
-              </div>
+                  <span className="text-sm font-bold text-accent">{channel.budget}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Allocation Bars */}
+            <div className="mt-4 space-y-2">
+              {paidMediaActionPlan.channels.map((channel, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground w-20 truncate">{channel.name}</span>
+                  <div className="flex-1 h-1.5 bg-muted/20 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ 
+                        width: `${channel.allocation}%`, 
+                        backgroundColor: COLORS[idx % COLORS.length] 
+                      }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-medium text-foreground w-8 text-right">{channel.allocation}%</span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
