@@ -20,9 +20,9 @@ const InvestmentSection = () => {
   const marketingInvestment = {
     uaicode: {
       subscription: 3000,
-      suggestedPaidMedia: 15000,
-      total: 18000,
-      yearlyTotal: 216000,
+      suggestedPaidMedia: 5000,
+      total: 8000,
+      yearlyTotal: 96000,
       included: [
         "Full-stack marketing team",
         "Strategy + Execution included",
@@ -35,14 +35,14 @@ const InvestmentSection = () => {
     traditional: {
       retainerMin: 8000,
       retainerMax: 15000,
-      paidMedia: 15000,
+      paidMedia: 5000,
       managementFeePercent: "15-20%",
-      managementFeeMin: 2250,
-      managementFeeMax: 3000,
-      totalMin: 25250,
-      totalMax: 32500,
-      yearlyMin: 303000,
-      yearlyMax: 390000,
+      managementFeeMin: 750,
+      managementFeeMax: 1000,
+      totalMin: 13750,
+      totalMax: 21000,
+      yearlyMin: 165000,
+      yearlyMax: 252000,
       notIncluded: [
         "Strategy charged separately",
         "Creative production is extra",
@@ -368,7 +368,7 @@ const InvestmentSection = () => {
               <div className="text-lg md:text-xl font-bold text-foreground">
                 {formatCurrency(marketingInvestment.uaicode.yearlyTotal)}
               </div>
-              <div className="text-[10px] text-muted-foreground/70 mt-1">($18K × 12)</div>
+              <div className="text-[10px] text-muted-foreground/70 mt-1">($8K × 12)</div>
             </div>
             <div className="p-3 rounded-lg bg-accent/10 border border-accent/30 text-center">
               <div className="text-xs text-accent/80 mb-1">Total</div>
