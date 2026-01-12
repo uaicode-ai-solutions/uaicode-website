@@ -387,52 +387,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         </p>
       </div>
 
-      {/* CTAs */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Button 
-          size="lg"
-          onClick={onScheduleCall}
-          className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 px-6 h-12 shadow-lg shadow-accent/20"
-        >
-          <Calendar className="h-4 w-4" />
-          {nextSteps.cta.primary}
-          <ArrowRight className="h-4 w-4" />
-        </Button>
-        <Button 
-          size="lg"
-          variant="outline"
-          onClick={onDownloadPDF}
-          className="border-border/50 hover:border-accent/50 gap-2 h-12"
-        >
-          <Download className="h-4 w-4" />
-          {nextSteps.cta.secondary}
-        </Button>
-      </div>
-
-      {/* Contact Info */}
-      <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-4">
-          <h3 className="font-semibold text-foreground mb-3 text-center text-sm">Direct Contact</h3>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a 
-              href={`mailto:${nextSteps.contact.email}`}
-              className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors text-sm"
-            >
-              <Mail className="h-4 w-4" />
-              <span>{nextSteps.contact.email}</span>
-            </a>
-            <a 
-              href={`https://wa.me/${nextSteps.contact.whatsapp.replace(/\D/g, '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-muted-foreground hover:text-green-400 transition-colors text-sm"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span>{nextSteps.contact.whatsapp}</span>
-            </a>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Final Message */}
       <Card className="bg-gradient-to-br from-accent/5 via-card to-accent/5 border-accent/20">
