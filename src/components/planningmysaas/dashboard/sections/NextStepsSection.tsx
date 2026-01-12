@@ -401,13 +401,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                     setSelectedPackage(option.id);
                     onScheduleCall?.();
                   }}
-                  className={`w-full gap-2 ${
-                    option.recommended 
-                      ? 'bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20' 
-                      : 'bg-muted/50 hover:bg-muted text-foreground border border-border/50'
-                  }`}
+                  className="w-full gap-2 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-black border border-yellow-500/40 shadow-lg shadow-yellow-500/20"
                 >
-                  <HandCoins className="h-4 w-4 text-yellow-200 drop-shadow-[0_1px_1px_rgba(0,0,0,0.65)]" />
+                  <HandCoins className="h-4 w-4 text-black" />
                   Claim Your Discount Now
                 </Button>
                 
