@@ -337,15 +337,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </div>
               </div>
 
-              {/* Payment Terms */}
-              <div className="flex items-center justify-center gap-2 mb-4 p-2 rounded-lg bg-muted/20 border border-border/30">
-                <CreditCard className="h-4 w-4 text-foreground/60 flex-shrink-0" />
-                <p className="text-xs text-foreground/70">
-                  <span className="font-medium text-foreground">50%</span> at contract signing + 
-                  <span className="font-medium text-foreground"> 50%</span> at final delivery
-                </p>
-              </div>
-
               {/* Features */}
               <ul className="space-y-2 mb-4">
                 {option.features.map((feature, index) => (
