@@ -1,260 +1,130 @@
-import { Award, Megaphone, TrendingUp, Zap, CheckCircle2, Quote, DollarSign, Users, BarChart3, Palette, Target, LineChart, Mail, Phone } from "lucide-react";
+import { Award, Megaphone, TrendingUp, Zap, CheckCircle2, Quote, Phone, Mail } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 const WhyUaicodeMarketing = () => {
-  const stats = {
-    campaignsLaunched: 150,
-    avgROAS: "4.2x",
-    successRate: 94
-  };
+  const stats = [
+    { value: "94%", label: "Success Rate" },
+    { value: "150+", label: "Campaigns" },
+    { value: "4.2x", label: "Avg. ROAS" },
+  ];
 
   const differentials = [
-    {
-      icon: Megaphone,
-      title: "Full-Stack Marketing Execution",
-      description: "From strategy to implementation, we handle paid media, content, and growth marketing"
-    },
-    {
-      icon: TrendingUp,
-      title: "Data-Driven Optimization",
-      description: "Weekly performance reviews with actionable insights and continuous A/B testing"
-    },
-    {
-      icon: Zap,
-      title: "Fast Time-to-Market",
-      description: "Launch your first campaigns within 2 weeks with our proven playbooks"
-    },
-    {
-      icon: Award,
-      title: "Industry Expertise",
-      description: "Deep experience with SaaS, health tech, and B2B growth strategies"
-    }
+    { icon: Megaphone, title: "Full-Stack Execution" },
+    { icon: TrendingUp, title: "Data-Driven" },
+    { icon: Zap, title: "Fast Launch (2 weeks)" },
+    { icon: Award, title: "SaaS Expertise" },
   ];
 
   const testimonials = [
     {
-      quote: "Uaicode's marketing strategy helped us achieve 5x growth in qualified leads within 3 months.",
+      quote: "5x growth in qualified leads within 3 months.",
       name: "Sarah Chen",
-      role: "CMO",
-      company: "HealthFlow",
+      role: "CMO, HealthFlow",
       initials: "SC"
     },
     {
-      quote: "Their understanding of B2B SaaS marketing is unmatched. ROI exceeded our expectations.",
+      quote: "ROI exceeded our expectations.",
       name: "Michael Torres",
-      role: "Founder",
-      company: "MedStack",
+      role: "Founder, MedStack",
       initials: "MT"
     }
   ];
 
-  const guarantees = [
-    "Transparent reporting",
-    "No long-term contracts",
-    "Dedicated account manager",
-    "Weekly optimization calls"
-  ];
-
-  const serviceInclusions = [
-    { icon: Target, text: "Strategy development & planning" },
-    { icon: Megaphone, text: "Paid media management (Google, Meta, LinkedIn)" },
-    { icon: Palette, text: "Content creation & copywriting" },
-    { icon: LineChart, text: "Weekly optimization & reporting" },
-    { icon: Users, text: "Dedicated account manager" },
-    { icon: BarChart3, text: "A/B testing & creative iteration" }
-  ];
+  const guarantees = ["Transparent reporting", "No lock-in contracts", "Dedicated manager", "Weekly calls"];
 
   return (
-    <section id="why-uaicode-marketing" className="space-y-6">
-      {/* Section Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
-          <Award className="h-5 w-5 text-accent" />
+    <section id="why-uaicode-marketing" className="space-y-4">
+      {/* Section Header - Compact */}
+      <div className="flex items-center gap-2">
+        <div className="p-1.5 rounded-lg bg-accent/10">
+          <Award className="h-4 w-4 text-accent" />
         </div>
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Why Uaicode for Marketing</h2>
-          <p className="text-sm text-muted-foreground">Our expertise in SaaS growth marketing</p>
-        </div>
+        <h2 className="text-xl font-bold text-foreground">Why Uaicode for Marketing</h2>
       </div>
 
-      {/* Stats Bar */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium text-foreground">Track Record</h3>
-          <InfoTooltip size="sm">
-            Key metrics from our marketing campaigns across SaaS clients.
-          </InfoTooltip>
-        </div>
-        <Card className="glass-premium border-accent/20 overflow-hidden">
-          <CardContent className="p-5">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="animate-fade-in" style={{ animationDelay: '0ms' }}>
-                <div className="text-xl md:text-2xl font-bold text-accent">{stats.successRate}%</div>
-                <p className="text-xs text-muted-foreground">Client Success Rate</p>
+      {/* Hero Card: Stats + Pricing Combined */}
+      <Card className="glass-premium border-accent/30 overflow-hidden">
+        <CardContent className="p-5">
+          <div className="grid lg:grid-cols-2 gap-6 items-center">
+            {/* Left: Stats + Pricing */}
+            <div>
+              {/* Stats Row */}
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                {stats.map((stat, i) => (
+                  <div key={i} className="text-center">
+                    <div className="text-xl font-bold text-accent">{stat.value}</div>
+                    <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+                  </div>
+                ))}
               </div>
-              <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-                <div className="text-xl md:text-2xl font-bold text-foreground">{stats.campaignsLaunched}+</div>
-                <p className="text-xs text-muted-foreground">Campaigns Launched</p>
+              
+              {/* Pricing */}
+              <div className="p-4 rounded-xl bg-accent/10 border border-accent/30">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl font-bold text-accent">$3,000</span>
+                  <span className="text-sm text-muted-foreground">/month</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">Full-service marketing execution</p>
+                <div className="flex gap-2">
+                  <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground flex-1">
+                    <Phone className="h-3 w-3 mr-1" />
+                    Call
+                  </Button>
+                  <Button size="sm" variant="outline" className="border-accent/30 text-accent flex-1">
+                    <Mail className="h-3 w-3 mr-1" />
+                    Email
+                  </Button>
+                </div>
               </div>
-              <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
-                <div className="text-xl md:text-2xl font-bold text-foreground">{stats.avgROAS}</div>
-                <p className="text-xs text-muted-foreground">Avg. ROAS Achieved</p>
+
+              {/* Guarantees */}
+              <div className="flex flex-wrap gap-2 mt-3">
+                {guarantees.map((g, i) => (
+                  <Badge key={i} variant="outline" className="text-[10px] border-accent/20 text-muted-foreground">
+                    <CheckCircle2 className="h-2.5 w-2.5 mr-1 text-accent" />
+                    {g}
+                  </Badge>
+                ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Pricing Card - $3,000/month */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium text-foreground">Full-Service Marketing</h3>
-          <InfoTooltip size="sm">
-            Complete marketing execution for your SaaS including strategy, paid media, and content.
-          </InfoTooltip>
-        </div>
-        <Card className="glass-premium border-accent/30 overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-accent/5 to-transparent" />
-          <CardContent className="p-6 relative">
-            <div className="grid lg:grid-cols-2 gap-6 items-center">
-              <div>
-                <div className="flex items-baseline gap-2 mb-1.5">
-                  <span className="text-3xl font-bold text-accent">$3,000</span>
-                  <span className="text-base text-muted-foreground">/month</span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Complete marketing execution for your SaaS.
-                  <InfoTooltip size="sm">
-                    Ad spend budget is managed separately and billed directly to your ad accounts. We manage campaigns on your behalf without markup.
-                  </InfoTooltip>
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                    <Phone className="h-3.5 w-3.5 mr-1.5" />
-                    Schedule Strategy Call
-                  </Button>
-                  <Button size="sm" variant="outline" className="border-accent/30 text-accent hover:bg-accent/10">
-                    <Mail className="h-3.5 w-3.5 mr-1.5" />
-                    contato@uaicode.io
-                  </Button>
-                </div>
+            {/* Right: Differentials + Testimonials */}
+            <div className="space-y-4">
+              {/* Differentials Grid */}
+              <div className="grid grid-cols-2 gap-2">
+                {differentials.map((diff, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2.5 rounded-lg bg-accent/5 border border-accent/10">
+                    <diff.icon className="h-4 w-4 text-accent flex-shrink-0" />
+                    <span className="text-xs text-foreground">{diff.title}</span>
+                  </div>
+                ))}
               </div>
+
+              {/* Testimonials */}
               <div className="space-y-2">
-                <h4 className="font-semibold text-foreground text-sm mb-3">What's Included:</h4>
-                {serviceInclusions.map((item, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <div className="p-1 rounded-lg bg-accent/10">
-                      <item.icon className="h-3.5 w-3.5 text-accent" />
-                    </div>
-                    <span className="text-foreground text-sm">{item.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-4">
-        {/* Differentials */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium text-foreground">Our Marketing Differentials</h3>
-            <InfoTooltip size="sm">
-              What sets our marketing services apart from other agencies.
-            </InfoTooltip>
-          </div>
-          <Card className="bg-card/50 border-accent/20">
-            <CardContent className="p-5">
-              <div className="grid gap-3">
-                {differentials.map((diff, index) => (
-                  <div 
-                    key={index}
-                    className="flex gap-3 p-3 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/30 transition-colors"
-                  >
-                    <div className="p-1.5 rounded-lg bg-accent/10 h-fit">
-                      <diff.icon className="h-4 w-4 text-accent" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-foreground text-sm">{diff.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">{diff.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Testimonials */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium text-foreground">What Our Clients Say</h3>
-            <InfoTooltip size="sm">
-              Feedback from SaaS founders and marketing leaders we've worked with.
-            </InfoTooltip>
-          </div>
-          <Card className="bg-card/50 border-border/30">
-            <CardContent className="p-5">
-              <div className="space-y-3">
-                {testimonials.map((testimonial, index) => (
-                  <div 
-                    key={index}
-                    className="p-3 rounded-lg bg-muted/20 border border-border/30"
-                  >
-                    <Quote className="h-4 w-4 text-accent/50 mb-2" />
-                    <p className="text-foreground/90 italic text-sm mb-3">
-                      "{testimonial.quote}"
-                    </p>
+                {testimonials.map((t, i) => (
+                  <div key={i} className="p-3 rounded-lg bg-muted/10 border border-border/20">
+                    <Quote className="h-3 w-3 text-accent/50 mb-1" />
+                    <p className="text-xs text-foreground italic mb-2">"{t.quote}"</p>
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8 border border-accent/20">
-                        <AvatarFallback className="bg-accent/20 text-accent text-xs font-medium">
-                          {testimonial.initials}
-                        </AvatarFallback>
+                      <Avatar className="h-6 w-6 border border-accent/20">
+                        <AvatarFallback className="bg-accent/20 text-accent text-[10px]">{t.initials}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-foreground text-xs">{testimonial.name}</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {testimonial.role}, {testimonial.company}
-                        </p>
+                        <p className="text-[10px] font-medium text-foreground">{t.name}</p>
+                        <p className="text-[9px] text-muted-foreground">{t.role}</p>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Guarantees */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium text-foreground">Our Guarantees</h3>
-          <InfoTooltip size="sm">
-            Commitments we make to every client we work with.
-          </InfoTooltip>
-        </div>
-        <Card className="bg-card/50 border-accent/20">
-          <CardContent className="p-5">
-            <div className="flex flex-wrap justify-center gap-3">
-              {guarantees.map((guarantee, index) => (
-                <div 
-                  key={index}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20"
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-                  <span className="text-xs text-foreground">{guarantee}</span>
-                </div>
-              ))}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </section>
   );
 };
