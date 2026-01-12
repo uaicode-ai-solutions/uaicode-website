@@ -7,7 +7,7 @@ interface StepYourInfoProps {
   data: {
     fullName: string;
     email: string;
-    companyName: string;
+    linkedinProfile: string;
     phone: string;
   };
   onChange: (field: string, value: string) => void;
@@ -94,17 +94,17 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
           />
         </div>
 
-        {/* Company Name - Optional */}
+        {/* LinkedIn Profile - Optional */}
         <div className="space-y-1.5">
-          <Label htmlFor="companyName" className="text-sm text-muted-foreground">
-            Company Name
+          <Label htmlFor="linkedinProfile" className="text-sm text-muted-foreground">
+            LinkedIn Profile
           </Label>
           <Input
-            id="companyName"
-            type="text"
-            placeholder="Acme Inc."
-            value={data.companyName}
-            onChange={(e) => onChange("companyName", e.target.value)}
+            id="linkedinProfile"
+            type="url"
+            placeholder="https://linkedin.com/in/johndoe"
+            value={data.linkedinProfile}
+            onChange={(e) => onChange("linkedinProfile", e.target.value)}
             className="bg-background border-border/50 focus:border-accent"
           />
         </div>

@@ -8,18 +8,23 @@ export interface StoredReport {
   wizardData: {
     fullName: string;
     email: string;
-    companyName: string;
+    linkedinProfile: string;
     phone: string;
     saasType: string;
     saasTypeOther: string;
     industry: string;
     industryOther: string;
     description: string;
+    saasName: string;
+    saasLogo: string;
     customerTypes: string[];
     marketSize: string;
+    targetAudience: string;
+    marketType: string;
     selectedFeatures: string[];
     selectedTier: string;
     goal: string;
+    goalOther: string;
     budget: string;
     timeline: string;
   };
