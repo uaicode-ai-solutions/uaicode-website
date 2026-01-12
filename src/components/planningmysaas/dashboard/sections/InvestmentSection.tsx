@@ -1,9 +1,10 @@
-import { DollarSign, Check, X, PieChart, AlertCircle, Sparkles, Building2, Megaphone } from "lucide-react";
+import { DollarSign, Check, X, PieChart, AlertCircle, Sparkles, Megaphone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Badge } from "@/components/ui/badge";
 import { reportData } from "@/lib/reportMockData";
 import PricingComparisonSlider from "../PricingComparisonSlider";
+import MarketingComparisonSlider from "../MarketingComparisonSlider";
 import {
   PieChart as RechartsPieChart,
   Pie,
@@ -313,71 +314,10 @@ const InvestmentSection = () => {
           </CardContent>
         </Card>
 
-        {/* Traditional Agency Card */}
+        {/* Marketing Cost Comparison Slider */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-5">
-            {/* Header with Badge */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-muted-foreground" />
-                <h4 className="font-semibold text-foreground">Traditional Agency</h4>
-              </div>
-              <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">
-                TRADITIONAL
-              </Badge>
-            </div>
-
-            {/* Pricing Breakdown */}
-            <div className="space-y-3 mb-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Monthly Retainer</span>
-                <span className="text-lg font-bold text-foreground">
-                  {formatCurrency(marketingInvestment.traditional.retainerMin)} - {formatCurrency(marketingInvestment.traditional.retainerMax)}/mo
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Paid Media (same budget)</span>
-                <span className="text-sm text-foreground">
-                  {formatCurrency(marketingInvestment.traditional.paidMedia)}/mo
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Management Fee ({marketingInvestment.traditional.managementFeePercent})</span>
-                <span className="text-sm text-foreground">
-                  {formatCurrency(marketingInvestment.traditional.managementFeeMin)} - {formatCurrency(marketingInvestment.traditional.managementFeeMax)}/mo
-                </span>
-              </div>
-              <div className="pt-2 border-t border-border/30 flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">Total Monthly</span>
-                <span className="text-lg font-bold text-muted-foreground">
-                  {formatCurrency(marketingInvestment.traditional.totalMin)} - {formatCurrency(marketingInvestment.traditional.totalMax)}/mo
-                </span>
-              </div>
-            </div>
-
-            {/* Not Included */}
-            <div className="mb-4">
-              <h5 className="font-medium text-foreground text-xs mb-2 flex items-center gap-2">
-                <X className="h-3 w-3 text-muted-foreground" />
-                Not Included / Extra Charges
-              </h5>
-              <ul className="space-y-1.5">
-                {marketingInvestment.traditional.notIncluded.map((item, index) => (
-                  <li key={index} className="flex items-start gap-2 text-xs">
-                    <X className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Yearly Total */}
-            <div className="pt-3 border-t border-border/30 text-center">
-              <p className="text-xs text-muted-foreground mb-1">First Year Investment</p>
-              <p className="text-2xl font-bold text-muted-foreground">
-                {formatCurrency(marketingInvestment.traditional.yearlyMin)} - {formatCurrency(marketingInvestment.traditional.yearlyMax)}
-              </p>
-            </div>
+            <MarketingComparisonSlider />
           </CardContent>
         </Card>
       </div>
