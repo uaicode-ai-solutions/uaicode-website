@@ -59,8 +59,12 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   }, 0);
 
   const mvpPrice = investment.total;
-  const mvpDiscountedPrice = Math.round(investment.total * 0.9);
-  const mvpSavings = mvpPrice - mvpDiscountedPrice;
+  // MVP Development - 10% discount
+  const mvpDevDiscountedPrice = Math.round(investment.total * 0.9);
+  const mvpDevSavings = mvpPrice - mvpDevDiscountedPrice;
+  // MVP + Marketing - 20% discount on MVP
+  const mvpMarketingDiscountedPrice = Math.round(investment.total * 0.8);
+  const mvpMarketingSavings = mvpPrice - mvpMarketingDiscountedPrice;
   const marketingMonthly = 8000;
 
   const pricingOptions = [
@@ -68,11 +72,15 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       id: 'mvp-only' as const,
       name: 'MVP Development',
       badge: null,
-      price: mvpPrice,
-      priceLabel: 'one-time payment',
-      discount: null,
+      price: mvpDevDiscountedPrice,
+      priceLabel: '10% OFF',
+      discount: {
+        original: mvpPrice,
+        savings: mvpDevSavings
+      },
       features: [
         "Complete MVP development",
+        `10% discount (save ${formatCurrency(mvpDevSavings)})`,
         "12 months hosting included",
         "30 days post-launch support",
         "Full documentation & training",
@@ -90,15 +98,15 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       id: 'mvp-marketing' as const,
       name: 'MVP + Marketing',
       badge: 'RECOMMENDED',
-      price: mvpDiscountedPrice,
-      priceLabel: '10% OFF on MVP',
+      price: mvpMarketingDiscountedPrice,
+      priceLabel: '20% OFF on MVP',
       discount: {
         original: mvpPrice,
-        savings: mvpSavings
+        savings: mvpMarketingSavings
       },
       features: [
         "Everything in MVP Development",
-        `10% discount on MVP (save ${formatCurrency(mvpSavings)})`,
+        `20% discount on MVP (save ${formatCurrency(mvpMarketingSavings)})`,
         "Full-stack marketing team",
         "Paid media management included",
         "AI-powered campaign optimization",
