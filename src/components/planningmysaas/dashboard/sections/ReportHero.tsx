@@ -147,24 +147,6 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
           ))}
         </div>
 
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
-          <Button 
-            size="lg"
-            onClick={onScheduleCall}
-            className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 px-8"
-          >
-            Let's Build This Together
-          </Button>
-          <Button 
-            size="lg"
-            variant="outline"
-            onClick={onExploreReport || scrollToContent}
-            className="border-accent/30 hover:border-accent/50 hover:bg-accent/5 gap-2"
-          >
-            See Full Analysis
-          </Button>
-        </div>
 
         {/* Scroll Indicator */}
         <div 
