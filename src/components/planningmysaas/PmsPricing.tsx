@@ -43,7 +43,7 @@ const PmsPricing = () => {
         </div>
 
         {/* Single Pricing Card */}
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-2xl mx-auto">
           <div className="relative group">
             {/* Animated Border */}
             <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent bg-[length:200%_100%] animate-[borderMove_3s_linear_infinite]" />
@@ -69,7 +69,7 @@ const PmsPricing = () => {
               </div>
 
               {/* Features List */}
-              <ul className="space-y-4 mb-8 flex-grow">
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 flex-grow">
                 {features.map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center flex-shrink-0 mt-0.5">
