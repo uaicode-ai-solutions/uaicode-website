@@ -27,10 +27,10 @@ const MarketingVerdict = () => {
 
   return (
     <section id="marketing-verdict" className="space-y-4 scroll-mt-8">
-      {/* Recommendation Banner - Compact */}
-      <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-        <div className="p-1.5 rounded-full bg-green-500/20">
-          <Rocket className="h-4 w-4 text-green-400" />
+      {/* Recommendation Banner */}
+      <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+        <div className="p-2 rounded-full bg-green-500/20">
+          <Rocket className="h-5 w-5 text-green-400" />
         </div>
         <div className="flex-1 flex items-center justify-between flex-wrap gap-2">
           <div>
@@ -46,18 +46,18 @@ const MarketingVerdict = () => {
       </div>
 
       {/* 3-Column Grid */}
-      <div className="grid lg:grid-cols-3 gap-3">
+      <div className="grid lg:grid-cols-3 gap-4">
         {/* Key Findings */}
-        <Card className="glass-premium border-accent/20">
-          <CardContent className="p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-5">
+            <h3 className="font-semibold text-foreground text-sm mb-4 flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-accent" />
               Key Findings
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {keyFindings.map((finding, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <div className="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div key={i} className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20">
+                  <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-[10px] font-bold text-accent">{i + 1}</span>
                   </div>
                   <p className="text-xs text-foreground leading-relaxed">{finding}</p>
@@ -68,16 +68,16 @@ const MarketingVerdict = () => {
         </Card>
 
         {/* Opportunities with Visual Scores */}
-        <Card className="glass-premium border-accent/20">
-          <CardContent className="p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-5">
+            <h3 className="font-semibold text-foreground text-sm mb-4 flex items-center gap-2">
               <Target className="h-4 w-4 text-accent" />
               Opportunities
             </h3>
             <div className="space-y-3">
               {opportunities.map((opp, i) => (
-                <div key={i} className="space-y-1">
-                  <div className="flex items-center justify-between">
+                <div key={i} className="p-3 rounded-lg bg-muted/10 border border-border/20">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <opp.icon className="h-3 w-3 text-accent" />
                       <span className="text-xs text-foreground">{opp.title}</span>
@@ -92,15 +92,15 @@ const MarketingVerdict = () => {
         </Card>
 
         {/* Risks & Actions */}
-        <Card className="glass-premium border-border/30">
-          <CardContent className="p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-5">
+            <h3 className="font-semibold text-foreground text-sm mb-4 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-yellow-500" />
               Risks & Actions
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {risks.map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/10 border border-border/20">
+                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/10 border border-border/20">
                   <span className="text-xs text-foreground">{item.risk}</span>
                   <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">
                     {item.action}

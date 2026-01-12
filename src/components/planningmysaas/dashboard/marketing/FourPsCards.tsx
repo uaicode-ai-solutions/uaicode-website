@@ -57,26 +57,29 @@ const FourPsCards = () => {
   );
 
   return (
-    <section className="space-y-4">
-      {/* Section Header - Compact */}
-      <div className="flex items-center gap-2">
-        <div className="p-1.5 rounded-lg bg-accent/10">
-          <Package className="h-4 w-4 text-accent" />
+    <section className="space-y-6 animate-fade-in">
+      {/* Section Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-accent/10">
+          <Package className="h-5 w-5 text-accent" />
         </div>
-        <h2 className="text-xl font-bold text-foreground">
-          4Ps Competitive Analysis
-          <InfoTooltip term="4Ps Framework" size="sm">
-            Product, Price, Place, and Promotion — marketing framework to compare competitive positioning.
-          </InfoTooltip>
-        </h2>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">4Ps Competitive Analysis</h2>
+            <InfoTooltip term="4Ps Framework" size="sm">
+              Product, Price, Place, and Promotion — marketing framework to compare competitive positioning.
+            </InfoTooltip>
+          </div>
+          <p className="text-sm text-muted-foreground">Competitor positioning across key dimensions</p>
+        </div>
       </div>
 
       {/* Comparative Table */}
-      <Card className="glass-premium border-accent/20 overflow-hidden">
+      <Card className="bg-card/50 border-border/30 overflow-hidden">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow className="bg-accent/5 hover:bg-accent/5">
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
                 <TableHead className="w-[180px] text-foreground font-semibold text-xs">Competitor</TableHead>
                 <TableHead className="text-center text-xs">
                   <div className="flex items-center justify-center gap-1">
@@ -111,10 +114,10 @@ const FourPsCards = () => {
                   (competitor.product.score + competitor.price.score + competitor.place.score + competitor.promotion.score) / 4
                 );
                 return (
-                  <TableRow key={idx} className="hover:bg-accent/5">
+                  <TableRow key={idx} className="hover:bg-muted/10">
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center text-base border border-accent/20">
+                        <div className="w-8 h-8 rounded-lg bg-muted/10 flex items-center justify-center text-base border border-border/20">
                           {competitor.logo}
                         </div>
                         <div>
