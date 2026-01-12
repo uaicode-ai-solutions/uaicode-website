@@ -1,4 +1,22 @@
-import { Megaphone, Target, DollarSign, TrendingUp, ArrowRight, Sparkles, User, AlertTriangle, Zap, Users, Heart } from "lucide-react";
+import { 
+  Megaphone, 
+  Target, 
+  DollarSign, 
+  TrendingUp, 
+  ArrowRight, 
+  Sparkles, 
+  User, 
+  AlertTriangle, 
+  Zap, 
+  Users, 
+  Heart,
+  Building2,
+  MapPin,
+  Calendar,
+  MessageSquare,
+  BarChart3,
+  Eye
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,8 +67,8 @@ const marketingMetrics = [
   },
 ];
 
-// ICP Preview data
-const icpPreview = {
+// ICP Data - expanded
+const icpData = {
   persona: {
     name: "Maria Santos",
     age: 42,
@@ -58,41 +76,76 @@ const icpPreview = {
     businessType: "Health Product Store",
     initials: "MS"
   },
+  demographics: [
+    { icon: Users, label: "Company Size", value: "10-50 employees" },
+    { icon: DollarSign, label: "Annual Revenue", value: "$500K - $5M" },
+    { icon: Building2, label: "Industry", value: "Health & Wellness" },
+    { icon: MapPin, label: "Location", value: "Urban, US & LATAM" },
+    { icon: Calendar, label: "Business Stage", value: "Growth (2-7 yrs)" }
+  ],
+  goals: [
+    "Scale without losing quality",
+    "Compete with big platforms",
+    "Build customer loyalty"
+  ],
   painPoints: [
     { pain: "Losing sales to big platforms", severity: "high" },
-    { pain: "Manual inventory takes 3+ hours/day", severity: "high" }
+    { pain: "Manual inventory takes 3+ hours/day", severity: "high" },
+    { pain: "No integrated delivery solution", severity: "medium" },
+    { pain: "Compliance documentation is complex", severity: "medium" }
   ],
   buyingTriggers: [
     "Hiring new staff members",
-    "Opening second location"
+    "Opening second location",
+    "Seasonal demand spike",
+    "Competitor launching online store"
+  ],
+  decisionMakers: [
+    { role: "Owner/CEO", initials: "CEO", influence: "Final decision" },
+    { role: "Ops Manager", initials: "OM", influence: "Daily usage" },
+    { role: "Accountant", initials: "ACC", influence: "Cost approval" }
+  ],
+  messagingHooks: [
+    "Save 10+ hours per week on inventory",
+    "Compete with big platforms on delivery"
   ]
 };
 
-// Growth Metrics Preview (AEMR)
+// Growth Strategy Data
 const { growthStrategy } = competitorAnalysisData;
 
-const growthMetricsPreview = [
-  { 
-    icon: Users, 
-    value: growthStrategy.acquisition.targetCAC, 
-    label: "Target CAC"
-  },
-  { 
-    icon: Zap, 
-    value: growthStrategy.engagement.activationTarget, 
-    label: "Activation"
-  },
-  { 
-    icon: DollarSign, 
-    value: growthStrategy.monetization.conversionTarget, 
-    label: "Conversion"
-  },
-  { 
-    icon: Heart, 
-    value: growthStrategy.retention.targetChurn, 
-    label: "Target Churn"
-  }
+const acquisitionMetrics = [
+  { icon: DollarSign, value: growthStrategy.acquisition.targetCAC, label: "Target CAC" },
+  { icon: Zap, value: growthStrategy.engagement.activationTarget, label: "Activation" }
 ];
+
+const monetizationMetrics = [
+  { icon: TrendingUp, value: growthStrategy.monetization.conversionTarget, label: "Conversion" },
+  { icon: Heart, value: growthStrategy.retention.targetChurn, label: "Target Churn" }
+];
+
+const keyMetrics = [
+  { label: "Monthly Visitors", value: "25K", target: "target" },
+  { label: "Lead Conv. Rate", value: "3%", target: "target" },
+  { label: "MQLs/month", value: "500", target: "target" },
+  { label: "CAC Target", value: "<$75", target: "target" }
+];
+
+const expectedResults = [
+  { label: "Impressions", value: "5M+" },
+  { label: "Leads Generated", value: "2,500+" },
+  { label: "Trial Signups", value: "500+" },
+  { label: "New Customers", value: "150+" },
+  { label: "Achieved CAC", value: "$75" }
+];
+
+const getSeverityColor = (severity: string) => {
+  switch (severity) {
+    case "high": return "bg-red-500/20 text-red-400 border-red-500/30";
+    case "medium": return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+    default: return "bg-muted/20 text-muted-foreground border-border/30";
+  }
+};
 
 const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntelligenceSectionProps) => {
   return (
@@ -182,63 +235,45 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
         })}
       </div>
 
-      {/* ICP Preview + Growth Metrics - 2 columns */}
+      {/* Your Ideal Customer - Subtitle */}
+      <div className="flex items-center gap-2 mt-8">
+        <User className="h-4 w-4 text-accent" />
+        <h3 className="text-lg font-semibold text-foreground">Your Ideal Customer</h3>
+        <InfoTooltip>Detailed profile of your most valuable customer segment.</InfoTooltip>
+      </div>
+
+      {/* ICP Row 1: Customer Avatar + Company Profile */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* ICP Preview Card */}
+        {/* Customer Avatar Card */}
         <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
           <CardContent className="p-5">
-            {/* Header */}
             <div className="flex items-center gap-2 mb-4">
               <User className="h-4 w-4 text-accent" />
-              <h4 className="font-medium text-sm text-foreground">Your Ideal Customer</h4>
-              <InfoTooltip>A detailed profile of your most valuable customer segment based on market analysis.</InfoTooltip>
+              <h4 className="font-medium text-sm text-foreground">Customer Avatar</h4>
             </div>
             
-            {/* Persona */}
-            <div className="flex items-center gap-3 mb-4">
-              <Avatar className="h-12 w-12 border-2 border-accent/30">
-                <AvatarFallback className="bg-accent/20 text-accent font-bold text-sm">
-                  {icpPreview.persona.initials}
+            <div className="flex items-center gap-4 mb-5">
+              <Avatar className="h-14 w-14 border-2 border-accent/30">
+                <AvatarFallback className="bg-accent/20 text-accent font-bold text-lg">
+                  {icpData.persona.initials}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-foreground">{icpPreview.persona.name}, {icpPreview.persona.age}</p>
-                <p className="text-xs text-muted-foreground">{icpPreview.persona.role}</p>
-                <Badge className="mt-1 text-[10px] bg-accent/10 text-accent border-accent/30">
-                  {icpPreview.persona.businessType}
+                <p className="font-semibold text-foreground text-lg">{icpData.persona.name}, {icpData.persona.age}</p>
+                <p className="text-sm text-muted-foreground">{icpData.persona.role}</p>
+                <Badge className="mt-1.5 text-xs bg-accent/10 text-accent border-accent/30">
+                  {icpData.persona.businessType}
                 </Badge>
               </div>
             </div>
             
-            {/* Pain Points */}
-            <div className="mb-3">
-              <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1.5">
-                <AlertTriangle className="h-3 w-3 text-red-400" />
-                Pain Points
-              </p>
-              <div className="space-y-1">
-                {icpPreview.painPoints.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-xs p-1.5 rounded bg-red-500/5 border border-red-500/10">
-                    <span className="text-foreground">{item.pain}</span>
-                    <Badge className="text-[8px] bg-red-500/20 text-red-400 border-red-500/30">
-                      {item.severity}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Buying Triggers */}
             <div>
-              <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1.5">
-                <Zap className="h-3 w-3 text-accent" />
-                Buying Triggers
-              </p>
-              <div className="space-y-1">
-                {icpPreview.buyingTriggers.map((trigger, i) => (
-                  <div key={i} className="flex items-center gap-1.5 text-xs p-1.5 rounded bg-accent/5 border border-accent/10">
-                    <div className="h-1 w-1 rounded-full bg-accent" />
-                    <span className="text-foreground">{trigger}</span>
+              <p className="text-xs text-muted-foreground mb-2">Primary Goals</p>
+              <div className="space-y-2">
+                {icpData.goals.map((goal, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm p-2.5 rounded-lg bg-accent/5 border border-accent/10">
+                    <div className="h-1.5 w-1.5 rounded-full bg-accent" />
+                    <span className="text-foreground">{goal}</span>
                   </div>
                 ))}
               </div>
@@ -246,49 +281,278 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
           </CardContent>
         </Card>
 
-        {/* Growth Metrics Card (AEMR) */}
+        {/* Company Profile Card */}
         <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
           <CardContent className="p-5">
-            {/* Header */}
             <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="h-4 w-4 text-accent" />
-              <h4 className="font-medium text-sm text-foreground">Growth Targets</h4>
-              <Badge className="text-[8px] bg-accent/10 text-accent border-accent/30">AEMR</Badge>
-              <InfoTooltip>AEMR Framework: Acquisition, Engagement, Monetization, Retention - key metrics for sustainable growth.</InfoTooltip>
+              <Building2 className="h-4 w-4 text-accent" />
+              <h4 className="font-medium text-sm text-foreground">Company Profile</h4>
             </div>
             
-            {/* AEMR Grid */}
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              {growthMetricsPreview.map((metric, i) => {
+            <div className="space-y-3 mb-5">
+              {icpData.demographics.map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <div key={i} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Icon className="h-3.5 w-3.5 text-accent/70" />
+                      <span>{item.label}</span>
+                    </div>
+                    <span className="text-foreground font-medium">{item.value}</span>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">Decision Makers</p>
+              <div className="flex items-center gap-3">
+                {icpData.decisionMakers.map((dm, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8 border border-border/50">
+                      <AvatarFallback className="bg-muted/30 text-muted-foreground text-[10px] font-medium">
+                        {dm.initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-xs font-medium text-foreground">{dm.role}</p>
+                      <p className="text-[10px] text-muted-foreground">{dm.influence}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ICP Row 2: Pain Points + Buying Triggers */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Pain Points Card */}
+        <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="h-4 w-4 text-red-400" />
+              <h4 className="font-medium text-sm text-foreground">Pain Points</h4>
+            </div>
+            
+            <div className="space-y-2.5">
+              {icpData.painPoints.map((item, i) => (
+                <div 
+                  key={i} 
+                  className="flex items-center justify-between text-sm p-3 rounded-lg bg-red-500/5 border border-red-500/10"
+                >
+                  <span className="text-foreground">{item.pain}</span>
+                  <Badge className={`text-[10px] ${getSeverityColor(item.severity)}`}>
+                    {item.severity}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Buying Triggers Card */}
+        <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="h-4 w-4 text-accent" />
+              <h4 className="font-medium text-sm text-foreground">Buying Triggers</h4>
+            </div>
+            
+            <div className="space-y-2.5 mb-5">
+              {icpData.buyingTriggers.map((trigger, i) => (
+                <div 
+                  key={i} 
+                  className="flex items-center gap-2 text-sm p-3 rounded-lg bg-accent/5 border border-accent/10"
+                >
+                  <div className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  <span className="text-foreground">{trigger}</span>
+                </div>
+              ))}
+            </div>
+            
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <MessageSquare className="h-3.5 w-3.5 text-accent/70" />
+                <p className="text-xs text-muted-foreground">Messaging That Works</p>
+              </div>
+              <div className="space-y-2">
+                {icpData.messagingHooks.map((hook, i) => (
+                  <div key={i} className="text-sm p-2.5 rounded-lg bg-muted/10 border border-border/20 italic text-muted-foreground">
+                    "{hook}"
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Growth Targets (AEMR) - Subtitle */}
+      <div className="flex items-center gap-2 mt-8">
+        <TrendingUp className="h-4 w-4 text-accent" />
+        <h3 className="text-lg font-semibold text-foreground">Growth Targets</h3>
+        <Badge className="text-[10px] bg-accent/10 text-accent border-accent/30">AEMR</Badge>
+        <InfoTooltip>Acquisition, Engagement, Monetization, Retention framework metrics.</InfoTooltip>
+      </div>
+
+      {/* AEMR Row 1: Acquisition & Engagement + Monetization & Retention */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Acquisition & Engagement Card */}
+        <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="h-4 w-4 text-accent" />
+              <h4 className="font-medium text-sm text-foreground">Acquisition & Engagement</h4>
+            </div>
+            
+            {/* Metrics */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {acquisitionMetrics.map((metric, i) => {
                 const Icon = metric.icon;
                 return (
-                  <div key={i} className="text-center p-2 rounded-lg bg-accent/5 border border-accent/10">
-                    <Icon className="h-3.5 w-3.5 text-accent mx-auto mb-1" />
-                    <p className="text-sm font-bold text-foreground">{metric.value}</p>
-                    <p className="text-[8px] text-muted-foreground leading-tight">{metric.label}</p>
+                  <div key={i} className="text-center p-4 rounded-lg bg-accent/5 border border-accent/10">
+                    <Icon className="h-4 w-4 text-accent mx-auto mb-2" />
+                    <p className="text-xl font-bold text-foreground">{metric.value}</p>
+                    <p className="text-xs text-muted-foreground">{metric.label}</p>
                   </div>
                 );
               })}
             </div>
             
             {/* Key Channels */}
-            <div className="mb-3">
-              <p className="text-[10px] text-muted-foreground mb-1.5">Key Acquisition Channels</p>
-              <div className="flex flex-wrap gap-1">
+            <div className="mb-4">
+              <p className="text-xs text-muted-foreground mb-2">Key Acquisition Channels</p>
+              <div className="flex flex-wrap gap-2">
                 {growthStrategy.acquisition.channels.slice(0, 3).map((ch, i) => (
-                  <Badge key={i} className="text-[10px] bg-muted/20 text-foreground border-border/30">
+                  <Badge key={i} className="text-xs bg-muted/20 text-foreground border-border/30">
                     {ch.name}
                   </Badge>
                 ))}
               </div>
             </div>
             
-            {/* Activation Metric */}
-            <div className="p-2 rounded-lg bg-accent/5 border border-accent/10">
-              <p className="text-[10px] text-muted-foreground">Activation Metric</p>
-              <p className="text-xs font-medium text-foreground">
+            {/* Lead Target */}
+            <div className="p-3 rounded-lg bg-muted/10 border border-border/20">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Monthly Lead Target</span>
+                <span className="text-sm font-bold text-foreground">500 MQLs</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Monetization & Retention Card */}
+        <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <DollarSign className="h-4 w-4 text-accent" />
+              <h4 className="font-medium text-sm text-foreground">Monetization & Retention</h4>
+            </div>
+            
+            {/* Metrics */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {monetizationMetrics.map((metric, i) => {
+                const Icon = metric.icon;
+                return (
+                  <div key={i} className="text-center p-4 rounded-lg bg-accent/5 border border-accent/10">
+                    <Icon className="h-4 w-4 text-accent mx-auto mb-2" />
+                    <p className="text-xl font-bold text-foreground">{metric.value}</p>
+                    <p className="text-xs text-muted-foreground">{metric.label}</p>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Revenue Streams */}
+            <div className="mb-4">
+              <p className="text-xs text-muted-foreground mb-2">Revenue Streams</p>
+              <div className="space-y-2">
+              {growthStrategy.monetization.revenueStreams.map((stream, i) => (
+                  <div key={i} className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">{stream.stream}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 h-1.5 bg-muted/20 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-accent rounded-full" 
+                          style={{ width: stream.percentage }}
+                        />
+                      </div>
+                      <span className="text-xs font-medium text-foreground w-8">{stream.percentage}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Avg Contract */}
+            <div className="p-3 rounded-lg bg-muted/10 border border-border/20">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Avg Contract Value</span>
+                <span className="text-sm font-bold text-foreground">$1,200/year</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* AEMR Row 2: Key Metrics + Expected Results */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Key Metrics Card */}
+        <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="h-4 w-4 text-accent" />
+              <h4 className="font-medium text-sm text-foreground">Key Metrics</h4>
+            </div>
+            
+            <div className="space-y-3 mb-5">
+              {keyMetrics.map((metric, i) => (
+                <div key={i} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-muted/10 border border-border/20">
+                  <span className="text-muted-foreground">{metric.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-foreground">{metric.value}</span>
+                    <Badge className="text-[8px] bg-accent/10 text-accent border-accent/30">
+                      {metric.target}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="p-3 rounded-lg bg-accent/5 border border-accent/10">
+              <p className="text-xs text-muted-foreground mb-1">Activation Metric</p>
+              <p className="text-sm font-medium text-foreground">
                 {growthStrategy.engagement.activationMetric}
               </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Expected Results Card */}
+        <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Eye className="h-4 w-4 text-accent" />
+              <h4 className="font-medium text-sm text-foreground">Expected Results</h4>
+              <Badge className="text-[10px] bg-accent/10 text-accent border-accent/30">Month 6</Badge>
+            </div>
+            
+            <div className="space-y-3 mb-5">
+              {expectedResults.map((result, i) => (
+                <div key={i} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-green-500/5 border border-green-500/10">
+                  <span className="text-muted-foreground">{result.label}</span>
+                  <span className="font-bold text-green-400">{result.value}</span>
+                </div>
+              ))}
+            </div>
+            
+            <div className="p-3 rounded-lg bg-muted/10 border border-border/20">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Projected ROI</span>
+                <span className="text-sm font-bold text-accent">3.5x</span>
+              </div>
             </div>
           </CardContent>
         </Card>
