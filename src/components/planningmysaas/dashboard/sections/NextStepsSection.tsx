@@ -7,6 +7,7 @@ import {
   Download,
   Mail,
   MessageCircle,
+  Phone,
   CheckCircle2,
   DollarSign,
   Sparkles,
@@ -362,7 +363,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   }}
                   className="w-full gap-2 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground"
                 >
-                  <MessageCircle className="h-4 w-4 text-accent" />
+                  <Phone className="h-4 w-4 text-accent" />
                   Talk to Our Consultant
                 </Button>
               </div>
