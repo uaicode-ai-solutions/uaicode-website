@@ -224,9 +224,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
       {/* What happens when you hire us - Premium Cards */}
       <div className="space-y-6">
-        <h3 className="font-semibold text-foreground text-center text-xl">
-          What happens when you hire us
-        </h3>
+            <h3 className="font-semibold text-foreground text-center text-xl">
+              What happens when you choose Uaicode
+            </h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {nextSteps.steps.map((step, index) => {

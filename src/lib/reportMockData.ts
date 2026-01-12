@@ -357,13 +357,13 @@ The estimated $60,500 MVP investment has the potential to break even in 8 months
     steps: [
       { 
         step: 1, 
-        title: "Kickoff Meeting", 
+        title: "Free Consultation", 
         description: "1 hour to align expectations and define priorities",
         icon: "Calendar"
       },
       { 
         step: 2, 
-        title: "Proposal & Contract", 
+        title: "Proposal & Sign Contract", 
         description: "Clear documentation with scope, timeline, and investment",
         icon: "FileText"
       },
