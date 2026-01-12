@@ -330,46 +330,62 @@ const InvestmentSection = () => {
         </InfoTooltip>
       </div>
 
-      <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
-        <CardContent className="p-6">
+      <Card className="bg-card/50 border-border/30 ring-1 ring-accent/10">
+        <CardContent className="p-5">
+          {/* Header with Icon and Badge */}
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-md bg-accent/10">
+                <DollarSign className="h-4 w-4 text-accent" />
+              </div>
+              <h4 className="font-semibold text-foreground text-sm">Complete First Year</h4>
+            </div>
+            <Badge className="text-[10px] bg-accent/10 text-accent border-accent/30 hover:bg-accent/20">
+              TOTAL INVESTMENT
+            </Badge>
+          </div>
+
           {/* Total Amount */}
-          <div className="text-center mb-6">
-            <p className="text-sm text-muted-foreground mb-2">Complete First Year Investment</p>
-            <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+          <div className="text-center mb-5 p-4 rounded-lg bg-muted/5 border border-border/20">
+            <p className="text-xs text-muted-foreground mb-1">Complete First Year Investment</p>
+            <div className="text-4xl md:text-5xl font-bold text-gradient-gold">
               {formatCurrency(investment.total + marketingInvestment.uaicode.yearlyTotal)}
             </div>
+            <p className="text-xs text-muted-foreground mt-1">MVP + 12 months of marketing</p>
           </div>
 
           {/* Breakdown Grid */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 rounded-lg bg-background/50">
-              <div className="text-xl md:text-2xl font-bold text-foreground">
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            <div className="p-3 rounded-lg bg-muted/10 border border-border/20 text-center">
+              <div className="text-xs text-muted-foreground mb-1">MVP Development</div>
+              <div className="text-lg md:text-xl font-bold text-foreground">
                 {formatCurrency(investment.total)}
               </div>
-              <div className="text-xs text-muted-foreground">MVP Development</div>
-              <div className="text-[10px] text-muted-foreground/70">(one-time)</div>
+              <div className="text-[10px] text-muted-foreground/70 mt-1">(one-time)</div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-background/50">
-              <div className="text-xl md:text-2xl font-bold text-foreground">
+            <div className="p-3 rounded-lg bg-muted/10 border border-border/20 text-center">
+              <div className="text-xs text-muted-foreground mb-1">Marketing (12 mo)</div>
+              <div className="text-lg md:text-xl font-bold text-foreground">
                 {formatCurrency(marketingInvestment.uaicode.yearlyTotal)}
               </div>
-              <div className="text-xs text-muted-foreground">Marketing (12 mo)</div>
-              <div className="text-[10px] text-muted-foreground/70">($18K × 12)</div>
+              <div className="text-[10px] text-muted-foreground/70 mt-1">($18K × 12)</div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-accent/10">
-              <div className="text-xl md:text-2xl font-bold text-accent">
+            <div className="p-3 rounded-lg bg-accent/10 border border-accent/30 text-center">
+              <div className="text-xs text-accent/80 mb-1">Total</div>
+              <div className="text-lg md:text-xl font-bold text-accent">
                 {formatCurrency(investment.total + marketingInvestment.uaicode.yearlyTotal)}
               </div>
-              <div className="text-xs text-muted-foreground">Total</div>
-              <div className="text-[10px] text-muted-foreground/70">(1st year)</div>
+              <div className="text-[10px] text-muted-foreground/70 mt-1">(1st year)</div>
             </div>
           </div>
 
           {/* After Year 1 Callout */}
-          <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+          <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
             <div className="flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 text-green-500" />
-              <span className="text-sm font-medium text-green-500">
+              <div className="p-1 rounded-full bg-green-500/20">
+                <Sparkles className="h-3.5 w-3.5 text-green-400" />
+              </div>
+              <span className="text-sm font-medium text-green-400">
                 After Year 1: Only {formatCurrency(marketingInvestment.uaicode.yearlyTotal)}/year
               </span>
             </div>
