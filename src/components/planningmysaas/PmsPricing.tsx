@@ -45,7 +45,7 @@ const PmsPricing = () => {
   const navigate = useNavigate();
 
   const handleValidate = () => {
-    navigate("/planningmysaas/wizard");
+    navigate("/planningmysaas/login");
   };
 
   return (
