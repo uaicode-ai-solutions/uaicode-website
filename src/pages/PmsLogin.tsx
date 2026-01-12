@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Mail, Lock, Shield, Sparkles, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Shield, ArrowLeft } from "lucide-react";
+import uaicodeLogo from "@/assets/uaicode-logo.png";
 import pmsDashboardImage from "@/assets/pms-hero-dashboard.webp";
 
 const STORAGE_KEY = "pms-wizard-data";
@@ -73,13 +74,12 @@ const PmsLogin = () => {
         <div className="relative z-10 flex flex-col justify-between h-full p-6 sm:p-8 lg:p-12">
           {/* Logo and back button */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-background" />
-              </div>
-              <span className="text-lg sm:text-xl font-bold text-foreground">
-                Planning<span className="text-accent">My</span>SaaS
-              </span>
+            <div className="flex items-center">
+              <img 
+                src={uaicodeLogo} 
+                alt="Uaicode" 
+                className="h-10 sm:h-12 w-auto"
+              />
             </div>
             <Button
               variant="ghost"
