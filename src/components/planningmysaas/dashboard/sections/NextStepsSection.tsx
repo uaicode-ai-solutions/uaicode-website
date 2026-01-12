@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { reportData } from "@/lib/reportMockData";
 import { useState } from "react";
-
+import KyleConsultantDialog from "../KyleConsultantDialog";
 const iconMap: Record<string, React.ElementType> = {
   Calendar,
   FileText,
@@ -48,6 +48,8 @@ interface NextStepsSectionProps {
 const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionProps) => {
   const { nextSteps, viabilityScore, verdictHeadline, investment, timeline } = reportData;
   const [selectedPackage, setSelectedPackage] = useState<'mvp-only' | 'mvp-marketing'>('mvp-marketing');
+  const [kyleDialogOpen, setKyleDialogOpen] = useState(false);
+  const [selectedConsultPackage, setSelectedConsultPackage] = useState<string>('');
 
   // Calculate total weeks from timeline
   const totalWeeks = timeline.reduce((acc, phase) => {
@@ -333,22 +335,37 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </div>
               )}
 
-              {/* Select Button */}
-              <Button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedPackage(option.id);
-                  onScheduleCall?.();
-                }}
-                className={`w-full gap-2 ${
-                  option.recommended 
-                    ? 'bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20' 
-                    : 'bg-muted/50 hover:bg-muted text-foreground border border-border/50'
-                }`}
-              >
-                <Calendar className="h-4 w-4" />
-                Schedule a Call
-              </Button>
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-2">
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedPackage(option.id);
+                    onScheduleCall?.();
+                  }}
+                  className={`w-full gap-2 ${
+                    option.recommended 
+                      ? 'bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20' 
+                      : 'bg-muted/50 hover:bg-muted text-foreground border border-border/50'
+                  }`}
+                >
+                  <Calendar className="h-4 w-4" />
+                  Schedule a Call
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedConsultPackage(option.name);
+                    setKyleDialogOpen(true);
+                  }}
+                  className="w-full gap-2 border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10 text-foreground"
+                >
+                  <MessageCircle className="h-4 w-4 text-blue-400" />
+                  Talk to Our Consultant
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -445,6 +462,13 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
           </p>
         </CardContent>
       </Card>
+
+      {/* Kyle Consultant Dialog */}
+      <KyleConsultantDialog 
+        open={kyleDialogOpen} 
+        onOpenChange={setKyleDialogOpen}
+        packageName={selectedConsultPackage}
+      />
     </section>
   );
 };
