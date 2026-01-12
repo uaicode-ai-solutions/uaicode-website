@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, UserCircle, Rocket, Globe2, Puzzle, Flag } from "lucide-react";
+import { X, Sparkles, ArrowLeft, ArrowRight, UserCircle, Rocket, Globe2, Puzzle, Flag } from "lucide-react";
 import WizardProgress from "./WizardProgress";
 
 interface WizardLayoutProps {
@@ -33,10 +34,41 @@ const WizardLayout = ({
   isLastStep,
   onSubmit,
 }: WizardLayoutProps) => {
+  const navigate = useNavigate();
+
+  const handleClose = () => {
+    navigate("/planningmysaas");
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Background */}
       <div className="fixed inset-0 mesh-gradient opacity-30 pointer-events-none" />
+
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-background" />
+              </div>
+              <span className="text-xl font-bold text-foreground hidden sm:block">
+                Planning<span className="text-accent">My</span>SaaS
+              </span>
+            </div>
+
+            {/* Close button */}
+            <button
+              onClick={handleClose}
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </header>
 
       {/* Progress bar */}
       <div className="py-8 border-b border-border/30">
