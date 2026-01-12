@@ -317,21 +317,21 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 )}
                 
                 {/* Urgency Timer */}
-                <div className="mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20">
-                  <div className="flex items-center justify-center gap-2 text-red-400">
+                <div className="mt-3 p-2 rounded-lg bg-accent/10 border border-accent/20">
+                  <div className="flex items-center justify-center gap-2 text-accent">
                     <Clock className="h-3 w-3" />
                     <span className="text-xs font-medium">Offer expires in:</span>
                   </div>
                   <div className="flex items-center justify-center gap-1 mt-1">
-                    <span className="bg-red-500/20 px-2 py-1 rounded text-sm font-bold text-red-400">
+                    <span className="bg-accent/20 px-2 py-1 rounded text-sm font-bold text-accent">
                       {hours.toString().padStart(2, '0')}
                     </span>
-                    <span className="text-red-400 font-bold">:</span>
-                    <span className="bg-red-500/20 px-2 py-1 rounded text-sm font-bold text-red-400">
+                    <span className="text-accent font-bold">:</span>
+                    <span className="bg-accent/20 px-2 py-1 rounded text-sm font-bold text-accent">
                       {minutes.toString().padStart(2, '0')}
                     </span>
-                    <span className="text-red-400 font-bold">:</span>
-                    <span className="bg-red-500/20 px-2 py-1 rounded text-sm font-bold text-red-400">
+                    <span className="text-accent font-bold">:</span>
+                    <span className="bg-accent/20 px-2 py-1 rounded text-sm font-bold text-accent">
                       {seconds.toString().padStart(2, '0')}
                     </span>
                   </div>
