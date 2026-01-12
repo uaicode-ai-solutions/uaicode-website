@@ -305,27 +305,41 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
               })}
             </div>
             
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">Decision Makers</p>
-              <div className="flex items-center gap-3">
-                {icpData.decisionMakers.map((dm, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8 border border-border/50">
-                      <AvatarFallback className="bg-muted/30 text-muted-foreground text-[10px] font-medium">
-                        {dm.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-xs font-medium text-foreground">{dm.role}</p>
-                      <p className="text-[10px] text-muted-foreground">{dm.influence}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Decision Makers Row */}
+      <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 mb-5">
+            <Users className="h-4 w-4 text-accent" />
+            <h4 className="font-medium text-sm text-foreground">Decision Makers</h4>
+            <InfoTooltip side="right" size="sm">
+              Key stakeholders involved in the purchasing decision.
+            </InfoTooltip>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {icpData.decisionMakers.map((dm, i) => (
+              <div 
+                key={i} 
+                className="flex flex-col items-center text-center p-5 rounded-xl bg-card border border-border/50 hover:border-accent/30 transition-all"
+              >
+                <Avatar className="h-12 w-12 border-2 border-accent mb-3">
+                  <AvatarFallback className="bg-transparent text-accent font-semibold">
+                    {dm.initials}
+                  </AvatarFallback>
+                </Avatar>
+                <p className="font-medium text-foreground text-sm mb-2">{dm.role}</p>
+                <Badge className="text-xs bg-accent/10 text-accent border-accent/30">
+                  {dm.influence}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ICP Row 2: Pain Points + Buying Triggers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
