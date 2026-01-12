@@ -24,12 +24,7 @@ const planColors: Record<string, string> = {
 };
 
 // Tech stack category colors
-const categoryColors: Record<string, string> = {
-  Frontend: "bg-blue-500/10 border-blue-500/20 text-blue-400",
-  Backend: "bg-green-500/10 border-green-500/20 text-green-400",
-  Infra: "bg-purple-500/10 border-purple-500/20 text-purple-400",
-  Integrations: "bg-orange-500/10 border-orange-500/20 text-orange-400",
-};
+// Category colors removed - using unified accent styling
 
 const ExecutionPlanSection = () => {
   const { timeline, techStack, recommendedPlan } = reportData;
@@ -238,42 +233,52 @@ const ExecutionPlanSection = () => {
       {/* Tech Stack */}
       <Card className="bg-card/50 border-border/30">
         <CardContent className="p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Cpu className="h-5 w-5 text-accent" />
-            <h3 className="font-semibold text-foreground text-sm">Technology Stack</h3>
-            <InfoTooltip side="right" size="sm">
-              Modern, scalable technologies selected specifically for your project's needs.
-            </InfoTooltip>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+              <Cpu className="h-4 w-4 text-accent" />
+            </div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-medium text-foreground">Technology Stack</h3>
+              <InfoTooltip side="right" size="sm">
+                Modern, scalable technologies selected specifically for your project's needs.
+              </InfoTooltip>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {techStack.map((stack, index) => {
-              const colorClass = categoryColors[stack.category] || "bg-accent/10 border-accent/20 text-accent";
-              return (
-                <div 
-                  key={index} 
-                  className={`p-3 rounded-lg border transition-all duration-300 hover:shadow-md ${colorClass.split(' ').slice(0, 2).join(' ')}`}
-                >
-                  <h4 className={`text-xs font-medium mb-2 ${colorClass.split(' ')[2]}`}>
+            {techStack.map((stack, index) => (
+              <div 
+                key={index} 
+                className="group relative p-4 rounded-xl bg-gradient-to-b from-accent/10 to-accent/5 border border-accent/20 transition-all duration-300 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-0.5"
+              >
+                {/* Decorative corner accent */}
+                <div className="absolute top-0 right-0 w-6 h-6 bg-accent/15 rounded-bl-xl rounded-tr-xl" />
+                
+                {/* Category with indicator */}
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                  <h4 className="text-xs font-semibold text-accent uppercase tracking-wide">
                     {stack.category}
                   </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {stack.items.map((tech, idx) => (
-                      <Badge 
-                        key={idx} 
-                        variant="outline" 
-                        className="text-[10px] bg-background/50 px-1.5 py-0"
-                      >
-                        {tech}
-                      </Badge>
-                    ))}
-                  </div>
                 </div>
-              );
-            })}
+                
+                {/* Tech badges */}
+                <div className="flex flex-wrap gap-1.5">
+                  {stack.items.map((tech, idx) => (
+                    <Badge 
+                      key={idx} 
+                      variant="outline" 
+                      className="text-[10px] bg-background/80 border-border/50 text-foreground/80 px-2 py-0.5 hover:border-accent/40 hover:text-accent transition-colors"
+                    >
+                      {tech}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
 
-          <p className="text-xs text-muted-foreground mt-3 italic">
+          <p className="text-xs text-muted-foreground mt-4 italic">
             * Modern and scalable stack, chosen based on specific project needs
           </p>
         </CardContent>
