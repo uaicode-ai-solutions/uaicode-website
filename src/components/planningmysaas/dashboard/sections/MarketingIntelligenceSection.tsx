@@ -360,7 +360,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
               <h4 className="font-medium text-sm text-foreground">Buying Triggers</h4>
             </div>
             
-            <div className="space-y-2.5 mb-5">
+            <div className="space-y-2.5">
               {icpData.buyingTriggers.map((trigger, i) => (
                 <div 
                   key={i} 
@@ -370,20 +370,6 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                   <span className="text-foreground">{trigger}</span>
                 </div>
               ))}
-            </div>
-            
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <MessageSquare className="h-3.5 w-3.5 text-accent/70" />
-                <p className="text-xs text-muted-foreground">Messaging That Works</p>
-              </div>
-              <div className="space-y-2">
-                {icpData.messagingHooks.map((hook, i) => (
-                  <div key={i} className="text-sm p-2.5 rounded-lg bg-muted/10 border border-border/20 italic text-muted-foreground">
-                    "{hook}"
-                  </div>
-                ))}
-              </div>
             </div>
           </CardContent>
         </Card>
