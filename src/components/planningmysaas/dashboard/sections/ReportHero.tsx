@@ -144,17 +144,16 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
               <div className="text-sm text-muted-foreground">{metric.label}</div>
               <div className="text-xs text-muted-foreground/70 mt-0.5">{metric.sublabel}</div>
             </Card>
-          ))}
+        ))}
         </div>
+      </div>
 
-
-        {/* Scroll Indicator */}
-        <div 
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 cursor-pointer animate-bounce"
-          onClick={scrollToContent}
-        >
-          <ChevronDown className="h-6 w-6 text-muted-foreground/50" />
-        </div>
+      {/* Scroll Indicator */}
+      <div 
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 cursor-pointer animate-bounce z-10"
+        onClick={scrollToContent}
+      >
+        <ChevronDown className="h-6 w-6 text-muted-foreground/50" />
       </div>
     </div>
   );
