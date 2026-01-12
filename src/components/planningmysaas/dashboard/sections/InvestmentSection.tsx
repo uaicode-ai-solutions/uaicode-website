@@ -202,8 +202,7 @@ const InvestmentSection = () => {
 
               {/* Not Included */}
               <div>
-                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2 text-sm">
-                  <X className="h-4 w-4 text-muted-foreground" />
+              <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2 text-sm">
                   Not Included
                 </h3>
                 <ul className="space-y-1.5">
