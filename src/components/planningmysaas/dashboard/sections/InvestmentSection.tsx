@@ -185,7 +185,6 @@ const InvestmentSection = () => {
               {/* Included */}
               <div>
                 <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-green-400" />
                   What's Included
                   <InfoTooltip side="top" size="sm">
                     Everything included in your investment with no hidden costs.
