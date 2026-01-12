@@ -29,6 +29,8 @@ interface WizardData {
   // Step 3: Target Market
   customerTypes: string[];
   marketSize: string;
+  targetAudience: string;
+  marketType: string;
   
   // Step 4: Features
   selectedFeatures: string[];
@@ -55,6 +57,8 @@ const initialData: WizardData = {
   saasLogo: "",
   customerTypes: [],
   marketSize: "",
+  targetAudience: "",
+  marketType: "",
   selectedFeatures: [],
   selectedTier: "",
   goal: "",
@@ -124,7 +128,7 @@ const PmsWizard = () => {
         const saasNameValid = (data.saasName || "").trim().length >= 3;
         return saasTypeValid && industryValid && data.description.trim().length >= 20 && saasNameValid;
       case 3:
-        return data.customerTypes.length > 0 && data.marketSize !== "";
+        return data.customerTypes.length > 0 && data.marketSize !== "" && data.targetAudience !== "" && data.marketType !== "";
       case 4:
         return data.selectedFeatures.length > 0;
       case 5:
@@ -242,6 +246,8 @@ const PmsWizard = () => {
             data={{
               customerTypes: data.customerTypes,
               marketSize: data.marketSize,
+              targetAudience: data.targetAudience,
+              marketType: data.marketType,
             }}
             onChange={handleChange}
           />
