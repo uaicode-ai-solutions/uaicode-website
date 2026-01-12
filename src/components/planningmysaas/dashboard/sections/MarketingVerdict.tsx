@@ -51,17 +51,6 @@ const MarketingVerdict = () => {
 
   return (
     <section id="marketing-verdict" className="space-y-6 scroll-mt-8">
-      {/* Section Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
-          <TrendingUp className="h-5 w-5 text-accent" />
-        </div>
-        <div>
-        <h2 className="text-2xl font-bold text-foreground">Marketing Intelligence</h2>
-        <p className="text-sm text-muted-foreground">Competitive analysis and go-to-market strategy</p>
-        </div>
-      </div>
-
       {/* Recommendation Banner */}
       <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
         <div className="p-2 rounded-full bg-green-500/20">
