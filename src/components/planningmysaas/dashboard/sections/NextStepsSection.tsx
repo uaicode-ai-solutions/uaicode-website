@@ -407,7 +407,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       : 'bg-muted/50 hover:bg-muted text-foreground border border-border/50'
                   }`}
                 >
-                  <HandCoins className="h-4 w-4 !text-yellow-400" />
+                  <HandCoins className="h-4 w-4 text-yellow-200 drop-shadow-[0_1px_1px_rgba(0,0,0,0.65)]" />
                   Claim Your Discount Now
                 </Button>
                 
