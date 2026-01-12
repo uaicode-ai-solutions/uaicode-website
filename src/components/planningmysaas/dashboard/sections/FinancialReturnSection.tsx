@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { reportData } from "@/lib/reportMockData";
+import { financialProjections, mrrEvolutionData } from "@/lib/dashboardMockData";
 import {
   AreaChart,
   Area,
@@ -12,6 +13,11 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
 } from "recharts";
 
 const FinancialReturnSection = () => {
@@ -194,13 +200,190 @@ const FinancialReturnSection = () => {
       </Card>
 
       {/* Projection Scenarios - Horizontal Row */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-foreground text-sm">Projection Scenarios</h3>
           <InfoTooltip side="right" size="sm">
             Three scenarios based on different market conditions and execution quality.
           </InfoTooltip>
         </div>
+
+        {/* ROI Estimate & 3-Year MRR Evolution Charts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* ROI Estimate Donut Chart */}
+          <Card className="bg-card/50 border-border/30">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="h-4 w-4 text-accent" />
+                <h4 className="font-medium text-sm text-foreground">ROI Estimate</h4>
+              </div>
+              
+              {/* Donut Chart */}
+              <div className="relative h-40 flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "ROI", value: 150 },
+                        { name: "Remaining", value: 100 }
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={70}
+                      startAngle={90}
+                      endAngle={-270}
+                      dataKey="value"
+                    >
+                      <Cell fill="hsl(var(--accent))" />
+                      <Cell fill="hsl(var(--muted))" opacity={0.2} />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center text */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-bold text-accent">150%</span>
+                  <TrendingUp className="h-4 w-4 text-accent" />
+                </div>
+              </div>
+              
+              {/* Description */}
+              <div className="text-center mt-4">
+                <p className="text-sm text-foreground">
+                  <span className="font-medium">$1 invested</span>
+                  <span className="mx-2 text-muted-foreground">→</span>
+                  <span className="font-bold text-accent">$2.50 return</span>
+                </p>
+                <p className="text-xs text-muted-foreground">24 months</p>
+              </div>
+              
+              {/* Industry comparison */}
+              <div className="mt-4 pt-4 border-t border-border/30">
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="text-muted-foreground">Industry Avg: 80-120%</span>
+                  <Badge className="bg-accent/10 text-accent border-accent/30 text-[10px]">
+                    Above Average
+                  </Badge>
+                </div>
+                {/* Progress bar */}
+                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-accent/60 to-accent w-3/4 rounded-full" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 3-Year MRR Evolution */}
+          <Card className="bg-card/50 border-border/30">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium text-sm text-foreground">3-Year MRR Evolution</h4>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">Monthly Recurring Revenue growth over 36 months</p>
+              
+              {/* Line Chart */}
+              <div className="h-32">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={mrrEvolutionData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis 
+                      dataKey="month" 
+                      tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+                      axisLine={{ stroke: 'hsl(var(--border))' }}
+                      interval={1}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+                      axisLine={{ stroke: 'hsl(var(--border))' }}
+                      tickFormatter={(v) => `$${(v/1000).toFixed(0)}K`}
+                      width={40}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        fontSize: '11px'
+                      }}
+                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'MRR']}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="mrr" 
+                      stroke="hsl(var(--accent))" 
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--accent))', r: 3 }}
+                      activeDot={{ r: 5, fill: 'hsl(var(--accent))' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {/* Year milestones cards */}
+              <div className="grid grid-cols-3 gap-2 mt-4">
+                {[
+                  { year: "Year 1", arr: "$833K", mrr: "$69K MRR" },
+                  { year: "Year 2", arr: "$3.2M", mrr: "$267K MRR" },
+                  { year: "Year 3", arr: "$8.5M", mrr: "$712K MRR" },
+                ].map((item, idx) => (
+                  <div key={idx} className="bg-muted/20 rounded-lg p-2.5 text-center border border-border/20">
+                    <p className="text-[10px] text-muted-foreground">{item.year}</p>
+                    <p className="text-base font-bold text-accent">{item.arr}</p>
+                    <p className="text-[10px] text-muted-foreground">ARR</p>
+                    <p className="text-[9px] text-accent/80">{item.mrr}</p>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Legend */}
+              <div className="flex items-center justify-between mt-3 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-0.5 bg-accent rounded" />
+                    <span>MRR Evolution</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-accent" />
+                    <span>Milestone</span>
+                  </div>
+                </div>
+                <span className="text-accent/80">~15% monthly growth</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Total First Year Investment Bar */}
+        <Card className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent border-accent/30">
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              {/* Left side - Total */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Total First Year Investment</p>
+                <p className="text-2xl font-bold text-foreground">{financialProjections.totalFirstYearInvestment}</p>
+                <p className="text-xs text-accent">Dev + Marketing + Infrastructure (Enterprise)</p>
+              </div>
+              
+              {/* Right side - Breakdown */}
+              <div className="flex gap-3">
+                <div className="px-4 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[80px]">
+                  <p className="text-[10px] text-muted-foreground">Dev Cost</p>
+                  <p className="text-sm font-bold text-foreground">{financialProjections.breakdown.developmentCost}</p>
+                </div>
+                <div className="px-4 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[80px]">
+                  <p className="text-[10px] text-muted-foreground">Marketing/Year</p>
+                  <p className="text-sm font-bold text-foreground">{financialProjections.breakdown.marketingYear}</p>
+                </div>
+                <div className="px-4 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[80px]">
+                  <p className="text-[10px] text-muted-foreground">Infra/Year</p>
+                  <p className="text-sm font-bold text-foreground">{financialProjections.breakdown.infrastructureYear}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Scenario Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {financials.scenarios.map((scenario, index) => {
             const ScenarioIcon = scenarioIcons[scenario.name] || Target;
