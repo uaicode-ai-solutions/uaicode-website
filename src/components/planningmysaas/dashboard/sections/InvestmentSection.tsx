@@ -1,6 +1,7 @@
-import { DollarSign, Check, X, PieChart } from "lucide-react";
+import { DollarSign, Check, X, PieChart, AlertCircle, Sparkles, Building2, Megaphone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { Badge } from "@/components/ui/badge";
 import { reportData } from "@/lib/reportMockData";
 import PricingComparisonSlider from "../PricingComparisonSlider";
 import {
@@ -13,6 +14,44 @@ import {
 
 const InvestmentSection = () => {
   const { investment } = reportData;
+
+  // Marketing Investment Data
+  const marketingInvestment = {
+    uaicode: {
+      subscription: 3000,
+      suggestedPaidMedia: 15000,
+      total: 18000,
+      yearlyTotal: 216000,
+      included: [
+        "Full-stack marketing team",
+        "Strategy + Execution included",
+        "Performance-focused approach",
+        "AI-powered optimization",
+        "Monthly performance reporting",
+        "Dedicated account manager"
+      ]
+    },
+    traditional: {
+      retainerMin: 8000,
+      retainerMax: 15000,
+      paidMedia: 15000,
+      managementFeePercent: "15-20%",
+      managementFeeMin: 2250,
+      managementFeeMax: 3000,
+      totalMin: 25250,
+      totalMax: 32500,
+      yearlyMin: 303000,
+      yearlyMax: 390000,
+      notIncluded: [
+        "Strategy charged separately",
+        "Creative production is extra",
+        "Limited to ads management",
+        "Hourly billing for meetings",
+        "Manual reporting processes",
+        "No AI optimization tools"
+      ]
+    }
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -64,11 +103,19 @@ const InvestmentSection = () => {
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold text-foreground">The Investment</h2>
             <InfoTooltip side="right" size="sm">
-              Your total MVP investment includes development, design, and project management. This is a one-time payment with no hidden costs.
+              Complete breakdown of MVP development and marketing investment options.
             </InfoTooltip>
           </div>
-          <p className="text-sm text-muted-foreground">How much it costs to build your MVP</p>
+          <p className="text-sm text-muted-foreground">How much it costs to build and grow your SaaS</p>
         </div>
+      </div>
+
+      {/* MVP Development - Subtitle */}
+      <div className="flex items-center gap-2">
+        <h3 className="font-semibold text-foreground text-sm">MVP Development</h3>
+        <InfoTooltip side="right" size="sm">
+          One-time investment to build your minimum viable product.
+        </InfoTooltip>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
@@ -176,6 +223,161 @@ const InvestmentSection = () => {
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-5">
             <PricingComparisonSlider />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Marketing Investment - Subtitle */}
+      <div className="flex items-center gap-2 mt-8">
+        <h3 className="font-semibold text-foreground text-sm">Marketing Investment</h3>
+        <InfoTooltip side="right" size="sm">
+          Ongoing marketing investment to acquire customers and grow your business.
+        </InfoTooltip>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Uaicode Marketing Card */}
+        <Card className="bg-card/50 border-border/30 ring-1 ring-accent/20">
+          <CardContent className="p-5">
+            {/* Header with Badge */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-accent" />
+                <h4 className="font-semibold text-foreground">Uaicode Marketing</h4>
+              </div>
+              <Badge className="text-[10px] bg-accent/10 text-accent border-accent/30">
+                RECOMMENDED
+              </Badge>
+            </div>
+
+            {/* Pricing Breakdown */}
+            <div className="space-y-3 mb-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Monthly Subscription</span>
+                <span className="text-lg font-bold text-gradient-gold">
+                  {formatCurrency(marketingInvestment.uaicode.subscription)}/mo
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">Suggested Paid Media*</span>
+                  <Megaphone className="h-3 w-3 text-muted-foreground" />
+                </div>
+                <span className="text-sm text-foreground">
+                  {formatCurrency(marketingInvestment.uaicode.suggestedPaidMedia)}/mo
+                </span>
+              </div>
+              <div className="pt-2 border-t border-border/30 flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">Total Monthly</span>
+                <span className="text-lg font-bold text-accent">
+                  {formatCurrency(marketingInvestment.uaicode.total)}/mo
+                </span>
+              </div>
+            </div>
+
+            {/* Included Benefits */}
+            <div className="mb-4">
+              <h5 className="font-medium text-foreground text-xs mb-2 flex items-center gap-2">
+                <Check className="h-3 w-3 text-green-400" />
+                What's Included
+              </h5>
+              <ul className="space-y-1.5">
+                {marketingInvestment.uaicode.included.map((item, index) => (
+                  <li key={index} className="flex items-start gap-2 text-xs">
+                    <Check className="h-3 w-3 text-green-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-foreground/90">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Disclaimer */}
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-4">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-medium text-amber-500">*Suggested budget</span> based on your 
+                  market analysis. You can start with a smaller budget and scale as you see results. 
+                  This is a recommendation, not a requirement.
+                </div>
+              </div>
+            </div>
+
+            {/* Yearly Total */}
+            <div className="pt-3 border-t border-border/30 text-center">
+              <p className="text-xs text-muted-foreground mb-1">First Year Investment</p>
+              <p className="text-2xl font-bold text-gradient-gold">
+                {formatCurrency(marketingInvestment.uaicode.yearlyTotal)}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Traditional Agency Card */}
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-5">
+            {/* Header with Badge */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-muted-foreground" />
+                <h4 className="font-semibold text-foreground">Traditional Agency</h4>
+              </div>
+              <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">
+                TRADITIONAL
+              </Badge>
+            </div>
+
+            {/* Pricing Breakdown */}
+            <div className="space-y-3 mb-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Monthly Retainer</span>
+                <span className="text-lg font-bold text-foreground">
+                  {formatCurrency(marketingInvestment.traditional.retainerMin)} - {formatCurrency(marketingInvestment.traditional.retainerMax)}/mo
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Paid Media (same budget)</span>
+                <span className="text-sm text-foreground">
+                  {formatCurrency(marketingInvestment.traditional.paidMedia)}/mo
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Management Fee ({marketingInvestment.traditional.managementFeePercent})</span>
+                <span className="text-sm text-foreground">
+                  {formatCurrency(marketingInvestment.traditional.managementFeeMin)} - {formatCurrency(marketingInvestment.traditional.managementFeeMax)}/mo
+                </span>
+              </div>
+              <div className="pt-2 border-t border-border/30 flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">Total Monthly</span>
+                <span className="text-lg font-bold text-muted-foreground">
+                  {formatCurrency(marketingInvestment.traditional.totalMin)} - {formatCurrency(marketingInvestment.traditional.totalMax)}/mo
+                </span>
+              </div>
+            </div>
+
+            {/* Not Included */}
+            <div className="mb-4">
+              <h5 className="font-medium text-foreground text-xs mb-2 flex items-center gap-2">
+                <X className="h-3 w-3 text-muted-foreground" />
+                Not Included / Extra Charges
+              </h5>
+              <ul className="space-y-1.5">
+                {marketingInvestment.traditional.notIncluded.map((item, index) => (
+                  <li key={index} className="flex items-start gap-2 text-xs">
+                    <X className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Yearly Total */}
+            <div className="pt-3 border-t border-border/30 text-center">
+              <p className="text-xs text-muted-foreground mb-1">First Year Investment</p>
+              <p className="text-2xl font-bold text-muted-foreground">
+                {formatCurrency(marketingInvestment.traditional.yearlyMin)} - {formatCurrency(marketingInvestment.traditional.yearlyMax)}
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
