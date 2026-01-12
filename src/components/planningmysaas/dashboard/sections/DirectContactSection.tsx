@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Mail, Phone, MessageCircle } from "lucide-react";
+import { Mail, Phone, MessageCircle, MessageSquare } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import EmailContactDialog from "@/components/chat/EmailContactDialog";
 import KyleConsultantDialog from "@/components/planningmysaas/dashboard/KyleConsultantDialog";
+import KyleChatDialog from "@/components/planningmysaas/dashboard/KyleChatDialog";
 
 const DirectContactSection = () => {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showKyleDialog, setShowKyleDialog] = useState(false);
+  const [showChatDialog, setShowChatDialog] = useState(false);
 
   return (
     <section id="direct-contact" className="space-y-6 animate-fade-in">
@@ -24,7 +26,7 @@ const DirectContactSection = () => {
       </div>
 
       {/* Contact Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Email Card */}
         <Card 
           onClick={() => setShowEmailDialog(true)}
@@ -37,6 +39,27 @@ const DirectContactSection = () => {
             <div>
               <p className="text-sm text-muted-foreground">Email Us</p>
               <p className="font-semibold text-foreground">sales@uaicode.ai</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Chat Card */}
+        <Card 
+          onClick={() => setShowChatDialog(true)}
+          className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg group"
+        >
+          <CardContent className="p-6 flex items-center gap-4">
+            <div className="p-3 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors relative">
+              <MessageSquare className="h-6 w-6 text-accent" />
+              {/* Online indicator */}
+              <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+              </span>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Chat Now</p>
+              <p className="font-semibold text-foreground">Talk to Kyle</p>
             </div>
           </CardContent>
         </Card>
@@ -72,6 +95,10 @@ const DirectContactSection = () => {
       <KyleConsultantDialog 
         open={showKyleDialog} 
         onOpenChange={setShowKyleDialog}
+      />
+      <KyleChatDialog 
+        open={showChatDialog} 
+        onOpenChange={setShowChatDialog}
       />
     </section>
   );
