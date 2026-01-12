@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Youtube, Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import { Menu, X, Youtube, Facebook, Instagram, Linkedin } from "lucide-react";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 const socialLinks = [
@@ -9,7 +9,6 @@ const socialLinks = [
   { Icon: Facebook, url: "https://web.facebook.com/uaicodeai", label: "Follow us on Facebook" },
   { Icon: Instagram, url: "https://www.instagram.com/uaicode.ai/", label: "Follow us on Instagram" },
   { Icon: Linkedin, url: "https://www.linkedin.com/company/uaicodeai/", label: "Connect on LinkedIn" },
-  { Icon: Twitter, url: "https://x.com/uaicodeai", label: "Follow us on X" },
 ];
 
 const PmsHeader = () => {
