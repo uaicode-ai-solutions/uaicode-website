@@ -71,7 +71,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         "Complete MVP development",
         "12 months hosting included",
         "30 days post-launch support",
-        "Full documentation & training"
+        "Full documentation & training",
+        "Source code ownership",
+        "Priority bug fixes"
       ],
       marketingNote: null,
       recommended: false
@@ -223,14 +225,14 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
               {/* Marketing Note */}
               {option.marketingNote && (
-                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 mb-4">
+                <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 mb-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <Zap className="h-4 w-4 text-blue-400" />
+                    <Zap className="h-4 w-4 text-accent" />
                     <span className="text-sm font-medium text-foreground">
                       + {formatCurrency(option.marketingNote.monthly)}/month
                     </span>
                   </div>
-                  <p className="text-xs text-blue-400">{option.marketingNote.note}</p>
+                  <p className="text-xs text-accent/80">{option.marketingNote.note}</p>
                 </div>
               )}
 
@@ -256,11 +258,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       </div>
 
       {/* Marketing Billing Notice */}
-      <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-        <AlertCircle className="h-4 w-4 text-blue-400 flex-shrink-0" />
+      <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-muted/30 border border-border/50">
+        <AlertCircle className="h-4 w-4 text-accent flex-shrink-0" />
         <p className="text-sm text-foreground">
           <span className="font-medium">Important:</span> Marketing costs ({formatCurrency(marketingMonthly)}/month) 
-          are <span className="text-blue-400 font-semibold">only charged after your MVP is launched</span>
+          are <span className="text-accent font-semibold">only charged after your MVP is launched</span>
         </p>
       </div>
 
