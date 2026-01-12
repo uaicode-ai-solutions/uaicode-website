@@ -1,4 +1,4 @@
-import { Search, Code, Users, Rocket, CheckCircle2, Cpu, Zap, Clock, ArrowRight } from "lucide-react";
+import { Search, Code, Users, Rocket, CheckCircle2, Cpu, Zap, Clock, ArrowRight, Server, Cloud, Plug } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -23,8 +23,13 @@ const planColors: Record<string, string> = {
   enterprise: "bg-purple-500/20 text-purple-400 border-purple-500/30",
 };
 
-// Tech stack category colors
-// Category colors removed - using unified accent styling
+// Tech stack category icons
+const categoryIcons: Record<string, React.ElementType> = {
+  Frontend: Code,
+  Backend: Server,
+  Infra: Cloud,
+  Integrations: Plug,
+};
 
 const ExecutionPlanSection = () => {
   const { timeline, techStack, recommendedPlan } = reportData;
@@ -254,9 +259,12 @@ const ExecutionPlanSection = () => {
                 {/* Decorative corner accent */}
                 <div className="absolute top-0 right-0 w-6 h-6 bg-accent/15 rounded-bl-xl rounded-tr-xl" />
                 
-                {/* Category with indicator */}
+                {/* Category with icon */}
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                  {(() => {
+                    const IconComponent = categoryIcons[stack.category] || Code;
+                    return <IconComponent className="w-3.5 h-3.5 text-accent" />;
+                  })()}
                   <h4 className="text-xs font-semibold text-accent uppercase tracking-wide">
                     {stack.category}
                   </h4>
