@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import WizardLayout from "@/components/planningmysaas/wizard/WizardLayout";
+import StepLogin from "@/components/planningmysaas/wizard/StepLogin";
 import StepYourInfo from "@/components/planningmysaas/wizard/StepYourInfo";
 import StepYourIdea from "@/components/planningmysaas/wizard/StepYourIdea";
 import StepTargetMarket from "@/components/planningmysaas/wizard/StepTargetMarket";
@@ -11,13 +12,17 @@ import { useConfetti } from "@/hooks/useConfetti";
 import { saveReport, generateReportId, StoredReport } from "@/lib/reportsStorage";
 
 interface WizardData {
-  // Step 1: Your Info
+  // Step 1: Login
+  password: string;
+  isAuthenticated: boolean;
+  
+  // Step 2: Your Info
   fullName: string;
   email: string;
   linkedinProfile: string;
   phone: string;
   
-  // Step 2: Your Idea
+  // Step 3: Your Idea
   saasType: string;
   saasTypeOther: string;
   industry: string;
@@ -26,17 +31,17 @@ interface WizardData {
   saasName: string;
   saasLogo: string;
   
-  // Step 3: Target Market
+  // Step 4: Target Market
   customerTypes: string[];
   marketSize: string;
   targetAudience: string;
   marketType: string;
   
-  // Step 4: Features
+  // Step 5: Features
   selectedFeatures: string[];
   selectedTier: string;
   
-  // Step 5: Goals
+  // Step 6: Goals
   goal: string;
   goalOther: string;
   budget: string;
@@ -44,6 +49,8 @@ interface WizardData {
 }
 
 const initialData: WizardData = {
+  password: "",
+  isAuthenticated: false,
   fullName: "",
   email: "",
   linkedinProfile: "",
@@ -89,7 +96,7 @@ const PmsWizard = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const selectedPlan = searchParams.get("plan") || "starter";
-  const totalSteps = 5;
+  const totalSteps = 6;
   
   const savedState = getSavedData();
   const [currentStep, setCurrentStep] = useState(savedState.currentStep);
@@ -113,31 +120,50 @@ const PmsWizard = () => {
 
   const validateStep = (step: number): boolean => {
     switch (step) {
-      case 1:
+      case 1: // Login
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(data.email) && data.password.length >= 6;
+      case 2: // Your Info
         return (
           data.fullName.trim().length >= 2 &&
-          emailRegex.test(data.email) &&
           data.phone.length >= 8
         );
-      case 2:
+      case 3: // Your Idea
         const saasTypeValid = data.saasType !== "" && 
           (data.saasType !== "other" || data.saasTypeOther.trim().length >= 2);
         const industryValid = data.industry !== "" && 
           (data.industry !== "other" || data.industryOther.trim().length >= 2);
         const saasNameValid = (data.saasName || "").trim().length >= 3;
         return saasTypeValid && industryValid && data.description.trim().length >= 20 && saasNameValid;
-      case 3:
+      case 4: // Market
         return data.customerTypes.length > 0 && data.marketSize !== "" && data.targetAudience !== "" && data.marketType !== "";
-      case 4:
+      case 5: // Features
         return data.selectedFeatures.length > 0;
-      case 5:
+      case 6: // Goals
         const goalValid = data.goal !== "" && 
           (data.goal !== "other" || (data.goalOther || "").trim().length >= 2);
         return goalValid && data.budget !== "" && data.timeline !== "";
       default:
         return false;
     }
+  };
+
+  const handleEmailLogin = () => {
+    if (validateStep(1)) {
+      setData((prev) => ({ ...prev, isAuthenticated: true }));
+      setCurrentStep(2);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    // Mock Google login - set mock data and proceed
+    setData((prev) => ({
+      ...prev,
+      email: "user@gmail.com",
+      fullName: "Google User",
+      isAuthenticated: true,
+    }));
+    setCurrentStep(2);
   };
 
   const handleNext = () => {
@@ -147,14 +173,16 @@ const PmsWizard = () => {
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
+    // Don't allow going back to login step once authenticated
+    if (currentStep > 1 && !(currentStep === 2 && data.isAuthenticated)) {
       setCurrentStep((prev) => prev - 1);
     }
   };
 
   const handleStepClick = (stepId: number) => {
     // Only allow going to completed steps or current step
-    if (stepId <= currentStep) {
+    // Don't allow going back to login step once authenticated
+    if (stepId <= currentStep && !(stepId === 1 && data.isAuthenticated)) {
       setCurrentStep(stepId);
     }
   };
@@ -215,6 +243,18 @@ const PmsWizard = () => {
     switch (currentStep) {
       case 1:
         return (
+          <StepLogin
+            data={{
+              email: data.email,
+              password: data.password,
+            }}
+            onChange={handleChange}
+            onGoogleLogin={handleGoogleLogin}
+            onEmailLogin={handleEmailLogin}
+          />
+        );
+      case 2:
+        return (
           <StepYourInfo
             data={{
               fullName: data.fullName,
@@ -225,7 +265,7 @@ const PmsWizard = () => {
             onChange={handleChange}
           />
         );
-      case 2:
+      case 3:
         return (
           <StepYourIdea
             data={{
@@ -240,7 +280,7 @@ const PmsWizard = () => {
             onChange={handleChange}
           />
         );
-      case 3:
+      case 4:
         return (
           <StepTargetMarket
             data={{
@@ -252,7 +292,7 @@ const PmsWizard = () => {
             onChange={handleChange}
           />
         );
-      case 4:
+      case 5:
         return (
           <StepFeatures
             data={{
@@ -263,7 +303,7 @@ const PmsWizard = () => {
             selectedPlan={selectedPlan}
           />
         );
-      case 5:
+      case 6:
         return (
           <StepGoals
             data={{
@@ -289,6 +329,7 @@ const PmsWizard = () => {
       onStepClick={handleStepClick}
       canGoNext={validateStep(currentStep)}
       isLastStep={currentStep === totalSteps}
+      isLoginStep={currentStep === 1}
       onSubmit={handleSubmit}
     >
       {renderStep()}

@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { X, Sparkles, ArrowLeft, ArrowRight, UserCircle, Rocket, Globe2, Puzzle, Flag } from "lucide-react";
+import { X, Sparkles, ArrowLeft, ArrowRight, LogIn, UserCircle, Rocket, Globe2, Puzzle, Flag } from "lucide-react";
 import WizardProgress from "./WizardProgress";
 
 interface WizardLayoutProps {
@@ -13,15 +13,17 @@ interface WizardLayoutProps {
   onStepClick?: (stepId: number) => void;
   canGoNext: boolean;
   isLastStep: boolean;
+  isLoginStep?: boolean;
   onSubmit?: () => void;
 }
 
 const steps = [
-  { id: 1, label: "Your Info", icon: UserCircle },
-  { id: 2, label: "Your Idea", icon: Rocket },
-  { id: 3, label: "Market", icon: Globe2 },
-  { id: 4, label: "Features", icon: Puzzle },
-  { id: 5, label: "Goals", icon: Flag },
+  { id: 1, label: "Login", icon: LogIn },
+  { id: 2, label: "Your Info", icon: UserCircle },
+  { id: 3, label: "Your Idea", icon: Rocket },
+  { id: 4, label: "Market", icon: Globe2 },
+  { id: 5, label: "Features", icon: Puzzle },
+  { id: 6, label: "Goals", icon: Flag },
 ];
 
 const WizardLayout = ({
@@ -33,6 +35,7 @@ const WizardLayout = ({
   onStepClick,
   canGoNext,
   isLastStep,
+  isLoginStep = false,
   onSubmit,
 }: WizardLayoutProps) => {
   const navigate = useNavigate();
@@ -87,44 +90,46 @@ const WizardLayout = ({
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="sticky bottom-0 z-50 bg-background/80 backdrop-blur-md border-t border-border/50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
-            {/* Back button */}
-            <Button
-              variant="outline"
-              onClick={onBack}
-              disabled={currentStep === 1}
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
+      {/* Footer - Hidden on Login step */}
+      {!isLoginStep && (
+        <footer className="sticky bottom-0 z-50 bg-background/80 backdrop-blur-md border-t border-border/50">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between max-w-4xl mx-auto">
+              {/* Back button */}
+              <Button
+                variant="outline"
+                onClick={onBack}
+                disabled={currentStep === 1}
+                className="gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
 
-            {/* Next/Submit button */}
-            {isLastStep ? (
-              <Button
-                onClick={onSubmit}
-                disabled={!canGoNext}
-                className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold glow-white"
-              >
-                🚀 Generate My Launch Plan
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                onClick={onNext}
-                disabled={!canGoNext}
-                className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold"
-              >
-                Next Step
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            )}
+              {/* Next/Submit button */}
+              {isLastStep ? (
+                <Button
+                  onClick={onSubmit}
+                  disabled={!canGoNext}
+                  className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold glow-white"
+                >
+                  🚀 Generate My Launch Plan
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={onNext}
+                  disabled={!canGoNext}
+                  className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold"
+                >
+                  Next Step
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 };
