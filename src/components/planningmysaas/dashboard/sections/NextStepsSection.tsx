@@ -360,9 +360,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                     setSelectedConsultPackage(option.name);
                     setKyleDialogOpen(true);
                   }}
-                  className="w-full gap-2 border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10 text-foreground"
+                  className="w-full gap-2 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground"
                 >
-                  <MessageCircle className="h-4 w-4 text-blue-400" />
+                  <MessageCircle className="h-4 w-4 text-accent" />
                   Talk to Our Consultant
                 </Button>
               </div>
