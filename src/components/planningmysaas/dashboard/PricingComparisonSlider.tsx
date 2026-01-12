@@ -18,11 +18,11 @@ interface ComparisonData {
 }
 
 const comparisonData: ComparisonData = {
-  uaicode: 55000,
-  traditional: 120000,
+  uaicode: 60500,
+  traditional: 132000,
   savings: "54%",
-  savingsAmount: 65000,
-  savingsContext: "That's enough for 12 months of marketing budget!",
+  savingsAmount: 71500,
+  savingsContext: "That's enough for 14 months of marketing budget!",
   features: [
     {
       label: "Delivery Time",
@@ -139,7 +139,7 @@ const PricingComparisonSlider = () => {
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500/40 to-red-400/30 rounded-lg transition-all duration-1000 ease-out flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? '100%' : '0%' }}
             >
-              <span className="text-xs font-medium text-red-300">$120K</span>
+              <span className="text-xs font-medium text-red-300">$132K</span>
             </div>
           </div>
         </div>
@@ -155,7 +155,7 @@ const PricingComparisonSlider = () => {
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent/60 to-accent/40 rounded-lg transition-all duration-1000 ease-out delay-300 flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? `${uaicodeWidth}%` : '0%' }}
             >
-              <span className="text-xs font-medium text-accent-foreground">$55K</span>
+              <span className="text-xs font-medium text-accent-foreground">$60.5K</span>
             </div>
           </div>
         </div>
