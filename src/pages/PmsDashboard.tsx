@@ -18,6 +18,7 @@ import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHer
 import ExecutiveVerdict from "@/components/planningmysaas/dashboard/sections/ExecutiveVerdict";
 import MarketOpportunitySection from "@/components/planningmysaas/dashboard/sections/MarketOpportunitySection";
 import CompetitorsDifferentiationSection from "@/components/planningmysaas/dashboard/sections/CompetitorsDifferentiationSection";
+import MarketingIntelligenceSection from "@/components/planningmysaas/dashboard/sections/MarketingIntelligenceSection";
 import InvestmentSection from "@/components/planningmysaas/dashboard/sections/InvestmentSection";
 import FinancialReturnSection from "@/components/planningmysaas/dashboard/sections/FinancialReturnSection";
 import ExecutionPlanSection from "@/components/planningmysaas/dashboard/sections/ExecutionPlanSection";
@@ -153,6 +154,9 @@ const PmsDashboard = () => {
 
               {/* Competitors & Differentiation */}
               <CompetitorsDifferentiationSection />
+
+              {/* Marketing Intelligence */}
+              <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
 
               {/* Investment */}
               <InvestmentSection />
