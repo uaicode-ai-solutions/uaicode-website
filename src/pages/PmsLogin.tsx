@@ -146,7 +146,7 @@ const PmsLogin = () => {
               <Lock className="w-7 h-7 text-background" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              {isLogin ? "Welcome Back" : "Start Your Journey"}
+              {isLogin ? "Welcome" : "Start Your Journey"}
             </h1>
             <p className="text-muted-foreground max-w-sm mx-auto">
               {isLogin
