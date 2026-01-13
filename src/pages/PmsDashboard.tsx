@@ -291,65 +291,70 @@ const PmsDashboard = () => {
             <div className="animate-smooth-fade">
               <DashboardSkeleton />
             </div>
-          ) : activeTab === "report" ? (
-            <div className="py-6 space-y-16 animate-smooth-fade">
-              {/* Report Hero */}
-              <ReportHero 
-                projectName={projectName}
-                onScheduleCall={handleScheduleCall}
-              />
+          ) : (
+            <div 
+              key={activeTab} 
+              className="py-6 animate-tab-enter"
+            >
+              {activeTab === "report" && (
+                <div className="space-y-16">
+                  {/* Report Hero */}
+                  <ReportHero 
+                    projectName={projectName}
+                    onScheduleCall={handleScheduleCall}
+                  />
 
-              {/* Executive Verdict */}
-              <ExecutiveVerdict />
+                  {/* Executive Verdict */}
+                  <ExecutiveVerdict />
 
-              {/* Market Opportunity */}
-              <MarketOpportunitySection />
+                  {/* Market Opportunity */}
+                  <MarketOpportunitySection />
 
-              {/* Competitors & Differentiation */}
-              <CompetitorsDifferentiationSection />
+                  {/* Competitors & Differentiation */}
+                  <CompetitorsDifferentiationSection />
 
-              {/* Marketing Intelligence */}
-              <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
+                  {/* Marketing Intelligence */}
+                  <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
 
-              {/* Investment */}
-              <InvestmentSection />
+                  {/* Investment */}
+                  <InvestmentSection />
 
-              {/* Financial Return */}
-              <FinancialReturnSection />
+                  {/* Financial Return */}
+                  <FinancialReturnSection />
 
-              {/* Execution Plan */}
-              <ExecutionPlanSection />
+                  {/* Execution Plan */}
+                  <ExecutionPlanSection />
 
-              {/* Why Uaicode */}
-              <WhyUaicodeSection />
+                  {/* Why Uaicode */}
+                  <WhyUaicodeSection />
 
-              {/* Next Steps */}
-              <NextStepsSection 
-                onScheduleCall={handleScheduleCall}
-                onDownloadPDF={handleDownloadPDF}
-              />
+                  {/* Next Steps */}
+                  <NextStepsSection 
+                    onScheduleCall={handleScheduleCall}
+                    onDownloadPDF={handleDownloadPDF}
+                  />
 
-              {/* Schedule Call Section */}
-              <ScheduleCallSection projectName={projectName} />
+                  {/* Schedule Call Section */}
+                  <ScheduleCallSection projectName={projectName} />
 
-              {/* Direct Contact Section */}
-              <DirectContactSection />
+                  {/* Direct Contact Section */}
+                  <DirectContactSection />
+                </div>
+              )}
+
+              {activeTab === "marketing" && (
+                <MarketingAnalysisTab 
+                  projectName={projectName}
+                  onScheduleCall={handleScheduleCall}
+                  onDownloadPDF={handleDownloadPDF}
+                />
+              )}
+
+              {activeTab === "assets" && (
+                <BrandAssetsTab />
+              )}
 
               {/* Footer spacing */}
-              <div className="h-16" />
-            </div>
-          ) : activeTab === "marketing" ? (
-            <div className="py-6 animate-smooth-fade">
-              <MarketingAnalysisTab 
-                projectName={projectName}
-                onScheduleCall={handleScheduleCall}
-                onDownloadPDF={handleDownloadPDF}
-              />
-              <div className="h-16" />
-            </div>
-          ) : (
-            <div className="py-6 animate-smooth-fade">
-              <BrandAssetsTab />
               <div className="h-16" />
             </div>
           )}
