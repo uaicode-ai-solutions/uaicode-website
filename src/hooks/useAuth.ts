@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+// URL de produção para redirects de autenticação
+const APP_URL = "https://uaicode.ai";
+
 interface PmsUser {
   id: string;
   auth_user_id: string;
@@ -117,7 +120,7 @@ export const useAuth = () => {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${APP_URL}/planningmysaas/login`,
         data: {
           full_name: fullName, // Trigger will use this value
         },
@@ -139,7 +142,7 @@ export const useAuth = () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/planningmysaas/reports`,
+        redirectTo: `${APP_URL}/planningmysaas/reports`,
       },
     });
     if (error) throw error;
@@ -148,7 +151,7 @@ export const useAuth = () => {
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/planningmysaas/reset-password`,
+      redirectTo: `${APP_URL}/planningmysaas/reset-password`,
     });
 
     if (error) throw error;
