@@ -14,7 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      tb_pln_payments: {
+      tb_pms_payments: {
         Row: {
           amount_cents: number
           created_at: string
@@ -62,19 +62,19 @@ export type Database = {
             foreignKeyName: "tb_pln_payments_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: false
-            referencedRelation: "tb_pln_reports"
+            referencedRelation: "tb_pms_reports"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "tb_pln_payments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "tb_pln_users"
+            referencedRelation: "tb_pms_users"
             referencedColumns: ["id"]
           },
         ]
       }
-      tb_pln_reports: {
+      tb_pms_reports: {
         Row: {
           budget: string | null
           challenge: string | null
@@ -170,12 +170,12 @@ export type Database = {
             foreignKeyName: "tb_pln_reports_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "tb_pln_users"
+            referencedRelation: "tb_pms_users"
             referencedColumns: ["id"]
           },
         ]
       }
-      tb_pln_users: {
+      tb_pms_users: {
         Row: {
           auth_user_id: string
           created_at: string

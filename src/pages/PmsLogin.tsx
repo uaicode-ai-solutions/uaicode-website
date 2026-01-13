@@ -55,7 +55,18 @@ const PmsLogin = () => {
         await signIn(email, password);
         toast.success("Welcome back!");
       } else {
-        await signUp(email, password, fullName);
+        const result = await signUp(email, password, fullName);
+        
+        // Check if email confirmation is required
+        if (result.user && !result.session) {
+          // Email confirmation is enabled - user needs to confirm email first
+          toast.success("Account created! Please check your email to confirm your account before signing in.", {
+            duration: 6000,
+          });
+          setIsLogin(true);
+          setPassword("");
+          return; // Don't navigate, user needs to confirm email first
+        }
         
         // Send welcome email
         try {
