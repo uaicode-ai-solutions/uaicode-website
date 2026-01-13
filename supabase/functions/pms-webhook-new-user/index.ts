@@ -1,7 +1,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const WEBHOOK_URL = "https://uaicode-n8n.ax5vln.easypanel.host/webhook/23f9689d-c85b-4f83-af2a-b6a46537c4cd";
+const getWebhookUrl = (): string => {
+  const webhookId = Deno.env.get("LOGIN_NEWUSER_WEBHOOK_ID");
+  if (!webhookId) {
+    throw new Error("LOGIN_NEWUSER_WEBHOOK_ID not configured");
+  }
+  // Support both full URL or just the webhook ID
+  return webhookId.startsWith("http") 
+    ? webhookId 
+    : `https://uaicode-n8n.ax5vln.easypanel.host/webhook/${webhookId}`;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -71,10 +80,12 @@ const handler = async (req: Request): Promise<Response> => {
       }
     };
 
-    console.log("Sending to webhook:", JSON.stringify(webhookPayload));
+    const webhookUrl = getWebhookUrl();
+    console.log("Sending to webhook:", webhookUrl);
+    console.log("Payload:", JSON.stringify(webhookPayload));
 
     // Call n8n webhook
-    const response = await fetch(WEBHOOK_URL, {
+    const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(webhookPayload),
