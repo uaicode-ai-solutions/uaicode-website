@@ -67,6 +67,8 @@ export const useAuth = () => {
         const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
         if (fullName && user.email) {
           sentWelcomeEmails.add(user.id);
+          
+          // Send welcome email
           try {
             await supabase.functions.invoke('pms-send-welcome-email', {
               body: { email: user.email, fullName }
@@ -75,6 +77,17 @@ export const useAuth = () => {
           } catch (emailError) {
             console.error('Failed to send welcome email:', emailError);
             // Don't block auth flow if email fails
+          }
+
+          // Call n8n webhook with user data
+          try {
+            await supabase.functions.invoke('pms-webhook-new-user', {
+              body: { auth_user_id: user.id }
+            });
+            console.log('New user webhook called successfully for:', user.email);
+          } catch (webhookError) {
+            console.error('Failed to call new user webhook:', webhookError);
+            // Don't block auth flow if webhook fails
           }
         }
       }
