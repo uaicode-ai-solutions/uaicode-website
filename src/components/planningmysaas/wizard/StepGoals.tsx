@@ -5,7 +5,11 @@ import {
   Zap, 
   Lightbulb, 
   HelpCircle,
-  Target
+  Target,
+  Search,
+  Rocket,
+  TrendingUp,
+  PiggyBank,
 } from "lucide-react";
 import SelectableCard from "./SelectableCard";
 import { Input } from "@/components/ui/input";
@@ -65,10 +69,20 @@ const timelines = [
   { id: "flexible", label: "I'm flexible on timing" },
 ];
 
+const challenges = [
+  { id: "validating", title: "Validating the idea", description: "Need market proof", icon: Search },
+  { id: "building-mvp", title: "Building the MVP fast", description: "Speed to market", icon: Rocket },
+  { id: "scaling", title: "Scaling without breaking", description: "Technical growth", icon: TrendingUp },
+  { id: "reducing-costs", title: "Reducing dev costs", description: "Budget optimization", icon: PiggyBank },
+  { id: "finding-team", title: "Finding the right team", description: "Talent acquisition", icon: Users },
+  { id: "figuring-out", title: "Still figuring it out", description: "Exploring options", icon: HelpCircle },
+];
+
 interface StepGoalsProps {
   data: {
     goal: string;
     goalOther: string;
+    challenge: string;
     budget: string;
     timeline: string;
   };
@@ -125,6 +139,30 @@ const StepGoals = ({ data, onChange }: StepGoalsProps) => {
             </p>
           </div>
         )}
+      </div>
+
+      {/* Biggest Challenge Section */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">
+            What's your biggest challenge right now? <span className="text-accent">*</span>
+          </h3>
+          <p className="text-sm text-muted-foreground">Select the main obstacle you're facing</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {challenges.map((challenge) => (
+            <SelectableCard
+              key={challenge.id}
+              icon={challenge.icon}
+              title={challenge.title}
+              description={challenge.description}
+              selected={data.challenge === challenge.id}
+              onClick={() => onChange("challenge", challenge.id)}
+              className="p-4"
+            />
+          ))}
+        </div>
       </div>
 
       {/* Budget Section */}
