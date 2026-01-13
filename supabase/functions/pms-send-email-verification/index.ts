@@ -104,7 +104,7 @@ const generateEmailVerificationEmail = (userName: string, verificationUrl: strin
                 Transform your SaaS ideas into validated business plans
               </p>
               <div style="margin-top: 20px;">
-                <a href="https://uaicode.tech" style="color: #FACC15; text-decoration: none; font-size: 13px; margin: 0 12px;">Website</a>
+                <a href="https://uaicode.ai" style="color: #FACC15; text-decoration: none; font-size: 13px; margin: 0 12px;">Website</a>
                 <span style="color: #333333;">•</span>
                 <a href="https://linkedin.com/company/uaicode" style="color: #FACC15; text-decoration: none; font-size: 13px; margin: 0 12px;">LinkedIn</a>
               </div>
@@ -139,7 +139,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailHtml = generateEmailVerificationEmail(fullName, verificationUrl);
 
     const emailResponse = await resend.emails.send({
-      from: "PlanningMySaaS <onboarding@resend.dev>",
+      from: "PlanningMySaaS <noreply@uaicode.ai>",
       to: [email],
       subject: "📧 Verify Your Email - PlanningMySaaS",
       html: emailHtml,

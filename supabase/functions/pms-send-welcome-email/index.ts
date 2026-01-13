@@ -78,11 +78,11 @@ const generateWelcomeEmail = (userName: string, dashboardUrl: string) => {
       <!-- Footer -->
       <div style="background-color: #0A0A0A; padding: 32px 40px; text-align: center; border-top: 1px solid #2A2A2A;">
         <div style="margin: 0 0 20px 0;">
-          <a href="https://uaicode.com.br" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">Website</a>
+          <a href="https://uaicode.ai" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">Website</a>
           <span style="color: #2A2A2A;">•</span>
           <a href="https://linkedin.com/company/uaicode" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">LinkedIn</a>
           <span style="color: #2A2A2A;">•</span>
-          <a href="mailto:contato@uaicode.com.br" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">Support</a>
+          <a href="mailto:contato@uaicode.ai" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">Support</a>
         </div>
         <p style="color: #B3B3B3; font-size: 13px; line-height: 1.6; margin: 0 0 16px 0;">
           © ${new Date().getFullYear()} UaiCode. All rights reserved.<br>
@@ -114,7 +114,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const dashboardUrl = "https://uaicode.com.br/planningmysaas/reports";
+    const dashboardUrl = "https://uaicode.ai/planningmysaas/reports";
     const emailHtml = generateWelcomeEmail(fullName, dashboardUrl);
 
     const res = await fetch("https://api.resend.com/emails", {
@@ -124,7 +124,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "PlanningMySaaS <noreply@uaicode.com.br>",
+        from: "PlanningMySaaS <noreply@uaicode.ai>",
         to: [email],
         subject: "🚀 Welcome to PlanningMySaaS - Let's Build Your Vision!",
         html: emailHtml,
