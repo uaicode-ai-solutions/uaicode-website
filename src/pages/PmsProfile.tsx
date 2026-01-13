@@ -10,7 +10,9 @@ import {
   Save,
   Shield,
   Sparkles,
-  Loader2
+  Loader2,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,12 +21,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/contexts/AuthContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 const PmsProfile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { pmsUser, updateProfile, updatePassword, updateEmail } = useAuthContext();
+  const { pmsUser, updateProfile, updatePassword, updateEmail, deleteAccount } = useAuthContext();
   
   // Form states
   const [name, setName] = useState("");
@@ -39,6 +52,11 @@ const PmsProfile = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
+  
+  // Delete account states
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Load user data
   useEffect(() => {
@@ -361,12 +379,12 @@ const PmsProfile = () => {
             </CardContent>
           </Card>
 
-          {/* Danger Zone - Future enhancement */}
+          {/* Danger Zone */}
           <Card className="glass-card border-destructive/20 overflow-hidden">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-destructive" />
+                  <Trash2 className="h-5 w-5 text-destructive" />
                 </div>
                 <div>
                   <CardTitle className="text-lg text-destructive">Danger Zone</CardTitle>
@@ -374,19 +392,120 @@ const PmsProfile = () => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <Button 
-                variant="outline"
-                className="w-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive/50 transition-all duration-300"
-                onClick={() => {
-                  toast({
-                    title: "Coming soon",
-                    description: "Account deletion will be available in a future update.",
-                  });
-                }}
-              >
-                Delete Account
-              </Button>
+            <CardContent className="space-y-4">
+              <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm text-foreground font-medium">Delete your account permanently</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      This will delete all your data, reports, and payment history. This action cannot be undone.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    className="w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive/50 transition-all duration-300"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="glass-premium border-destructive/20">
+                  <AlertDialogHeader>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-12 h-12 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+                        <AlertTriangle className="h-6 w-6 text-destructive" />
+                      </div>
+                      <AlertDialogTitle className="text-xl">Delete Account</AlertDialogTitle>
+                    </div>
+                    <AlertDialogDescription className="text-muted-foreground">
+                      This action is <strong className="text-destructive">permanent and irreversible</strong>. 
+                      All your data will be deleted, including:
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  
+                  <div className="py-4 space-y-3">
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <span className="text-destructive">✕</span> Your profile information
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-destructive">✕</span> All SaaS validation reports
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-destructive">✕</span> Payment history and receipts
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-destructive">✕</span> Any saved preferences
+                      </li>
+                    </ul>
+                    
+                    <Separator className="my-4" />
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="deleteConfirm" className="text-sm font-medium">
+                        Type <span className="text-destructive font-bold">DELETE</span> to confirm:
+                      </Label>
+                      <Input
+                        id="deleteConfirm"
+                        type="text"
+                        value={deleteConfirmText}
+                        onChange={(e) => setDeleteConfirmText(e.target.value)}
+                        placeholder="Type DELETE"
+                        className="bg-background/50 border-destructive/30 focus:border-destructive/50"
+                      />
+                    </div>
+                  </div>
+                  
+                  <AlertDialogFooter>
+                    <AlertDialogCancel 
+                      onClick={() => setDeleteConfirmText("")}
+                      className="border-border/50"
+                    >
+                      Cancel
+                    </AlertDialogCancel>
+                    <Button
+                      variant="destructive"
+                      disabled={deleteConfirmText !== "DELETE" || isDeleting}
+                      onClick={async () => {
+                        setIsDeleting(true);
+                        try {
+                          await deleteAccount();
+                          toast({
+                            title: "Account deleted",
+                            description: "Your account has been permanently deleted. Goodbye!",
+                          });
+                          navigate("/planningmysaas/login");
+                        } catch (error: any) {
+                          console.error("Delete account error:", error);
+                          toast({
+                            title: "Deletion failed",
+                            description: error.message || "Failed to delete account. Please try again.",
+                            variant: "destructive",
+                          });
+                        } finally {
+                          setIsDeleting(false);
+                          setIsDeleteDialogOpen(false);
+                          setDeleteConfirmText("");
+                        }
+                      }}
+                      className="gap-2"
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                      {isDeleting ? "Deleting..." : "Delete Account Forever"}
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
           </Card>
         </div>
