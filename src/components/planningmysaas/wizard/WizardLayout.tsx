@@ -47,17 +47,17 @@ const WizardLayout = ({
       <div className="fixed inset-0 mesh-gradient opacity-30 pointer-events-none" />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <header className="sticky top-0 z-50 glass-premium border-b border-accent/10">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <img 
                 src={uaicodeLogo} 
                 alt="Uaicode" 
-                className="w-10 h-10 rounded-lg object-contain"
+                className="h-9 w-9 rounded-lg"
               />
-              <span className="text-xl font-bold text-foreground hidden sm:block">
+              <span className="text-lg font-bold text-foreground hidden sm:block">
                 Planning<span className="text-accent">My</span>SaaS
               </span>
             </div>
@@ -65,7 +65,7 @@ const WizardLayout = ({
             {/* Close button */}
             <button
               onClick={handleClose}
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/10 border border-border/50 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
