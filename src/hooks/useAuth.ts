@@ -255,14 +255,26 @@ export const useAuth = () => {
       throw new Error("Session expired. Please login again.");
     }
 
-    // Call edge function with explicit Authorization header
-    const { error } = await supabase.functions.invoke('pms-delete-account', {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`
+    // Use direct fetch for reliable header transmission (bypasses SDK inconsistencies)
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://ccjnxselfgdoeyyuziwt.supabase.co";
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg";
+    
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/pms-delete-account`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+          'apikey': supabaseAnonKey
+        }
       }
-    });
+    );
 
-    if (error) throw error;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to delete account' }));
+      throw new Error(errorData.error || 'Failed to delete account');
+    }
 
     // Clear local auth state
     await supabase.auth.signOut();
