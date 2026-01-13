@@ -244,25 +244,44 @@ const PmsDashboard = () => {
       {/* Main Content */}
       <main className="pt-16">
         <div className="max-w-5xl mx-auto px-4 lg:px-6">
-          {/* Tabs */}
-          <div className="sticky top-16 z-40 bg-background/95 backdrop-blur-md py-3 border-b border-border/30">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 bg-card/50 border border-border/30 h-9">
-                <TabsTrigger value="report" className="gap-1.5 text-sm">
-                  <FileText className="h-3.5 w-3.5" />
-                  Report
-                </TabsTrigger>
-                <TabsTrigger value="marketing" className="gap-1.5 text-sm">
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  Marketing
-                </TabsTrigger>
-                <TabsTrigger value="assets" className="gap-1.5 text-sm">
-                  <Palette className="h-3.5 w-3.5" />
-                  Brand Assets
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+        {/* Tabs */}
+        <div className="sticky top-16 z-40 glass-premium border-b border-accent/10">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex justify-center overflow-x-auto scrollbar-hide">
+              {[
+                { id: "report", label: "Report", icon: FileText },
+                { id: "marketing", label: "Marketing", icon: TrendingUp },
+                { id: "assets", label: "Branding", icon: Palette },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex items-center gap-2.5 px-6 py-4 text-sm font-medium 
+                      transition-all duration-300 whitespace-nowrap relative
+                      ${activeTab === tab.id
+                        ? "text-accent"
+                        : "text-muted-foreground hover:text-foreground"
+                      }
+                    `}
+                  >
+                    <Icon className={`w-4 h-4 transition-colors duration-300 ${
+                      activeTab === tab.id ? "text-accent" : ""
+                    }`} />
+                    {tab.label}
+                    
+                    {/* Animated indicator for active tab */}
+                    {activeTab === tab.id && (
+                      <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-accent/40 via-accent to-accent/40 rounded-full" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
+        </div>
 
           {/* Tab Content */}
           {isLoading ? (
