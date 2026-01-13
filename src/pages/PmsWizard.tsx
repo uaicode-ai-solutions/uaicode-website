@@ -21,6 +21,7 @@ interface WizardData {
   isAuthenticated: boolean;
   
   // Step 2: Your Idea
+  productStage: string;
   saasType: string;
   saasTypeOther: string;
   industry: string;
@@ -54,6 +55,7 @@ const initialData: WizardData = {
   userRole: "",
   userRoleOther: "",
   isAuthenticated: false,
+  productStage: "",
   saasType: "",
   saasTypeOther: "",
   industry: "",
@@ -128,12 +130,13 @@ const PmsWizard = () => {
           (data.phone || "").length >= 8
         );
       case 2: // Your Idea
+        const productStageValid = (data.productStage || "") !== "";
         const saasTypeValid = data.saasType !== "" && 
           (data.saasType !== "other" || data.saasTypeOther.trim().length >= 2);
         const industryValid = data.industry !== "" && 
           (data.industry !== "other" || data.industryOther.trim().length >= 2);
         const saasNameValid = (data.saasName || "").trim().length >= 3;
-        return saasTypeValid && industryValid && data.description.trim().length >= 20 && saasNameValid;
+        return productStageValid && saasTypeValid && industryValid && data.description.trim().length >= 20 && saasNameValid;
       case 3: // Market
         return data.customerTypes.length > 0 && data.marketSize !== "" && data.targetAudience !== "" && data.marketType !== "";
       case 4: // Features
@@ -238,6 +241,7 @@ const PmsWizard = () => {
         return (
           <StepYourIdea
             data={{
+              productStage: data.productStage,
               saasType: data.saasType,
               saasTypeOther: data.saasTypeOther,
               industry: data.industry,
