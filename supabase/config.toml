@@ -44,3 +44,12 @@ verify_jwt = false
 
 [functions.pms-send-password-changed]
 verify_jwt = false
+
+[functions.pms-send-email-verification]
+verify_jwt = false
+
+[functions.pms-send-goodbye-email]
+verify_jwt = false
+
+[functions.pms-delete-account]
+verify_jwt = false

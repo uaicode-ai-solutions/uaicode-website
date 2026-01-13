@@ -250,6 +250,18 @@ export const useAuth = () => {
     }
   };
 
+  const deleteAccount = async () => {
+    if (!authState.user) throw new Error("Not authenticated");
+
+    // Call edge function to delete all user data
+    const { error } = await supabase.functions.invoke('pms-delete-account');
+
+    if (error) throw error;
+
+    // Clear local auth state
+    await supabase.auth.signOut();
+  };
+
   return {
     ...authState,
     signIn,
@@ -260,6 +272,7 @@ export const useAuth = () => {
     updateProfile,
     updatePassword,
     updateEmail,
+    deleteAccount,
     refreshPmsUser: () => authState.user ? fetchPmsUserData(authState.user.id) : null,
   };
 };

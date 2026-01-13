@@ -1,0 +1,207 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "https://esm.sh/resend@2.0.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+interface GoodbyeEmailRequest {
+  email: string;
+  fullName: string;
+}
+
+const generateGoodbyeEmail = (userName: string) => {
+  const firstName = userName.split(" ")[0];
+  const deletionDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Goodbye - PlanningMySaaS</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0A0A0A; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #0A0A0A;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+          
+          <!-- Header with Softer Gold Gradient -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #CA8A04 0%, #A16207 50%, #854D0E 100%); border-radius: 16px 16px 0 0; padding: 32px 40px; text-align: center;">
+              <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">
+                👋 Planning<span style="color: #FEF3C7;">My</span>SaaS
+              </h1>
+              <p style="margin: 8px 0 0 0; color: #FEF3C7; font-size: 14px; opacity: 0.9;">
+                by UaiCode
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Main Content -->
+          <tr>
+            <td style="background-color: #141414; padding: 48px 40px;">
+              <!-- Goodbye Icon -->
+              <div style="text-align: center; margin-bottom: 32px;">
+                <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, rgba(202, 138, 4, 0.2) 0%, rgba(161, 98, 7, 0.1) 100%); border-radius: 50%; line-height: 80px;">
+                  <span style="font-size: 40px;">💔</span>
+                </div>
+              </div>
+              
+              <h2 style="margin: 0 0 24px 0; color: #FFFFFF; font-size: 24px; font-weight: 700; text-align: center;">
+                We're Sad to See You Go
+              </h2>
+              
+              <p style="margin: 0 0 24px 0; color: #E5E5E5; font-size: 16px; line-height: 1.6;">
+                Dear <strong style="color: #FACC15;">${firstName}</strong>,
+              </p>
+              
+              <p style="margin: 0 0 24px 0; color: #B3B3B3; font-size: 16px; line-height: 1.7;">
+                Thank you for being part of the PlanningMySaaS community. We're truly grateful for the time you spent with us, and we hope our platform helped you on your entrepreneurial journey.
+              </p>
+              
+              <!-- Account Deletion Confirmation -->
+              <div style="background: linear-gradient(135deg, #1E1E1E 0%, #171717 100%); border-radius: 16px; padding: 28px; margin: 32px 0; border: 1px solid #2A2A2A;">
+                <h3 style="margin: 0 0 16px 0; color: #FFFFFF; font-size: 16px; font-weight: 600;">
+                  ✅ Account Deletion Confirmed
+                </h3>
+                <p style="margin: 0 0 12px 0; color: #B3B3B3; font-size: 14px; line-height: 1.6;">
+                  Your account and all associated data have been permanently deleted on:
+                </p>
+                <p style="margin: 0; color: #FACC15; font-size: 15px; font-weight: 600;">
+                  ${deletionDate}
+                </p>
+              </div>
+              
+              <!-- What Was Deleted -->
+              <div style="margin: 32px 0;">
+                <h3 style="margin: 0 0 16px 0; color: #FFFFFF; font-size: 16px; font-weight: 600;">
+                  📋 What was deleted:
+                </h3>
+                <ul style="margin: 0; padding-left: 0; list-style: none; color: #B3B3B3; font-size: 14px; line-height: 2;">
+                  <li style="padding-left: 24px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #FACC15;">✓</span>
+                    Your profile information
+                  </li>
+                  <li style="padding-left: 24px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #FACC15;">✓</span>
+                    All SaaS validation reports
+                  </li>
+                  <li style="padding-left: 24px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #FACC15;">✓</span>
+                    Payment history and receipts
+                  </li>
+                  <li style="padding-left: 24px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #FACC15;">✓</span>
+                    Any saved preferences
+                  </li>
+                </ul>
+              </div>
+              
+              <!-- Come Back Message -->
+              <div style="background: linear-gradient(135deg, rgba(250, 204, 21, 0.1) 0%, rgba(234, 179, 8, 0.05) 100%); border-radius: 16px; padding: 28px; margin: 32px 0; border: 1px solid rgba(250, 204, 21, 0.2); text-align: center;">
+                <h3 style="margin: 0 0 12px 0; color: #FACC15; font-size: 18px; font-weight: 700;">
+                  🌟 Changed Your Mind?
+                </h3>
+                <p style="margin: 0 0 20px 0; color: #B3B3B3; font-size: 14px; line-height: 1.6;">
+                  You can always create a new account at any time.<br>
+                  We'd love to have you back!
+                </p>
+                <a href="https://planningmysaas.uaicode.tech/planningmysaas/login" style="display: inline-block; background: linear-gradient(135deg, #FACC15 0%, #EAB308 100%); color: #0A0A0A; text-decoration: none; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 20px rgba(250, 204, 21, 0.25);">
+                  Create New Account
+                </a>
+              </div>
+              
+              <!-- Feedback Request -->
+              <div style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid #2A2A2A;">
+                <p style="margin: 0 0 16px 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                  We'd love to hear why you left. Your feedback helps us improve.
+                </p>
+                <a href="mailto:feedback@uaicode.tech?subject=PlanningMySaaS Feedback" style="color: #FACC15; text-decoration: none; font-size: 14px; font-weight: 600;">
+                  📝 Share Feedback
+                </a>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #0D0D0D; border-radius: 0 0 16px 16px; padding: 32px 40px; text-align: center; border-top: 1px solid #1A1A1A;">
+              <p style="margin: 0 0 12px 0; color: #FACC15; font-size: 16px; font-weight: 600;">
+                You'll always be welcome back 💛
+              </p>
+              <p style="margin: 0 0 16px 0; color: #666666; font-size: 14px;">
+                Thank you for being part of our journey.
+              </p>
+              <div style="margin-top: 20px;">
+                <a href="https://uaicode.tech" style="color: #FACC15; text-decoration: none; font-size: 13px; margin: 0 12px;">Website</a>
+                <span style="color: #333333;">•</span>
+                <a href="https://linkedin.com/company/uaicode" style="color: #FACC15; text-decoration: none; font-size: 13px; margin: 0 12px;">LinkedIn</a>
+              </div>
+              <p style="margin: 24px 0 0 0; color: #333333; font-size: 11px;">
+                © ${new Date().getFullYear()} UaiCode. All rights reserved.
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+};
+
+const handler = async (req: Request): Promise<Response> => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+    const { email, fullName }: GoodbyeEmailRequest = await req.json();
+
+    if (!email || !fullName) {
+      throw new Error("Missing required fields: email, fullName");
+    }
+
+    const emailHtml = generateGoodbyeEmail(fullName);
+
+    const emailResponse = await resend.emails.send({
+      from: "PlanningMySaaS <onboarding@resend.dev>",
+      to: [email],
+      subject: "👋 Goodbye from PlanningMySaaS - We'll Miss You!",
+      html: emailHtml,
+    });
+
+    console.log("Goodbye email sent successfully:", emailResponse);
+
+    return new Response(
+      JSON.stringify({ success: true, data: emailResponse }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  } catch (error: any) {
+    console.error("Error in pms-send-goodbye-email:", error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+};
+
+serve(handler);
