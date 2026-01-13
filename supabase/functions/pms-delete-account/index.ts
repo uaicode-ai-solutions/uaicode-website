@@ -12,36 +12,14 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Get the authorization header and extract token
+    // Get the authorization header
     const authHeader = req.headers.get("Authorization");
     
-    // Debug logs (temporary)
     console.log("=== DELETE ACCOUNT REQUEST ===");
     console.log("hasAuthHeader:", !!authHeader);
-    console.log("tokenLength:", authHeader ? authHeader.replace("Bearer ", "").length : 0);
     
-    let token = "";
-    
-    // Try Authorization header first
-    if (authHeader) {
-      token = authHeader.replace("Bearer ", "");
-    }
-    
-    // Fallback: try getting token from body
-    if (!token) {
-      try {
-        const body = await req.json().catch(() => ({}));
-        if (body.token) {
-          token = body.token;
-          console.log("Token obtained from body, length:", token.length);
-        }
-      } catch {
-        // Ignore body parsing errors
-      }
-    }
-    
-    if (!token) {
-      console.error("No token found in header or body");
+    if (!authHeader) {
+      console.error("No Authorization header found");
       return new Response(
         JSON.stringify({ error: "Missing authorization token" }),
         {
@@ -56,15 +34,19 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Create client with persistSession: false (required for Edge Functions)
+    // CORRECT: Create client with Authorization header in global.headers
+    // Per Supabase docs, this is the proper way to authenticate in Edge Functions
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader },
+      },
       auth: {
         persistSession: false,
       },
     });
 
-    // Get the authenticated user - PASS TOKEN AS PARAMETER
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    // Get the authenticated user - NO PARAMETER (uses header from client config)
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
       console.error("Unauthorized:", userError?.message || "User not found");
       throw new Error("Unauthorized: " + (userError?.message || "User not found"));

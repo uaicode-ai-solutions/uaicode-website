@@ -169,22 +169,31 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
+    // Always perform local cleanup first to ensure UI updates immediately
     try {
-      const { error } = await supabase.auth.signOut();
-      // Ignore "session_not_found" errors - user is already logged out
-      if (error && !error.message?.toLowerCase().includes("session") && error.status !== 403) {
-        throw error;
-      }
+      // First, try global signout (clears server-side session)
+      await supabase.auth.signOut();
     } catch (err: any) {
-      // If error is about missing session, ignore it - goal achieved
-      if (err?.message?.toLowerCase().includes("session") || err?.status === 403) {
-        console.log("Session already ended, proceeding with logout");
-      } else {
-        throw err;
-      }
+      // Ignore ALL errors - the goal is to log the user out locally
+      // Common errors: session_not_found, 403, network errors
+      console.log("SignOut error (ignored):", err?.message || err);
     }
-    // Always ensure local cleanup
-    await supabase.auth.signOut({ scope: "local" });
+    
+    // Always force local cleanup regardless of server response
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      // Ignore local cleanup errors too
+    }
+    
+    // Clear auth state immediately
+    setAuthState({
+      user: null,
+      session: null,
+      pmsUser: null,
+      loading: false,
+      isAuthenticated: false,
+    });
   };
 
   const signInWithGoogle = async () => {
@@ -263,24 +272,22 @@ export const useAuth = () => {
   const deleteAccount = async () => {
     if (!authState.user) throw new Error("Not authenticated");
 
-    // Supabase constants (no VITE_* env vars)
+    // Supabase constants
     const SUPABASE_URL = "https://ccjnxselfgdoeyyuziwt.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg";
 
-    // Get current session
+    // Get current session with refresh attempt
     let { data: { session } } = await supabase.auth.getSession();
     
-    // If no token, try refreshing
     if (!session?.access_token) {
-      const { data: refreshData } = await supabase.auth.refreshSession();
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError || !refreshData.session?.access_token) {
+        throw new Error("Sua sessão expirou. Faça login novamente para deletar sua conta.");
+      }
       session = refreshData.session;
     }
-    
-    if (!session?.access_token) {
-      throw new Error("Sua sessão expirou. Faça login novamente.");
-    }
 
-    // Call edge function with direct fetch
+    // Call edge function
     const response = await fetch(
       `${SUPABASE_URL}/functions/v1/pms-delete-account`,
       {
@@ -295,12 +302,32 @@ export const useAuth = () => {
     );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Falha ao deletar conta' }));
-      throw new Error(errorData.error || 'Falha ao deletar conta');
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error || 'Falha ao deletar conta';
+      
+      // Check for session/auth errors and provide clear message
+      if (errorMessage.toLowerCase().includes('unauthorized') || 
+          errorMessage.toLowerCase().includes('session')) {
+        throw new Error("Sua sessão expirou. Faça login novamente para deletar sua conta.");
+      }
+      throw new Error(errorMessage);
     }
 
     // Force local cleanup after successful deletion
-    await supabase.auth.signOut({ scope: "local" });
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      // Ignore cleanup errors
+    }
+    
+    // Clear auth state
+    setAuthState({
+      user: null,
+      session: null,
+      pmsUser: null,
+      loading: false,
+      isAuthenticated: false,
+    });
   };
 
   return {
