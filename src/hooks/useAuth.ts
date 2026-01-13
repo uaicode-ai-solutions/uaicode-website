@@ -9,6 +9,7 @@ interface PmsUser {
   id: string;
   auth_user_id: string;
   email: string;
+  username?: string;
   full_name: string;
   phone?: string;
   linkedin_profile?: string;
