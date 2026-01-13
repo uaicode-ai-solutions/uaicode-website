@@ -169,8 +169,22 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      const { error } = await supabase.auth.signOut();
+      // Ignore "session_not_found" errors - user is already logged out
+      if (error && !error.message?.toLowerCase().includes("session") && error.status !== 403) {
+        throw error;
+      }
+    } catch (err: any) {
+      // If error is about missing session, ignore it - goal achieved
+      if (err?.message?.toLowerCase().includes("session") || err?.status === 403) {
+        console.log("Session already ended, proceeding with logout");
+      } else {
+        throw err;
+      }
+    }
+    // Always ensure local cleanup
+    await supabase.auth.signOut({ scope: "local" });
   };
 
   const signInWithGoogle = async () => {
@@ -249,35 +263,44 @@ export const useAuth = () => {
   const deleteAccount = async () => {
     if (!authState.user) throw new Error("Not authenticated");
 
-    // Get current session to ensure we have a valid token
-    const { data: { session } } = await supabase.auth.getSession();
+    // Supabase constants (no VITE_* env vars)
+    const SUPABASE_URL = "https://ccjnxselfgdoeyyuziwt.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg";
+
+    // Get current session
+    let { data: { session } } = await supabase.auth.getSession();
+    
+    // If no token, try refreshing
     if (!session?.access_token) {
-      throw new Error("Session expired. Please login again.");
+      const { data: refreshData } = await supabase.auth.refreshSession();
+      session = refreshData.session;
+    }
+    
+    if (!session?.access_token) {
+      throw new Error("Sua sessão expirou. Faça login novamente.");
     }
 
-    // Use direct fetch for reliable header transmission (bypasses SDK inconsistencies)
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://ccjnxselfgdoeyyuziwt.supabase.co";
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg";
-    
+    // Call edge function with direct fetch
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/pms-delete-account`,
+      `${SUPABASE_URL}/functions/v1/pms-delete-account`,
       {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
-          'apikey': supabaseAnonKey
-        }
+          'apikey': SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({})
       }
     );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Failed to delete account' }));
-      throw new Error(errorData.error || 'Failed to delete account');
+      const errorData = await response.json().catch(() => ({ error: 'Falha ao deletar conta' }));
+      throw new Error(errorData.error || 'Falha ao deletar conta');
     }
 
-    // Clear local auth state
-    await supabase.auth.signOut();
+    // Force local cleanup after successful deletion
+    await supabase.auth.signOut({ scope: "local" });
   };
 
   return {

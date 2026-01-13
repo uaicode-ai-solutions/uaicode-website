@@ -14,13 +14,42 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     // Get the authorization header and extract token
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      console.error("Missing authorization header");
-      throw new Error("Missing authorization header");
+    
+    // Debug logs (temporary)
+    console.log("=== DELETE ACCOUNT REQUEST ===");
+    console.log("hasAuthHeader:", !!authHeader);
+    console.log("tokenLength:", authHeader ? authHeader.replace("Bearer ", "").length : 0);
+    
+    let token = "";
+    
+    // Try Authorization header first
+    if (authHeader) {
+      token = authHeader.replace("Bearer ", "");
     }
     
-    // Extract the token from "Bearer <token>"
-    const token = authHeader.replace("Bearer ", "");
+    // Fallback: try getting token from body
+    if (!token) {
+      try {
+        const body = await req.json().catch(() => ({}));
+        if (body.token) {
+          token = body.token;
+          console.log("Token obtained from body, length:", token.length);
+        }
+      } catch {
+        // Ignore body parsing errors
+      }
+    }
+    
+    if (!token) {
+      console.error("No token found in header or body");
+      return new Response(
+        JSON.stringify({ error: "Missing authorization token" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     // Create Supabase clients
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

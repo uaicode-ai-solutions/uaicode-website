@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, User, LogOut, Settings, Sparkles, TrendingUp, Calendar, BarChart3 } from "lucide-react";
+import { Plus, User, LogOut, Settings, Sparkles, TrendingUp, Calendar, BarChart3, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -31,6 +31,7 @@ const PmsReports = () => {
   const { signOut, pmsUser } = useAuthContext();
   const [reports, setReports] = useState<StoredReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<StoredReport | null>(null);
 
@@ -66,6 +67,7 @@ const PmsReports = () => {
   }, [reports]);
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await signOut();
       toast({
@@ -75,11 +77,10 @@ const PmsReports = () => {
       navigate("/planningmysaas/login");
     } catch (error) {
       console.error("Logout error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to logout. Please try again.",
-        variant: "destructive",
-      });
+      // Even on error, navigate to login (signOut is resilient now)
+      navigate("/planningmysaas/login");
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -174,10 +175,15 @@ const PmsReports = () => {
                   <DropdownMenuSeparator className="bg-border/50" />
                   <DropdownMenuItem 
                     onClick={handleLogout}
+                    disabled={isLoggingOut}
                     className="cursor-pointer text-destructive focus:text-destructive"
                   >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
+                    {isLoggingOut ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <LogOut className="h-4 w-4 mr-2" />
+                    )}
+                    {isLoggingOut ? "Logging out..." : "Logout"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
