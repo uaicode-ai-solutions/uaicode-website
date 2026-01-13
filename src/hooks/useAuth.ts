@@ -24,6 +24,9 @@ interface AuthState {
   loading: boolean;
   isAuthenticated: boolean;
 }
+// Track emails/webhooks sent to avoid duplicates (module level to persist across re-renders)
+const sentWelcomeEmails = new Set<string>();
+const calledWebhooks = new Set<string>();
 
 // Helper function to fetch PMS user (outside hook)
 const fetchPmsUserData = async (userId: string): Promise<PmsUser | null> => {
@@ -41,6 +44,48 @@ const fetchPmsUserData = async (userId: string): Promise<PmsUser | null> => {
   return data as PmsUser;
 };
 
+// Helper function to send welcome email and call webhook for new users
+const sendWelcomeEmailIfNew = async (user: User) => {
+  const createdAt = new Date(user.created_at);
+  const now = new Date();
+  const isNewUser = (now.getTime() - createdAt.getTime()) < 5 * 60 * 1000; // 5 minutes
+  
+  if (!isNewUser) return;
+  
+  const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+  
+  // 1. WEBHOOK - ALWAYS for new users (data comes from tb_pms_users via trigger)
+  if (!calledWebhooks.has(user.id)) {
+    calledWebhooks.add(user.id);
+    
+    try {
+      console.log('Calling webhook for new user:', user.id);
+      await supabase.functions.invoke('pms-webhook-new-user', {
+        body: { auth_user_id: user.id }
+      });
+      console.log('New user webhook called successfully for:', user.email);
+    } catch (webhookError) {
+      console.error('Failed to call new user webhook:', webhookError);
+      // Don't block auth flow if webhook fails
+    }
+  }
+  
+  // 2. EMAIL - Only if fullName exists (for personalization)
+  if (fullName && user.email && !sentWelcomeEmails.has(user.id)) {
+    sentWelcomeEmails.add(user.id);
+    
+    try {
+      await supabase.functions.invoke('pms-send-welcome-email', {
+        body: { email: user.email, fullName }
+      });
+      console.log('Welcome email sent successfully to:', user.email);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Don't block auth flow if email fails
+    }
+  }
+};
+
 export const useAuth = () => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -51,48 +96,6 @@ export const useAuth = () => {
   });
 
   useEffect(() => {
-    // Track if welcome email was already sent in this session to avoid duplicates
-    const sentWelcomeEmails = new Set<string>();
-
-    // Helper function to send welcome email for new users
-    const sendWelcomeEmailIfNew = async (user: User) => {
-      // Avoid duplicate sends in the same session
-      if (sentWelcomeEmails.has(user.id)) return;
-      
-      const createdAt = new Date(user.created_at);
-      const now = new Date();
-      const isNewUser = (now.getTime() - createdAt.getTime()) < 5 * 60 * 1000; // 5 minutes
-      
-      if (isNewUser) {
-        const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
-        if (fullName && user.email) {
-          sentWelcomeEmails.add(user.id);
-          
-          // Send welcome email
-          try {
-            await supabase.functions.invoke('pms-send-welcome-email', {
-              body: { email: user.email, fullName }
-            });
-            console.log('Welcome email sent successfully to:', user.email);
-          } catch (emailError) {
-            console.error('Failed to send welcome email:', emailError);
-            // Don't block auth flow if email fails
-          }
-
-          // Call n8n webhook with user data
-          try {
-            await supabase.functions.invoke('pms-webhook-new-user', {
-              body: { auth_user_id: user.id }
-            });
-            console.log('New user webhook called successfully for:', user.email);
-          } catch (webhookError) {
-            console.error('Failed to call new user webhook:', webhookError);
-            // Don't block auth flow if webhook fails
-          }
-        }
-      }
-    };
-
     // Set up auth state listener FIRST (before getSession)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
