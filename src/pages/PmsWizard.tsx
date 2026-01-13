@@ -9,6 +9,7 @@ import StepGoals from "@/components/planningmysaas/wizard/StepGoals";
 import { useToast } from "@/hooks/use-toast";
 import { useConfetti } from "@/hooks/useConfetti";
 import { saveReport, generateReportId, StoredReport } from "@/lib/reportsStorage";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WizardData {
   // User Info (from login or step 1)
@@ -172,7 +173,7 @@ const PmsWizard = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
 
     // Generate unique ID for this report
@@ -208,6 +209,27 @@ const PmsWizard = () => {
       selectedPlan,
       ...data,
     });
+
+    // Send report ready email notification
+    try {
+      const industryDisplay = data.industry === "other" ? data.industryOther : data.industry;
+      await supabase.functions.invoke('pms-send-report-ready', {
+        body: {
+          email: data.email,
+          fullName: data.fullName,
+          reportId: reportId,
+          projectName: projectName,
+          viabilityScore: newReport.reportData.viabilityScore,
+          complexityScore: newReport.reportData.complexityScore,
+          planType: selectedPlan,
+          industry: industryDisplay || "Technology"
+        }
+      });
+      console.log("Report ready email sent successfully");
+    } catch (emailError) {
+      console.error("Failed to send report ready email:", emailError);
+      // Don't block user flow if email fails
+    }
 
     // Fire confetti
     fireConfetti();
