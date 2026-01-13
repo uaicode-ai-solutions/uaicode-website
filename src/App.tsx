@@ -14,6 +14,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import PlanningMySaas from "./pages/PlanningMySaas";
 import PmsLogin from "./pages/PmsLogin";
+import PmsResetPassword from "./pages/PmsResetPassword";
 import PmsWizard from "./pages/PmsWizard";
 import PmsReports from "./pages/PmsReports";
 import PmsDashboard from "./pages/PmsDashboard";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/planningmysaas" element={<PlanningMySaas />} />
             <Route path="/planningmysaas/login" element={<PmsLogin />} />
+            <Route path="/planningmysaas/reset-password" element={<PmsResetPassword />} />
             
             {/* Protected routes */}
             <Route path="/planningmysaas/wizard" element={
