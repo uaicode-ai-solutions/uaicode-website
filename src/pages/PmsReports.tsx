@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, FileText, User, LogOut, Settings } from "lucide-react";
+import { Plus, User, LogOut, Settings, Sparkles, TrendingUp, Calendar, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ import {
   getProjectDisplayName 
 } from "@/lib/reportsStorage";
 import { useToast } from "@/hooks/use-toast";
+import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 const PmsReports = () => {
   const navigate = useNavigate();
@@ -31,6 +32,29 @@ const PmsReports = () => {
   useEffect(() => {
     setReports(getReports());
   }, []);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    if (reports.length === 0) return null;
+    
+    const totalReports = reports.length;
+    const scores = reports
+      .map(r => r.reportData?.viabilityScore || 0)
+      .filter(s => s > 0);
+    const avgScore = scores.length > 0 
+      ? Math.round(scores.reduce((acc, s) => acc + s, 0) / scores.length) 
+      : 0;
+    
+    const sortedReports = [...reports].sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    const latestReport = sortedReports[0];
+    const daysSinceLatest = Math.floor(
+      (Date.now() - new Date(latestReport.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    
+    return { totalReports, avgScore, daysSinceLatest };
+  }, [reports]);
 
   const handleLogout = () => {
     navigate("/planningmysaas/login");
@@ -62,21 +86,26 @@ const PmsReports = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Aurora Background */}
+      <div className="fixed inset-0 aurora-bg opacity-40 pointer-events-none" />
+      <div className="fixed inset-0 mesh-gradient opacity-20 pointer-events-none" />
+      
+      {/* Header Premium */}
+      <header className="sticky top-0 z-50 glass-premium border-b border-accent/10">
         <div className="max-w-6xl mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Left side - Title */}
+            {/* Logo + Brand */}
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center">
-                <FileText className="h-5 w-5 text-accent" />
-              </div>
+              <img 
+                src={uaicodeLogo} 
+                alt="Uaicode" 
+                className="h-9 w-9 rounded-lg"
+              />
               <div>
-                <h1 className="text-lg font-semibold text-foreground">My Reports</h1>
-                <p className="text-xs text-muted-foreground">
-                  {reports.length} {reports.length === 1 ? 'report' : 'reports'}
-                </p>
+                <span className="text-lg font-bold text-foreground">
+                  Planning<span className="text-accent">My</span>SaaS
+                </span>
               </div>
             </div>
 
@@ -85,7 +114,7 @@ const PmsReports = () => {
               {/* New Report Button */}
               <Button 
                 onClick={() => navigate("/planningmysaas/wizard")}
-                className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+                className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
               >
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">New Report</span>
@@ -94,11 +123,18 @@ const PmsReports = () => {
               {/* User Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="hover:bg-accent/10">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="relative hover:bg-accent/10 border border-border/50 rounded-full transition-all duration-300"
+                  >
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-background border border-border">
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-48 glass-premium border-accent/20"
+                >
                   <DropdownMenuItem 
                     onClick={() => navigate("/planningmysaas/profile")}
                     className="cursor-pointer"
@@ -106,7 +142,7 @@ const PmsReports = () => {
                     <Settings className="h-4 w-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="bg-border/50" />
                   <DropdownMenuItem 
                     onClick={handleLogout}
                     className="cursor-pointer text-destructive focus:text-destructive"
@@ -122,34 +158,100 @@ const PmsReports = () => {
       </header>
 
       {/* Content */}
-      <main className="max-w-6xl mx-auto px-4 lg:px-8 py-8">
+      <main className="relative max-w-6xl mx-auto px-4 lg:px-8 py-8">
         {reports.length === 0 ? (
           <EmptyReports />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {reports.map((report) => (
-              <ReportCard 
-                key={report.id} 
-                report={report} 
-                onDelete={handleDeleteClick}
-              />
-            ))}
-            
-            {/* Create New Card */}
-            <Card 
-              className="group cursor-pointer border-dashed border-2 hover:border-accent/50 hover:bg-accent/5 transition-all duration-300"
-              onClick={() => navigate("/planningmysaas/wizard")}
-            >
-              <CardContent className="flex flex-col items-center justify-center h-full min-h-[180px] p-5">
-                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <Plus className="h-6 w-6 text-accent" />
+          <>
+            {/* Hero Section with Stats */}
+            <section className="mb-10">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-4">
+                  <Sparkles className="h-4 w-4 text-accent" />
+                  <span className="text-sm font-medium text-accent">AI-Powered Validation</span>
                 </div>
-                <p className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                  Create New Report
+                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+                  Your Reports
+                </h1>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Track and manage your SaaS validation reports in one place
                 </p>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+
+              {/* Stats Cards */}
+              {stats && (
+                <div className="grid grid-cols-3 gap-4 max-w-xl mx-auto mb-10">
+                  <div className="glass-card rounded-xl p-4 text-center border border-accent/10 hover:border-accent/30 transition-all duration-300">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <BarChart3 className="h-4 w-4 text-accent" />
+                      <span className="text-2xl font-bold text-foreground">{stats.totalReports}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Total Reports</p>
+                  </div>
+                  <div className="glass-card rounded-xl p-4 text-center border border-accent/10 hover:border-accent/30 transition-all duration-300">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <span className="text-2xl font-bold text-foreground">{stats.avgScore}%</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Avg. Viability</p>
+                  </div>
+                  <div className="glass-card rounded-xl p-4 text-center border border-accent/10 hover:border-accent/30 transition-all duration-300">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Calendar className="h-4 w-4 text-accent" />
+                      <span className="text-2xl font-bold text-foreground">
+                        {stats.daysSinceLatest === 0 ? 'Today' : `${stats.daysSinceLatest}d`}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Last Created</p>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* Reports Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {reports.map((report, index) => (
+                <div 
+                  key={report.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <ReportCard 
+                    report={report} 
+                    onDelete={handleDeleteClick}
+                  />
+                </div>
+              ))}
+              
+              {/* Create New Card - Premium */}
+              <Card 
+                className="group cursor-pointer relative overflow-hidden 
+                  border-2 border-dashed border-accent/30 hover:border-accent/60 
+                  bg-gradient-to-br from-accent/5 to-transparent
+                  transition-all duration-500 hover:-translate-y-1 
+                  hover:shadow-[0_0_40px_hsla(45,100%,55%,0.1)]"
+                onClick={() => navigate("/planningmysaas/wizard")}
+              >
+                {/* Shimmer effect on hover */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/10 to-transparent 
+                  translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                
+                <CardContent className="relative flex flex-col items-center justify-center h-full min-h-[280px] p-6">
+                  <div className="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 
+                    flex items-center justify-center mb-4 
+                    group-hover:scale-110 group-hover:bg-accent/20 transition-all duration-300">
+                    <Plus className="h-8 w-8 text-accent" />
+                  </div>
+                  <p className="text-lg font-semibold text-foreground mb-1">
+                    Create New Report
+                  </p>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Validate your next SaaS idea
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
       </main>
 
