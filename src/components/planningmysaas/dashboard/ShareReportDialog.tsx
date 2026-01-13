@@ -93,18 +93,18 @@ const ShareReportDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="glass-premium border-accent/20 sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="glass-premium border-accent/20 max-w-[calc(100vw-2rem)] sm:max-w-md overflow-hidden p-4 sm:p-6">
+        <DialogHeader className="min-w-0">
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <Mail className="h-5 w-5 text-accent" />
+            <Mail className="h-5 w-5 text-accent shrink-0" />
             Share Report
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Share "<span className="text-foreground font-medium">{projectName}</span>" viability report
+          <DialogDescription className="text-muted-foreground break-words">
+            Share "<span className="text-foreground font-medium break-all">{projectName}</span>" viability report
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 pt-2">
+        <div className="space-y-4 pt-2 min-w-0">
           {/* Recipient Email */}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium">
@@ -136,13 +136,13 @@ const ShareReportDialog = ({
           </div>
 
           {/* Link Preview */}
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             <Label className="text-sm font-medium text-muted-foreground">
               Link to be shared
             </Label>
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-background/30 border border-border/30 overflow-hidden">
+            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 p-3 rounded-lg bg-background/30 border border-border/30 overflow-hidden">
               <Link className="h-4 w-4 text-accent shrink-0" />
-              <span className="text-sm text-muted-foreground truncate flex-1 min-w-0">
+              <span className="text-sm text-muted-foreground truncate min-w-0 block">
                 {reportUrl}
               </span>
               <Button
