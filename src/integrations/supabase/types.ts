@@ -14,6 +14,206 @@ export type Database = {
   }
   public: {
     Tables: {
+      tb_pln_payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          plan_type: string
+          report_id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          plan_type: string
+          report_id: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          plan_type?: string
+          report_id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tb_pln_payments_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "tb_pln_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tb_pln_payments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "tb_pln_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tb_pln_reports: {
+        Row: {
+          budget: string | null
+          challenge: string | null
+          complexity_score: number | null
+          created_at: string
+          customer_types: string[] | null
+          description: string | null
+          generated_at: string | null
+          goal: string | null
+          goal_other: string | null
+          id: string
+          industry: string | null
+          industry_other: string | null
+          market_size: string | null
+          market_type: string | null
+          product_stage: string | null
+          report_content: Json | null
+          saas_logo_url: string | null
+          saas_name: string
+          saas_type: string | null
+          saas_type_other: string | null
+          selected_features: string[] | null
+          selected_tier: string | null
+          status: string
+          target_audience: string | null
+          timeline: string | null
+          updated_at: string
+          user_id: string
+          viability_score: number | null
+        }
+        Insert: {
+          budget?: string | null
+          challenge?: string | null
+          complexity_score?: number | null
+          created_at?: string
+          customer_types?: string[] | null
+          description?: string | null
+          generated_at?: string | null
+          goal?: string | null
+          goal_other?: string | null
+          id?: string
+          industry?: string | null
+          industry_other?: string | null
+          market_size?: string | null
+          market_type?: string | null
+          product_stage?: string | null
+          report_content?: Json | null
+          saas_logo_url?: string | null
+          saas_name: string
+          saas_type?: string | null
+          saas_type_other?: string | null
+          selected_features?: string[] | null
+          selected_tier?: string | null
+          status?: string
+          target_audience?: string | null
+          timeline?: string | null
+          updated_at?: string
+          user_id: string
+          viability_score?: number | null
+        }
+        Update: {
+          budget?: string | null
+          challenge?: string | null
+          complexity_score?: number | null
+          created_at?: string
+          customer_types?: string[] | null
+          description?: string | null
+          generated_at?: string | null
+          goal?: string | null
+          goal_other?: string | null
+          id?: string
+          industry?: string | null
+          industry_other?: string | null
+          market_size?: string | null
+          market_type?: string | null
+          product_stage?: string | null
+          report_content?: Json | null
+          saas_logo_url?: string | null
+          saas_name?: string
+          saas_type?: string | null
+          saas_type_other?: string | null
+          selected_features?: string[] | null
+          selected_tier?: string | null
+          status?: string
+          target_audience?: string | null
+          timeline?: string | null
+          updated_at?: string
+          user_id?: string
+          viability_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tb_pln_reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "tb_pln_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tb_pln_users: {
+        Row: {
+          auth_user_id: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          linkedin_profile: string | null
+          phone: string | null
+          updated_at: string
+          user_role: string | null
+          user_role_other: string | null
+        }
+        Insert: {
+          auth_user_id: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          linkedin_profile?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_role?: string | null
+          user_role_other?: string | null
+        }
+        Update: {
+          auth_user_id?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          linkedin_profile?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_role?: string | null
+          user_role_other?: string | null
+        }
+        Relationships: []
+      }
       tb_web_appointment: {
         Row: {
           appointmentDate: string | null
