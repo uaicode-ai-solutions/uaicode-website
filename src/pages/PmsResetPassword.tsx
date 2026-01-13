@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Lock, Shield, ArrowLeft, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { PasswordStrengthIndicator, calculatePasswordStrength } from "@/components/ui/password-strength-indicator";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -24,7 +25,8 @@ const PmsResetPassword = () => {
   const [isValidSession, setIsValidSession] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const isValidPassword = password.length >= 6;
+  const passwordStrength = calculatePasswordStrength(password);
+  const isValidPassword = passwordStrength.score >= 3; // Requires at least "Medium" strength
   const passwordsMatch = password === confirmPassword;
   const canSubmit = isValidPassword && passwordsMatch && confirmPassword.length > 0;
 
@@ -63,7 +65,7 @@ const PmsResetPassword = () => {
     }
 
     if (!isValidPassword) {
-      setError("Password must be at least 6 characters");
+      setError("Password must be at least Medium strength");
       return;
     }
 
@@ -281,7 +283,7 @@ const PmsResetPassword = () => {
               Create New Password
             </h1>
             <p className="text-muted-foreground max-w-sm mx-auto">
-              Enter your new password below. Make sure it's at least 6 characters.
+              Enter your new password below. Use a strong password for better security.
             </p>
           </div>
 
@@ -302,30 +304,27 @@ const PmsResetPassword = () => {
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 h-12 bg-muted/30 border-border/50 focus:border-accent"
-                  required
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10 h-12 bg-muted/30 border-border/50 focus:border-accent"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                
+                {/* Password Strength Indicator */}
+                <PasswordStrengthIndicator password={password} />
               </div>
-              {password && password.length < 6 && (
-                <p className="text-xs text-muted-foreground">
-                  Password must be at least 6 characters
-                </p>
-              )}
-            </div>
 
             {/* Confirm Password */}
             <div className="space-y-2">
