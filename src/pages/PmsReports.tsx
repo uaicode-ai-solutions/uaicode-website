@@ -22,11 +22,13 @@ import {
   getProjectDisplayName 
 } from "@/lib/reportsStorage";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthContext } from "@/contexts/AuthContext";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 const PmsReports = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signOut, pmsUser } = useAuthContext();
   const [reports, setReports] = useState<StoredReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -63,12 +65,22 @@ const PmsReports = () => {
     return { totalReports, avgScore, daysSinceLatest };
   }, [reports]);
 
-  const handleLogout = () => {
-    navigate("/planningmysaas/login");
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+      navigate("/planningmysaas/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteClick = (id: string) => {
@@ -140,8 +152,18 @@ const PmsReports = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 
                   align="end" 
-                  className="w-48 glass-premium border-accent/20"
+                  className="w-56 glass-premium border-accent/20"
                 >
+                  {/* User info */}
+                  {pmsUser && (
+                    <>
+                      <div className="px-2 py-2 text-sm">
+                        <p className="font-medium text-foreground truncate">{pmsUser.full_name}</p>
+                        <p className="text-muted-foreground text-xs truncate">{pmsUser.email}</p>
+                      </div>
+                      <DropdownMenuSeparator className="bg-border/50" />
+                    </>
+                  )}
                   <DropdownMenuItem 
                     onClick={() => navigate("/planningmysaas/profile")}
                     className="cursor-pointer"

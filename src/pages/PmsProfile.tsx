@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ChevronLeft, 
@@ -9,7 +9,8 @@ import {
   EyeOff,
   Save,
   Shield,
-  Sparkles
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,15 +18,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthContext } from "@/contexts/AuthContext";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 const PmsProfile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { pmsUser, updateProfile, updatePassword, updateEmail } = useAuthContext();
   
   // Form states
-  const [name, setName] = useState("John Doe");
-  const [email, setEmail] = useState("john@example.com");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,18 +40,44 @@ const PmsProfile = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
+  // Load user data
+  useEffect(() => {
+    if (pmsUser) {
+      setName(pmsUser.full_name || "");
+      setEmail(pmsUser.email || "");
+    }
+  }, [pmsUser]);
+
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    toast({
-      title: "Profile updated",
-      description: "Your profile information has been saved successfully.",
-    });
-    
-    setIsSavingProfile(false);
+    try {
+      // Update name in tb_pln_users
+      await updateProfile({ full_name: name });
+      
+      // Update email if changed
+      if (email !== pmsUser?.email) {
+        await updateEmail(email);
+        toast({
+          title: "Email update requested",
+          description: "Please check your new email address to confirm the change.",
+        });
+      } else {
+        toast({
+          title: "Profile updated",
+          description: "Your profile information has been saved successfully.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Profile update error:", error);
+      toast({
+        title: "Update failed",
+        description: error.message || "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleSavePassword = async () => {
@@ -72,18 +101,27 @@ const PmsProfile = () => {
     
     setIsSavingPassword(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    toast({
-      title: "Password updated",
-      description: "Your password has been changed successfully.",
-    });
-    
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setIsSavingPassword(false);
+    try {
+      await updatePassword(newPassword);
+      
+      toast({
+        title: "Password updated",
+        description: "Your password has been changed successfully.",
+      });
+      
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      console.error("Password update error:", error);
+      toast({
+        title: "Update failed",
+        description: error.message || "Failed to update password. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingPassword(false);
+    }
   };
 
   return (
@@ -203,7 +241,7 @@ const PmsProfile = () => {
                 className="w-full gap-2 bg-accent hover:bg-accent/90 text-background font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
               >
                 {isSavingProfile ? (
-                  <div className="h-4 w-4 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
@@ -314,7 +352,7 @@ const PmsProfile = () => {
                 className="w-full gap-2 border-accent/30 hover:bg-accent/10 hover:border-accent/50 transition-all duration-300"
               >
                 {isSavingPassword ? (
-                  <div className="h-4 w-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Lock className="h-4 w-4" />
                 )}

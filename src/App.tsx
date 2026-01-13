@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
 import Newsletter from "./pages/Newsletter";
@@ -26,23 +28,37 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/jobs" element={<Jobs />} />
-          <Route path="/newsletter" element={<Newsletter />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/planningmysaas" element={<PlanningMySaas />} />
-          <Route path="/planningmysaas/login" element={<PmsLogin />} />
-          <Route path="/planningmysaas/wizard" element={<PmsWizard />} />
-          <Route path="/planningmysaas/reports" element={<PmsReports />} />
-          <Route path="/planningmysaas/dashboard/:id" element={<PmsDashboard />} />
-          <Route path="/planningmysaas/profile" element={<PmsProfile />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <ScrollToTop />
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/newsletter" element={<Newsletter />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/planningmysaas" element={<PlanningMySaas />} />
+            <Route path="/planningmysaas/login" element={<PmsLogin />} />
+            
+            {/* Protected routes */}
+            <Route path="/planningmysaas/wizard" element={
+              <ProtectedRoute><PmsWizard /></ProtectedRoute>
+            } />
+            <Route path="/planningmysaas/reports" element={
+              <ProtectedRoute><PmsReports /></ProtectedRoute>
+            } />
+            <Route path="/planningmysaas/dashboard/:id" element={
+              <ProtectedRoute><PmsDashboard /></ProtectedRoute>
+            } />
+            <Route path="/planningmysaas/profile" element={
+              <ProtectedRoute><PmsProfile /></ProtectedRoute>
+            } />
+            
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
