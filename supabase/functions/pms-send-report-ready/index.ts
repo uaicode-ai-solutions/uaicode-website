@@ -61,7 +61,6 @@ const generateReportReadyEmail = (
       
       <!-- Header with Gold Gradient -->
       <div style="background: linear-gradient(135deg, #FACC15 0%, #EAB308 50%, #CA8A04 100%); padding: 32px 40px; text-align: center;">
-        <img src="https://uaicode.ai/uaicode-logo.png" alt="UaiCode" width="48" height="48" style="border-radius: 12px; display: inline-block; margin-bottom: 12px;" />
         <div style="color: #0A0A0A; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">📊 Your Report is Ready!</div>
         <div style="font-size: 12px; color: #0A0A0A; opacity: 0.8; margin-top: 4px;">PlanningMySaaS by UaiCode</div>
       </div>
