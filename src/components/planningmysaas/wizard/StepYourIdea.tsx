@@ -28,6 +28,10 @@ import {
   Upload,
   X,
   Image as ImageIcon,
+  Lightbulb,
+  Search,
+  Rocket,
+  CircleDollarSign,
 } from "lucide-react";
 
 const saasTypes = [
@@ -56,8 +60,16 @@ const industries = [
   { id: "other", title: "Other", description: "Different industry", icon: Plus },
 ];
 
+const productStages = [
+  { id: "idea", title: "Just an idea", description: "Hypothesis stage", icon: Lightbulb },
+  { id: "validating", title: "Validating", description: "Testing the problem", icon: Search },
+  { id: "mvp", title: "MVP built", description: "Testing with users", icon: Rocket },
+  { id: "live", title: "Already live", description: "With paying users", icon: CircleDollarSign },
+];
+
 interface StepYourIdeaProps {
   data: {
+    productStage: string;
     saasType: string;
     saasTypeOther: string;
     industry: string;
@@ -175,6 +187,30 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
             </p>
           </div>
         )}
+      </div>
+
+      {/* Product Stage */}
+      <div className="space-y-3">
+        <div>
+          <Label className="text-foreground text-base font-medium">
+            What stage is your product in right now? <span className="text-accent">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select the option that best describes your current progress
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {productStages.map((stage) => (
+            <SelectableCard
+              key={stage.id}
+              icon={stage.icon}
+              title={stage.title}
+              description={stage.description}
+              selected={data.productStage === stage.id}
+              onClick={() => onChange("productStage", stage.id)}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Description */}
