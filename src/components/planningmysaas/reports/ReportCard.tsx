@@ -30,15 +30,15 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
 
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-500";
-    if (score >= 60) return "text-accent";
+    if (score >= 80) return "text-amber-400";
+    if (score >= 60) return "text-amber-500";
     if (score >= 40) return "text-orange-500";
     return "text-red-500";
   };
 
   const getScoreBarColor = (score: number) => {
-    if (score >= 80) return "bg-gradient-to-r from-green-500 to-green-400";
-    if (score >= 60) return "bg-gradient-to-r from-accent to-yellow-400";
+    if (score >= 80) return "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300";
+    if (score >= 60) return "bg-gradient-to-r from-amber-600 to-amber-400";
     if (score >= 40) return "bg-gradient-to-r from-orange-500 to-orange-400";
     return "bg-gradient-to-r from-red-500 to-red-400";
   };
