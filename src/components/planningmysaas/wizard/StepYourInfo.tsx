@@ -1,7 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { Check, Users, Sparkles, Shield, Mail, User } from "lucide-react";
+import { Check, Users, Sparkles, Shield, Mail, UserCircle, User, Code, ClipboardList, MoreHorizontal } from "lucide-react";
+import SelectableCard from "./SelectableCard";
 
 interface StepYourInfoProps {
   data: {
@@ -9,6 +10,8 @@ interface StepYourInfoProps {
     email: string;
     linkedinProfile: string;
     phone: string;
+    userRole: string;
+    userRoleOther: string;
   };
   onChange: (field: string, value: string) => void;
 }
@@ -24,6 +27,39 @@ const trustBadges = [
   { icon: Users, text: "Used by 500+ entrepreneurs" },
   { icon: Sparkles, text: "Powered by AI technology" },
   { icon: Shield, text: "Your data is 100% secure" }
+];
+
+const roleOptions = [
+  { 
+    id: "founder", 
+    title: "Founder / Co-founder", 
+    description: "Leading the vision", 
+    icon: UserCircle 
+  },
+  { 
+    id: "solo", 
+    title: "Solo Founder", 
+    description: "Building alone", 
+    icon: User 
+  },
+  { 
+    id: "cto", 
+    title: "CTO / Technical Partner", 
+    description: "Technical leadership", 
+    icon: Code 
+  },
+  { 
+    id: "pm", 
+    title: "Product Manager", 
+    description: "Product strategy", 
+    icon: ClipboardList 
+  },
+  { 
+    id: "other", 
+    title: "Other", 
+    description: "Different role", 
+    icon: MoreHorizontal 
+  },
 ];
 
 const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
@@ -47,6 +83,47 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
             <span className="text-sm text-foreground/80">{feature}</span>
           </div>
         ))}
+      </div>
+
+      {/* Role Selection */}
+      <div className="space-y-4">
+        <div>
+          <Label className="text-foreground text-lg">
+            What's your role? <span className="text-accent">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select the option that best describes you
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {roleOptions.map((role) => (
+            <SelectableCard
+              key={role.id}
+              icon={role.icon}
+              title={role.title}
+              description={role.description}
+              selected={data.userRole === role.id}
+              onClick={() => onChange("userRole", role.id)}
+            />
+          ))}
+        </div>
+        
+        {/* Other role text input */}
+        {data.userRole === "other" && (
+          <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
+            <Label htmlFor="userRoleOther" className="text-sm text-muted-foreground">
+              Please specify your role <span className="text-accent">*</span>
+            </Label>
+            <Input
+              id="userRoleOther"
+              type="text"
+              placeholder="e.g., Marketing Director, Investor..."
+              value={data.userRoleOther}
+              onChange={(e) => onChange("userRoleOther", e.target.value)}
+              className="bg-background border-border/50 focus:border-accent"
+            />
+          </div>
+        )}
       </div>
 
       {/* Form Card */}
