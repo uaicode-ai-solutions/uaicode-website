@@ -15,6 +15,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Get the authorization header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      console.error("Missing authorization header");
       throw new Error("Missing authorization header");
     }
 
@@ -33,39 +34,61 @@ const handler = async (req: Request): Promise<Response> => {
     // Get the authenticated user
     const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
     if (userError || !user) {
+      console.error("Unauthorized:", userError?.message || "User not found");
       throw new Error("Unauthorized: " + (userError?.message || "User not found"));
     }
 
-    console.log("Deleting account for user:", user.id);
+    console.log("=== STARTING ACCOUNT DELETION ===");
+    console.log("Auth user ID:", user.id);
+    console.log("Auth user email:", user.email);
 
     // Admin client to perform deletions
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 1. Get user profile for goodbye email
-    const { data: pmsUser } = await supabaseAdmin
+    // 1. Get user profile - CRITICAL: we need the tb_pms_users.id (NOT auth.users.id)
+    //    because tb_pms_payments.user_id and tb_pms_reports.user_id reference tb_pms_users.id
+    const { data: pmsUser, error: pmsUserError } = await supabaseAdmin
       .from("tb_pms_users")
-      .select("email, full_name")
+      .select("id, email, full_name")
       .eq("auth_user_id", user.id)
       .single();
 
-    // 2. Delete user's payments
-    const { error: paymentsError } = await supabaseAdmin
-      .from("tb_pms_payments")
-      .delete()
-      .eq("user_id", user.id);
-
-    if (paymentsError) {
-      console.error("Error deleting payments:", paymentsError);
+    if (pmsUserError) {
+      console.log("No tb_pms_users profile found (error):", pmsUserError.message);
     }
 
-    // 3. Delete user's reports
-    const { error: reportsError } = await supabaseAdmin
-      .from("tb_pms_reports")
-      .delete()
-      .eq("user_id", user.id);
+    // The pms_user_id is the correct ID to use for deleting payments/reports
+    const pmsUserId = pmsUser?.id;
+    console.log("PMS User ID (tb_pms_users.id):", pmsUserId || "NOT FOUND");
 
-    if (reportsError) {
-      console.error("Error deleting reports:", reportsError);
+    // 2. Delete user's payments using the CORRECT ID (pmsUserId, not auth user.id)
+    if (pmsUserId) {
+      const { data: deletedPayments, error: paymentsError } = await supabaseAdmin
+        .from("tb_pms_payments")
+        .delete()
+        .eq("user_id", pmsUserId)
+        .select("id");
+
+      if (paymentsError) {
+        console.error("Error deleting payments:", paymentsError.message);
+      } else {
+        console.log("Deleted payments count:", deletedPayments?.length || 0);
+      }
+
+      // 3. Delete user's reports using the CORRECT ID (pmsUserId, not auth user.id)
+      const { data: deletedReports, error: reportsError } = await supabaseAdmin
+        .from("tb_pms_reports")
+        .delete()
+        .eq("user_id", pmsUserId)
+        .select("id");
+
+      if (reportsError) {
+        console.error("Error deleting reports:", reportsError.message);
+      } else {
+        console.log("Deleted reports count:", deletedReports?.length || 0);
+      }
+    } else {
+      console.log("No pmsUserId found - skipping payments/reports deletion");
     }
 
     // 4. Delete user profile from tb_pms_users
@@ -75,13 +98,16 @@ const handler = async (req: Request): Promise<Response> => {
       .eq("auth_user_id", user.id);
 
     if (profileError) {
-      console.error("Error deleting profile:", profileError);
-      throw new Error("Failed to delete user profile");
+      console.error("Error deleting profile:", profileError.message);
+      // Don't throw here - continue to delete auth user even if profile doesn't exist
+    } else {
+      console.log("Profile deleted successfully");
     }
 
     // 5. Send goodbye email before deleting auth user
     if (pmsUser?.email && pmsUser?.full_name) {
       try {
+        console.log("Sending goodbye email to:", pmsUser.email);
         const emailResponse = await fetch(
           `${supabaseUrl}/functions/v1/pms-send-goodbye-email`,
           {
@@ -109,14 +135,15 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // 6. Delete auth user using admin client
+    console.log("Deleting auth user:", user.id);
     const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
 
     if (authDeleteError) {
-      console.error("Error deleting auth user:", authDeleteError);
+      console.error("Error deleting auth user:", authDeleteError.message);
       throw new Error("Failed to delete auth user: " + authDeleteError.message);
     }
 
-    console.log("Account deleted successfully for user:", user.id);
+    console.log("=== ACCOUNT DELETION COMPLETED SUCCESSFULLY ===");
 
     return new Response(
       JSON.stringify({ success: true, message: "Account deleted successfully" }),
@@ -126,7 +153,8 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Error in pms-delete-account:", error);
+    console.error("=== ACCOUNT DELETION FAILED ===");
+    console.error("Error:", error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
