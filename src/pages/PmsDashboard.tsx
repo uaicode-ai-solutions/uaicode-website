@@ -6,10 +6,21 @@ import {
   FileText, 
   Palette,
   ChevronLeft,
-  TrendingUp
+  TrendingUp,
+  User,
+  LogOut,
+  Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 import { reportData } from "@/lib/reportMockData";
 import { BackToTopButton } from "@/components/blog/BackToTopButton";
 import DashboardSkeleton from "@/components/planningmysaas/skeletons/DashboardSkeleton";
@@ -34,10 +45,19 @@ import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections
 const PmsDashboard = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("report");
   const [report, setReport] = useState<StoredReport | null>(null);
   const [reportsCount, setReportsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleLogout = () => {
+    navigate("/planningmysaas/login");
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
+  };
 
   // Load reports count
   useEffect(() => {
@@ -124,14 +144,49 @@ const PmsDashboard = () => {
               </div>
             </div>
 
-            {/* Right side - Download Button */}
-            <Button
-              onClick={handleDownloadPDF}
-              className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
-            >
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Download PDF</span>
-            </Button>
+            {/* Right side - Download Button + User Dropdown */}
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleDownloadPDF}
+                className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Download PDF</span>
+              </Button>
+
+              {/* User Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="relative hover:bg-accent/10 border border-border/50 rounded-full transition-all duration-300"
+                  >
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-48 glass-premium border-accent/20"
+                >
+                  <DropdownMenuItem 
+                    onClick={() => navigate("/planningmysaas/profile")}
+                    className="cursor-pointer"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-border/30" />
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="cursor-pointer text-red-400 focus:text-red-400"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </header>
