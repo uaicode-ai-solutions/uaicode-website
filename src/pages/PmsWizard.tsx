@@ -120,12 +120,12 @@ const PmsWizard = () => {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1: // Your Info
-        const userRoleValid = data.userRole !== "" && 
-          (data.userRole !== "other" || data.userRoleOther.trim().length >= 2);
+        const userRoleValid = (data.userRole || "") !== "" && 
+          (data.userRole !== "other" || (data.userRoleOther || "").trim().length >= 2);
         return (
           userRoleValid &&
-          data.fullName.trim().length >= 2 &&
-          data.phone.length >= 8
+          (data.fullName || "").trim().length >= 2 &&
+          (data.phone || "").length >= 8
         );
       case 2: // Your Idea
         const saasTypeValid = data.saasType !== "" && 
