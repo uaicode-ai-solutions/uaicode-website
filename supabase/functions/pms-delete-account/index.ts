@@ -43,14 +43,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 1. Get user profile for goodbye email
     const { data: pmsUser } = await supabaseAdmin
-      .from("tb_pln_users")
+      .from("tb_pms_users")
       .select("email, full_name")
       .eq("auth_user_id", user.id)
       .single();
 
     // 2. Delete user's payments
     const { error: paymentsError } = await supabaseAdmin
-      .from("tb_pln_payments")
+      .from("tb_pms_payments")
       .delete()
       .eq("user_id", user.id);
 
@@ -60,7 +60,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 3. Delete user's reports
     const { error: reportsError } = await supabaseAdmin
-      .from("tb_pln_reports")
+      .from("tb_pms_reports")
       .delete()
       .eq("user_id", user.id);
 
@@ -68,9 +68,9 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error deleting reports:", reportsError);
     }
 
-    // 4. Delete user profile from tb_pln_users
+    // 4. Delete user profile from tb_pms_users
     const { error: profileError } = await supabaseAdmin
-      .from("tb_pln_users")
+      .from("tb_pms_users")
       .delete()
       .eq("auth_user_id", user.id);
 

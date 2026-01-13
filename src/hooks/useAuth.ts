@@ -21,28 +21,10 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
-// Helper function to create PMS user from OAuth (outside hook to avoid hook count issues)
-const createPmsUserFromOAuth = async (user: User): Promise<void> => {
-  const { error } = await supabase
-    .from("tb_pln_users")
-    .insert({
-      auth_user_id: user.id,
-      email: user.email!,
-      full_name: user.user_metadata?.full_name || 
-                 user.user_metadata?.name || 
-                 user.email?.split("@")[0] || "User",
-    });
-  
-  // Ignore error 23505 (user already exists - unique constraint violation)
-  if (error && error.code !== "23505") {
-    console.error("Error creating OAuth user profile:", error);
-  }
-};
-
 // Helper function to fetch PMS user (outside hook)
 const fetchPmsUserData = async (userId: string): Promise<PmsUser | null> => {
   const { data, error } = await supabase
-    .from("tb_pln_users")
+    .from("tb_pms_users")
     .select("*")
     .eq("auth_user_id", userId)
     .single();
@@ -73,15 +55,8 @@ export const useAuth = () => {
         if (user) {
           // Use setTimeout to avoid potential deadlock with Supabase client
           setTimeout(async () => {
-            // For OAuth logins (like Google), check if user exists in tb_pln_users
-            // If not, create them automatically
-            let pmsUser = await fetchPmsUserData(user.id);
-            
-            if (!pmsUser && user.app_metadata?.provider !== "email") {
-              // OAuth user without profile - create one
-              await createPmsUserFromOAuth(user);
-              pmsUser = await fetchPmsUserData(user.id);
-            }
+            // Fetch PMS user profile (created automatically by database trigger)
+            const pmsUser = await fetchPmsUserData(user.id);
             
             setAuthState({
               user,
@@ -110,12 +85,6 @@ export const useAuth = () => {
       let pmsUser: PmsUser | null = null;
       if (user) {
         pmsUser = await fetchPmsUserData(user.id);
-        
-        // Handle OAuth users that might not have a profile yet
-        if (!pmsUser && user.app_metadata?.provider !== "email") {
-          await createPmsUserFromOAuth(user);
-          pmsUser = await fetchPmsUserData(user.id);
-        }
       }
 
       setAuthState({
@@ -143,31 +112,20 @@ export const useAuth = () => {
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    // 1. Create auth user
+    // Create auth user - profile is created automatically by database trigger
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
+        data: {
+          full_name: fullName, // Trigger will use this value
+        },
       },
     });
 
     if (authError) throw authError;
     if (!authData.user) throw new Error("User creation failed");
-
-    // 2. Create record in tb_pln_users
-    const { error: profileError } = await supabase
-      .from("tb_pln_users")
-      .insert({
-        auth_user_id: authData.user.id,
-        email,
-        full_name: fullName,
-      });
-
-    if (profileError) {
-      console.error("Error creating user profile:", profileError);
-      throw profileError;
-    }
 
     return authData;
   };
@@ -200,7 +158,7 @@ export const useAuth = () => {
     if (!authState.user) throw new Error("Not authenticated");
 
     const { error } = await supabase
-      .from("tb_pln_users")
+      .from("tb_pms_users")
       .update(updates)
       .eq("auth_user_id", authState.user.id);
 
@@ -241,10 +199,10 @@ export const useAuth = () => {
 
     if (error) throw error;
 
-    // Also update in tb_pln_users
+    // Also update in tb_pms_users
     if (authState.user) {
       await supabase
-        .from("tb_pln_users")
+        .from("tb_pms_users")
         .update({ email: newEmail })
         .eq("auth_user_id", authState.user.id);
     }
