@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Eye, EyeOff, Mail, Lock, Shield, ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
+import { PasswordStrengthIndicator, calculatePasswordStrength } from "@/components/ui/password-strength-indicator";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +30,8 @@ const PmsLogin = () => {
   const [resetSuccess, setResetSuccess] = useState(false);
 
   const isValidEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidPassword = password && password.length >= 6;
+  const passwordStrength = calculatePasswordStrength(password);
+  const isValidPassword = isLogin ? (password && password.length >= 6) : passwordStrength.score >= 3;
   const isValidName = fullName.trim().length >= 2;
   const canSubmit = isValidEmail && isValidPassword && (isLogin || isValidName);
 
@@ -251,7 +253,6 @@ const PmsLogin = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-10 h-12 bg-muted/30 border-border/50 focus:border-accent"
                     required
-                    minLength={6}
                   />
                   <button
                     type="button"
@@ -261,11 +262,9 @@ const PmsLogin = () => {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                {password && password.length < 6 && (
-                  <p className="text-xs text-muted-foreground">
-                    Password must be at least 6 characters
-                  </p>
-                )}
+                
+                {/* Password Strength Indicator - Only show on signup */}
+                {!isLogin && <PasswordStrengthIndicator password={password} />}
               </div>
 
               {/* Forgot Password Link - Only show on login */}
