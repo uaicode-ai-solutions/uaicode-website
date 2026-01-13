@@ -51,6 +51,35 @@ export const useAuth = () => {
   });
 
   useEffect(() => {
+    // Track if welcome email was already sent in this session to avoid duplicates
+    const sentWelcomeEmails = new Set<string>();
+
+    // Helper function to send welcome email for new users
+    const sendWelcomeEmailIfNew = async (user: User) => {
+      // Avoid duplicate sends in the same session
+      if (sentWelcomeEmails.has(user.id)) return;
+      
+      const createdAt = new Date(user.created_at);
+      const now = new Date();
+      const isNewUser = (now.getTime() - createdAt.getTime()) < 5 * 60 * 1000; // 5 minutes
+      
+      if (isNewUser) {
+        const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+        if (fullName && user.email) {
+          sentWelcomeEmails.add(user.id);
+          try {
+            await supabase.functions.invoke('pms-send-welcome-email', {
+              body: { email: user.email, fullName }
+            });
+            console.log('Welcome email sent successfully to:', user.email);
+          } catch (emailError) {
+            console.error('Failed to send welcome email:', emailError);
+            // Don't block auth flow if email fails
+          }
+        }
+      }
+    };
+
     // Set up auth state listener FIRST (before getSession)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -61,6 +90,11 @@ export const useAuth = () => {
           setTimeout(async () => {
             // Fetch PMS user profile (created automatically by database trigger)
             const pmsUser = await fetchPmsUserData(user.id);
+            
+            // Send welcome email for new users on SIGNED_IN event
+            if (event === 'SIGNED_IN') {
+              await sendWelcomeEmailIfNew(user);
+            }
             
             setAuthState({
               user,
