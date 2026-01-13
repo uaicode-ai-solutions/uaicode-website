@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { Check, Users, Sparkles, Shield, Mail, UserCircle, User, Code, ClipboardList, MoreHorizontal } from "lucide-react";
+import { Check, Users, Sparkles, Shield, Mail, UserCircle, User, Code, ClipboardList, TrendingUp, MoreHorizontal } from "lucide-react";
 import SelectableCard from "./SelectableCard";
 
 interface StepYourInfoProps {
@@ -55,6 +55,12 @@ const roleOptions = [
     icon: ClipboardList 
   },
   { 
+    id: "investor", 
+    title: "Investor / Advisor", 
+    description: "Supporting growth", 
+    icon: TrendingUp 
+  },
+  { 
     id: "other", 
     title: "Other", 
     description: "Different role", 
@@ -95,7 +101,7 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
             Select the option that best describes you
           </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {roleOptions.map((role) => (
             <SelectableCard
               key={role.id}
