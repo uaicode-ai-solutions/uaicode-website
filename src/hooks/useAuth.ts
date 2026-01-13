@@ -46,23 +46,49 @@ export const useAuth = () => {
     return data as PmsUser;
   }, []);
 
+  // Create PMS user from OAuth (Google) login
+  const createPmsUserFromOAuth = useCallback(async (user: User): Promise<void> => {
+    const { error } = await supabase
+      .from("tb_pln_users")
+      .insert({
+        auth_user_id: user.id,
+        email: user.email!,
+        full_name: user.user_metadata?.full_name || 
+                   user.user_metadata?.name || 
+                   user.email?.split("@")[0] || "User",
+      });
+    
+    // Ignore error 23505 (user already exists - unique constraint violation)
+    if (error && error.code !== "23505") {
+      console.error("Error creating OAuth user profile:", error);
+    }
+  }, []);
+
   useEffect(() => {
     // Set up auth state listener FIRST (before getSession)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         const user = session?.user ?? null;
         
-        let pmsUser: PmsUser | null = null;
         if (user) {
           // Use setTimeout to avoid potential deadlock with Supabase client
           setTimeout(async () => {
-            pmsUser = await fetchPmsUser(user.id);
+            // For OAuth logins (like Google), check if user exists in tb_pln_users
+            // If not, create them automatically
+            let pmsUser = await fetchPmsUser(user.id);
+            
+            if (!pmsUser && user.app_metadata?.provider !== "email") {
+              // OAuth user without profile - create one
+              await createPmsUserFromOAuth(user);
+              pmsUser = await fetchPmsUser(user.id);
+            }
+            
             setAuthState({
               user,
               session,
               pmsUser,
               loading: false,
-              isAuthenticated: !!user,
+              isAuthenticated: true,
             });
           }, 0);
         } else {
@@ -84,6 +110,12 @@ export const useAuth = () => {
       let pmsUser: PmsUser | null = null;
       if (user) {
         pmsUser = await fetchPmsUser(user.id);
+        
+        // Handle OAuth users that might not have a profile yet
+        if (!pmsUser && user.app_metadata?.provider !== "email") {
+          await createPmsUserFromOAuth(user);
+          pmsUser = await fetchPmsUser(user.id);
+        }
       }
 
       setAuthState({
@@ -98,7 +130,7 @@ export const useAuth = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [fetchPmsUser]);
+  }, [fetchPmsUser, createPmsUserFromOAuth]);
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -143,6 +175,17 @@ export const useAuth = () => {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+  };
+
+  const signInWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/planningmysaas/reports`,
+      },
+    });
+    if (error) throw error;
+    return data;
   };
 
   const resetPassword = async (email: string) => {
@@ -197,6 +240,7 @@ export const useAuth = () => {
     signIn,
     signUp,
     signOut,
+    signInWithGoogle,
     resetPassword,
     updateProfile,
     updatePassword,
