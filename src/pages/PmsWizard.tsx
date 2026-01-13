@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useConfetti } from "@/hooks/useConfetti";
 import { saveReport, generateReportId, StoredReport } from "@/lib/reportsStorage";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface WizardData {
   // User Info (from login or step 1)
@@ -102,12 +103,44 @@ const PmsWizard = () => {
   const selectedPlan = searchParams.get("plan") || "starter";
   const totalSteps = 5;
   
+  const { pmsUser } = useAuthContext();
+  
   const savedState = getSavedData();
   const [currentStep, setCurrentStep] = useState(savedState.currentStep);
   const [data, setData] = useState<WizardData>(savedState.data);
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
   
   const { toast } = useToast();
   const { fireConfetti } = useConfetti();
+
+  // Load authenticated user data into wizard (only if no localStorage draft exists)
+  useEffect(() => {
+    if (pmsUser && !userDataLoaded) {
+      const hasSavedDraft = localStorage.getItem(STORAGE_KEY);
+      
+      // Only auto-fill if there's no saved draft
+      if (!hasSavedDraft) {
+        setData(prev => ({
+          ...prev,
+          email: pmsUser.email || "",
+          fullName: pmsUser.full_name || "",
+          phone: pmsUser.phone || "",
+          linkedinProfile: pmsUser.linkedin_profile || "",
+          userRole: pmsUser.user_role || "",
+          userRoleOther: pmsUser.user_role_other || "",
+          isAuthenticated: true,
+        }));
+      } else {
+        // Always update email from authenticated user
+        setData(prev => ({
+          ...prev,
+          email: pmsUser.email || prev.email,
+          isAuthenticated: true,
+        }));
+      }
+      setUserDataLoaded(true);
+    }
+  }, [pmsUser, userDataLoaded]);
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
