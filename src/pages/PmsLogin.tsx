@@ -1,23 +1,27 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Eye, EyeOff, Mail, Lock, Shield, ArrowLeft, CheckCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Eye, EyeOff, Mail, Lock, Shield, ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import pmsDashboardImage from "@/assets/pms-hero-dashboard.webp";
 
-const STORAGE_KEY = "pms-wizard-data";
-
 const PmsLogin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn, signUp, resetPassword, isAuthenticated, loading } = useAuthContext();
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
@@ -25,63 +29,80 @@ const PmsLogin = () => {
 
   const isValidEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidPassword = password && password.length >= 6;
-  const canSubmit = isValidEmail && isValidPassword;
+  const isValidName = fullName.trim().length >= 2;
+  const canSubmit = isValidEmail && isValidPassword && (isLogin || isValidName);
 
-  const saveLoginDataAndProceed = (loginEmail: string, fullName: string = "") => {
-    const existingData = localStorage.getItem(STORAGE_KEY);
-    let wizardData = {};
-    
-    if (existingData) {
-      try {
-        const parsed = JSON.parse(existingData);
-        wizardData = parsed.data || {};
-      } catch (e) {
-        console.error("Error parsing wizard data:", e);
-      }
-    }
+  // Get the redirect destination
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/planningmysaas/reports";
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      currentStep: 1,
-      data: {
-        ...wizardData,
-        email: loginEmail,
-        fullName: fullName,
-        password: "",
-        isAuthenticated: true,
-      },
-      savedAt: new Date().toISOString()
-    }));
+  // Redirect if already authenticated
+  if (!loading && isAuthenticated) {
+    navigate(from, { replace: true });
+    return null;
+  }
 
-    navigate("/planningmysaas/reports");
-  };
-
-  const handleEmailLogin = (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (canSubmit) {
-      saveLoginDataAndProceed(email);
+    if (!canSubmit) return;
+
+    setIsSubmitting(true);
+
+    try {
+      if (isLogin) {
+        await signIn(email, password);
+        toast.success("Welcome back!");
+      } else {
+        await signUp(email, password, fullName);
+        toast.success("Account created successfully!");
+      }
+      navigate(from, { replace: true });
+    } catch (error: any) {
+      console.error("Auth error:", error);
+      
+      // Handle specific error messages
+      if (error.message?.includes("Invalid login credentials")) {
+        toast.error("Invalid email or password");
+      } else if (error.message?.includes("User already registered")) {
+        toast.error("This email is already registered. Please sign in.");
+        setIsLogin(true);
+      } else if (error.message?.includes("Email not confirmed")) {
+        toast.error("Please check your email to confirm your account");
+      } else {
+        toast.error(error.message || "An error occurred. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    saveLoginDataAndProceed("user@gmail.com", "Google User");
+    toast.info("Google login coming soon!");
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setResetLoading(true);
     
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/planningmysaas/reset-password`,
-    });
-    
-    if (error) {
-      toast.error("Failed to send reset email. Please try again.");
-    } else {
+    try {
+      await resetPassword(resetEmail);
       setResetSuccess(true);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send reset email. Please try again.");
+    } finally {
+      setResetLoading(false);
     }
-    
-    setResetLoading(false);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 border-4 border-accent/30 border-t-accent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
@@ -158,6 +179,24 @@ const PmsLogin = () => {
           {/* Login Form Card */}
           <div className="space-y-6">
             <form onSubmit={handleEmailLogin} className="space-y-4">
+              {/* Full Name - Only show on signup */}
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-sm font-medium text-foreground">
+                    Full Name
+                  </Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="John Doe"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="h-12 bg-muted/30 border-border/50 focus:border-accent"
+                    required={!isLogin}
+                  />
+                </div>
+              )}
+
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium text-foreground">
@@ -209,28 +248,37 @@ const PmsLogin = () => {
                 )}
               </div>
 
-              {/* Forgot Password Link */}
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  className="text-sm text-accent hover:underline"
-                  onClick={() => {
-                    setResetEmail(email);
-                    setShowForgotPassword(true);
-                  }}
-                >
-                  Forgot password?
-                </button>
-              </div>
+              {/* Forgot Password Link - Only show on login */}
+              {isLogin && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    className="text-sm text-accent hover:underline"
+                    onClick={() => {
+                      setResetEmail(email);
+                      setShowForgotPassword(true);
+                    }}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
 
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={!canSubmit}
+                disabled={!canSubmit || isSubmitting}
                 className="w-full bg-accent hover:bg-accent/90 text-background font-semibold h-12"
               >
-                <Mail className="w-4 h-4 mr-2" />
-                {isLogin ? "Sign In" : "Create Account"}
+                {isSubmitting ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Mail className="w-4 h-4 mr-2" />
+                )}
+                {isSubmitting 
+                  ? (isLogin ? "Signing in..." : "Creating account...") 
+                  : (isLogin ? "Sign In" : "Create Account")
+                }
               </Button>
             </form>
 
@@ -244,12 +292,13 @@ const PmsLogin = () => {
               </div>
             </div>
 
-            {/* Google Login */}
+            {/* Google Login - Disabled for now */}
             <Button
               type="button"
               variant="outline"
               onClick={handleGoogleLogin}
-              className="w-full h-12 border-border/50 hover:bg-muted/50"
+              disabled
+              className="w-full h-12 border-border/50 hover:bg-muted/50 opacity-50 cursor-not-allowed"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -269,7 +318,7 @@ const PmsLogin = () => {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Continue with Google
+              Continue with Google (Coming Soon)
             </Button>
 
             {/* Sign up link */}
@@ -278,7 +327,10 @@ const PmsLogin = () => {
               <button
                 type="button"
                 className="text-accent hover:underline font-medium"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setFullName("");
+                }}
               >
                 {isLogin ? "Sign up" : "Sign in"}
               </button>
