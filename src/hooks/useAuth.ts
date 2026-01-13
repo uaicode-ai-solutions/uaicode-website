@@ -24,9 +24,8 @@ interface AuthState {
   loading: boolean;
   isAuthenticated: boolean;
 }
-// Track emails/webhooks sent to avoid duplicates (module level to persist across re-renders)
+// Track welcome emails sent to avoid duplicates (module level to persist across re-renders)
 const sentWelcomeEmails = new Set<string>();
-const calledWebhooks = new Set<string>();
 
 // Helper function to fetch PMS user (outside hook)
 const fetchPmsUserData = async (userId: string): Promise<PmsUser | null> => {
@@ -44,7 +43,8 @@ const fetchPmsUserData = async (userId: string): Promise<PmsUser | null> => {
   return data as PmsUser;
 };
 
-// Helper function to send welcome email and call webhook for new users
+// Helper function to send welcome email for new users
+// NOTE: Webhook is now handled automatically by database trigger (tb_pms_users_after_insert_webhook)
 const sendWelcomeEmailIfNew = async (user: User) => {
   const createdAt = new Date(user.created_at);
   const now = new Date();
@@ -54,23 +54,7 @@ const sendWelcomeEmailIfNew = async (user: User) => {
   
   const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
   
-  // 1. WEBHOOK - ALWAYS for new users (data comes from tb_pms_users via trigger)
-  if (!calledWebhooks.has(user.id)) {
-    calledWebhooks.add(user.id);
-    
-    try {
-      console.log('Calling webhook for new user:', user.id);
-      await supabase.functions.invoke('pms-webhook-new-user', {
-        body: { auth_user_id: user.id }
-      });
-      console.log('New user webhook called successfully for:', user.email);
-    } catch (webhookError) {
-      console.error('Failed to call new user webhook:', webhookError);
-      // Don't block auth flow if webhook fails
-    }
-  }
-  
-  // 2. EMAIL - Only if fullName exists (for personalization)
+  // EMAIL - Only if fullName exists (for personalization)
   if (fullName && user.email && !sentWelcomeEmails.has(user.id)) {
     sentWelcomeEmails.add(user.id);
     
