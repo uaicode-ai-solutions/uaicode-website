@@ -38,3 +38,9 @@ verify_jwt = false
 
 [functions.send-newsletter-welcome]
 verify_jwt = false
+
+[functions.pms-send-welcome-email]
+verify_jwt = false
+
+[functions.pms-send-password-changed]
+verify_jwt = false

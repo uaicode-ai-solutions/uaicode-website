@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Eye, EyeOff, Mail, Lock, Shield, ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import pmsDashboardImage from "@/assets/pms-hero-dashboard.webp";
 
@@ -53,7 +54,18 @@ const PmsLogin = () => {
         toast.success("Welcome back!");
       } else {
         await signUp(email, password, fullName);
-        toast.success("Account created successfully!");
+        
+        // Send welcome email
+        try {
+          await supabase.functions.invoke('pms-send-welcome-email', {
+            body: { email, fullName }
+          });
+        } catch (emailError) {
+          console.error("Failed to send welcome email:", emailError);
+          // Don't block signup if email fails
+        }
+        
+        toast.success("Account created successfully! Check your email for a welcome message.");
       }
       navigate(from, { replace: true });
     } catch (error: any) {

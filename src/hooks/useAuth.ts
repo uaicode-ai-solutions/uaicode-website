@@ -217,6 +217,21 @@ export const useAuth = () => {
     });
 
     if (error) throw error;
+
+    // Send password changed confirmation email
+    if (authState.pmsUser) {
+      try {
+        await supabase.functions.invoke('pms-send-password-changed', {
+          body: { 
+            email: authState.pmsUser.email, 
+            fullName: authState.pmsUser.full_name 
+          }
+        });
+      } catch (emailError) {
+        console.error("Failed to send password changed email:", emailError);
+        // Don't block if email fails
+      }
+    }
   };
 
   const updateEmail = async (newEmail: string) => {
