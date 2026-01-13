@@ -405,7 +405,7 @@ const PmsProfile = () => {
                 </div>
               </div>
               
-              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <AlertDialog open={isDeleteDialogOpen} onOpenChange={(open) => !isDeleting && setIsDeleteDialogOpen(open)}>
                 <AlertDialogTrigger asChild>
                   <Button 
                     variant="outline"
@@ -415,7 +415,10 @@ const PmsProfile = () => {
                     Delete Account
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="glass-premium border-destructive/20">
+                <AlertDialogContent 
+                  className="glass-premium border-destructive/20"
+                  onEscapeKeyDown={(e) => isDeleting && e.preventDefault()}
+                >
                   <AlertDialogHeader>
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-12 h-12 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
@@ -457,14 +460,23 @@ const PmsProfile = () => {
                         value={deleteConfirmText}
                         onChange={(e) => setDeleteConfirmText(e.target.value)}
                         placeholder="Type DELETE"
+                        disabled={isDeleting}
                         className="bg-background/50 border-destructive/30 focus:border-destructive/50"
                       />
                     </div>
+                    
+                    {isDeleting && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
+                        <Loader2 className="h-4 w-4 animate-spin text-destructive" />
+                        <span>Deleting your account... please wait.</span>
+                      </div>
+                    )}
                   </div>
                   
                   <AlertDialogFooter>
                     <AlertDialogCancel 
                       onClick={() => setDeleteConfirmText("")}
+                      disabled={isDeleting}
                       className="border-border/50"
                     >
                       Cancel
