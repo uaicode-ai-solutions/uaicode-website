@@ -115,7 +115,7 @@ const generateGoodbyeEmail = (userName: string) => {
                   You can always create a new account at any time.<br>
                   We'd love to have you back!
                 </p>
-                <a href="https://planningmysaas.uaicode.tech/planningmysaas/login" style="display: inline-block; background: linear-gradient(135deg, #FACC15 0%, #EAB308 100%); color: #0A0A0A; text-decoration: none; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 20px rgba(250, 204, 21, 0.25);">
+                <a href="https://uaicode.ai/planningmysaas/login" style="display: inline-block; background: linear-gradient(135deg, #FACC15 0%, #EAB308 100%); color: #0A0A0A; text-decoration: none; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 20px rgba(250, 204, 21, 0.25);">
                   Create New Account
                 </a>
               </div>
@@ -125,7 +125,7 @@ const generateGoodbyeEmail = (userName: string) => {
                 <p style="margin: 0 0 16px 0; color: #666666; font-size: 14px; line-height: 1.6;">
                   We'd love to hear why you left. Your feedback helps us improve.
                 </p>
-                <a href="mailto:feedback@uaicode.tech?subject=PlanningMySaaS Feedback" style="color: #FACC15; text-decoration: none; font-size: 14px; font-weight: 600;">
+                <a href="mailto:feedback@uaicode.ai?subject=PlanningMySaaS Feedback" style="color: #FACC15; text-decoration: none; font-size: 14px; font-weight: 600;">
                   📝 Share Feedback
                 </a>
               </div>
@@ -142,7 +142,7 @@ const generateGoodbyeEmail = (userName: string) => {
                 Thank you for being part of our journey.
               </p>
               <div style="margin-top: 20px;">
-                <a href="https://uaicode.tech" style="color: #FACC15; text-decoration: none; font-size: 13px; margin: 0 12px;">Website</a>
+                <a href="https://uaicode.ai" style="color: #FACC15; text-decoration: none; font-size: 13px; margin: 0 12px;">Website</a>
                 <span style="color: #333333;">•</span>
                 <a href="https://linkedin.com/company/uaicode" style="color: #FACC15; text-decoration: none; font-size: 13px; margin: 0 12px;">LinkedIn</a>
               </div>
@@ -177,7 +177,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailHtml = generateGoodbyeEmail(fullName);
 
     const emailResponse = await resend.emails.send({
-      from: "PlanningMySaaS <onboarding@resend.dev>",
+      from: "PlanningMySaaS <noreply@uaicode.ai>",
       to: [email],
       subject: "👋 Goodbye from PlanningMySaaS - We'll Miss You!",
       html: emailHtml,
