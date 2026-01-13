@@ -110,6 +110,7 @@ const PmsLogin = () => {
         // Check if email confirmation is required
         if (result.user && !result.session) {
           // Email confirmation is enabled - show confirmation dialog
+          // Welcome email will be sent automatically when user confirms and signs in
           setShowEmailConfirmation(true);
           setEmail("");
           setPassword("");
@@ -119,16 +120,7 @@ const PmsLogin = () => {
           return;
         }
         
-        // Send welcome email (only if session exists = no confirmation needed)
-        try {
-          await supabase.functions.invoke('pms-send-welcome-email', {
-            body: { email, fullName }
-          });
-        } catch (emailError) {
-          console.error("Failed to send welcome email:", emailError);
-          // Don't block signup if email fails
-        }
-        
+        // Welcome email is sent automatically by useAuth on first sign-in
         navigate(from, { replace: true });
       }
     } catch (error: any) {
