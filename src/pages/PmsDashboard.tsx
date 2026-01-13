@@ -247,7 +247,7 @@ const PmsDashboard = () => {
         {/* Tabs */}
         <div className="sticky top-16 z-40 glass-premium border-b border-accent/10">
           <div className="max-w-5xl mx-auto">
-            <div className="flex justify-center overflow-x-auto scrollbar-hide">
+            <div className="flex justify-center">
               {[
                 { id: "report", label: "Report", icon: FileText },
                 { id: "marketing", label: "Marketing", icon: TrendingUp },
@@ -259,8 +259,11 @@ const PmsDashboard = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      flex items-center gap-2.5 px-6 py-4 text-sm font-medium 
+                      flex items-center justify-center gap-1.5 sm:gap-2.5 
+                      px-3 sm:px-6 py-3 sm:py-4 
+                      text-xs sm:text-sm font-medium 
                       transition-all duration-300 whitespace-nowrap relative
+                      flex-1 sm:flex-initial
                       ${activeTab === tab.id
                         ? "text-accent"
                         : "text-muted-foreground hover:text-foreground"
