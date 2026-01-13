@@ -34,13 +34,14 @@ const generateGoodbyeEmail = (userName: string) => {
       <td style="padding: 40px 20px;">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
           
-          <!-- Header with Softer Gold Gradient -->
+          <!-- Header with Gold Gradient -->
           <tr>
-            <td style="background: linear-gradient(135deg, #CA8A04 0%, #A16207 50%, #854D0E 100%); border-radius: 16px 16px 0 0; padding: 32px 40px; text-align: center;">
-              <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">
-                👋 Planning<span style="color: #FEF3C7;">My</span>SaaS
+            <td style="background: linear-gradient(135deg, #FACC15 0%, #EAB308 50%, #CA8A04 100%); border-radius: 16px 16px 0 0; padding: 32px 40px; text-align: center;">
+              <img src="https://uaicode.ai/uaicode-logo.png" alt="UaiCode" width="48" height="48" style="border-radius: 12px; display: inline-block; margin-bottom: 12px;" />
+              <h1 style="margin: 0; color: #0A0A0A; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">
+                👋 Planning<span style="color: #1a1a1a;">My</span>SaaS
               </h1>
-              <p style="margin: 8px 0 0 0; color: #FEF3C7; font-size: 14px; opacity: 0.9;">
+              <p style="margin: 8px 0 0 0; color: #0A0A0A; font-size: 14px; opacity: 0.8;">
                 by UaiCode
               </p>
             </td>
@@ -125,7 +126,7 @@ const generateGoodbyeEmail = (userName: string) => {
                 <p style="margin: 0 0 16px 0; color: #666666; font-size: 14px; line-height: 1.6;">
                   We'd love to hear why you left. Your feedback helps us improve.
                 </p>
-                <a href="mailto:feedback@uaicode.ai?subject=PlanningMySaaS Feedback" style="color: #FACC15; text-decoration: none; font-size: 14px; font-weight: 600;">
+                <a href="mailto:hello@uaicode.ai?subject=PlanningMySaaS Feedback" style="color: #FACC15; text-decoration: none; font-size: 14px; font-weight: 600;">
                   📝 Share Feedback
                 </a>
               </div>
