@@ -131,10 +131,11 @@ const PmsWizard = () => {
           isAuthenticated: true,
         }));
       } else {
-        // Always update email from authenticated user
+        // Always update email and fullName (if exists in DB) from authenticated user
         setData(prev => ({
           ...prev,
           email: pmsUser.email || prev.email,
+          fullName: pmsUser.full_name || prev.fullName,
           isAuthenticated: true,
         }));
       }
