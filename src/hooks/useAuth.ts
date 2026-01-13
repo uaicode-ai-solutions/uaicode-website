@@ -249,8 +249,18 @@ export const useAuth = () => {
   const deleteAccount = async () => {
     if (!authState.user) throw new Error("Not authenticated");
 
-    // Call edge function to delete all user data
-    const { error } = await supabase.functions.invoke('pms-delete-account');
+    // Get current session to ensure we have a valid token
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error("Session expired. Please login again.");
+    }
+
+    // Call edge function with explicit Authorization header
+    const { error } = await supabase.functions.invoke('pms-delete-account', {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    });
 
     if (error) throw error;
 
