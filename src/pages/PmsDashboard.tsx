@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { reportData } from "@/lib/reportMockData";
 import { BackToTopButton } from "@/components/blog/BackToTopButton";
 import DashboardSkeleton from "@/components/planningmysaas/skeletons/DashboardSkeleton";
+import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 // Section Components
 import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHero";
@@ -80,57 +81,66 @@ const PmsDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
-        <div className="flex items-center justify-between px-4 lg:px-6 h-14">
-          <div className="flex items-center gap-3">
-            <div 
-              onClick={() => navigate("/planningmysaas/reports")}
-              className="flex items-center gap-2 cursor-pointer group"
-            >
+      {/* Header Premium */}
+      <header className="fixed top-0 left-0 right-0 z-50 glass-premium border-b border-accent/10">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Left side - Back + Logo + Project Name */}
+            <div className="flex items-center gap-3">
+              {/* Back to Reports */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:bg-accent/10 h-8 w-8"
+                onClick={() => navigate("/planningmysaas/reports")}
+                className="h-9 w-9 rounded-full border border-border/50 hover:bg-accent/10 hover:border-accent/30 transition-all duration-300"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-                <FileText className="h-4 w-4 text-accent" />
+              
+              {/* Logo + Brand */}
+              <div 
+                className="flex items-center gap-3 cursor-pointer"
+                onClick={() => navigate("/planningmysaas/reports")}
+              >
+                <img 
+                  src={uaicodeLogo} 
+                  alt="Uaicode" 
+                  className="h-9 w-9 rounded-lg"
+                />
+                <div className="hidden sm:block">
+                  <span className="text-lg font-bold text-foreground">
+                    Planning<span className="text-accent">My</span>SaaS
+                  </span>
+                </div>
               </div>
-              <div className="hidden sm:block">
-                <p className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">
-                  My Reports
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {reportsCount} {reportsCount === 1 ? 'report' : 'reports'}
-                </p>
-              </div>
-            </div>
-            <div className="hidden md:block">
-              <h1 className="text-base font-bold text-foreground">{projectName}</h1>
-              <p className="text-xs text-muted-foreground">Viability Report</p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-2">
+              {/* Separator + Project Name */}
+              <div className="hidden md:flex items-center gap-3">
+                <div className="w-px h-6 bg-border/50" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{projectName}</p>
+                  <p className="text-xs text-muted-foreground">Viability Report</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Download Button */}
             <Button
-              size="sm"
               onClick={handleDownloadPDF}
-              className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground h-8"
+              className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
             >
-              <Download className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline text-sm">Download PDF</span>
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Download PDF</span>
             </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="pt-14">
+      <main className="pt-16">
         <div className="max-w-5xl mx-auto px-4 lg:px-6">
           {/* Tabs */}
-          <div className="sticky top-14 z-40 bg-background/95 backdrop-blur-md py-3 border-b border-border/30">
+          <div className="sticky top-16 z-40 bg-background/95 backdrop-blur-md py-3 border-b border-border/30">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 bg-card/50 border border-border/30 h-9">
                 <TabsTrigger value="report" className="gap-1.5 text-sm">
