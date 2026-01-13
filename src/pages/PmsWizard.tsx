@@ -43,6 +43,7 @@ interface WizardData {
   // Step 5: Goals
   goal: string;
   goalOther: string;
+  challenge: string;
   budget: string;
   timeline: string;
 }
@@ -71,6 +72,7 @@ const initialData: WizardData = {
   selectedTier: "",
   goal: "",
   goalOther: "",
+  challenge: "",
   budget: "",
   timeline: "",
 };
@@ -142,9 +144,10 @@ const PmsWizard = () => {
       case 4: // Features
         return data.selectedFeatures.length > 0;
       case 5: // Goals
+        const challengeValid = (data.challenge || "") !== "";
         const goalValid = data.goal !== "" && 
           (data.goal !== "other" || (data.goalOther || "").trim().length >= 2);
-        return goalValid && data.budget !== "" && data.timeline !== "";
+        return challengeValid && goalValid && data.budget !== "" && data.timeline !== "";
       default:
         return false;
     }
@@ -282,6 +285,7 @@ const PmsWizard = () => {
             data={{
               goal: data.goal,
               goalOther: data.goalOther,
+              challenge: data.challenge,
               budget: data.budget,
               timeline: data.timeline,
             }}
