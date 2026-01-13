@@ -9,7 +9,10 @@ import {
   TrendingUp,
   User,
   LogOut,
-  Settings
+  Settings,
+  Share2,
+  Link,
+  Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,6 +44,7 @@ import ScheduleCallSection from "@/components/planningmysaas/dashboard/sections/
 import DirectContactSection from "@/components/planningmysaas/dashboard/sections/DirectContactSection";
 import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/BrandAssetsTab";
 import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
+import ShareReportDialog from "@/components/planningmysaas/dashboard/ShareReportDialog";
 
 const PmsDashboard = () => {
   const navigate = useNavigate();
@@ -50,6 +54,7 @@ const PmsDashboard = () => {
   const [report, setReport] = useState<StoredReport | null>(null);
   const [reportsCount, setReportsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const handleLogout = () => {
     navigate("/planningmysaas/login");
@@ -57,6 +62,22 @@ const PmsDashboard = () => {
       title: "Logged out",
       description: "You have been successfully logged out.",
     });
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Link copied!",
+        description: "Report link copied to clipboard.",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to copy",
+        description: "Please copy the link manually.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Load reports count
@@ -144,8 +165,8 @@ const PmsDashboard = () => {
               </div>
             </div>
 
-            {/* Right side - Download Button + User Dropdown */}
-            <div className="flex items-center gap-3">
+            {/* Right side - Download Button + Share + User Dropdown */}
+            <div className="flex items-center gap-2">
               <Button
                 onClick={handleDownloadPDF}
                 className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
@@ -153,6 +174,35 @@ const PmsDashboard = () => {
                 <Download className="h-4 w-4" />
                 <span className="hidden sm:inline">Download PDF</span>
               </Button>
+
+              {/* Share Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="h-9 w-9 rounded-full border border-border/50 hover:bg-accent/10 hover:border-accent/30 transition-all duration-300"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-48 glass-premium border-accent/20"
+                >
+                  <DropdownMenuItem onClick={handleCopyLink} className="cursor-pointer">
+                    <Link className="h-4 w-4 mr-2" />
+                    Copy Link
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => setShareDialogOpen(true)} 
+                    className="cursor-pointer"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Share via Email
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {/* User Dropdown */}
               <DropdownMenu>
@@ -286,6 +336,14 @@ const PmsDashboard = () => {
 
       {/* Back to Top Button */}
       <BackToTopButton />
+
+      {/* Share Report Dialog */}
+      <ShareReportDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        reportUrl={window.location.href}
+        projectName={projectName}
+      />
     </div>
   );
 };
