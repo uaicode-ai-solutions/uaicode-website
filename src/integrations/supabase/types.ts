@@ -187,6 +187,7 @@ export type Database = {
           updated_at: string
           user_role: string | null
           user_role_other: string | null
+          username: string | null
         }
         Insert: {
           auth_user_id: string
@@ -199,6 +200,7 @@ export type Database = {
           updated_at?: string
           user_role?: string | null
           user_role_other?: string | null
+          username?: string | null
         }
         Update: {
           auth_user_id?: string
@@ -211,6 +213,7 @@ export type Database = {
           updated_at?: string
           user_role?: string | null
           user_role_other?: string | null
+          username?: string | null
         }
         Relationships: []
       }
