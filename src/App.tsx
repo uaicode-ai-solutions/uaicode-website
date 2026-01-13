@@ -14,6 +14,7 @@ import PmsLogin from "./pages/PmsLogin";
 import PmsWizard from "./pages/PmsWizard";
 import PmsReports from "./pages/PmsReports";
 import PmsDashboard from "./pages/PmsDashboard";
+import PmsProfile from "./pages/PmsProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/planningmysaas/wizard" element={<PmsWizard />} />
           <Route path="/planningmysaas/reports" element={<PmsReports />} />
           <Route path="/planningmysaas/dashboard/:id" element={<PmsDashboard />} />
+          <Route path="/planningmysaas/profile" element={<PmsProfile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
