@@ -34,6 +34,7 @@ const generatePasswordChangedEmail = (userName: string) => {
       
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #FACC15 0%, #EAB308 50%, #CA8A04 100%); padding: 32px 40px; text-align: center;">
+        <img src="https://uaicode.ai/uaicode-logo.png" alt="UaiCode" width="48" height="48" style="border-radius: 12px; display: inline-block; margin-bottom: 12px;" />
         <div style="color: #0A0A0A; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">✨ PlanningMySaaS</div>
         <div style="font-size: 12px; color: #0A0A0A; opacity: 0.8; margin-top: 4px;">by UaiCode</div>
       </div>
@@ -61,7 +62,7 @@ const generatePasswordChangedEmail = (userName: string) => {
         <!-- Security Warning -->
         <div style="background-color: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.2); border-radius: 8px; padding: 16px; margin-top: 24px;">
         <p style="color: #FACC15; font-size: 13px; margin: 0;">
-            ⚠️ <strong>Didn't make this change?</strong> If you didn't change your password, please contact our support team immediately at <a href="mailto:contato@uaicode.ai" style="color: #FACC15;">contato@uaicode.ai</a>
+            ⚠️ <strong>Didn't make this change?</strong> If you didn't change your password, please contact our support team immediately at <a href="mailto:hello@uaicode.ai" style="color: #FACC15;">hello@uaicode.ai</a>
           </p>
         </div>
         
@@ -83,7 +84,7 @@ const generatePasswordChangedEmail = (userName: string) => {
         <div style="margin: 0 0 20px 0;">
           <a href="https://uaicode.ai" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">Website</a>
           <span style="color: #2A2A2A;">•</span>
-          <a href="mailto:contato@uaicode.ai" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">Support</a>
+          <a href="mailto:hello@uaicode.ai" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">Support</a>
         </div>
         <p style="color: #B3B3B3; font-size: 13px; line-height: 1.6; margin: 0;">
           © ${new Date().getFullYear()} UaiCode. All rights reserved.

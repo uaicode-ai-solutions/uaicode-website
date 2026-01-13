@@ -30,6 +30,7 @@ const generateWelcomeEmail = (userName: string, dashboardUrl: string) => {
       
       <!-- Header with Gold Gradient -->
       <div style="background: linear-gradient(135deg, #FACC15 0%, #EAB308 50%, #CA8A04 100%); padding: 32px 40px; text-align: center;">
+        <img src="https://uaicode.ai/uaicode-logo.png" alt="UaiCode" width="48" height="48" style="border-radius: 12px; display: inline-block; margin-bottom: 12px;" />
         <div style="color: #0A0A0A; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">✨ PlanningMySaaS</div>
         <div style="font-size: 12px; color: #0A0A0A; opacity: 0.8; margin-top: 4px;">by UaiCode</div>
       </div>
@@ -71,7 +72,7 @@ const generateWelcomeEmail = (userName: string, dashboardUrl: string) => {
         
         <p style="font-size: 16px; line-height: 1.7; color: #B3B3B3; margin-bottom: 0;">
           To your success,<br>
-          <span style="color: #FACC15; font-weight: 600;">The PlanningMySaaS Team</span>
+          <span style="color: #FACC15; font-weight: 600;">Uaicode Team</span>
         </p>
       </div>
       
@@ -82,7 +83,7 @@ const generateWelcomeEmail = (userName: string, dashboardUrl: string) => {
           <span style="color: #2A2A2A;">•</span>
           <a href="https://linkedin.com/company/uaicode" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">LinkedIn</a>
           <span style="color: #2A2A2A;">•</span>
-          <a href="mailto:contato@uaicode.ai" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">Support</a>
+          <a href="mailto:hello@uaicode.ai" style="color: #B3B3B3; text-decoration: none; font-size: 13px; margin: 0 8px;">Support</a>
         </div>
         <p style="color: #B3B3B3; font-size: 13px; line-height: 1.6; margin: 0 0 16px 0;">
           © ${new Date().getFullYear()} UaiCode. All rights reserved.<br>
