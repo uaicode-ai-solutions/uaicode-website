@@ -16,6 +16,8 @@ interface WizardData {
   email: string;
   linkedinProfile: string;
   phone: string;
+  userRole: string;
+  userRoleOther: string;
   isAuthenticated: boolean;
   
   // Step 2: Your Idea
@@ -49,6 +51,8 @@ const initialData: WizardData = {
   email: "",
   linkedinProfile: "",
   phone: "",
+  userRole: "",
+  userRoleOther: "",
   isAuthenticated: false,
   saasType: "",
   saasTypeOther: "",
@@ -116,7 +120,10 @@ const PmsWizard = () => {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1: // Your Info
+        const userRoleValid = data.userRole !== "" && 
+          (data.userRole !== "other" || data.userRoleOther.trim().length >= 2);
         return (
+          userRoleValid &&
           data.fullName.trim().length >= 2 &&
           data.phone.length >= 8
         );
@@ -221,6 +228,8 @@ const PmsWizard = () => {
               email: data.email,
               linkedinProfile: data.linkedinProfile,
               phone: data.phone,
+              userRole: data.userRole,
+              userRoleOther: data.userRoleOther,
             }}
             onChange={handleChange}
           />
