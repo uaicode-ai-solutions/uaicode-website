@@ -492,7 +492,8 @@ const PmsProfile = () => {
                             title: "Account deleted",
                             description: "Your account has been permanently deleted. Goodbye!",
                           });
-                          navigate("/planningmysaas/login");
+                          // Force full page reload to clear all state and ensure navigation
+                          window.location.replace("/planningmysaas/login");
                         } catch (error: any) {
                           console.error("Delete account error:", error);
                           toast({
@@ -500,7 +501,7 @@ const PmsProfile = () => {
                             description: error.message || "Failed to delete account. Please try again.",
                             variant: "destructive",
                           });
-                        } finally {
+                          // Only reset state on error - success will reload the page
                           setIsDeleting(false);
                           setIsDeleteDialogOpen(false);
                           setDeleteConfirmText("");
