@@ -85,6 +85,11 @@ const PmsDashboard = () => {
     setReportsCount(getReports().length);
   }, []);
 
+  // Scroll to top when tab changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [activeTab]);
+
   // Load report by ID
   useEffect(() => {
     if (!id) {
