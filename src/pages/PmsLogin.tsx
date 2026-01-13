@@ -4,10 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Eye, EyeOff, Mail, Lock, Shield, ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Shield, ArrowLeft, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { PasswordStrengthIndicator, calculatePasswordStrength } from "@/components/ui/password-strength-indicator";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import pmsDashboardImage from "@/assets/pms-hero-dashboard.webp";
@@ -33,6 +32,13 @@ const PmsLogin = () => {
   const [showAccountNotFound, setShowAccountNotFound] = useState(false);
   const [notFoundEmail, setNotFoundEmail] = useState("");
 
+  // Email confirmation dialog state
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+
+  // Error dialog state
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   // Check if user exists in tb_pms_users
   const checkUserExists = async (emailToCheck: string): Promise<boolean> => {
     const { data, error } = await supabase
@@ -42,6 +48,25 @@ const PmsLogin = () => {
       .maybeSingle();
     
     return !!data && !error;
+  };
+
+  // Handle authentication errors with dialogs
+  const handleAuthError = (error: any) => {
+    console.error("Auth error:", error);
+    
+    if (error.message?.includes("Invalid login credentials")) {
+      setErrorMessage("The email or password you entered is incorrect. Please check and try again.");
+      setShowErrorDialog(true);
+    } else if (error.message?.includes("User already registered")) {
+      setErrorMessage("This email is already registered. Please sign in instead.");
+      setShowErrorDialog(true);
+      setIsLogin(true);
+    } else if (error.message?.includes("Email not confirmed")) {
+      setShowEmailConfirmation(true);
+    } else {
+      setErrorMessage(error.message || "An unexpected error occurred. Please try again.");
+      setShowErrorDialog(true);
+    }
   };
 
   const isValidEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -77,22 +102,24 @@ const PmsLogin = () => {
         }
         
         await signIn(email, password);
-        toast.success("Welcome back!");
+        // Success - redirect happens automatically
+        navigate(from, { replace: true });
       } else {
         const result = await signUp(email, password, fullName);
         
         // Check if email confirmation is required
         if (result.user && !result.session) {
-          // Email confirmation is enabled - user needs to confirm email first
-          toast.success("Account created! Please check your email to confirm your account before signing in.", {
-            duration: 6000,
-          });
-          setIsLogin(true);
+          // Email confirmation is enabled - show confirmation dialog
+          setShowEmailConfirmation(true);
+          setEmail("");
           setPassword("");
-          return; // Don't navigate, user needs to confirm email first
+          setFullName("");
+          setIsLogin(true);
+          setIsSubmitting(false);
+          return;
         }
         
-        // Send welcome email
+        // Send welcome email (only if session exists = no confirmation needed)
         try {
           await supabase.functions.invoke('pms-send-welcome-email', {
             body: { email, fullName }
@@ -102,23 +129,10 @@ const PmsLogin = () => {
           // Don't block signup if email fails
         }
         
-        toast.success("Account created successfully! Check your email for a welcome message.");
+        navigate(from, { replace: true });
       }
-      navigate(from, { replace: true });
     } catch (error: any) {
-      console.error("Auth error:", error);
-      
-      // Handle specific error messages
-      if (error.message?.includes("Invalid login credentials")) {
-        toast.error("Invalid email or password");
-      } else if (error.message?.includes("User already registered")) {
-        toast.error("This email is already registered. Please sign in.");
-        setIsLogin(true);
-      } else if (error.message?.includes("Email not confirmed")) {
-        toast.error("Please check your email to confirm your account");
-      } else {
-        toast.error(error.message || "An error occurred. Please try again.");
-      }
+      handleAuthError(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +145,8 @@ const PmsLogin = () => {
       // Redirect is handled automatically by Supabase OAuth
     } catch (error: any) {
       console.error("Google auth error:", error);
-      toast.error(error.message || "Failed to sign in with Google");
+      setErrorMessage(error.message || "Failed to sign in with Google. Please try again.");
+      setShowErrorDialog(true);
       setIsSubmitting(false);
     }
   };
@@ -144,7 +159,8 @@ const PmsLogin = () => {
       await resetPassword(resetEmail);
       setResetSuccess(true);
     } catch (error: any) {
-      toast.error(error.message || "Failed to send reset email. Please try again.");
+      setErrorMessage(error.message || "Failed to send reset email. Please try again.");
+      setShowErrorDialog(true);
     } finally {
       setResetLoading(false);
     }
@@ -490,6 +506,59 @@ const PmsLogin = () => {
                 Create Account
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Confirmation Dialog */}
+      <Dialog open={showEmailConfirmation} onOpenChange={setShowEmailConfirmation}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-accent" />
+              Check Your Email
+            </DialogTitle>
+            <DialogDescription>
+              We've sent a confirmation link to your email address.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-2">
+            <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
+              <p className="text-sm text-muted-foreground">
+                Please check your inbox (and spam folder) and click the confirmation 
+                link to activate your account. Once confirmed, you can sign in.
+              </p>
+            </div>
+            <Button 
+              className="w-full bg-accent hover:bg-accent/90 text-background"
+              onClick={() => setShowEmailConfirmation(false)}
+            >
+              Got it
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Dialog */}
+      <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="w-5 h-5" />
+              Something went wrong
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-2">
+            <p className="text-sm text-muted-foreground">{errorMessage}</p>
+            <Button 
+              variant="outline"
+              className="w-full"
+              onClick={() => setShowErrorDialog(false)}
+            >
+              Try Again
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
