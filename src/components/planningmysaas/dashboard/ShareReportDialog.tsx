@@ -140,9 +140,9 @@ const ShareReportDialog = ({
             <Label className="text-sm font-medium text-muted-foreground">
               Link to be shared
             </Label>
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-background/30 border border-border/30">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-background/30 border border-border/30 overflow-hidden">
               <Link className="h-4 w-4 text-accent shrink-0" />
-              <span className="text-sm text-muted-foreground truncate flex-1">
+              <span className="text-sm text-muted-foreground truncate flex-1 min-w-0">
                 {reportUrl}
               </span>
               <Button
