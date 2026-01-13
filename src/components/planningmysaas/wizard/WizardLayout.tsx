@@ -85,7 +85,9 @@ const WizardLayout = ({
       {/* Main content */}
       <main className="flex-1 overflow-y-auto pt-4 pb-8 px-4">
         <div className="container mx-auto max-w-4xl relative z-10">
-          {children}
+          <div key={currentStep} className="animate-tab-enter">
+            {children}
+          </div>
         </div>
       </main>
 
