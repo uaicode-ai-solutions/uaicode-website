@@ -13,6 +13,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import ReportCard from "@/components/planningmysaas/reports/ReportCard";
 import EmptyReports from "@/components/planningmysaas/reports/EmptyReports";
 import DeleteReportDialog from "@/components/planningmysaas/reports/DeleteReportDialog";
+import ReportCardSkeleton from "@/components/planningmysaas/skeletons/ReportCardSkeleton";
+import StatsCardSkeleton from "@/components/planningmysaas/skeletons/StatsCardSkeleton";
 import { 
   getReports, 
   deleteReport, 
@@ -26,11 +28,16 @@ const PmsReports = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [reports, setReports] = useState<StoredReport[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<StoredReport | null>(null);
 
   useEffect(() => {
-    setReports(getReports());
+    const timer = setTimeout(() => {
+      setReports(getReports());
+      setIsLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
   }, []);
 
   // Calculate stats
@@ -159,10 +166,44 @@ const PmsReports = () => {
 
       {/* Content */}
       <main className="relative max-w-6xl mx-auto px-4 lg:px-8 py-8">
-        {reports.length === 0 ? (
-          <EmptyReports />
+        {isLoading ? (
+          <div className="animate-smooth-fade">
+            {/* Hero Skeleton */}
+            <section className="mb-10">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-4">
+                  <Sparkles className="h-4 w-4 text-accent" />
+                  <span className="text-sm font-medium text-accent">AI-Powered Validation</span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+                  Your Reports
+                </h1>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Track and manage your SaaS validation reports in one place
+                </p>
+              </div>
+
+              {/* Stats Skeletons */}
+              <div className="grid grid-cols-3 gap-4 max-w-xl mx-auto mb-10">
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+              </div>
+            </section>
+
+            {/* Report Cards Skeletons */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <ReportCardSkeleton />
+              <ReportCardSkeleton />
+              <ReportCardSkeleton />
+            </div>
+          </div>
+        ) : reports.length === 0 ? (
+          <div className="animate-smooth-fade">
+            <EmptyReports />
+          </div>
         ) : (
-          <>
+          <div className="animate-smooth-fade">
             {/* Hero Section with Stats */}
             <section className="mb-10">
               <div className="text-center mb-8">
@@ -210,17 +251,12 @@ const PmsReports = () => {
 
             {/* Reports Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {reports.map((report, index) => (
-                <div 
+              {reports.map((report) => (
+                <ReportCard 
                   key={report.id}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <ReportCard 
-                    report={report} 
-                    onDelete={handleDeleteClick}
-                  />
-                </div>
+                  report={report} 
+                  onDelete={handleDeleteClick}
+                />
               ))}
               
               {/* Create New Card - Premium */}
@@ -251,7 +287,7 @@ const PmsReports = () => {
                 </CardContent>
               </Card>
             </div>
-          </>
+          </div>
         )}
       </main>
 

@@ -160,6 +160,26 @@ All colors MUST be HSL.
     }
   }
 
+  /* Smooth fade transition for page content */
+  @keyframes smoothFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .animate-smooth-fade {
+    animation: smoothFadeIn 0.3s ease-out forwards;
+  }
+
+  /* Premium shimmer animation for skeletons */
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
   .animate-slide-in {
     animation: slideIn 0.5s ease-out;
   }

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { reportData } from "@/lib/reportMockData";
 import { BackToTopButton } from "@/components/blog/BackToTopButton";
+import DashboardSkeleton from "@/components/planningmysaas/skeletons/DashboardSkeleton";
 
 // Section Components
 import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHero";
@@ -35,6 +36,7 @@ const PmsDashboard = () => {
   const [activeTab, setActiveTab] = useState("report");
   const [report, setReport] = useState<StoredReport | null>(null);
   const [reportsCount, setReportsCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load reports count
   useEffect(() => {
@@ -48,13 +50,18 @@ const PmsDashboard = () => {
       return;
     }
     
-    const loadedReport = getReportById(id);
-    if (!loadedReport) {
-      navigate("/planningmysaas/reports");
-      return;
-    }
-    
-    setReport(loadedReport);
+    const timer = setTimeout(() => {
+      const loadedReport = getReportById(id);
+      if (!loadedReport) {
+        navigate("/planningmysaas/reports");
+        return;
+      }
+      
+      setReport(loadedReport);
+      setIsLoading(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [id, navigate]);
 
   // Get project name from report or fallback to mock data
@@ -143,8 +150,12 @@ const PmsDashboard = () => {
           </div>
 
           {/* Tab Content */}
-          {activeTab === "report" ? (
-            <div className="py-6 space-y-16">
+          {isLoading ? (
+            <div className="animate-smooth-fade">
+              <DashboardSkeleton />
+            </div>
+          ) : activeTab === "report" ? (
+            <div className="py-6 space-y-16 animate-smooth-fade">
               {/* Report Hero */}
               <ReportHero 
                 projectName={projectName}
@@ -191,7 +202,7 @@ const PmsDashboard = () => {
               <div className="h-16" />
             </div>
           ) : activeTab === "marketing" ? (
-            <div className="py-6">
+            <div className="py-6 animate-smooth-fade">
               <MarketingAnalysisTab 
                 projectName={projectName}
                 onScheduleCall={handleScheduleCall}
@@ -200,7 +211,7 @@ const PmsDashboard = () => {
               <div className="h-16" />
             </div>
           ) : (
-            <div className="py-6">
+            <div className="py-6 animate-smooth-fade">
               <BrandAssetsTab />
               <div className="h-16" />
             </div>
