@@ -12,27 +12,30 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Get the authorization header
+    // Get the authorization header and extract token
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       console.error("Missing authorization header");
       throw new Error("Missing authorization header");
     }
+    
+    // Extract the token from "Bearer <token>"
+    const token = authHeader.replace("Bearer ", "");
 
-    // Create Supabase client with the user's JWT
+    // Create Supabase clients
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // User client to get user info
-    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: { Authorization: authHeader },
+    // Create client with persistSession: false (required for Edge Functions)
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
       },
     });
 
-    // Get the authenticated user
-    const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
+    // Get the authenticated user - PASS TOKEN AS PARAMETER
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) {
       console.error("Unauthorized:", userError?.message || "User not found");
       throw new Error("Unauthorized: " + (userError?.message || "User not found"));
