@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { MoreVertical, Trash2, Eye, Calendar, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,16 +28,6 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
     navigate(`/planningmysaas/dashboard/${report.id}`);
   };
 
-  const getPlanBadgeVariant = (planType: string) => {
-    switch (planType) {
-      case "enterprise":
-        return "default";
-      case "pro":
-        return "secondary";
-      default:
-        return "outline";
-    }
-  };
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-500";
@@ -68,16 +57,10 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
         {/* Header with badge and menu */}
         <div className="flex items-start justify-between mb-5">
           <div className="flex-1 min-w-0">
-            <Badge 
-              variant={getPlanBadgeVariant(report.planType)} 
-              className="mb-2 text-[10px] uppercase tracking-wider font-semibold"
-            >
-              {report.planType}
-            </Badge>
             <h3 className="font-bold text-lg text-foreground truncate leading-tight">
               {projectName}
             </h3>
-            <p className="text-sm text-muted-foreground mt-1 truncate">
+            <p className="text-sm text-muted-foreground mt-1.5 truncate">
               {industry}
             </p>
           </div>
