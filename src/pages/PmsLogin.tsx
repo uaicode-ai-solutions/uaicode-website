@@ -28,6 +28,21 @@ const PmsLogin = () => {
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+  
+  // Account not found dialog state
+  const [showAccountNotFound, setShowAccountNotFound] = useState(false);
+  const [notFoundEmail, setNotFoundEmail] = useState("");
+
+  // Check if user exists in tb_pms_users
+  const checkUserExists = async (emailToCheck: string): Promise<boolean> => {
+    const { data, error } = await supabase
+      .from("tb_pms_users")
+      .select("id")
+      .eq("email", emailToCheck.toLowerCase().trim())
+      .maybeSingle();
+    
+    return !!data && !error;
+  };
 
   const isValidEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const passwordStrength = calculatePasswordStrength(password);
@@ -52,6 +67,15 @@ const PmsLogin = () => {
 
     try {
       if (isLogin) {
+        // Check if user exists before attempting login
+        const userExists = await checkUserExists(email);
+        if (!userExists) {
+          setNotFoundEmail(email);
+          setShowAccountNotFound(true);
+          setIsSubmitting(false);
+          return;
+        }
+        
         await signIn(email, password);
         toast.success("Welcome back!");
       } else {
@@ -427,6 +451,46 @@ const PmsLogin = () => {
               </Button>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Account Not Found Dialog */}
+      <Dialog open={showAccountNotFound} onOpenChange={setShowAccountNotFound}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-accent" />
+              Account Not Found
+            </DialogTitle>
+            <DialogDescription>
+              We couldn't find an account with the email <strong className="text-foreground">{notFoundEmail}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-2">
+            <p className="text-sm text-muted-foreground">
+              Would you like to create a new account with this email?
+            </p>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setShowAccountNotFound(false)}
+              >
+                Try Again
+              </Button>
+              <Button 
+                className="flex-1 bg-accent hover:bg-accent/90 text-background"
+                onClick={() => {
+                  setShowAccountNotFound(false);
+                  setIsLogin(false);
+                  setPassword("");
+                }}
+              >
+                Create Account
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
