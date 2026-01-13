@@ -37,7 +37,6 @@ const generateGoodbyeEmail = (userName: string) => {
           <!-- Header with Gold Gradient -->
           <tr>
             <td style="background: linear-gradient(135deg, #FACC15 0%, #EAB308 50%, #CA8A04 100%); border-radius: 16px 16px 0 0; padding: 32px 40px; text-align: center;">
-              <img src="https://uaicode.ai/uaicode-logo.png" alt="UaiCode" width="48" height="48" style="border-radius: 12px; display: inline-block; margin-bottom: 12px;" />
               <h1 style="margin: 0; color: #0A0A0A; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">
                 👋 Planning<span style="color: #1a1a1a;">My</span>SaaS
               </h1>
