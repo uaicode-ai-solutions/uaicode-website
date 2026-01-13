@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.pms-send-report-ready]
 verify_jwt = false
+
+[functions.pms-webhook-new-user]
+verify_jwt = false
