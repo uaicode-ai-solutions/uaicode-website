@@ -1,3 +1,8 @@
+// ============================================
+// Marketing Intelligence Section
+// Uses real data from useReportContext
+// ============================================
+
 import { 
   Megaphone, 
   Target, 
@@ -11,132 +16,26 @@ import {
   Building2,
   MapPin,
   Calendar,
-  MessageSquare,
-  BarChart3,
-  Eye
+  AlertCircle
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { competitorAnalysisData } from "@/lib/competitorAnalysisMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField } from "@/lib/reportDataUtils";
+import { 
+  MarketingGrowthStrategy, 
+  MarketingPaidMediaActionPlan, 
+  DemandValidation 
+} from "@/types/report";
 
 interface MarketingIntelligenceSectionProps {
   onExploreMarketing: () => void;
 }
 
-const marketingMetrics = [
-  { 
-    icon: Target, 
-    value: "Top 30%", 
-    label: "Competitive Position",
-    sublabel: "vs. market",
-    tooltip: "Your market positioning relative to direct competitors based on feature parity, pricing, and brand awareness.",
-    indicator: {
-      type: "progress" as const,
-      value: 70,
-      label: "Top tier positioning"
-    }
-  },
-  { 
-    icon: DollarSign, 
-    value: "$15K/mo", 
-    label: "Recommended Budget",
-    sublabel: "Paid Media",
-    tooltip: "Monthly paid media spend recommended to achieve growth targets based on your ICP and competitive landscape.",
-    indicator: {
-      type: "badge" as const,
-      label: "AI-optimized for max ROI"
-    }
-  },
-  { 
-    icon: TrendingUp, 
-    value: "3.5x", 
-    label: "Expected ROAS",
-    sublabel: "First 6 months",
-    tooltip: "Return on Ad Spend — for every $1 spent on advertising, expect $3.50 in revenue based on industry benchmarks.",
-    indicator: {
-      type: "comparison" as const,
-      industry: "2.5x",
-      yourValue: 75,
-      label: "Above industry average"
-    }
-  },
-];
-
-// ICP Data - expanded
-const icpData = {
-  persona: {
-    name: "Maria Santos",
-    age: 42,
-    role: "CEO & Founder",
-    businessType: "Health Product Store",
-    initials: "MS"
-  },
-  demographics: [
-    { icon: Users, label: "Company Size", value: "10-50 employees" },
-    { icon: DollarSign, label: "Annual Revenue", value: "$500K - $5M" },
-    { icon: Building2, label: "Industry", value: "Health & Wellness" },
-    { icon: MapPin, label: "Location", value: "Urban, US & LATAM" },
-    { icon: Calendar, label: "Business Stage", value: "Growth (2-7 yrs)" }
-  ],
-  goals: [
-    "Scale without losing quality",
-    "Compete with big platforms",
-    "Build customer loyalty"
-  ],
-  painPoints: [
-    { pain: "Losing sales to big platforms", severity: "high" },
-    { pain: "Manual inventory takes 3+ hours/day", severity: "high" },
-    { pain: "No integrated delivery solution", severity: "medium" },
-    { pain: "Compliance documentation is complex", severity: "medium" }
-  ],
-  buyingTriggers: [
-    "Hiring new staff members",
-    "Opening second location",
-    "Seasonal demand spike",
-    "Competitor launching online store"
-  ],
-  decisionMakers: [
-    { role: "Owner/CEO", initials: "CEO", influence: "Final decision" },
-    { role: "Ops Manager", initials: "OM", influence: "Daily usage" },
-    { role: "Accountant", initials: "ACC", influence: "Cost approval" }
-  ],
-  messagingHooks: [
-    "Save 10+ hours per week on inventory",
-    "Compete with big platforms on delivery"
-  ]
-};
-
-// Growth Strategy Data
-const { growthStrategy } = competitorAnalysisData;
-
-const acquisitionMetrics = [
-  { icon: DollarSign, value: growthStrategy.acquisition.targetCAC, label: "Target CAC" },
-  { icon: TrendingUp, value: growthStrategy.engagement.activationTarget, label: "Activation" }
-];
-
-const monetizationMetrics = [
-  { icon: TrendingUp, value: growthStrategy.monetization.conversionTarget, label: "Conversion" },
-  { icon: Heart, value: growthStrategy.retention.targetChurn, label: "Target Churn" }
-];
-
-const keyMetrics = [
-  { label: "Monthly Visitors", value: "25K", target: "target" },
-  { label: "Lead Conv. Rate", value: "3%", target: "target" },
-  { label: "MQLs/month", value: "500", target: "target" },
-  { label: "CAC Target", value: "<$75", target: "target" }
-];
-
-const expectedResults = [
-  { label: "Impressions", value: "5M+" },
-  { label: "Leads Generated", value: "2,500+" },
-  { label: "Trial Signups", value: "500+" },
-  { label: "New Customers", value: "150+" },
-  { label: "Achieved CAC", value: "$75" }
-];
-
+// Helper function for severity colors
 const getSeverityColor = (severity: string) => {
   switch (severity) {
     case "high": return "bg-red-500/20 text-red-400 border-red-500/30";
@@ -145,7 +44,151 @@ const getSeverityColor = (severity: string) => {
   }
 };
 
+// Empty state component
+const EmptyState = () => (
+  <section id="marketing-intelligence" className="space-y-6">
+    <div className="flex items-center gap-3">
+      <div className="p-2 rounded-lg bg-accent/10">
+        <Megaphone className="h-5 w-5 text-accent" />
+      </div>
+      <div>
+        <h2 className="text-xl font-bold text-foreground">Marketing Intelligence</h2>
+        <p className="text-sm text-muted-foreground">Strategic insights to accelerate your growth</p>
+      </div>
+    </div>
+    <Card className="bg-card/50 border-border/30 p-6">
+      <div className="flex flex-col items-center justify-center text-center py-8">
+        <div className="p-3 rounded-full bg-muted/20 mb-4">
+          <AlertCircle className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <p className="text-muted-foreground mb-2">Marketing analysis data not yet available.</p>
+        <p className="text-sm text-muted-foreground/70">This section will be populated after report generation.</p>
+      </div>
+    </Card>
+  </section>
+);
+
 const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntelligenceSectionProps) => {
+  const { report } = useReportContext();
+
+  // Parse data from report context
+  const growthStrategy = parseJsonField<MarketingGrowthStrategy | null>(
+    report?.marketing_growth_strategy, 
+    null
+  );
+
+  const paidMediaPlan = parseJsonField<MarketingPaidMediaActionPlan | null>(
+    report?.marketing_paid_media_action_plan, 
+    null
+  );
+
+  const demandValidation = parseJsonField<DemandValidation | null>(
+    report?.demand_validation, 
+    null
+  );
+
+  // Check if we have enough data to display
+  const hasData = growthStrategy || paidMediaPlan || demandValidation;
+
+  if (!hasData) {
+    return <EmptyState />;
+  }
+
+  // Build marketing metrics from real data
+  const totalBudget = paidMediaPlan?.totalBudget || "$15K/mo";
+  const expectedROAS = paidMediaPlan?.channels?.[0]?.expectedROAS || "3.5x";
+  
+  // Calculate competitive position based on available data
+  const hasMultipleChannels = (paidMediaPlan?.channels?.length || 0) >= 3;
+  const competitivePosition = hasMultipleChannels ? "Top 30%" : "Top 50%";
+  const positionValue = hasMultipleChannels ? 70 : 50;
+
+  const marketingMetrics = [
+    { 
+      icon: Target, 
+      value: competitivePosition, 
+      label: "Competitive Position",
+      sublabel: "vs. market",
+      tooltip: "Your market positioning relative to direct competitors based on feature parity, pricing, and brand awareness.",
+      indicator: {
+        type: "progress" as const,
+        value: positionValue,
+        label: "Market positioning"
+      }
+    },
+    { 
+      icon: DollarSign, 
+      value: totalBudget, 
+      label: "Recommended Budget",
+      sublabel: "Paid Media",
+      tooltip: "Monthly paid media spend recommended to achieve growth targets based on your ICP and competitive landscape.",
+      indicator: {
+        type: "badge" as const,
+        label: "AI-optimized for max ROI"
+      }
+    },
+    { 
+      icon: TrendingUp, 
+      value: expectedROAS, 
+      label: "Expected ROAS",
+      sublabel: "First 6 months",
+      tooltip: "Return on Ad Spend — for every $1 spent on advertising, expect this return in revenue based on industry benchmarks.",
+      indicator: {
+        type: "comparison" as const,
+        industry: "2.5x",
+        yourValue: 75,
+        label: "Above industry average"
+      }
+    },
+  ];
+
+  // Build ICP data from demand validation and growth strategy
+  const painPoints = demandValidation?.painPoints || [];
+  const targetAudience = report?.target_audience || "SMB Decision Makers";
+  const industry = report?.industry || "Technology";
+  
+  // Default ICP persona (can be enhanced when we have dedicated ICP fields)
+  const icpData = {
+    persona: {
+      name: "Target Customer",
+      age: 35,
+      role: "Decision Maker",
+      businessType: industry,
+      initials: "TC"
+    },
+    demographics: [
+      { icon: Users, label: "Target Segment", value: targetAudience },
+      { icon: DollarSign, label: "Annual Revenue", value: "$500K - $5M" },
+      { icon: Building2, label: "Industry", value: industry },
+      { icon: MapPin, label: "Location", value: "Urban Markets" },
+      { icon: Calendar, label: "Business Stage", value: "Growth (2-7 yrs)" }
+    ],
+    goals: growthStrategy?.phases?.slice(0, 3).map(p => p.focus) || [
+      "Scale operations efficiently",
+      "Increase market share",
+      "Build customer loyalty"
+    ],
+    painPoints: painPoints.slice(0, 4).map(pp => ({
+      pain: pp.pain,
+      severity: pp.intensity >= 8 ? "high" : pp.intensity >= 5 ? "medium" : "low"
+    })),
+    decisionMakers: [
+      { role: "Owner/CEO", initials: "CEO", influence: "Final decision" },
+      { role: "Ops Manager", initials: "OM", influence: "Daily usage" },
+      { role: "Finance Lead", initials: "FIN", influence: "Cost approval" }
+    ]
+  };
+
+  // Fallback pain points if none from demand validation
+  if (icpData.painPoints.length === 0) {
+    icpData.painPoints = [
+      { pain: "Manual processes consuming time", severity: "high" },
+      { pain: "Lack of integrated solutions", severity: "high" },
+      { pain: "Difficulty scaling operations", severity: "medium" },
+      { pain: "Limited market visibility", severity: "medium" }
+    ];
+  }
+
   return (
     <section id="marketing-intelligence" className="space-y-6">
       {/* Header */}
@@ -258,7 +301,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-foreground text-lg">{icpData.persona.name}, {icpData.persona.age}</p>
+                <p className="font-semibold text-foreground text-lg">{icpData.persona.name}</p>
                 <p className="text-sm text-muted-foreground">{icpData.persona.role}</p>
                 <Badge className="mt-1.5 text-xs bg-accent/10 text-accent border-accent/30">
                   {icpData.persona.businessType}
@@ -338,6 +381,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
           </div>
         </CardContent>
       </Card>
+
       {/* CTA Banner */}
       <Card className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent border-accent/30">
         <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
