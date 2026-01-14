@@ -50,7 +50,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   };
 
   return (
-    <div className="relative min-h-[85vh] flex flex-col justify-center py-10">
+    <div id="report-hero" className="relative min-h-[85vh] flex flex-col justify-center py-10">
       {/* Background Effects */}
       <div className="absolute inset-0 aurora-bg opacity-40" />
       <div className="absolute top-20 left-1/4 w-72 h-72 bg-accent/10 rounded-full blur-3xl" />

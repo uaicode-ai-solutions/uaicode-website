@@ -53,6 +53,7 @@ import DirectContactSection from "@/components/planningmysaas/dashboard/sections
 import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/BrandAssetsTab";
 import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
 import ShareReportDialog from "@/components/planningmysaas/dashboard/ShareReportDialog";
+import ReportTableOfContents from "@/components/planningmysaas/dashboard/ReportTableOfContents";
 
 const PmsDashboard = () => {
   const navigate = useNavigate();
@@ -310,8 +311,10 @@ const PmsDashboard = () => {
               className="py-6 animate-tab-enter"
             >
               {activeTab === "report" && (
-                <div className="space-y-16">
-                  <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
+                <>
+                  <ReportTableOfContents />
+                  <div className="space-y-16">
+                    <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
                   <ExecutiveVerdict />
                   <BusinessModelSection />
                   <MarketOpportunitySection />
@@ -331,7 +334,8 @@ const PmsDashboard = () => {
                   <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
                   <ScheduleCallSection projectName={projectName} />
                   <DirectContactSection />
-                </div>
+                  </div>
+                </>
               )}
 
               {activeTab === "marketing" && (
