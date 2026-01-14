@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.pms-webhook-new-user]
 verify_jwt = false
+
+[functions.pms-webhook-new-report]
+verify_jwt = false
