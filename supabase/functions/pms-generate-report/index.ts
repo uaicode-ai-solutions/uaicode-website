@@ -6,6 +6,30 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper to safely parse integers from various formats (e.g., "250%", "1,500", 250)
+function parseIntSafe(value: unknown, defaultValue: number): number {
+  if (value === null || value === undefined) return defaultValue;
+  if (typeof value === 'number') return Math.round(value);
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/[^0-9.-]/g, '');
+    const parsed = parseInt(cleaned, 10);
+    return isNaN(parsed) ? defaultValue : parsed;
+  }
+  return defaultValue;
+}
+
+// Helper to safely parse floats from various formats
+function parseFloatSafe(value: unknown, defaultValue: number): number {
+  if (value === null || value === undefined) return defaultValue;
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/[^0-9.-]/g, '');
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? defaultValue : parsed;
+  }
+  return defaultValue;
+}
+
 interface ReportRequest {
   reportId: string;
 }
@@ -298,28 +322,28 @@ serve(async (req) => {
       // Status
       status: "completed",
       
-      // Scores
-      viability_score: execVerdict.viability_score || 75,
-      complexity_score: Math.floor(Math.random() * 30) + 50, // Based on features
-      timing_score: timing.score || 70,
-      risk_score: risk.overallRiskScore || 40,
-      differentiation_score: 75, // From competitive analysis
-      pivot_readiness_score: pivot.readinessScore || 65,
-      opportunity_score: 80, // From market opportunity
-      first_mover_score: 70, // From timing analysis
+      // Scores (all integers 0-100)
+      viability_score: parseIntSafe(execVerdict.viability_score, 75),
+      complexity_score: parseIntSafe(execVerdict.complexity_score, Math.floor(Math.random() * 30) + 50),
+      timing_score: parseIntSafe(timing.score, 70),
+      risk_score: parseIntSafe(risk.overallRiskScore, 40),
+      differentiation_score: parseIntSafe(execVerdict.differentiation_score, 75),
+      pivot_readiness_score: parseIntSafe(pivot.readinessScore, 65),
+      opportunity_score: parseIntSafe(execVerdict.opportunity_score, 80),
+      first_mover_score: parseIntSafe(timing.firstMoverScore, 70),
       
       // Verdict
       verdict: execVerdict.verdict || "proceed",
       verdict_headline: execVerdict.verdict_headline || "Strong market opportunity identified",
       verdict_summary: execVerdict.verdict_summary || "This SaaS idea shows promising potential.",
       
-      // Financial metrics
-      investment_total_cents: invest.total || 5000000,
-      break_even_months: keyMetrics.paybackMonths || 8,
-      expected_roi_year1: keyMetrics.expectedROI || "250%",
-      mrr_month12_cents: 1500000,
-      arr_projected_cents: 18000000,
-      ltv_cac_ratio: unit.ltvCacRatio || 3.5,
+      // Financial metrics (integers - cents or plain numbers)
+      investment_total_cents: parseIntSafe(invest.total, 5000000),
+      break_even_months: parseIntSafe(keyMetrics.paybackMonths, 8),
+      expected_roi_year1: parseIntSafe(keyMetrics.expectedROI, 250),
+      mrr_month12_cents: parseIntSafe(keyMetrics.mrrMonth12, 1500000),
+      arr_projected_cents: parseIntSafe(keyMetrics.arrProjected, 18000000),
+      ltv_cac_ratio: parseFloatSafe(unit.ltvCacRatio, 3.5),
       
       // JSONB fields - Viability Report
       key_metrics: keyMetrics,
