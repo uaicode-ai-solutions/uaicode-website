@@ -273,16 +273,40 @@ const PmsWizard = () => {
 
       console.log("Report saved to database:", reportId);
 
-      // 2. Call webhook to notify n8n
-      try {
-        await supabase.functions.invoke('pms-webhook-new-report', {
-          body: { report_id: reportId }
-        });
-        console.log("Webhook called successfully for report:", reportId);
-      } catch (webhookError) {
-        console.error("Failed to call webhook:", webhookError);
-        // Don't block user flow if webhook fails
-      }
+      // 2. Call webhook to notify n8n (with retry logic)
+      const callWebhook = async (retries = 3): Promise<void> => {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+          try {
+            console.log(`Webhook attempt ${attempt}/${retries} for report:`, reportId);
+            const { data: webhookData, error: webhookError } = await supabase.functions.invoke('pms-webhook-new-report', {
+              body: { report_id: reportId }
+            });
+            
+            if (webhookError) {
+              console.warn(`Webhook attempt ${attempt} error:`, webhookError);
+              if (attempt === retries) {
+                console.error("All webhook attempts failed with error:", webhookError);
+              }
+            } else {
+              console.log("Webhook called successfully for report:", reportId, webhookData);
+              return; // Success, exit retry loop
+            }
+          } catch (err) {
+            console.warn(`Webhook attempt ${attempt} exception:`, err);
+            if (attempt === retries) {
+              console.error("All webhook attempts failed with exception:", err);
+            }
+          }
+          
+          // Wait before retry (except on last attempt)
+          if (attempt < retries) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          }
+        }
+      };
+
+      // Fire webhook in background - don't await to not block user flow
+      callWebhook().catch(err => console.error("Webhook background error:", err));
 
       // 3. Also save to localStorage as backup
       const newReport: StoredReport = {
