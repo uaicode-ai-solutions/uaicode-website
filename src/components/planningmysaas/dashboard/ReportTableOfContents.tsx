@@ -57,6 +57,8 @@ const tocItems: TocItem[] = [
 
 const ReportTableOfContents = () => {
   const [activeSection, setActiveSection] = useState<string>("report-hero");
+  const [isVisible, setIsVisible] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   // Track active section with IntersectionObserver
   useEffect(() => {
@@ -85,11 +87,21 @@ const ReportTableOfContents = () => {
     };
   }, []);
 
+  // Show/hide based on scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsVisible(window.scrollY > 400);
+    };
+    
+    handleScroll(); // Check initial position
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const header = document.querySelector("header");
-      const offset = (header?.clientHeight ?? 64) + 24;
+      const offset = 120; // Account for fixed header + tabs
       const top = element.getBoundingClientRect().top + window.scrollY - offset;
       window.scrollTo({ top, behavior: "smooth" });
     }
@@ -99,57 +111,92 @@ const ReportTableOfContents = () => {
   const progress = ((currentIndex + 1) / tocItems.length) * 100;
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Header */}
-      <div className="px-2">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Contents
-        </h3>
-      </div>
+    <div
+      className={cn(
+        "fixed top-1/2 -translate-y-1/2 z-40",
+        "hidden 2xl:flex flex-col gap-2",
+        "left-[max(1rem,calc((100vw-64rem)/2-13rem))]",
+        "transition-all duration-500 ease-out",
+        isVisible 
+          ? "opacity-100 translate-x-0" 
+          : "opacity-0 -translate-x-8 pointer-events-none"
+      )}
+    >
+      {/* Collapse toggle button */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={cn(
+          "self-end p-1.5 rounded-lg",
+          "bg-background/80 backdrop-blur-sm border border-border/50",
+          "text-muted-foreground hover:text-foreground",
+          "transition-colors duration-200"
+        )}
+        title={isExpanded ? "Collapse" : "Expand"}
+      >
+        {isExpanded ? (
+          <ChevronLeft className="h-3.5 w-3.5" />
+        ) : (
+          <List className="h-3.5 w-3.5" />
+        )}
+      </button>
 
-      {/* Progress bar */}
-      <div className="h-1 bg-muted/30 rounded-full mx-2 overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-accent to-accent/60 transition-all duration-300 rounded-full"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      {/* Scrollable items */}
-      <nav className="flex flex-col gap-0.5">
-        {tocItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeSection === item.id;
-
-          return (
-            <button
-              key={item.id}
-              onClick={() => scrollToSection(item.id)}
-              className={cn(
-                "flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-left",
-                "transition-all duration-200",
-                isActive
-                  ? "bg-accent/20 text-accent border-l-2 border-accent"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-              )}
-              title={item.title}
-            >
-              <Icon className="h-4 w-4 flex-shrink-0" />
-              <span className="text-sm truncate">{item.title}</span>
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* Progress indicator at bottom */}
-      <div className="px-3 py-2 border-t border-border/30 mt-2">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">Progress</span>
-          <span className="font-medium text-accent">
-            {currentIndex + 1} / {tocItems.length}
-          </span>
+      {/* TOC container */}
+      <nav
+        className={cn(
+          "glass-premium border border-accent/20 rounded-2xl overflow-hidden",
+          "transition-all duration-300 ease-out",
+          isExpanded ? "w-44" : "w-12"
+        )}
+      >
+        {/* Progress bar at top */}
+        <div className="h-0.5 bg-muted/30">
+          <div
+            className="h-full bg-gradient-to-r from-accent to-accent/60 transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
         </div>
-      </div>
+
+        {/* Scrollable items */}
+        <div className="p-2 max-h-[65vh] overflow-y-auto scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent">
+          {tocItems.map((item, index) => {
+            const Icon = item.icon;
+            const isActive = activeSection === item.id;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => scrollToSection(item.id)}
+                className={cn(
+                  "flex items-center gap-2 w-full p-2 rounded-lg text-left",
+                  "transition-all duration-200",
+                  isActive
+                    ? "bg-accent/20 text-accent"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
+                )}
+                title={item.title}
+              >
+                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                {isExpanded && (
+                  <span className="text-xs truncate">{item.title}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Progress indicator at bottom */}
+        <div className="px-3 py-2 border-t border-border/30 bg-muted/10">
+          <div className="flex items-center justify-center gap-1.5">
+            <span className="text-xs font-medium text-accent">
+              {currentIndex + 1}
+            </span>
+            <span className="text-xs text-muted-foreground">/</span>
+            <span className="text-xs text-muted-foreground">
+              {tocItems.length}
+            </span>
+          </div>
+        </div>
+      </nav>
     </div>
   );
 };
