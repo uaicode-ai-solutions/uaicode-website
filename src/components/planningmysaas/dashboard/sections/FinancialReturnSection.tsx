@@ -1,10 +1,8 @@
-import { TrendingUp, Clock, DollarSign, Target, BarChart3, Shield, Rocket, CheckCircle } from "lucide-react";
+import { TrendingUp, Clock, DollarSign, Target, BarChart3, Shield, Rocket, CheckCircle, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { reportData as mockData } from "@/lib/reportMockData";
-import { mrrEvolutionData } from "@/lib/dashboardMockData";
 import { UnitEconomics, FinancialScenario, ProjectionDataPoint } from "@/types/report";
 import {
   AreaChart,
@@ -25,17 +23,17 @@ import {
 const FinancialReturnSection = () => {
   const { report } = useReportContext();
   
-  // Use real data with fallback to mock
-  const breakEvenMonths = report?.break_even_months || `${mockData.financials.breakEvenMonths}`;
-  const roiYear1 = report?.expected_roi_year1 || `${mockData.financials.roiYear1}%`;
-  const mrrMonth12 = report?.mrr_month12_cents || mockData.financials.mrrMonth12;
-  const arrProjected = report?.arr_projected_cents || mockData.financials.arrProjected;
-  const ltvCacRatio = report?.ltv_cac_ratio || `${mockData.financials.ltvCacRatio}`;
+  // Use real data only - no mock fallbacks for validation
+  const breakEvenMonths = report?.break_even_months || "-";
+  const roiYear1 = report?.expected_roi_year1 || "-";
+  const mrrMonth12 = report?.mrr_month12_cents || "-";
+  const arrProjected = report?.arr_projected_cents || "-";
+  const ltvCacRatio = report?.ltv_cac_ratio || "-";
   
-  // Parse JSONB fields with fallback
-  const unitEconomics = (report?.unit_economics as unknown as UnitEconomics) || mockData.financials.unitEconomics as UnitEconomics;
-  const financialScenarios: FinancialScenario[] = (report?.financial_scenarios as unknown as FinancialScenario[]) || mockData.financials.scenarios;
-  const projectionData: ProjectionDataPoint[] = (report?.projection_data as unknown as ProjectionDataPoint[]) || mockData.financials.projectionData;
+  // Parse JSONB fields - undefined/empty arrays if not available
+  const unitEconomics = report?.unit_economics as unknown as UnitEconomics | undefined;
+  const financialScenarios: FinancialScenario[] = (report?.financial_scenarios as unknown as FinancialScenario[]) || [];
+  const projectionData: ProjectionDataPoint[] = (report?.projection_data as unknown as ProjectionDataPoint[]) || [];
 
   const formatCurrency = (value: number | string) => {
     // If already formatted string, return it
@@ -62,12 +60,12 @@ const FinancialReturnSection = () => {
   // Parse numeric values from TEXT fields
   const parseNumericBreakEven = () => {
     const match = breakEvenMonths.match(/\d+/);
-    return match ? parseInt(match[0]) : mockData.financials.breakEvenMonths;
+    return match ? parseInt(match[0]) : 0;
   };
 
   const parseNumericROI = () => {
     const match = roiYear1.match(/[\d.]+/);
-    return match ? parseFloat(match[0]) : mockData.financials.roiYear1;
+    return match ? parseFloat(match[0]) : 0;
   };
 
   const metrics = [
@@ -165,68 +163,77 @@ const FinancialReturnSection = () => {
               </div>
             </div>
           </div>
-          <div className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={projectionData}>
-                <defs>
-                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="costsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                <XAxis 
-                  dataKey="month" 
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                  axisLine={{ stroke: 'hsl(var(--border))' }}
-                />
-                <YAxis 
-                  tickFormatter={(value) => formatCurrency(value)}
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                  axisLine={{ stroke: 'hsl(var(--border))' }}
-                  width={50}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    fontSize: '12px'
-                  }}
-                  formatter={(value: number, name: string) => [
-                    formatCurrency(value),
-                    name === 'revenue' ? 'Revenue' : 'Costs'
-                  ]}
-                />
-                <ReferenceLine 
-                  x={`M${parseNumericBreakEven()}`}
-                  stroke="hsl(var(--accent))" 
-                  strokeDasharray="5 5"
-                  label={{ value: 'Break-even', fill: 'hsl(var(--accent))', fontSize: 10 }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="hsl(var(--accent))"
-                  strokeWidth={2}
-                  fill="url(#revenueGradient)"
-                  name="revenue"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="costs"
-                  stroke="#EF4444"
-                  strokeWidth={2}
-                  fill="url(#costsGradient)"
-                  name="costs"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          {projectionData.length > 0 ? (
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={projectionData}>
+                  <defs>
+                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="costsGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                    axisLine={{ stroke: 'hsl(var(--border))' }}
+                  />
+                  <YAxis 
+                    tickFormatter={(value) => formatCurrency(value)}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                    axisLine={{ stroke: 'hsl(var(--border))' }}
+                    width={50}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      fontSize: '12px'
+                    }}
+                    formatter={(value: number, name: string) => [
+                      formatCurrency(value),
+                      name === 'revenue' ? 'Revenue' : 'Costs'
+                    ]}
+                  />
+                  <ReferenceLine 
+                    x={`M${parseNumericBreakEven()}`}
+                    stroke="hsl(var(--accent))" 
+                    strokeDasharray="5 5"
+                    label={{ value: 'Break-even', fill: 'hsl(var(--accent))', fontSize: 10 }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="hsl(var(--accent))"
+                    strokeWidth={2}
+                    fill="url(#revenueGradient)"
+                    name="revenue"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="costs"
+                    stroke="#EF4444"
+                    strokeWidth={2}
+                    fill="url(#costsGradient)"
+                    name="costs"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-56 flex items-center justify-center">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <AlertCircle className="h-4 w-4" />
+                <span>No projection data available</span>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -315,50 +322,12 @@ const FinancialReturnSection = () => {
               </div>
               <p className="text-xs text-muted-foreground mb-4">Monthly Recurring Revenue growth over 36 months</p>
               
-              {/* Line Chart */}
-              <div className="h-32">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={mrrEvolutionData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis 
-                      dataKey="month" 
-                      tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
-                      axisLine={{ stroke: 'hsl(var(--border))' }}
-                      interval={1}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
-                      axisLine={{ stroke: 'hsl(var(--border))' }}
-                      tickFormatter={(v) => `$${(v/1000).toFixed(0)}K`}
-                      width={40}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        fontSize: '11px'
-                      }}
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'MRR']}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="mrr" 
-                      stroke="hsl(var(--accent))" 
-                      strokeWidth={2}
-                      dot={{ fill: 'hsl(var(--accent))', r: 3 }}
-                      activeDot={{ r: 5, fill: 'hsl(var(--accent))' }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              
-              {/* Year milestones cards */}
-              <div className="grid grid-cols-3 gap-2 mt-4">
+              {/* Year milestones cards - use real Year 1 data, placeholders for Year 2/3 */}
+              <div className="grid grid-cols-3 gap-2">
                 {[
                   { year: "Year 1", arr: formatCurrency(arrProjected), mrr: formatCurrency(mrrMonth12) + " MRR" },
-                  { year: "Year 2", arr: "$3.2M", mrr: "$267K MRR" },
-                  { year: "Year 3", arr: "$8.5M", mrr: "$712K MRR" },
+                  { year: "Year 2", arr: "-", mrr: "- MRR" },
+                  { year: "Year 3", arr: "-", mrr: "- MRR" },
                 ].map((item, idx) => (
                   <div key={idx} className="bg-muted/20 rounded-lg p-2.5 text-center border border-border/20">
                     <p className="text-[10px] text-muted-foreground">{item.year}</p>
@@ -369,19 +338,11 @@ const FinancialReturnSection = () => {
                 ))}
               </div>
               
-              {/* Legend */}
-              <div className="flex items-center justify-between mt-3 text-[10px] text-muted-foreground">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-0.5 bg-accent rounded" />
-                    <span>MRR Evolution</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-accent" />
-                    <span>Milestone</span>
-                  </div>
-                </div>
-                <span className="text-accent/80">~15% monthly growth</span>
+              {/* Note about future projections */}
+              <div className="mt-4 pt-4 border-t border-border/30">
+                <p className="text-xs text-muted-foreground text-center">
+                  Year 2 and 3 projections will be calculated based on growth assumptions
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -389,59 +350,66 @@ const FinancialReturnSection = () => {
 
 
         {/* Scenario Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {financialScenarios.map((scenario, index) => {
-            const ScenarioIcon = scenarioIcons[scenario.name] || Target;
-            return (
-              <Card 
-                key={index}
-                className={`transition-all duration-300 ${
-                  scenario.name === 'Realistic' 
-                    ? 'bg-accent/10 border-accent/30 ring-1 ring-accent/20' 
-                    : 'bg-card/50 border-border/30 hover:border-border/50'
-                }`}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <ScenarioIcon className={`h-4 w-4 ${
-                        scenario.name === 'Realistic' ? 'text-accent' : 'text-muted-foreground'
-                      }`} />
-                      <span className={`font-medium text-sm ${
-                        scenario.name === 'Realistic' ? 'text-accent' : 'text-foreground'
-                      }`}>
-                        {scenario.name}
-                      </span>
+        {financialScenarios.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {financialScenarios.map((scenario, index) => {
+              const ScenarioIcon = scenarioIcons[scenario.name] || Target;
+              return (
+                <Card 
+                  key={index}
+                  className={`transition-all duration-300 ${
+                    scenario.name === 'Realistic' 
+                      ? 'bg-accent/10 border-accent/30 ring-1 ring-accent/20' 
+                      : 'bg-card/50 border-border/30 hover:border-border/50'
+                  }`}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <ScenarioIcon className={`h-4 w-4 ${
+                          scenario.name === 'Realistic' ? 'text-accent' : 'text-muted-foreground'
+                        }`} />
+                        <span className={`font-medium text-sm ${
+                          scenario.name === 'Realistic' ? 'text-accent' : 'text-foreground'
+                        }`}>
+                          {scenario.name}
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {scenario.probability}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                      {scenario.probability}
-                    </Badge>
-                  </div>
-                  <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Month 12 MRR</span>
-                      <span className="font-medium text-foreground">
-                        {formatCurrency(scenario.mrrMonth12)}
-                      </span>
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Month 12 MRR</span>
+                        <span className="font-medium text-foreground">
+                          {formatCurrency(scenario.mrrMonth12)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Year 1 ARR</span>
+                        <span className="font-medium text-foreground">
+                          {formatCurrency(scenario.arrYear1)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Break-even</span>
+                        <span className="font-medium text-foreground">
+                          {scenario.breakEven} months
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Year 1 ARR</span>
-                      <span className="font-medium text-foreground">
-                        {formatCurrency(scenario.arrYear1)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Break-even</span>
-                      <span className="font-medium text-foreground">
-                        {scenario.breakEven} months
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-muted-foreground text-sm p-4 rounded-lg bg-card/50 border border-border/30">
+            <AlertCircle className="h-4 w-4" />
+            <span>No financial scenarios available</span>
+          </div>
+        )}
       </div>
 
       {/* Unit Economics */}
@@ -452,58 +420,68 @@ const FinancialReturnSection = () => {
             Key metrics showing your customer acquisition efficiency and lifetime value analysis.
           </InfoTooltip>
         </div>
-        
-        {/* 4 Cards Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {/* Ideal Ticket */}
-          <Card className="bg-card/50 border-border/30">
-            <CardContent className="p-4 text-center">
-              <span className="text-xs text-muted-foreground">Ideal Ticket</span>
-              <div className="text-xl font-bold text-foreground mt-1">${unitEconomics.idealTicket}</div>
-              <span className="text-xs text-muted-foreground">/month</span>
-            </CardContent>
-          </Card>
-          
-          {/* Payback Period */}
-          <Card className="bg-card/50 border-border/30">
-            <CardContent className="p-4 text-center">
-              <span className="text-xs text-muted-foreground">Payback Period</span>
-              <div className="text-xl font-bold text-foreground mt-1">{unitEconomics.paybackPeriod}</div>
-              <span className="text-xs text-muted-foreground">months</span>
-            </CardContent>
-          </Card>
-          
-          {/* LTV */}
-          <Card className="bg-card/50 border-border/30">
-            <CardContent className="p-4 text-center">
-              <span className="text-xs text-muted-foreground">LTV (Lifetime Value)</span>
-              <div className="text-xl font-bold text-foreground mt-1">${unitEconomics.ltv}</div>
-              <span className="text-xs text-muted-foreground">{unitEconomics.ltvMonths} months</span>
-            </CardContent>
-          </Card>
-          
-          {/* LTV/CAC Ratio */}
-          <Card className="bg-card/50 border-border/30">
-            <CardContent className="p-4 text-center">
-              <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
-              <div className="flex items-center justify-center gap-1.5 mt-1">
-                <span className="text-xl font-bold text-foreground">{ltvCacRatio}x</span>
-                <CheckCircle className="h-4 w-4 text-accent" />
-              </div>
-              <span className="text-xs text-muted-foreground">healthy (&gt;3x)</span>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* How it works */}
-        <Card className="bg-accent/5 border-accent/20">
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">How it works: </span>
-              {unitEconomics.howItWorks}
-            </p>
-          </CardContent>
-        </Card>
+        {unitEconomics ? (
+          <>
+            {/* 4 Cards Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* Ideal Ticket */}
+              <Card className="bg-card/50 border-border/30">
+                <CardContent className="p-4 text-center">
+                  <span className="text-xs text-muted-foreground">Ideal Ticket</span>
+                  <div className="text-xl font-bold text-foreground mt-1">${unitEconomics.idealTicket || "-"}</div>
+                  <span className="text-xs text-muted-foreground">/month</span>
+                </CardContent>
+              </Card>
+              
+              {/* Payback Period */}
+              <Card className="bg-card/50 border-border/30">
+                <CardContent className="p-4 text-center">
+                  <span className="text-xs text-muted-foreground">Payback Period</span>
+                  <div className="text-xl font-bold text-foreground mt-1">{unitEconomics.paybackPeriod || "-"}</div>
+                  <span className="text-xs text-muted-foreground">months</span>
+                </CardContent>
+              </Card>
+              
+              {/* LTV */}
+              <Card className="bg-card/50 border-border/30">
+                <CardContent className="p-4 text-center">
+                  <span className="text-xs text-muted-foreground">LTV (Lifetime Value)</span>
+                  <div className="text-xl font-bold text-foreground mt-1">${unitEconomics.ltv || "-"}</div>
+                  <span className="text-xs text-muted-foreground">{unitEconomics.ltvMonths || "-"} months</span>
+                </CardContent>
+              </Card>
+              
+              {/* LTV/CAC Ratio */}
+              <Card className="bg-card/50 border-border/30">
+                <CardContent className="p-4 text-center">
+                  <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
+                  <div className="flex items-center justify-center gap-1.5 mt-1">
+                    <span className="text-xl font-bold text-foreground">{ltvCacRatio}x</span>
+                    <CheckCircle className="h-4 w-4 text-accent" />
+                  </div>
+                  <span className="text-xs text-muted-foreground">healthy (&gt;3x)</span>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* How it works */}
+            {unitEconomics.howItWorks && (
+              <Card className="bg-accent/5 border-accent/20">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">How it works: </span>
+                    {unitEconomics.howItWorks}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        ) : (
+          <div className="flex items-center gap-2 text-muted-foreground text-sm p-4 rounded-lg bg-card/50 border border-border/30">
+            <AlertCircle className="h-4 w-4" />
+            <span>No unit economics data available</span>
+          </div>
+        )}
       </div>
     </section>
   );
