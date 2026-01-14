@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ReportRow } from "@/types/report";
 
 export const useReport = (reportId: string | undefined) => {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["report", reportId],
     queryFn: async (): Promise<ReportRow | null> => {
       if (!reportId) return null;
@@ -22,9 +22,16 @@ export const useReport = (reportId: string | undefined) => {
       return data;
     },
     enabled: !!reportId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    // Poll every 5 seconds if status is pending
+    refetchInterval: (query) => {
+      const data = query.state.data as ReportRow | null;
+      return data?.status === "pending" ? 5000 : false;
+    },
   });
+
+  return query;
 };
 
 export default useReport;

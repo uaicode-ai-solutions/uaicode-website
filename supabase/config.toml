@@ -59,3 +59,15 @@ verify_jwt = false
 
 [functions.pms-webhook-new-report]
 verify_jwt = false
+
+[functions.pms-generate-report]
+verify_jwt = false
+
+[functions.pms-perplexity-search]
+verify_jwt = false
+
+[functions.pms-firecrawl-scrape]
+verify_jwt = false
+
+[functions.pms-ai-analyze]
+verify_jwt = false
