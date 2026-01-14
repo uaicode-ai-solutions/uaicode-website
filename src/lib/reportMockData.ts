@@ -391,6 +391,291 @@ The estimated $60,500 MVP investment has the potential to break even in 8 months
       whatsapp: "+1 (555) 123-4567",
       calendly: "https://calendly.com/uaicode",
     }
+  },
+
+  // ==========================================
+  // NEW SECTIONS - Decision Support Data
+  // ==========================================
+
+  // 1. Demand Validation - "The Demand"
+  demandValidation: {
+    searchVolume: 42000,
+    trendsScore: 78,
+    growthRate: "+23%",
+    painPoints: [
+      { pain: "Manual inventory tracking causes stockouts", intensity: 92, source: "Reddit/Forums" },
+      { pain: "No integrated local delivery solution", intensity: 87, source: "Customer Reviews" },
+      { pain: "Complex FDA/health compliance requirements", intensity: 75, source: "User Interviews" },
+      { pain: "Disconnected systems waste time daily", intensity: 68, source: "Survey Data" }
+    ],
+    evidences: [
+      { type: "Online Reviews", count: 2340, sentiment: "Negative", opportunity: "68% complain about fragmented tools" },
+      { type: "Forum Discussions", count: 890, growth: "+45% YoY", opportunity: "Active community seeking solutions" },
+      { type: "Social Mentions", count: 12000, sentiment: "Mixed", opportunity: "Growing awareness of the problem" },
+      { type: "Job Postings", count: 456, growth: "+28% YoY", opportunity: "Companies hiring for manual tasks" }
+    ],
+    validationMethods: [
+      { method: "Landing Page Test", cost: "$200-500", timeframe: "1-2 weeks", description: "Validate demand with a waitlist" },
+      { method: "Customer Interviews", cost: "$0-200", timeframe: "2-3 weeks", description: "Deep dive with 10-15 prospects" },
+      { method: "Prototype Demo", cost: "$500-1000", timeframe: "3-4 weeks", description: "Test with interactive mockup" },
+      { method: "Paid Ad Test", cost: "$300-800", timeframe: "1 week", description: "Measure click-through rates" }
+    ],
+    conclusion: "Strong demand signals with 42K monthly searches and 23% growth. Pain points are validated across multiple sources."
+  },
+
+  // 2. Business Model - "The Model"
+  businessModel: {
+    primaryModel: "Subscription SaaS",
+    modelType: "B2B2C Marketplace",
+    revenueStreams: [
+      { name: "Monthly Subscriptions", percentage: 70, mrr: 48594, type: "recurring", icon: "CreditCard" },
+      { name: "Transaction Fees", percentage: 15, mrr: 10413, type: "transactional", icon: "Receipt" },
+      { name: "Premium Add-ons", percentage: 10, mrr: 6942, type: "expansion", icon: "Sparkles" },
+      { name: "Partner Commissions", percentage: 5, mrr: 3471, type: "partnership", icon: "Handshake" }
+    ],
+    pricingTiers: [
+      { name: "Starter", price: 19, features: 5, targetCustomers: "Solo entrepreneurs", conversionRate: "25%" },
+      { name: "Growth", price: 49, features: 12, targetCustomers: "Small teams (2-10)", conversionRate: "55%", recommended: true },
+      { name: "Scale", price: 99, features: 25, targetCustomers: "Established businesses (10+)", conversionRate: "20%" }
+    ],
+    monetizationTimeline: [
+      { month: 1, stream: "Subscriptions", status: "active", note: "Core revenue from day 1" },
+      { month: 3, stream: "Premium Add-ons", status: "active", note: "Advanced features unlock" },
+      { month: 6, stream: "Transaction Fees", status: "active", note: "Marketplace takes off" },
+      { month: 9, stream: "Partner Commissions", status: "active", note: "Ecosystem partnerships" }
+    ],
+    conclusion: "Diversified revenue model with 70% recurring subscription revenue, reducing dependency on any single stream."
+  },
+
+  // 3. Go-to-Market Preview - "The Launch Strategy"
+  goToMarketPreview: {
+    primaryChannel: "Content Marketing + SEO",
+    launchStrategy: "Product Hunt + Beta Community",
+    channels: [
+      { name: "SEO/Content", roi: 4.2, timeToResults: "3-6 months", priority: 1, effort: "High" },
+      { name: "Paid Social", roi: 2.8, timeToResults: "1-2 months", priority: 2, effort: "Medium" },
+      { name: "Partnerships", roi: 3.5, timeToResults: "2-4 months", priority: 3, effort: "Medium" },
+      { name: "Email Marketing", roi: 4.0, timeToResults: "2-3 months", priority: 4, effort: "Low" }
+    ],
+    quickWins: [
+      { action: "Launch on Product Hunt", impact: "High", effort: "Low", description: "Get initial traction and feedback" },
+      { action: "5 LinkedIn posts about industry problems", impact: "Medium", effort: "Low", description: "Build thought leadership" },
+      { action: "Reach out to 10 beta users personally", impact: "High", effort: "Medium", description: "Get first paying customers" }
+    ],
+    first90Days: [
+      { day: 1, milestone: "Product Hunt launch", metric: "500+ upvotes" },
+      { day: 14, milestone: "First 100 signups", metric: "10% conversion" },
+      { day: 30, milestone: "First 10 paying customers", metric: "$490 MRR" },
+      { day: 60, milestone: "50 paying customers", metric: "$2,450 MRR" },
+      { day: 90, milestone: "First $5K MRR", metric: "100+ customers" }
+    ],
+    conclusion: "Content-led growth with a strong Product Hunt launch can generate 100+ customers in 90 days."
+  },
+
+  // 4. Quantified Differentiation
+  quantifiedDifferentiation: {
+    overallScore: 76,
+    uniqueFeatures: [
+      { feature: "FDA Compliance Automation", competitorsCoverage: "0/6", impact: "High", description: "No competitor offers this" },
+      { feature: "SMB-focused Onboarding", competitorsCoverage: "1/6", impact: "High", description: "Setup in minutes vs months" },
+      { feature: "Integrated Local Delivery", competitorsCoverage: "2/6", impact: "Medium", description: "End-to-end solution" },
+      { feature: "Real-time Inventory Alerts", competitorsCoverage: "3/6", impact: "Medium", description: "Proactive vs reactive" }
+    ],
+    whyYouWin: [
+      { reason: "Setup in minutes, not months", metric: "10x faster onboarding", vsCompetitor: "Amazon Pharmacy", icon: "Zap" },
+      { reason: "SMB pricing from day 1", metric: "60% cheaper entry point", vsCompetitor: "CVS Digital", icon: "PiggyBank" },
+      { reason: "Compliance built-in", metric: "Zero regulatory issues", vsCompetitor: "DoorDash Health", icon: "Shield" }
+    ],
+    competitorGaps: [
+      { gap: "No SMB focus", affectedCompetitors: 4, opportunity: "Capture underserved market" },
+      { gap: "Complex onboarding", affectedCompetitors: 5, opportunity: "Win on user experience" },
+      { gap: "No compliance tools", affectedCompetitors: 6, opportunity: "Reduce customer risk" }
+    ]
+  },
+
+  // 5. Timing Analysis - "The Timing"
+  timingAnalysis: {
+    timingScore: 85,
+    verdict: "Excellent timing — market is growing but not saturated",
+    macroTrends: [
+      { trend: "Healthcare digitization post-COVID", impact: "+45% adoption", relevance: "High", icon: "TrendingUp" },
+      { trend: "Local commerce revival", impact: "+28% demand", relevance: "High", icon: "Store" },
+      { trend: "Regulatory modernization", impact: "Lower barriers", relevance: "Medium", icon: "FileCheck" },
+      { trend: "AI automation wave", impact: "+35% efficiency gains", relevance: "High", icon: "Sparkles" }
+    ],
+    windowOfOpportunity: {
+      opens: "Now",
+      closes: "18-24 months",
+      reason: "Major players will enter SMB segment within 2 years",
+      urgency: "High"
+    },
+    firstMoverAdvantage: {
+      score: 72,
+      benefits: [
+        "Brand recognition in niche before competition",
+        "Customer lock-in through deep integrations",
+        "Data moat for AI features and insights"
+      ]
+    },
+    conclusion: "18-24 month window before major competition. Moving now captures first-mover advantage."
+  },
+
+  // 6. Pivot Scenarios - "Plan B & Beyond"
+  pivotScenarios: {
+    readinessScore: 78,
+    scenarios: [
+      { 
+        name: "Vertical Pivot - Pet Health",
+        viability: 82,
+        effortToShift: "Low",
+        marketSize: "$4.2B",
+        trigger: "If B2B adoption < 50 users in 6 months",
+        description: "Reuse 80% of platform for pet pharmacies"
+      },
+      { 
+        name: "Feature Pivot - Delivery Only",
+        viability: 71,
+        effortToShift: "Medium",
+        marketSize: "$8.1B",
+        trigger: "If inventory features have low engagement",
+        description: "Focus on last-mile delivery for health products"
+      },
+      { 
+        name: "Market Pivot - LATAM Focus",
+        viability: 68,
+        effortToShift: "Medium",
+        marketSize: "$1.8B",
+        trigger: "If US acquisition costs > $200/customer",
+        description: "Less competition, lower CAC in LATAM markets"
+      }
+    ],
+    reusableAssets: [
+      { asset: "Core Platform (~80% code)", reusabilityScore: 95 },
+      { asset: "User Authentication System", reusabilityScore: 100 },
+      { asset: "Payment Integration", reusabilityScore: 90 },
+      { asset: "Delivery API Integration", reusabilityScore: 85 }
+    ],
+    decisionTriggers: [
+      { metric: "User Acquisition", threshold: "< 50 users in 6 months", action: "Consider vertical pivot" },
+      { metric: "Monthly Churn", threshold: "> 15%", action: "Feature reassessment needed" },
+      { metric: "CAC", threshold: "> $300", action: "Consider market pivot" }
+    ],
+    conclusion: "Multiple viable pivot options with 78% asset reusability. Investment is protected."
+  },
+
+  // 7. Success Metrics - "Success Milestones"
+  successMetrics: {
+    northStar: {
+      metric: "Monthly Active Stores",
+      current: 0,
+      month3Target: 50,
+      month6Target: 200,
+      month12Target: 1000,
+      why: "Core indicator of platform value and revenue potential"
+    },
+    launchMilestones: [
+      { month: 1, milestone: "First 10 paying customers", status: "critical", metric: "$490 MRR" },
+      { month: 3, milestone: "$5K MRR", status: "important", metric: "~100 customers" },
+      { month: 6, milestone: "Net Promoter Score > 40", status: "important", metric: "Customer love" },
+      { month: 12, milestone: "$50K MRR", status: "ambitious", metric: "~1000 customers" }
+    ],
+    healthIndicators: [
+      { kpi: "Weekly Active Users", healthy: "> 60%", warning: "40-60%", critical: "< 40%" },
+      { kpi: "Feature Adoption", healthy: "> 3 features", warning: "2 features", critical: "< 2 features" },
+      { kpi: "Support Tickets/User", healthy: "< 0.5", warning: "0.5-1.0", critical: "> 1.0" },
+      { kpi: "Trial to Paid", healthy: "> 15%", warning: "8-15%", critical: "< 8%" }
+    ],
+    warningSigns: [
+      { sign: "High trial abandonment", threshold: "> 70%", action: "Improve onboarding flow" },
+      { sign: "Low feature adoption", threshold: "< 2 features used", action: "Simplify UX, add guides" },
+      { sign: "Long sales cycle", threshold: "> 45 days", action: "Add self-serve options" }
+    ],
+    conclusion: "Clear milestones with North Star metric (Monthly Active Stores) guiding all decisions."
+  },
+
+  // 8. Resource Requirements - "Beyond the Money"
+  resourceRequirements: {
+    founderTime: {
+      phase1: { name: "Discovery", hoursPerWeek: 10, focus: "Validation & customer feedback" },
+      phase2: { name: "Build", hoursPerWeek: 15, focus: "Testing & design input" },
+      phase3: { name: "Launch", hoursPerWeek: 25, focus: "Sales & marketing" },
+      phase4: { name: "Scale", hoursPerWeek: 40, focus: "Full-time commitment required" }
+    },
+    teamTimeline: [
+      { role: "Customer Success", when: "Month 4-6", cost: "$3-4K/mo", critical: true, reason: "Keep churn low" },
+      { role: "Marketing Specialist", when: "Month 6-9", cost: "$4-5K/mo", critical: false, reason: "Scale acquisition" },
+      { role: "Second Developer", when: "Month 9-12", cost: "$6-8K/mo", critical: true, reason: "Feature velocity" }
+    ],
+    criticalSkills: [
+      { skill: "Product Decision Making", importance: "Critical", alternative: "Strategy consulting calls" },
+      { skill: "Customer Communication", importance: "High", alternative: "Email templates provided" },
+      { skill: "Basic Analytics", importance: "Medium", alternative: "Dashboard included in MVP" },
+      { skill: "Sales Outreach", importance: "High", alternative: "Playbook provided" }
+    ],
+    externalSupport: [
+      { type: "Legal (incorporation, terms)", cost: "$2-5K", timing: "One-time, Month 1" },
+      { type: "Accounting/Bookkeeping", cost: "$200-400/mo", timing: "Ongoing from Month 3" },
+      { type: "Domain & Compliance Advisor", cost: "$500-1K", timing: "One-time, Month 1-2" }
+    ],
+    conclusion: "Start part-time (10-15 hrs/week), scale to full-time by month 6. First hire at month 4-6."
+  },
+
+  // 9. Risk Quantification - Enhanced risks
+  riskQuantification: {
+    overallRiskScore: 42,
+    riskLevel: "Moderate",
+    categories: [
+      { category: "Technical", score: 35, level: "Low", mainRisk: "Third-party API dependencies", icon: "Code" },
+      { category: "Market", score: 45, level: "Moderate", mainRisk: "Major competitor entry", icon: "TrendingDown" },
+      { category: "Execution", score: 40, level: "Moderate", mainRisk: "Timeline delays", icon: "Clock" },
+      { category: "Financial", score: 50, level: "Moderate", mainRisk: "Longer payback period", icon: "DollarSign" }
+    ],
+    riskMatrix: [
+      { risk: "Major competitor launches similar product", probability: "Medium", impact: "High", quadrant: "Monitor Closely" },
+      { risk: "Technical debt slows feature development", probability: "Low", impact: "Medium", quadrant: "Accept" },
+      { risk: "Slow initial customer adoption", probability: "Medium", impact: "Medium", quadrant: "Mitigate Actively" },
+      { risk: "Regulatory changes in health sector", probability: "Low", impact: "High", quadrant: "Monitor" }
+    ],
+    mitigationCosts: {
+      total: 8500,
+      breakdown: [
+        { item: "Multi-provider API fallbacks", cost: 3000, reducesRisk: "API dependencies", impact: "-15% technical risk" },
+        { item: "Extended QA and testing", cost: 2500, reducesRisk: "Technical issues", impact: "-10% execution risk" },
+        { item: "Market research refresh", cost: 1500, reducesRisk: "Market assumptions", impact: "-8% market risk" },
+        { item: "Legal compliance review", cost: 1500, reducesRisk: "Regulatory issues", impact: "-5% overall risk" }
+      ]
+    },
+    conclusion: "Overall moderate risk (42/100). $8,500 in mitigations can reduce risk score to ~30."
+  },
+
+  // 10. Market Benchmarks - "Industry Standards"
+  marketBenchmarks: {
+    industryComparison: [
+      { metric: "Year 1 ARR", yourProjection: "$833K", industryAvg: "$450K", percentile: "Top 20%", status: "above" },
+      { metric: "LTV/CAC Ratio", yourProjection: "5.3x", industryAvg: "3.0x", percentile: "Top 15%", status: "above" },
+      { metric: "Monthly Churn", yourProjection: "5%", industryAvg: "7%", percentile: "Top 30%", status: "above" },
+      { metric: "Payback Period", yourProjection: "4.5 mo", industryAvg: "12 mo", percentile: "Top 10%", status: "above" }
+    ],
+    successRates: {
+      category: "Healthcare SaaS",
+      survivalYear1: "78%",
+      survivalYear3: "52%",
+      reaching1MARR: "23%",
+      yourEstimatedProbability: "68%",
+      whyHigher: "Strong unit economics, focused niche, and validated demand signals"
+    },
+    fundingBenchmarks: {
+      preSeed: { typical: "$100K-500K", requires: "MVP or strong founder-market fit" },
+      seedRound: { typical: "$500K-2M", requires: "$10K MRR or strong traction proof" },
+      seriesA: { typical: "$2-10M", requires: "$100K+ MRR, clear growth path" },
+      yourReadiness: "Pre-seed/Bootstrap phase. Fundable after MVP with traction proof."
+    },
+    exitScenarios: [
+      { type: "Acquisition by Private Equity", multipleRange: "3-5x ARR", timeframe: "Year 3-5", probability: "60%" },
+      { type: "Strategic Acquisition", multipleRange: "5-8x ARR", timeframe: "Year 4-7", probability: "30%" },
+      { type: "IPO (rare for this size)", multipleRange: "10x+ ARR", timeframe: "Year 7+", probability: "5%" }
+    ],
+    conclusion: "Projections are in Top 20% vs industry benchmarks. Strong fundamentals for future fundraising or exit."
   }
 };
 
