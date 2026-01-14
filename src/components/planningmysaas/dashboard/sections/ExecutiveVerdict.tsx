@@ -6,10 +6,20 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { reportData as mockData } from "@/lib/reportMockData";
+import { Highlight, Risk } from "@/types/report";
 
 const ExecutiveVerdict = () => {
-  const data = reportData;
+  const { report } = useReportContext();
+  
+  // Use real data with fallback to mock
+  const verdict = report?.verdict || mockData.recommendation;
+  const verdictSummary = report?.verdict_summary || mockData.executiveSummary;
+  
+  // Parse JSONB fields with fallback
+  const highlights: Highlight[] = (report?.highlights as unknown as Highlight[]) || mockData.highlights;
+  const risks: Risk[] = (report?.risks as unknown as Risk[]) || mockData.risks;
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -30,7 +40,7 @@ const ExecutiveVerdict = () => {
   };
 
   // Parse executive summary into bullet points for better readability
-  const summaryParagraphs = data.executiveSummary.split('\n\n').filter(p => p.trim());
+  const summaryParagraphs = verdictSummary.split('\n\n').filter(p => p.trim());
 
   return (
     <section id="executive-verdict" className="space-y-6 animate-fade-in">
@@ -58,7 +68,7 @@ const ExecutiveVerdict = () => {
         <div>
           <span className="text-sm text-muted-foreground">Our Recommendation:</span>
           <div className="text-xl font-bold text-green-400">
-            {data.recommendation}
+            {verdict}
           </div>
         </div>
       </div>
@@ -107,7 +117,7 @@ const ExecutiveVerdict = () => {
               </InfoTooltip>
             </div>
             <div className="space-y-3">
-              {data.highlights.map((highlight, index) => (
+              {highlights.map((highlight, index) => (
                 <div 
                   key={index}
                   className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
@@ -135,7 +145,7 @@ const ExecutiveVerdict = () => {
               </InfoTooltip>
             </div>
             <div className="space-y-3">
-              {data.risks.map((item, index) => (
+              {risks.map((item, index) => (
                 <div 
                   key={index}
                   className="p-4 rounded-lg bg-muted/10 border border-border/20"

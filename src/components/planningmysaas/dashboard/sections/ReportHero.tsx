@@ -1,9 +1,10 @@
 import { ChevronDown, TrendingUp, DollarSign, Clock, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { reportData as mockData } from "@/lib/reportMockData";
+import { KeyMetrics } from "@/types/report";
 
 interface ReportHeroProps {
   projectName?: string;
@@ -12,8 +13,20 @@ interface ReportHeroProps {
 }
 
 const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHeroProps) => {
-  const data = reportData;
-  const displayName = projectName || data.projectName;
+  const { report } = useReportContext();
+  
+  // Use real data with fallback to mock
+  const displayName = projectName || report?.saas_name || mockData.projectName;
+  const viabilityScore = parseInt(report?.viability_score || "0") || mockData.viabilityScore;
+  const verdictHeadline = report?.verdict_headline || mockData.verdictHeadline;
+  
+  // Parse key_metrics from JSONB or use mock
+  const keyMetrics: KeyMetrics = (report?.key_metrics as unknown as KeyMetrics) || mockData.keyMetrics;
+  
+  // For TEXT fields, use directly (already formatted by AI)
+  const expectedROI = report?.expected_roi_year1 || keyMetrics.expectedROI;
+  const breakEvenMonths = report?.break_even_months || `${keyMetrics.paybackMonths} months`;
+  const marketSize = report?.market_size || keyMetrics.marketSize;
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-amber-400";
@@ -24,22 +37,22 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   const metrics = [
     { 
       icon: TrendingUp, 
-      value: data.keyMetrics.marketSize, 
-      label: data.keyMetrics.marketLabel,
+      value: marketSize, 
+      label: keyMetrics.marketLabel || "Total Market",
       sublabel: "Global TAM",
       tooltip: "Total Addressable Market - The total global market demand for your product or service."
     },
     { 
       icon: DollarSign, 
-      value: data.keyMetrics.expectedROI, 
-      label: data.keyMetrics.roiLabel,
+      value: expectedROI, 
+      label: keyMetrics.roiLabel || "Expected ROI",
       sublabel: "Year 1",
       tooltip: "Return on Investment - The projected percentage gain on your investment in the first year."
     },
     { 
       icon: Clock, 
-      value: `${data.keyMetrics.paybackMonths} months`, 
-      label: data.keyMetrics.paybackLabel,
+      value: breakEvenMonths, 
+      label: keyMetrics.paybackLabel || "Payback Period",
       sublabel: "To break-even",
       tooltip: "The estimated time until your cumulative revenue exceeds your total investment."
     },
@@ -91,7 +104,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
                   strokeWidth="7"
                   fill="transparent"
                   strokeLinecap="round"
-                  strokeDasharray={`${(data.viabilityScore / 100) * 2 * Math.PI * 42} ${2 * Math.PI * 42}`}
+                  strokeDasharray={`${(viabilityScore / 100) * 2 * Math.PI * 42} ${2 * Math.PI * 42}`}
                   className="transition-all duration-1000"
                   filter="url(#glow)"
                 />
@@ -112,7 +125,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-4xl md:text-5xl font-bold bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent">
-                  {data.viabilityScore}
+                  {viabilityScore}
                 </span>
                 <span className="text-xs text-muted-foreground">Viability</span>
               </div>
@@ -121,7 +134,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
 
           {/* Verdict Headline */}
           <p className="text-lg md:text-xl text-accent font-medium max-w-lg">
-            {data.verdictHeadline}
+            {verdictHeadline}
           </p>
         </div>
 

@@ -2,8 +2,10 @@ import { TrendingUp, Clock, DollarSign, Target, BarChart3, Shield, Rocket, Check
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
-import { financialProjections, mrrEvolutionData } from "@/lib/dashboardMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { reportData as mockData } from "@/lib/reportMockData";
+import { mrrEvolutionData } from "@/lib/dashboardMockData";
+import { UnitEconomics, FinancialScenario, ProjectionDataPoint } from "@/types/report";
 import {
   AreaChart,
   Area,
@@ -21,16 +23,34 @@ import {
 } from "recharts";
 
 const FinancialReturnSection = () => {
-  const { financials } = reportData;
+  const { report } = useReportContext();
+  
+  // Use real data with fallback to mock
+  const breakEvenMonths = report?.break_even_months || `${mockData.financials.breakEvenMonths}`;
+  const roiYear1 = report?.expected_roi_year1 || `${mockData.financials.roiYear1}%`;
+  const mrrMonth12 = report?.mrr_month12_cents || mockData.financials.mrrMonth12;
+  const arrProjected = report?.arr_projected_cents || mockData.financials.arrProjected;
+  const ltvCacRatio = report?.ltv_cac_ratio || `${mockData.financials.ltvCacRatio}`;
+  
+  // Parse JSONB fields with fallback
+  const unitEconomics = (report?.unit_economics as unknown as UnitEconomics) || mockData.financials.unitEconomics as UnitEconomics;
+  const financialScenarios: FinancialScenario[] = (report?.financial_scenarios as unknown as FinancialScenario[]) || mockData.financials.scenarios;
+  const projectionData: ProjectionDataPoint[] = (report?.projection_data as unknown as ProjectionDataPoint[]) || mockData.financials.projectionData;
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`;
+  const formatCurrency = (value: number | string) => {
+    // If already formatted string, return it
+    if (typeof value === 'string' && (value.includes('$') || value.includes('K') || value.includes('M'))) {
+      return value;
     }
-    if (value >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`;
+    const numValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.-]/g, '')) : value;
+    if (isNaN(numValue)) return String(value);
+    if (numValue >= 1000000) {
+      return `$${(numValue / 1000000).toFixed(1)}M`;
     }
-    return `$${value}`;
+    if (numValue >= 1000) {
+      return `$${(numValue / 1000).toFixed(0)}K`;
+    }
+    return `$${numValue}`;
   };
 
   const scenarioIcons: Record<string, React.ElementType> = {
@@ -39,11 +59,22 @@ const FinancialReturnSection = () => {
     Optimistic: Rocket,
   };
 
+  // Parse numeric values from TEXT fields
+  const parseNumericBreakEven = () => {
+    const match = breakEvenMonths.match(/\d+/);
+    return match ? parseInt(match[0]) : mockData.financials.breakEvenMonths;
+  };
+
+  const parseNumericROI = () => {
+    const match = roiYear1.match(/[\d.]+/);
+    return match ? parseFloat(match[0]) : mockData.financials.roiYear1;
+  };
+
   const metrics = [
     {
       icon: Clock,
       label: "Break-even",
-      value: `${financials.breakEvenMonths} months`,
+      value: breakEvenMonths.includes('month') ? breakEvenMonths : `${breakEvenMonths} months`,
       sublabel: "Until investment payoff",
       highlight: true,
       tooltip: "The month when your cumulative revenue exceeds your total investment and operational costs."
@@ -51,7 +82,7 @@ const FinancialReturnSection = () => {
     {
       icon: TrendingUp,
       label: "Year 1 ROI",
-      value: `${financials.roiYear1}%`,
+      value: roiYear1.includes('%') ? roiYear1 : `${roiYear1}%`,
       sublabel: "Return on investment",
       highlight: false,
       tooltip: "Return on Investment - The projected percentage gain on your investment in the first year."
@@ -59,7 +90,7 @@ const FinancialReturnSection = () => {
     {
       icon: DollarSign,
       label: "Month 12 MRR",
-      value: formatCurrency(financials.mrrMonth12),
+      value: formatCurrency(mrrMonth12),
       sublabel: "Monthly recurring revenue",
       highlight: false,
       tooltip: "Monthly Recurring Revenue - The predictable monthly revenue from subscriptions at month 12."
@@ -67,7 +98,7 @@ const FinancialReturnSection = () => {
     {
       icon: Target,
       label: "Projected ARR",
-      value: formatCurrency(financials.arrProjected),
+      value: formatCurrency(arrProjected),
       sublabel: "Annual recurring revenue",
       highlight: false,
       tooltip: "Annual Recurring Revenue - The yearly value of your recurring subscriptions (MRR × 12)."
@@ -136,7 +167,7 @@ const FinancialReturnSection = () => {
           </div>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={financials.projectionData}>
+              <AreaChart data={projectionData}>
                 <defs>
                   <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.4} />
@@ -172,7 +203,7 @@ const FinancialReturnSection = () => {
                   ]}
                 />
                 <ReferenceLine 
-                  x="M8" 
+                  x={`M${parseNumericBreakEven()}`}
                   stroke="hsl(var(--accent))" 
                   strokeDasharray="5 5"
                   label={{ value: 'Break-even', fill: 'hsl(var(--accent))', fontSize: 10 }}
@@ -224,8 +255,8 @@ const FinancialReturnSection = () => {
                   <PieChart>
                     <Pie
                       data={[
-                        { name: "ROI", value: 150 },
-                        { name: "Remaining", value: 100 }
+                        { name: "ROI", value: Math.min(parseNumericROI(), 250) },
+                        { name: "Remaining", value: Math.max(0, 250 - parseNumericROI()) }
                       ]}
                       cx="50%"
                       cy="50%"
@@ -242,7 +273,7 @@ const FinancialReturnSection = () => {
                 </ResponsiveContainer>
                 {/* Center text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-accent">150%</span>
+                  <span className="text-2xl font-bold text-accent">{roiYear1.includes('%') ? roiYear1 : `${roiYear1}%`}</span>
                   <TrendingUp className="h-4 w-4 text-accent" />
                 </div>
               </div>
@@ -252,9 +283,9 @@ const FinancialReturnSection = () => {
                 <p className="text-sm text-foreground">
                   <span className="font-medium">$1 invested</span>
                   <span className="mx-2 text-muted-foreground">→</span>
-                  <span className="font-bold text-accent">$2.50 return</span>
+                  <span className="font-bold text-accent">${(1 + parseNumericROI() / 100).toFixed(2)} return</span>
                 </p>
-                <p className="text-xs text-muted-foreground">24 months</p>
+                <p className="text-xs text-muted-foreground">12 months</p>
               </div>
               
               {/* Industry comparison */}
@@ -262,12 +293,15 @@ const FinancialReturnSection = () => {
                 <div className="flex items-center justify-between text-xs mb-2">
                   <span className="text-muted-foreground">Industry Avg: 80-120%</span>
                   <Badge className="bg-accent/10 text-accent border-accent/30 text-[10px]">
-                    Above Average
+                    {parseNumericROI() > 120 ? 'Above Average' : parseNumericROI() >= 80 ? 'Average' : 'Below Average'}
                   </Badge>
                 </div>
                 {/* Progress bar */}
                 <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-accent/60 to-accent w-3/4 rounded-full" />
+                  <div 
+                    className="h-full bg-gradient-to-r from-accent/60 to-accent rounded-full" 
+                    style={{ width: `${Math.min(100, parseNumericROI() / 2)}%` }}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -322,7 +356,7 @@ const FinancialReturnSection = () => {
               {/* Year milestones cards */}
               <div className="grid grid-cols-3 gap-2 mt-4">
                 {[
-                  { year: "Year 1", arr: "$833K", mrr: "$69K MRR" },
+                  { year: "Year 1", arr: formatCurrency(arrProjected), mrr: formatCurrency(mrrMonth12) + " MRR" },
                   { year: "Year 2", arr: "$3.2M", mrr: "$267K MRR" },
                   { year: "Year 3", arr: "$8.5M", mrr: "$712K MRR" },
                 ].map((item, idx) => (
@@ -356,7 +390,7 @@ const FinancialReturnSection = () => {
 
         {/* Scenario Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {financials.scenarios.map((scenario, index) => {
+          {financialScenarios.map((scenario, index) => {
             const ScenarioIcon = scenarioIcons[scenario.name] || Target;
             return (
               <Card 
@@ -425,7 +459,7 @@ const FinancialReturnSection = () => {
           <Card className="bg-card/50 border-border/30">
             <CardContent className="p-4 text-center">
               <span className="text-xs text-muted-foreground">Ideal Ticket</span>
-              <div className="text-xl font-bold text-foreground mt-1">${financials.unitEconomics.idealTicket}</div>
+              <div className="text-xl font-bold text-foreground mt-1">${unitEconomics.idealTicket}</div>
               <span className="text-xs text-muted-foreground">/month</span>
             </CardContent>
           </Card>
@@ -434,7 +468,7 @@ const FinancialReturnSection = () => {
           <Card className="bg-card/50 border-border/30">
             <CardContent className="p-4 text-center">
               <span className="text-xs text-muted-foreground">Payback Period</span>
-              <div className="text-xl font-bold text-foreground mt-1">{financials.unitEconomics.paybackPeriod}</div>
+              <div className="text-xl font-bold text-foreground mt-1">{unitEconomics.paybackPeriod}</div>
               <span className="text-xs text-muted-foreground">months</span>
             </CardContent>
           </Card>
@@ -443,8 +477,8 @@ const FinancialReturnSection = () => {
           <Card className="bg-card/50 border-border/30">
             <CardContent className="p-4 text-center">
               <span className="text-xs text-muted-foreground">LTV (Lifetime Value)</span>
-              <div className="text-xl font-bold text-foreground mt-1">${financials.unitEconomics.ltv}</div>
-              <span className="text-xs text-muted-foreground">{financials.unitEconomics.ltvMonths} months</span>
+              <div className="text-xl font-bold text-foreground mt-1">${unitEconomics.ltv}</div>
+              <span className="text-xs text-muted-foreground">{unitEconomics.ltvMonths} months</span>
             </CardContent>
           </Card>
           
@@ -453,7 +487,7 @@ const FinancialReturnSection = () => {
             <CardContent className="p-4 text-center">
               <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
               <div className="flex items-center justify-center gap-1.5 mt-1">
-                <span className="text-xl font-bold text-foreground">{financials.unitEconomics.ltvCacRatio}x</span>
+                <span className="text-xl font-bold text-foreground">{ltvCacRatio}x</span>
                 <CheckCircle className="h-4 w-4 text-accent" />
               </div>
               <span className="text-xs text-muted-foreground">healthy (&gt;3x)</span>
@@ -466,7 +500,7 @@ const FinancialReturnSection = () => {
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">
               <span className="font-semibold text-foreground">How it works: </span>
-              {financials.unitEconomics.howItWorks}
+              {unitEconomics.howItWorks}
             </p>
           </CardContent>
         </Card>
