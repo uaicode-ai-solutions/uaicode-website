@@ -149,12 +149,31 @@ serve(async (req) => {
       demandValidation,
     ] = await Promise.all([
       analyzeSection("executive_verdict", wizardData, researchData, {
-        verdict: "string", verdict_headline: "string", verdict_summary: "string",
-        viability_score: "number", timing_score: "number", risk_score: "number",
-        key_metrics: "object", highlights: "array", risks: "array"
+        verdict: "string", 
+        verdict_headline: "string", 
+        verdict_summary: "string",
+        viability_score: "number", 
+        complexity_score: "number",
+        timing_score: "number", 
+        risk_score: "number",
+        differentiation_score: "number",
+        opportunity_score: "number",
+        key_metrics: {
+          marketSize: "string",
+          marketLabel: "string",
+          expectedROI: "string",
+          roiLabel: "string",
+          paybackMonths: "number",
+          paybackLabel: "string",
+          mrrMonth12: "string",
+          arrProjected: "string"
+        }, 
+        highlights: "array", 
+        risks: "array"
       }),
       analyzeSection("market_opportunity", wizardData, researchData, {
-        tam: "object", sam: "object", som: "object", growthRate: "string", conclusion: "string"
+        tam: "object", sam: "object", som: "object", 
+        growthRate: "string", growthLabel: "string", conclusion: "string"
       }),
       analyzeSection("competitors", wizardData, researchData, {
         competitors: "array", competitive_advantages: "array"
@@ -168,8 +187,9 @@ serve(async (req) => {
         comparison: "object"
       }),
       analyzeSection("unit_economics", wizardData, researchData, {
-        idealTicket: "number", paybackPeriod: "number", ltv: "number",
-        cac: "number", ltvCacRatio: "number", monthlyChurn: "string", grossMargin: "string"
+        idealTicket: "number", paybackPeriod: "number", ltv: "number", ltvMonths: "number",
+        cac: "number", ltvCacRatio: "number", monthlyChurn: "string", grossMargin: "string",
+        howItWorks: "string"
       }),
       analyzeSection("demand_validation", wizardData, researchData, {
         searchVolume: "number", trendsScore: "number", growthRate: "string",
@@ -190,6 +210,7 @@ serve(async (req) => {
       resourceRequirements,
       riskQuantification,
       marketBenchmarks,
+      quantifiedDifferentiation,
     ] = await Promise.all([
       analyzeSection("financial_scenarios", wizardData, { ...researchData, unitEconomics }, {
         scenarios: "array", projectionData: "array"
@@ -202,7 +223,7 @@ serve(async (req) => {
         quickWins: "array", first90Days: "array"
       }),
       analyzeSection("timing_analysis", wizardData, researchData, {
-        score: "number", verdict: "string", macroTrends: "array",
+        score: "number", first_mover_score: "number", verdict: "string", macroTrends: "array",
         windowOfOpportunity: "object", firstMoverAdvantage: "array"
       }),
       analyzeSection("pivot_scenarios", wizardData, researchData, {
@@ -220,6 +241,9 @@ serve(async (req) => {
       }),
       analyzeSection("market_benchmarks", wizardData, researchData, {
         benchmarks: "array", conclusion: "string"
+      }),
+      analyzeSection("quantified_differentiation", wizardData, researchData, {
+        metrics: "array", overallAdvantage: "string"
       }),
     ]);
 
@@ -297,34 +321,38 @@ serve(async (req) => {
     const unit = unitEconomics as Record<string, unknown> || {};
     const invest = investmentAnalysis as Record<string, unknown> || {};
     const keyMetrics = execVerdict.key_metrics as Record<string, unknown> || {};
+    const quantDiff = quantifiedDifferentiation as Record<string, unknown> || {};
 
-    // 9. Prepare update payload
+    // 9. Prepare update payload - ALL fields populated by AI (no static fallbacks)
     const updatePayload = {
       // Status
       status: "completed",
       
-      // Scores (stored as text - can include formatting from AI)
-      viability_score: toStringValue(execVerdict.viability_score, "75"),
-      complexity_score: toStringValue(execVerdict.complexity_score, "65"),
-      timing_score: toStringValue(timing.score, "70"),
-      risk_score: toStringValue(risk.overallRiskScore, "40"),
-      differentiation_score: toStringValue(execVerdict.differentiation_score, "75"),
-      pivot_readiness_score: toStringValue(pivot.readinessScore, "65"),
-      opportunity_score: toStringValue(execVerdict.opportunity_score, "80"),
-      first_mover_score: toStringValue(timing.firstMoverScore, "70"),
+      // Generated timestamp
+      generated_at: new Date().toISOString(),
+      
+      // Scores - ALL extracted from AI responses (no fallbacks)
+      viability_score: toStringValue(execVerdict.viability_score, ""),
+      complexity_score: toStringValue(execVerdict.complexity_score, ""),
+      timing_score: toStringValue(execVerdict.timing_score || timing.score, ""),
+      risk_score: toStringValue(execVerdict.risk_score || risk.overallRiskScore, ""),
+      differentiation_score: toStringValue(execVerdict.differentiation_score, ""),
+      pivot_readiness_score: toStringValue(pivot.readinessScore, ""),
+      opportunity_score: toStringValue(execVerdict.opportunity_score, ""),
+      first_mover_score: toStringValue(timing.first_mover_score, ""),
       
       // Verdict
-      verdict: execVerdict.verdict || "proceed",
-      verdict_headline: execVerdict.verdict_headline || "Strong market opportunity identified",
-      verdict_summary: execVerdict.verdict_summary || "This SaaS idea shows promising potential.",
+      verdict: toStringValue(execVerdict.verdict, ""),
+      verdict_headline: toStringValue(execVerdict.verdict_headline, ""),
+      verdict_summary: toStringValue(execVerdict.verdict_summary, ""),
       
-      // Financial metrics (stored as text - preserves formatting like "$50,000", "250%", "3.5x")
-      investment_total_cents: toStringValue(invest.total, "$50,000"),
-      break_even_months: toStringValue(keyMetrics.paybackMonths, "8 months"),
-      expected_roi_year1: toStringValue(keyMetrics.expectedROI, "250%"),
-      mrr_month12_cents: toStringValue(keyMetrics.mrrMonth12, "$15,000"),
-      arr_projected_cents: toStringValue(keyMetrics.arrProjected, "$180,000"),
-      ltv_cac_ratio: toStringValue(unit.ltvCacRatio, "3.5x"),
+      // Financial metrics from key_metrics and other sections
+      investment_total_cents: toStringValue(invest.total, ""),
+      break_even_months: toStringValue(keyMetrics.paybackMonths || unit.paybackPeriod, ""),
+      expected_roi_year1: toStringValue(keyMetrics.expectedROI, ""),
+      mrr_month12_cents: toStringValue(keyMetrics.mrrMonth12, ""),
+      arr_projected_cents: toStringValue(keyMetrics.arrProjected, ""),
+      ltv_cac_ratio: toStringValue(unit.ltvCacRatio, ""),
       
       // JSONB fields - Viability Report
       key_metrics: keyMetrics,
@@ -345,7 +373,10 @@ serve(async (req) => {
       demand_validation: demandValidation,
       business_model: businessModel,
       go_to_market_preview: goToMarket,
-      quantified_differentiation: { metrics: [], overallAdvantage: "" },
+      quantified_differentiation: {
+        metrics: quantDiff.metrics || [],
+        overallAdvantage: toStringValue(quantDiff.overallAdvantage, "")
+      },
       timing_analysis: timingAnalysis,
       pivot_scenarios: pivotScenarios,
       success_metrics: successMetrics,
@@ -354,7 +385,7 @@ serve(async (req) => {
       market_benchmarks: marketBenchmarks,
       next_steps: nextSteps,
       
-      // Uaicode info (static)
+      // Uaicode info (static - business info)
       uaicode_info: {
         successRate: 94,
         projectsDelivered: 150,

@@ -49,15 +49,23 @@ serve(async (req) => {
 - Overall viability verdict (proceed/caution/reconsider)
 - Headline (impactful one-liner)
 - Summary (2-3 sentences)
-- Key metrics (market size, expected ROI, payback months)
-- Top 3 highlights (strengths)
-- Top 3 risks with mitigations`,
+- Viability score (0-100) - overall viability assessment
+- Complexity score (0-100) - technical and operational complexity to build
+- Timing score (0-100) - how good is the market timing
+- Risk score (0-100) - overall risk level (higher = riskier)
+- Differentiation score (0-100) - how unique vs competitors
+- Opportunity score (0-100) - overall market opportunity
+- Key metrics object with: marketSize (string like "$50B"), marketLabel (string), expectedROI (string like "250%"), roiLabel (string), paybackMonths (number), paybackLabel (string), mrrMonth12 (string like "$15,000"), arrProjected (string like "$180,000")
+- Top 3 highlights (strengths) with title and description
+- Top 3 risks with title, description, priority (high/medium/low), and mitigation`,
 
       market_opportunity: `Analyze the market opportunity. Include:
-- TAM (Total Addressable Market) with value and description
+- TAM (Total Addressable Market) with value (string like "$50B") and description
 - SAM (Serviceable Addressable Market) with value and description  
 - SOM (Serviceable Obtainable Market) with value and description
-- Growth rate and market conclusion`,
+- Growth rate (string like "15%")
+- Growth label (string describing the growth)
+- Market conclusion`,
 
       competitors: `Analyze the competitive landscape. Include:
 - 3-5 relevant competitors with name, description, pricing, target market, weakness, and your advantage
@@ -70,18 +78,21 @@ serve(async (req) => {
 - Monetization timeline for first 6 months`,
 
       investment: `Calculate investment requirements. Include:
-- Total investment in cents
+- Total investment in cents (integer number)
 - Breakdown by category (development, marketing, operations, etc.)
 - What's included and not included
 - Comparison to traditional development approach`,
 
       unit_economics: `Calculate unit economics. Include:
-- Ideal ticket price
-- Payback period in months
-- LTV and CAC
-- LTV/CAC ratio
-- Monthly churn rate
-- Gross margin percentage`,
+- Ideal ticket price (number in cents)
+- Payback period in months (number)
+- LTV in cents (number)
+- LTV in months (number) - how many months to reach LTV
+- CAC in cents (number)
+- LTV/CAC ratio (number like 3.5)
+- Monthly churn rate (string like "5%")
+- Gross margin percentage (string like "80%")
+- How it works (brief explanation of the economics)`,
 
       financial_scenarios: `Create financial projections. Include:
 - 3 scenarios (pessimistic, realistic, optimistic)
@@ -112,10 +123,11 @@ serve(async (req) => {
 
       timing_analysis: `Analyze market timing. Include:
 - Timing score (0-100)
-- Verdict on timing
+- First mover score (0-100) - advantage score for entering the market now
+- Verdict on timing (string)
 - 3-4 macro trends affecting the market
-- Window of opportunity (opens, closes, reasoning)
-- First mover advantages`,
+- Window of opportunity (opens date, closes date, reasoning)
+- First mover advantages (array of strings)`,
 
       pivot_scenarios: `Create pivot scenarios. Include:
 - Pivot readiness score (0-100)
@@ -139,6 +151,11 @@ serve(async (req) => {
       market_benchmarks: `Provide market benchmarks. Include:
 - 5-7 key metrics comparing industry average, top quartile, and your target
 - Overall conclusion on positioning`,
+
+      quantified_differentiation: `Quantify differentiation vs competitors. Include:
+- 3-5 metrics comparing your solution vs competitors
+- Each metric should have: metric (name), yourValue (string), competitorAvg (string), advantage (percentage string like "+25%"), source (where data comes from)
+- Overall advantage summary (string)`,
 
       marketing_four_ps: `Analyze competitors using 4Ps framework. Include:
 - 2-3 competitors with detailed Product, Price, Place, Promotion analysis
