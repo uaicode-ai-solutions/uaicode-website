@@ -209,6 +209,15 @@ const PmsWizard = () => {
 
   const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
+    
+    if (!pmsUser) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to generate your report.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Generate unique ID for this report
     const reportId = generateReportId();
@@ -217,67 +226,132 @@ const PmsWizard = () => {
     // Use saasName as the project name
     const projectName = data.saasName.trim() || "Untitled Project";
 
-    // Create the report object
-    const newReport: StoredReport = {
-      id: reportId,
-      createdAt: now,
-      updatedAt: now,
-      planType: selectedPlan as "starter" | "pro" | "enterprise",
-      wizardData: { ...data },
-      reportData: {
-        projectName,
-        viabilityScore: Math.floor(Math.random() * 20) + 75, // 75-95 mock score
-        complexityScore: Math.floor(Math.random() * 30) + 50, // 50-80 mock score
-      },
-    };
+    // Calculate scores
+    const viabilityScore = Math.floor(Math.random() * 20) + 75; // 75-95 mock score
+    const complexityScore = Math.floor(Math.random() * 30) + 50; // 50-80 mock score
 
-    // Save to localStorage
-    saveReport(newReport);
-
-    // Clear wizard draft data
-    localStorage.removeItem(STORAGE_KEY);
-
-    // Log data for debugging
-    console.log("Wizard submission:", {
-      reportId,
-      selectedPlan,
-      ...data,
-    });
-
-    // Send report ready email notification
     try {
-      const industryDisplay = data.industry === "other" ? data.industryOther : data.industry;
-      await supabase.functions.invoke('pms-send-report-ready', {
-        body: {
-          email: data.email,
-          fullName: data.fullName,
-          reportId: reportId,
-          projectName: projectName,
-          viabilityScore: newReport.reportData.viabilityScore,
-          complexityScore: newReport.reportData.complexityScore,
-          planType: selectedPlan,
-          industry: industryDisplay || "Technology"
-        }
+      // 1. Save report to Supabase database
+      const { error: insertError } = await supabase
+        .from('tb_pms_reports')
+        .insert({
+          id: reportId,
+          user_id: pmsUser.id,
+          status: 'pending',
+          saas_name: data.saasName,
+          saas_logo_url: data.saasLogo || null,
+          product_stage: data.productStage,
+          saas_type: data.saasType,
+          saas_type_other: data.saasType === 'other' ? data.saasTypeOther : null,
+          industry: data.industry,
+          industry_other: data.industry === 'other' ? data.industryOther : null,
+          description: data.description,
+          customer_types: data.customerTypes,
+          market_size: data.marketSize,
+          target_audience: data.targetAudience,
+          market_type: data.marketType,
+          selected_features: data.selectedFeatures,
+          selected_tier: data.selectedTier || selectedPlan,
+          goal: data.goal,
+          goal_other: data.goal === 'other' ? data.goalOther : null,
+          challenge: data.challenge,
+          budget: data.budget,
+          timeline: data.timeline,
+          viability_score: viabilityScore,
+          complexity_score: complexityScore,
+        });
+
+      if (insertError) {
+        console.error("Error saving report to database:", insertError);
+        toast({
+          title: "Error",
+          description: "Failed to save your report. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Report saved to database:", reportId);
+
+      // 2. Call webhook to notify n8n
+      try {
+        await supabase.functions.invoke('pms-webhook-new-report', {
+          body: { report_id: reportId }
+        });
+        console.log("Webhook called successfully for report:", reportId);
+      } catch (webhookError) {
+        console.error("Failed to call webhook:", webhookError);
+        // Don't block user flow if webhook fails
+      }
+
+      // 3. Also save to localStorage as backup
+      const newReport: StoredReport = {
+        id: reportId,
+        createdAt: now,
+        updatedAt: now,
+        planType: selectedPlan as "starter" | "pro" | "enterprise",
+        wizardData: { ...data },
+        reportData: {
+          projectName,
+          viabilityScore,
+          complexityScore,
+        },
+      };
+      saveReport(newReport);
+
+      // Clear wizard draft data
+      localStorage.removeItem(STORAGE_KEY);
+
+      // Log data for debugging
+      console.log("Wizard submission complete:", {
+        reportId,
+        selectedPlan,
+        ...data,
       });
-      console.log("Report ready email sent successfully");
-    } catch (emailError) {
-      console.error("Failed to send report ready email:", emailError);
-      // Don't block user flow if email fails
+
+      // Send report ready email notification
+      try {
+        const industryDisplay = data.industry === "other" ? data.industryOther : data.industry;
+        await supabase.functions.invoke('pms-send-report-ready', {
+          body: {
+            email: data.email,
+            fullName: data.fullName,
+            reportId: reportId,
+            projectName: projectName,
+            viabilityScore: viabilityScore,
+            complexityScore: complexityScore,
+            planType: selectedPlan,
+            industry: industryDisplay || "Technology"
+          }
+        });
+        console.log("Report ready email sent successfully");
+      } catch (emailError) {
+        console.error("Failed to send report ready email:", emailError);
+        // Don't block user flow if email fails
+      }
+
+      // Fire confetti
+      fireConfetti();
+
+      // Show success toast
+      toast({
+        title: "🎉 Submission Successful!",
+        description: "Your SaaS validation report is ready! Redirecting...",
+      });
+
+      // Navigate to dashboard with the new report ID
+      setTimeout(() => {
+        navigate(`/planningmysaas/dashboard/${reportId}`);
+      }, 1500);
+
+    } catch (error) {
+      console.error("Error during submission:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     }
-
-    // Fire confetti
-    fireConfetti();
-
-    // Show success toast
-    toast({
-      title: "🎉 Submission Successful!",
-      description: "Your SaaS validation report is ready! Redirecting...",
-    });
-
-    // Navigate to dashboard with the new report ID
-    setTimeout(() => {
-      navigate(`/planningmysaas/dashboard/${reportId}`);
-    }, 1500);
   };
 
   const renderStep = () => {
