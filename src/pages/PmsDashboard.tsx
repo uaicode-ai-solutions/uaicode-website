@@ -311,31 +311,38 @@ const PmsDashboard = () => {
               className="py-6 animate-tab-enter"
             >
               {activeTab === "report" && (
-                <>
-                  <ReportTableOfContents />
-                  <div className="space-y-16">
+                <div className="flex gap-8">
+                  {/* TOC Sidebar - só em 2xl+ */}
+                  <aside className="hidden 2xl:block w-52 flex-shrink-0">
+                    <div className="sticky top-32">
+                      <ReportTableOfContents />
+                    </div>
+                  </aside>
+                  
+                  {/* Conteúdo Principal */}
+                  <div className="flex-1 space-y-16">
                     <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
-                  <ExecutiveVerdict />
-                  <BusinessModelSection />
-                  <MarketOpportunitySection />
-                  <DemandValidationSection />
-                  <TimingAnalysisSection />
-                  <MarketBenchmarksSection />
-                  <CompetitorsDifferentiationSection />
-                  <GoToMarketPreviewSection onNavigateToMarketing={() => setActiveTab("marketing")} />
-                  <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
-                  <InvestmentSection />
-                  <ResourceRequirementsSection />
-                  <FinancialReturnSection />
-                  <PivotScenariosSection />
-                  <ExecutionPlanSection />
-                  <SuccessMetricsSection />
-                  <WhyUaicodeSection />
-                  <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
-                  <ScheduleCallSection projectName={projectName} />
-                  <DirectContactSection />
+                    <ExecutiveVerdict />
+                    <BusinessModelSection />
+                    <MarketOpportunitySection />
+                    <DemandValidationSection />
+                    <TimingAnalysisSection />
+                    <MarketBenchmarksSection />
+                    <CompetitorsDifferentiationSection />
+                    <GoToMarketPreviewSection onNavigateToMarketing={() => setActiveTab("marketing")} />
+                    <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
+                    <InvestmentSection />
+                    <ResourceRequirementsSection />
+                    <FinancialReturnSection />
+                    <PivotScenariosSection />
+                    <ExecutionPlanSection />
+                    <SuccessMetricsSection />
+                    <WhyUaicodeSection />
+                    <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
+                    <ScheduleCallSection projectName={projectName} />
+                    <DirectContactSection />
                   </div>
-                </>
+                </div>
               )}
 
               {activeTab === "marketing" && (
