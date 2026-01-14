@@ -32,12 +32,20 @@ import uaicodeLogo from "@/assets/uaicode-logo.png";
 // Section Components
 import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHero";
 import ExecutiveVerdict from "@/components/planningmysaas/dashboard/sections/ExecutiveVerdict";
+import BusinessModelSection from "@/components/planningmysaas/dashboard/sections/BusinessModelSection";
 import MarketOpportunitySection from "@/components/planningmysaas/dashboard/sections/MarketOpportunitySection";
+import DemandValidationSection from "@/components/planningmysaas/dashboard/sections/DemandValidationSection";
+import TimingAnalysisSection from "@/components/planningmysaas/dashboard/sections/TimingAnalysisSection";
+import MarketBenchmarksSection from "@/components/planningmysaas/dashboard/sections/MarketBenchmarksSection";
 import CompetitorsDifferentiationSection from "@/components/planningmysaas/dashboard/sections/CompetitorsDifferentiationSection";
+import GoToMarketPreviewSection from "@/components/planningmysaas/dashboard/sections/GoToMarketPreviewSection";
 import MarketingIntelligenceSection from "@/components/planningmysaas/dashboard/sections/MarketingIntelligenceSection";
 import InvestmentSection from "@/components/planningmysaas/dashboard/sections/InvestmentSection";
+import ResourceRequirementsSection from "@/components/planningmysaas/dashboard/sections/ResourceRequirementsSection";
 import FinancialReturnSection from "@/components/planningmysaas/dashboard/sections/FinancialReturnSection";
+import PivotScenariosSection from "@/components/planningmysaas/dashboard/sections/PivotScenariosSection";
 import ExecutionPlanSection from "@/components/planningmysaas/dashboard/sections/ExecutionPlanSection";
+import SuccessMetricsSection from "@/components/planningmysaas/dashboard/sections/SuccessMetricsSection";
 import WhyUaicodeSection from "@/components/planningmysaas/dashboard/sections/WhyUaicodeSection";
 import NextStepsSection from "@/components/planningmysaas/dashboard/sections/NextStepsSection";
 import ScheduleCallSection from "@/components/planningmysaas/dashboard/sections/ScheduleCallSection";
@@ -303,46 +311,25 @@ const PmsDashboard = () => {
             >
               {activeTab === "report" && (
                 <div className="space-y-16">
-                  {/* Report Hero */}
-                  <ReportHero 
-                    projectName={projectName}
-                    onScheduleCall={handleScheduleCall}
-                  />
-
-                  {/* Executive Verdict */}
+                  <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
                   <ExecutiveVerdict />
-
-                  {/* Market Opportunity */}
+                  <BusinessModelSection />
                   <MarketOpportunitySection />
-
-                  {/* Competitors & Differentiation */}
+                  <DemandValidationSection />
+                  <TimingAnalysisSection />
+                  <MarketBenchmarksSection />
                   <CompetitorsDifferentiationSection />
-
-                  {/* Marketing Intelligence */}
+                  <GoToMarketPreviewSection onNavigateToMarketing={() => setActiveTab("marketing")} />
                   <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
-
-                  {/* Investment */}
                   <InvestmentSection />
-
-                  {/* Financial Return */}
+                  <ResourceRequirementsSection />
                   <FinancialReturnSection />
-
-                  {/* Execution Plan */}
+                  <PivotScenariosSection />
                   <ExecutionPlanSection />
-
-                  {/* Why Uaicode */}
+                  <SuccessMetricsSection />
                   <WhyUaicodeSection />
-
-                  {/* Next Steps */}
-                  <NextStepsSection 
-                    onScheduleCall={handleScheduleCall}
-                    onDownloadPDF={handleDownloadPDF}
-                  />
-
-                  {/* Schedule Call Section */}
+                  <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
                   <ScheduleCallSection projectName={projectName} />
-
-                  {/* Direct Contact Section */}
                   <DirectContactSection />
                 </div>
               )}
