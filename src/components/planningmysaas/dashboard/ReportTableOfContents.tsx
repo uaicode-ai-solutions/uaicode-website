@@ -113,8 +113,9 @@ const ReportTableOfContents = () => {
   return (
     <div
       className={cn(
-        "fixed left-4 top-1/2 -translate-y-1/2 z-40",
-        "hidden xl:flex flex-col gap-2",
+        "fixed top-1/2 -translate-y-1/2 z-40",
+        "hidden 2xl:flex flex-col gap-2",
+        "left-[max(1rem,calc((100vw-64rem)/2-13rem))]",
         "transition-all duration-500 ease-out",
         isVisible 
           ? "opacity-100 translate-x-0" 

@@ -38,7 +38,7 @@ const MarketBenchmarksSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Your Projections vs Industry</h3>
+              <h3 className="font-semibold text-foreground text-sm">Your Projections vs Industry</h3>
             </div>
             
             <div className="space-y-3">
@@ -71,7 +71,7 @@ const MarketBenchmarksSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Award className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Success Rate Statistics</h3>
+              <h3 className="font-semibold text-foreground text-sm">Success Rate Statistics</h3>
               <InfoTooltip size="sm">
                 Based on {marketBenchmarks.successRates.category} historical data
               </InfoTooltip>
@@ -113,7 +113,7 @@ const MarketBenchmarksSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Landmark className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Funding Benchmarks</h3>
+              <h3 className="font-semibold text-foreground text-sm">Funding Benchmarks</h3>
             </div>
             
             <div className="space-y-3">
@@ -150,7 +150,7 @@ const MarketBenchmarksSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <ArrowUpRight className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Exit Scenarios</h3>
+              <h3 className="font-semibold text-foreground text-sm">Exit Scenarios</h3>
               <InfoTooltip size="sm">
                 Potential exit opportunities based on industry multiples
               </InfoTooltip>
