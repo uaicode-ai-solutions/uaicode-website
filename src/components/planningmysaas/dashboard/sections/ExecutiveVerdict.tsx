@@ -1,25 +1,25 @@
 import { 
   CheckCircle2,
   ShieldCheck,
-  ArrowRight
+  ArrowRight,
+  AlertCircle
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { reportData as mockData } from "@/lib/reportMockData";
 import { Highlight, Risk } from "@/types/report";
 
 const ExecutiveVerdict = () => {
   const { report } = useReportContext();
   
-  // Use real data with fallback to mock
-  const verdict = report?.verdict || mockData.recommendation;
-  const verdictSummary = report?.verdict_summary || mockData.executiveSummary;
+  // Use real data only - no mock fallbacks for validation
+  const verdict = report?.verdict || "";
+  const verdictSummary = report?.verdict_summary || "";
   
-  // Parse JSONB fields with fallback
-  const highlights: Highlight[] = (report?.highlights as unknown as Highlight[]) || mockData.highlights;
-  const risks: Risk[] = (report?.risks as unknown as Risk[]) || mockData.risks;
+  // Parse JSONB fields - empty arrays if not available
+  const highlights: Highlight[] = (report?.highlights as unknown as Highlight[]) || [];
+  const risks: Risk[] = (report?.risks as unknown as Risk[]) || [];
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -82,26 +82,33 @@ const ExecutiveVerdict = () => {
               AI-generated executive summary of your SaaS idea's viability and market potential.
             </InfoTooltip>
           </div>
-          <div className="space-y-3">
-            {summaryParagraphs.map((paragraph, index) => (
-              <div 
-                key={index}
-                className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
-              >
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center mt-0.5">
-                  <span className="text-xs font-bold text-accent">{index + 1}</span>
+          {summaryParagraphs.length > 0 ? (
+            <div className="space-y-3">
+              {summaryParagraphs.map((paragraph, index) => (
+                <div 
+                  key={index}
+                  className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
+                >
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center mt-0.5">
+                    <span className="text-xs font-bold text-accent">{index + 1}</span>
+                  </div>
+                  <p className="text-foreground/90 text-sm leading-relaxed">
+                    {paragraph}
+                    {paragraph.includes('LTV/CAC') && (
+                      <InfoTooltip term="LTV/CAC Ratio" side="top">
+                        Customer Lifetime Value divided by Customer Acquisition Cost. A ratio above 3x indicates healthy unit economics.
+                      </InfoTooltip>
+                    )}
+                  </p>
                 </div>
-                <p className="text-foreground/90 text-sm leading-relaxed">
-                  {paragraph}
-                  {paragraph.includes('LTV/CAC') && (
-                    <InfoTooltip term="LTV/CAC Ratio" side="top">
-                      Customer Lifetime Value divided by Customer Acquisition Cost. A ratio above 3x indicates healthy unit economics.
-                    </InfoTooltip>
-                  )}
-                </p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-muted-foreground text-sm p-3 rounded-lg bg-muted/10">
+              <AlertCircle className="h-4 w-4" />
+              <span>No analysis summary available</span>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -116,22 +123,29 @@ const ExecutiveVerdict = () => {
                 The main competitive advantages and strengths identified in your SaaS idea.
               </InfoTooltip>
             </div>
-            <div className="space-y-3">
-              {highlights.map((highlight, index) => (
-                <div 
-                  key={index}
-                  className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
-                >
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center mt-0.5">
-                    <span className="text-xs font-bold text-accent">{index + 1}</span>
+            {highlights.length > 0 ? (
+              <div className="space-y-3">
+                {highlights.map((highlight, index) => (
+                  <div 
+                    key={index}
+                    className="flex gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
+                  >
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center mt-0.5">
+                      <span className="text-xs font-bold text-accent">{index + 1}</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm">{highlight.text}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{highlight.detail}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-foreground text-sm">{highlight.text}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{highlight.detail}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm p-3 rounded-lg bg-muted/10">
+                <AlertCircle className="h-4 w-4" />
+                <span>No highlights available</span>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -144,31 +158,38 @@ const ExecutiveVerdict = () => {
                 Proactively identified risks with planned mitigation strategies.
               </InfoTooltip>
             </div>
-            <div className="space-y-3">
-              {risks.map((item, index) => (
-                <div 
-                  key={index}
-                  className="p-4 rounded-lg bg-muted/10 border border-border/20"
-                >
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <p className="font-medium text-foreground text-sm">{item.risk}</p>
-                    <Badge 
-                      variant="outline" 
-                      className={`flex-shrink-0 text-xs ${getPriorityColor(item.priority)}`}
-                    >
-                      {getPriorityLabel(item.priority)}
-                    </Badge>
+            {risks.length > 0 ? (
+              <div className="space-y-3">
+                {risks.map((item, index) => (
+                  <div 
+                    key={index}
+                    className="p-4 rounded-lg bg-muted/10 border border-border/20"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <p className="font-medium text-foreground text-sm">{item.risk}</p>
+                      <Badge 
+                        variant="outline" 
+                        className={`flex-shrink-0 text-xs ${getPriorityColor(item.priority)}`}
+                      >
+                        {getPriorityLabel(item.priority)}
+                      </Badge>
+                    </div>
+                    <div className="flex items-start gap-2 text-sm">
+                      <ArrowRight className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-muted-foreground">
+                        <span className="text-green-400 font-medium">Mitigation:</span>{" "}
+                        {item.mitigation}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-start gap-2 text-sm">
-                    <ArrowRight className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-muted-foreground">
-                      <span className="text-green-400 font-medium">Mitigation:</span>{" "}
-                      {item.mitigation}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm p-3 rounded-lg bg-muted/10">
+                <AlertCircle className="h-4 w-4" />
+                <span>No risks identified</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

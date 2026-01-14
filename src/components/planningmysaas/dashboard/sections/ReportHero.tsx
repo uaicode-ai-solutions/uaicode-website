@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { reportData as mockData } from "@/lib/reportMockData";
 import { KeyMetrics } from "@/types/report";
 
 interface ReportHeroProps {
@@ -15,18 +14,18 @@ interface ReportHeroProps {
 const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHeroProps) => {
   const { report } = useReportContext();
   
-  // Use real data with fallback to mock
-  const displayName = projectName || report?.saas_name || mockData.projectName;
-  const viabilityScore = parseInt(report?.viability_score || "0") || mockData.viabilityScore;
-  const verdictHeadline = report?.verdict_headline || mockData.verdictHeadline;
+  // Use real data only - no mock fallbacks for validation
+  const displayName = projectName || report?.saas_name || "Untitled Project";
+  const viabilityScore = parseInt(report?.viability_score || "0");
+  const verdictHeadline = report?.verdict_headline || "";
   
-  // Parse key_metrics from JSONB or use mock
-  const keyMetrics: KeyMetrics = (report?.key_metrics as unknown as KeyMetrics) || mockData.keyMetrics;
+  // Parse key_metrics from JSONB
+  const keyMetrics = report?.key_metrics as unknown as KeyMetrics | undefined;
   
   // For TEXT fields, use directly (already formatted by AI)
-  const expectedROI = report?.expected_roi_year1 || keyMetrics.expectedROI;
-  const breakEvenMonths = report?.break_even_months || `${keyMetrics.paybackMonths} months`;
-  const marketSize = report?.market_size || keyMetrics.marketSize;
+  const expectedROI = report?.expected_roi_year1 || "-";
+  const breakEvenMonths = report?.break_even_months || "-";
+  const marketSize = report?.market_size || keyMetrics?.marketSize || "-";
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-amber-400";
@@ -38,21 +37,21 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
     { 
       icon: TrendingUp, 
       value: marketSize, 
-      label: keyMetrics.marketLabel || "Total Market",
+      label: keyMetrics?.marketLabel || "Total Market",
       sublabel: "Global TAM",
       tooltip: "Total Addressable Market - The total global market demand for your product or service."
     },
     { 
       icon: DollarSign, 
       value: expectedROI, 
-      label: keyMetrics.roiLabel || "Expected ROI",
+      label: keyMetrics?.roiLabel || "Expected ROI",
       sublabel: "Year 1",
       tooltip: "Return on Investment - The projected percentage gain on your investment in the first year."
     },
     { 
       icon: Clock, 
       value: breakEvenMonths, 
-      label: keyMetrics.paybackLabel || "Payback Period",
+      label: keyMetrics?.paybackLabel || "Payback Period",
       sublabel: "To break-even",
       tooltip: "The estimated time until your cumulative revenue exceeds your total investment."
     },
