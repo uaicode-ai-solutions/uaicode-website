@@ -47,6 +47,9 @@ const DemandValidationSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Market Signals</h3>
+              <InfoTooltip size="sm">
+                Quantitative data indicating market interest in your solution
+              </InfoTooltip>
             </div>
             
             <div className="grid grid-cols-3 gap-4">
@@ -117,6 +120,9 @@ const DemandValidationSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <MessageSquare className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Demand Evidence</h3>
+              <InfoTooltip size="sm">
+                Social proof and user behavior data validating demand
+              </InfoTooltip>
             </div>
             
             <div className="space-y-3">

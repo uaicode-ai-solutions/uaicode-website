@@ -120,6 +120,9 @@ const GoToMarketPreviewSection = ({ onNavigateToMarketing }: GoToMarketPreviewSe
             <div className="flex items-center gap-2 mb-4">
               <Calendar className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">First 90 Days</h3>
+              <InfoTooltip size="sm">
+                Critical milestones to achieve in your first quarter
+              </InfoTooltip>
             </div>
             
             <div className="relative">

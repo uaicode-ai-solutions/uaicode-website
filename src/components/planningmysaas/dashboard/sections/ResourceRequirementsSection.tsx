@@ -48,6 +48,9 @@ const ResourceRequirementsSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Founder Time Commitment</h3>
+              <InfoTooltip size="sm">
+                Expected hours per week at each growth phase
+              </InfoTooltip>
             </div>
             
             <div className="space-y-3">
@@ -122,6 +125,9 @@ const ResourceRequirementsSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <GraduationCap className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Critical Skills</h3>
+              <InfoTooltip size="sm">
+                Essential competencies needed for success
+              </InfoTooltip>
             </div>
             
             <div className="space-y-3">

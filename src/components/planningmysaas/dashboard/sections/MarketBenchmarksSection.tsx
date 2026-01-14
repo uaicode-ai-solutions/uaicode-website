@@ -39,6 +39,9 @@ const MarketBenchmarksSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Your Projections vs Industry</h3>
+              <InfoTooltip size="sm">
+                How your metrics compare to industry standards
+              </InfoTooltip>
             </div>
             
             <div className="space-y-3">
@@ -114,6 +117,9 @@ const MarketBenchmarksSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <Landmark className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Funding Benchmarks</h3>
+              <InfoTooltip size="sm">
+                Typical funding rounds and requirements for SaaS companies
+              </InfoTooltip>
             </div>
             
             <div className="space-y-3">

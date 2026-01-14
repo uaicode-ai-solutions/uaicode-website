@@ -147,6 +147,9 @@ const PivotScenariosSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Decision Triggers</h3>
+              <InfoTooltip size="sm">
+                Metrics that signal when to consider a pivot
+              </InfoTooltip>
             </div>
             
             <div className="space-y-3">

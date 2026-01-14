@@ -130,7 +130,12 @@ const WhyUaicodeSection = () => {
         {/* Differentials */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-5">
-            <h3 className="font-semibold text-foreground mb-4 text-sm">Our Differentials</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="font-semibold text-foreground text-sm">Our Differentials</h3>
+              <InfoTooltip size="sm">
+                What makes Uaicode unique compared to other agencies
+              </InfoTooltip>
+            </div>
             <div className="grid gap-3">
               {uaicode.differentials.map((diff, index) => {
                 const IconComponent = iconMap[diff.icon] || Award;
@@ -156,7 +161,12 @@ const WhyUaicodeSection = () => {
         {/* Testimonials */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-5">
-            <h3 className="font-semibold text-foreground mb-4 text-sm">What Our Clients Say</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="font-semibold text-foreground text-sm">What Our Clients Say</h3>
+              <InfoTooltip size="sm">
+                Real testimonials from satisfied clients
+              </InfoTooltip>
+            </div>
             <div className="space-y-3">
               {uaicode.testimonials.map((testimonial, index) => (
                 <div 
@@ -194,7 +204,12 @@ const WhyUaicodeSection = () => {
       {/* Guarantees */}
       <Card className="bg-card/50 border-border/30">
         <CardContent className="p-5">
-          <h3 className="font-semibold text-foreground mb-4 text-center text-sm">Our Guarantees</h3>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h3 className="font-semibold text-foreground text-sm">Our Guarantees</h3>
+            <InfoTooltip size="sm">
+              Commitments we make to every client
+            </InfoTooltip>
+          </div>
           <div className="flex flex-wrap justify-center gap-2">
             {uaicode.guarantees.map((guarantee, index) => (
               <div 
