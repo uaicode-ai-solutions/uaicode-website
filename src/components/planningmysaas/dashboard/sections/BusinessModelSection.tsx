@@ -61,6 +61,9 @@ const BusinessModelSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <DollarSign className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Revenue Streams</h3>
+              <InfoTooltip size="sm">
+                Different sources of income for your SaaS business
+              </InfoTooltip>
             </div>
             
             <div className="space-y-4">
@@ -108,6 +111,9 @@ const BusinessModelSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <Layers className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Recommended Pricing</h3>
+              <InfoTooltip size="sm">
+                Suggested pricing tiers based on market analysis
+              </InfoTooltip>
             </div>
             
             <div className="space-y-3">

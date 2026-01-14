@@ -87,6 +87,9 @@ const SuccessMetricsSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <Target className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Launch Milestones</h3>
+              <InfoTooltip size="sm">
+                Key targets to hit in the first months after launch
+              </InfoTooltip>
             </div>
             
             <div className="relative">
@@ -162,6 +165,9 @@ const SuccessMetricsSection = () => {
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle className="h-4 w-4 text-orange-400" />
             <h3 className="font-semibold text-foreground text-sm">Warning Signs to Watch</h3>
+            <InfoTooltip size="sm">
+              Red flags that indicate the product needs adjustment
+            </InfoTooltip>
           </div>
           
           <div className="grid md:grid-cols-3 gap-4">
