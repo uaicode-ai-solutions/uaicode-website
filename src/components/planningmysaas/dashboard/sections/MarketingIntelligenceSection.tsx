@@ -147,7 +147,7 @@ const getSeverityColor = (severity: string) => {
 
 const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntelligenceSectionProps) => {
   return (
-    <section className="space-y-6">
+    <section id="marketing-intelligence" className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10">
