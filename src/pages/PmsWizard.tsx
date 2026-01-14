@@ -231,7 +231,26 @@ const PmsWizard = () => {
     const complexityScore = Math.floor(Math.random() * 30) + 50; // 50-80 mock score
 
     try {
-      // 1. Save report to Supabase database
+      // 1. Update user data with Step 1 information (so webhook gets fresh data)
+      const { error: userUpdateError } = await supabase
+        .from('tb_pms_users')
+        .update({
+          full_name: data.fullName,
+          phone: data.phone || null,
+          linkedin_profile: data.linkedinProfile || null,
+          user_role: data.userRole || null,
+          user_role_other: data.userRole === 'other' ? data.userRoleOther : null,
+        })
+        .eq('id', pmsUser.id);
+
+      if (userUpdateError) {
+        console.error("Error updating user data:", userUpdateError);
+        // Continue anyway - user data update is not critical for report creation
+      } else {
+        console.log("User data updated successfully for user:", pmsUser.id);
+      }
+
+      // 2. Save report to Supabase database
       const { error: insertError } = await supabase
         .from('tb_pms_reports')
         .insert({
