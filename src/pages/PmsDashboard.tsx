@@ -15,7 +15,7 @@ import {
   Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -138,7 +138,7 @@ const PmsDashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Header Premium */}
       <header className="fixed top-0 left-0 right-0 z-50 glass-premium border-b border-accent/10">
-        <div className="max-w-6xl mx-auto px-4 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left side - Back + Logo + Project Name */}
             <div className="flex items-center gap-3">
@@ -170,7 +170,7 @@ const PmsDashboard = () => {
               </div>
 
               {/* Separator + Project Name */}
-              <div className="hidden md:flex items-center gap-3">
+              <div className="hidden lg:flex items-center gap-3">
                 <div className="w-px h-6 bg-border/50" />
                 <div>
                   <p className="text-sm font-medium text-foreground">{projectName}</p>
@@ -178,6 +178,62 @@ const PmsDashboard = () => {
                 </div>
               </div>
             </div>
+
+            {/* Center - Tab Menu */}
+            <nav className="hidden md:flex items-center gap-1 bg-muted/30 rounded-full p-1">
+              {[
+                { id: "report", label: "Report", icon: FileText },
+                { id: "marketing", label: "Marketing", icon: TrendingUp },
+                { id: "assets", label: "Branding", icon: Palette },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300",
+                      activeTab === tab.id
+                        ? "bg-accent text-background shadow-lg shadow-accent/20"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Mobile Tab Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild className="md:hidden">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-accent/30"
+                >
+                  {activeTab === "report" && <FileText className="h-4 w-4" />}
+                  {activeTab === "marketing" && <TrendingUp className="h-4 w-4" />}
+                  {activeTab === "assets" && <Palette className="h-4 w-4" />}
+                  <span className="capitalize">{activeTab === "assets" ? "Branding" : activeTab}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="glass-premium border-accent/20">
+                <DropdownMenuItem onClick={() => setActiveTab("report")} className="cursor-pointer gap-2">
+                  <FileText className="h-4 w-4" />
+                  Report
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setActiveTab("marketing")} className="cursor-pointer gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Marketing
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setActiveTab("assets")} className="cursor-pointer gap-2">
+                  <Palette className="h-4 w-4" />
+                  Branding
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Right side - Download Button + Share + User Dropdown */}
             <div className="flex items-center gap-2">
@@ -255,51 +311,18 @@ const PmsDashboard = () => {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="pt-16">
-        <div className="max-w-5xl mx-auto px-4 lg:px-6">
-        {/* Tabs */}
-        <div className="sticky top-16 z-40 glass-premium border-b border-accent/10">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex justify-center">
-              {[
-                { id: "report", label: "Report", icon: FileText },
-                { id: "marketing", label: "Marketing", icon: TrendingUp },
-                { id: "assets", label: "Branding", icon: Palette },
-              ].map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`
-                      flex items-center justify-center gap-1.5 sm:gap-2.5 
-                      px-3 sm:px-6 py-3 sm:py-4 
-                      text-xs sm:text-sm font-medium 
-                      transition-all duration-300 whitespace-nowrap relative
-                      flex-1 sm:flex-initial
-                      ${activeTab === tab.id
-                        ? "text-accent"
-                        : "text-muted-foreground hover:text-foreground"
-                      }
-                    `}
-                  >
-                    <Icon className={`w-4 h-4 transition-colors duration-300 ${
-                      activeTab === tab.id ? "text-accent" : ""
-                    }`} />
-                    {tab.label}
-                    
-                    {/* Animated indicator for active tab */}
-                    {activeTab === tab.id && (
-                      <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-accent/40 via-accent to-accent/40 rounded-full" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+      {/* Fixed Sidebar for Report TOC - only on 2xl screens */}
+      {activeTab === "report" && !isLoading && (
+        <aside className="hidden 2xl:block fixed top-16 left-0 bottom-0 w-56 z-40 border-r border-border/30 bg-background/80 backdrop-blur-md overflow-y-auto">
+          <div className="p-4">
+            <ReportTableOfContents />
           </div>
-        </div>
+        </aside>
+      )}
 
+      {/* Main Content */}
+      <main className="pt-16 2xl:pl-56">
+        <div className="max-w-5xl mx-auto px-4 lg:px-6">
           {/* Tab Content */}
           {isLoading ? (
             <div className="animate-smooth-fade">
@@ -311,37 +334,27 @@ const PmsDashboard = () => {
               className="py-6 animate-tab-enter"
             >
               {activeTab === "report" && (
-                <div className="flex gap-8">
-                  {/* TOC Sidebar - só em 2xl+ */}
-                  <aside className="hidden 2xl:block w-52 flex-shrink-0">
-                    <div className="sticky top-32">
-                      <ReportTableOfContents />
-                    </div>
-                  </aside>
-                  
-                  {/* Conteúdo Principal */}
-                  <div className="flex-1 space-y-16">
-                    <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
-                    <ExecutiveVerdict />
-                    <BusinessModelSection />
-                    <MarketOpportunitySection />
-                    <DemandValidationSection />
-                    <TimingAnalysisSection />
-                    <MarketBenchmarksSection />
-                    <CompetitorsDifferentiationSection />
-                    <GoToMarketPreviewSection onNavigateToMarketing={() => setActiveTab("marketing")} />
-                    <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
-                    <InvestmentSection />
-                    <ResourceRequirementsSection />
-                    <FinancialReturnSection />
-                    <PivotScenariosSection />
-                    <ExecutionPlanSection />
-                    <SuccessMetricsSection />
-                    <WhyUaicodeSection />
-                    <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
-                    <ScheduleCallSection projectName={projectName} />
-                    <DirectContactSection />
-                  </div>
+                <div className="space-y-16">
+                  <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
+                  <ExecutiveVerdict />
+                  <BusinessModelSection />
+                  <MarketOpportunitySection />
+                  <DemandValidationSection />
+                  <TimingAnalysisSection />
+                  <MarketBenchmarksSection />
+                  <CompetitorsDifferentiationSection />
+                  <GoToMarketPreviewSection onNavigateToMarketing={() => setActiveTab("marketing")} />
+                  <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
+                  <InvestmentSection />
+                  <ResourceRequirementsSection />
+                  <FinancialReturnSection />
+                  <PivotScenariosSection />
+                  <ExecutionPlanSection />
+                  <SuccessMetricsSection />
+                  <WhyUaicodeSection />
+                  <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
+                  <ScheduleCallSection projectName={projectName} />
+                  <DirectContactSection />
                 </div>
               )}
 
