@@ -318,7 +318,21 @@ const PmsWizard = () => {
         ...data,
       });
 
-      // Send report ready email notification
+      // 3. Trigger AI report generation (async - don't wait)
+      console.log("Triggering AI report generation...");
+      supabase.functions.invoke('pms-generate-report', {
+        body: { reportId }
+      }).then(({ error }) => {
+        if (error) {
+          console.error("AI report generation error:", error);
+        } else {
+          console.log("AI report generation started successfully");
+        }
+      }).catch((err) => {
+        console.error("Failed to trigger AI report generation:", err);
+      });
+
+      // Send report ready email notification (will be sent again when report is complete)
       try {
         const industryDisplay = data.industry === "other" ? data.industryOther : data.industry;
         await supabase.functions.invoke('pms-send-report-ready', {

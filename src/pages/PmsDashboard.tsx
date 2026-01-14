@@ -24,6 +24,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { BackToTopButton } from "@/components/blog/BackToTopButton";
 import DashboardSkeleton from "@/components/planningmysaas/skeletons/DashboardSkeleton";
+import GeneratingReportSkeleton from "@/components/planningmysaas/skeletons/GeneratingReportSkeleton";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import { ReportProvider } from "@/contexts/ReportContext";
 import { useReport } from "@/hooks/useReport";
@@ -284,6 +285,8 @@ const PmsDashboardContent = () => {
             <div className="animate-smooth-fade">
               <DashboardSkeleton />
             </div>
+          ) : report?.status === "pending" ? (
+            <GeneratingReportSkeleton projectName={projectName} />
           ) : (
             <div 
               key={activeTab} 
