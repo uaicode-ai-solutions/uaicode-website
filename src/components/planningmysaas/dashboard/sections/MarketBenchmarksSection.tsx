@@ -2,16 +2,57 @@ import { BarChart3, TrendingUp, Award, Landmark, ArrowUpRight, CheckCircle2 } fr
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+
+interface MarketBenchmarksData {
+  industryComparison: Array<{ metric: string; yourProjection: string; industryAvg: string; percentile: string }>;
+  successRates: {
+    category: string;
+    survivalYear1: string;
+    survivalYear3: string;
+    reaching1MARR: string;
+    yourEstimatedProbability: string;
+    whyHigher: string;
+  };
+  fundingBenchmarks: {
+    seedRound: { typical: string; requires: string };
+    seriesA: { typical: string; requires: string };
+    yourReadiness: string;
+  };
+  exitScenarios: Array<{ type: string; multipleRange: string; timeframe: string }>;
+}
 
 const MarketBenchmarksSection = () => {
-  const { marketBenchmarks } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse market benchmarks from report
+  const rawMarketBenchmarks = parseJsonField<MarketBenchmarksData>(report?.market_benchmarks, null);
+  
+  const marketBenchmarks = rawMarketBenchmarks || emptyStates.marketBenchmarks;
 
   const getPercentileColor = (percentile: string) => {
-    if (percentile.includes("10") || percentile.includes("15")) return "bg-green-500/10 text-green-400 border-green-500/20";
-    if (percentile.includes("20") || percentile.includes("25")) return "bg-blue-500/10 text-blue-400 border-blue-500/20";
+    if (percentile?.includes("10") || percentile?.includes("15")) return "bg-green-500/10 text-green-400 border-green-500/20";
+    if (percentile?.includes("20") || percentile?.includes("25")) return "bg-blue-500/10 text-blue-400 border-blue-500/20";
     return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
   };
+  
+  // Early return if no data
+  if (!rawMarketBenchmarks) {
+    return (
+      <section id="market-benchmarks" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <BarChart3 className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Industry Standards</h2>
+            <p className="text-sm text-muted-foreground">Market benchmarks data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="market-benchmarks" className="space-y-6 animate-fade-in">

@@ -2,13 +2,31 @@ import { Clock, TrendingUp, Calendar, Zap, Target, CheckCircle2 } from "lucide-r
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, parseScoreField, emptyStates } from "@/lib/reportDataUtils";
+import { TimingAnalysis } from "@/types/report";
 
 const TimingAnalysisSection = () => {
-  const { timingAnalysis } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse timing analysis from report or use empty state
+  const timingScore = parseScoreField(report?.timing_score, 0);
+  const rawTimingAnalysis = parseJsonField<any>(report?.timing_analysis, null);
+  
+  // Build the timing analysis object with proper structure
+  const timingAnalysis = rawTimingAnalysis ? {
+    timingScore: timingScore || rawTimingAnalysis.score || 0,
+    verdict: rawTimingAnalysis.verdict || "Analysis pending...",
+    macroTrends: rawTimingAnalysis.macroTrends || [],
+    windowOfOpportunity: rawTimingAnalysis.windowOfOpportunity || { opens: "Now", closes: "TBD", reason: "" },
+    firstMoverAdvantage: {
+      score: rawTimingAnalysis.firstMoverAdvantage?.score || parseScoreField(report?.first_mover_score, 0),
+      benefits: rawTimingAnalysis.firstMoverAdvantage?.benefits || rawTimingAnalysis.firstMoverAdvantage || []
+    }
+  } : emptyStates.timingAnalysis;
 
   const getRelevanceColor = (relevance: string) => {
-    switch (relevance.toLowerCase()) {
+    switch (relevance?.toLowerCase()) {
       case "high": return "bg-green-500/10 text-green-400 border-green-500/20";
       case "medium": return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
       default: return "bg-muted/20 text-muted-foreground border-border/30";
@@ -20,6 +38,23 @@ const TimingAnalysisSection = () => {
     if (score >= 60) return "text-yellow-400";
     return "text-red-400";
   };
+  
+  // Early return if no data
+  if (!rawTimingAnalysis) {
+    return (
+      <section id="timing-analysis" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Clock className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">The Timing</h2>
+            <p className="text-sm text-muted-foreground">Timing analysis data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="timing-analysis" className="space-y-6 animate-fade-in">

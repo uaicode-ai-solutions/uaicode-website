@@ -2,13 +2,33 @@ import { Flag, Star, Activity, AlertTriangle, Target, CheckCircle2 } from "lucid
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+
+interface SuccessMetricsData {
+  northStar: {
+    metric: string;
+    current: string;
+    month3Target: string;
+    month6Target: string;
+    month12Target: string;
+    why: string;
+  };
+  launchMilestones: Array<{ month: number; milestone: string; status: string }>;
+  healthIndicators: Array<{ kpi: string; healthy: string; warning: string; critical: string }>;
+  warningSigns: Array<{ sign: string; threshold: string; action: string }>;
+}
 
 const SuccessMetricsSection = () => {
-  const { successMetrics } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse success metrics from report
+  const rawSuccessMetrics = parseJsonField<SuccessMetricsData>(report?.success_metrics, null);
+  
+  const successMetrics = rawSuccessMetrics || emptyStates.successMetrics;
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case "critical": return "bg-red-500/10 text-red-400 border-red-500/20";
       case "important": return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
       case "ambitious": return "bg-purple-500/10 text-purple-400 border-purple-500/20";
@@ -24,6 +44,23 @@ const SuccessMetricsSection = () => {
       default: return "text-muted-foreground";
     }
   };
+  
+  // Early return if no data
+  if (!rawSuccessMetrics) {
+    return (
+      <section id="success-metrics" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Flag className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Success Milestones</h2>
+            <p className="text-sm text-muted-foreground">Success metrics data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="success-metrics" className="space-y-6 animate-fade-in">

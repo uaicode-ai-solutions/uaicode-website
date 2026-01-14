@@ -2,10 +2,17 @@ import { Search, TrendingUp, MessageSquare, Users, Lightbulb, AlertCircle, Check
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+import { DemandValidation } from "@/types/report";
 
 const DemandValidationSection = () => {
-  const { demandValidation } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse demand validation from report
+  const rawDemandValidation = parseJsonField<DemandValidation>(report?.demand_validation, null);
+  
+  const demandValidation = rawDemandValidation || emptyStates.demandValidation;
 
   const getIntensityColor = (intensity: number) => {
     if (intensity >= 80) return "bg-red-500/20 text-red-400 border-red-500/30";
@@ -14,12 +21,29 @@ const DemandValidationSection = () => {
   };
 
   const getSentimentColor = (sentiment: string) => {
-    switch (sentiment.toLowerCase()) {
+    switch (sentiment?.toLowerCase()) {
       case "negative": return "text-red-400";
       case "positive": return "text-green-400";
       default: return "text-yellow-400";
     }
   };
+  
+  // Early return if no data
+  if (!rawDemandValidation) {
+    return (
+      <section id="demand-validation" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Search className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">The Demand</h2>
+            <p className="text-sm text-muted-foreground">Demand validation data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="demand-validation" className="space-y-6 animate-fade-in">

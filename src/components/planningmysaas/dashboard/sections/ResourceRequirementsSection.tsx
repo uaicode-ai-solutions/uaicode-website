@@ -2,25 +2,60 @@ import { Users, Clock, Briefcase, GraduationCap, Handshake, CheckCircle2 } from 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+
+interface ResourceRequirementsData {
+  founderTime: {
+    phase1: { name: string; hoursPerWeek: number; focus: string };
+    phase2: { name: string; hoursPerWeek: number; focus: string };
+    phase3: { name: string; hoursPerWeek: number; focus: string };
+    phase4: { name: string; hoursPerWeek: number; focus: string };
+  };
+  teamTimeline: Array<{ role: string; when: string; cost: string; critical: boolean }>;
+  criticalSkills: Array<{ skill: string; importance: string; alternative: string }>;
+  externalSupport: Array<{ type: string; cost: string }>;
+}
 
 const ResourceRequirementsSection = () => {
-  const { resourceRequirements } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse resource requirements from report
+  const rawResourceRequirements = parseJsonField<ResourceRequirementsData>(report?.resource_requirements, null);
+  
+  const resourceRequirements = rawResourceRequirements || emptyStates.resourceRequirements;
 
   const getImportanceColor = (importance: string) => {
-    switch (importance.toLowerCase()) {
+    switch (importance?.toLowerCase()) {
       case "critical": return "bg-red-500/10 text-red-400 border-red-500/20";
       case "high": return "bg-orange-500/10 text-orange-400 border-orange-500/20";
       default: return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
     }
   };
 
-  const founderTimePhases = [
+  const founderTimePhases = resourceRequirements.founderTime ? [
     { ...resourceRequirements.founderTime.phase1, phase: 1 },
     { ...resourceRequirements.founderTime.phase2, phase: 2 },
     { ...resourceRequirements.founderTime.phase3, phase: 3 },
     { ...resourceRequirements.founderTime.phase4, phase: 4 },
-  ];
+  ] : [];
+  
+  // Early return if no data
+  if (!rawResourceRequirements) {
+    return (
+      <section id="resource-requirements" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Users className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Beyond the Money</h2>
+            <p className="text-sm text-muted-foreground">Resource requirements data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="resource-requirements" className="space-y-6 animate-fade-in">

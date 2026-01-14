@@ -3,17 +3,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+import { GoToMarketPreview } from "@/types/report";
 
 interface GoToMarketPreviewSectionProps {
   onNavigateToMarketing?: () => void;
 }
 
 const GoToMarketPreviewSection = ({ onNavigateToMarketing }: GoToMarketPreviewSectionProps) => {
-  const { goToMarketPreview } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse go-to-market preview from report
+  const rawGoToMarketPreview = parseJsonField<GoToMarketPreview>(report?.go_to_market_preview, null);
+  
+  const goToMarketPreview = rawGoToMarketPreview || emptyStates.goToMarketPreview;
 
   const getImpactColor = (impact: string) => {
-    switch (impact.toLowerCase()) {
+    switch (impact?.toLowerCase()) {
       case "high": return "bg-green-500/10 text-green-400 border-green-500/20";
       case "medium": return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
       default: return "bg-muted/20 text-muted-foreground border-border/30";
@@ -21,12 +28,29 @@ const GoToMarketPreviewSection = ({ onNavigateToMarketing }: GoToMarketPreviewSe
   };
 
   const getEffortColor = (effort: string) => {
-    switch (effort.toLowerCase()) {
+    switch (effort?.toLowerCase()) {
       case "low": return "bg-green-500/10 text-green-400 border-green-500/20";
       case "medium": return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
       default: return "bg-red-500/10 text-red-400 border-red-500/20";
     }
   };
+  
+  // Early return if no data
+  if (!rawGoToMarketPreview) {
+    return (
+      <section id="go-to-market-preview" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Rocket className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">The Launch Strategy</h2>
+            <p className="text-sm text-muted-foreground">Go-to-market data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="go-to-market-preview" className="space-y-6 animate-fade-in">
