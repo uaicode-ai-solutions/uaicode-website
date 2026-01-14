@@ -76,22 +76,69 @@ export type Database = {
       }
       tb_pms_reports: {
         Row: {
+          arr_projected_cents: number | null
+          assets_brand_copy: Json | null
+          assets_brand_identity: Json | null
+          assets_landing_page: Json | null
+          assets_logos: Json | null
+          assets_mockup_previews: Json | null
+          assets_screen_mockups: Json | null
+          break_even_months: number | null
           budget: string | null
+          business_model: Json | null
           challenge: string | null
+          competitive_advantages: Json | null
+          competitors: Json | null
           complexity_score: number | null
           created_at: string
           customer_types: string[] | null
+          demand_validation: Json | null
           description: string | null
+          differentiation_score: number | null
+          execution_timeline: Json | null
+          expected_roi_year1: number | null
+          financial_scenarios: Json | null
+          first_mover_score: number | null
           generated_at: string | null
+          go_to_market_preview: Json | null
           goal: string | null
           goal_other: string | null
+          highlights: Json | null
           id: string
           industry: string | null
           industry_other: string | null
+          investment_breakdown: Json | null
+          investment_comparison: Json | null
+          investment_included: Json | null
+          investment_not_included: Json | null
+          investment_total_cents: number | null
+          key_metrics: Json | null
+          ltv_cac_ratio: number | null
+          market_benchmarks: Json | null
+          market_opportunity: Json | null
           market_size: string | null
           market_type: string | null
+          marketing_competitive_advantages: Json | null
+          marketing_four_ps: Json | null
+          marketing_growth_strategy: Json | null
+          marketing_paid_media_action_plan: Json | null
+          marketing_paid_media_diagnosis: Json | null
+          marketing_pricing_action_plan: Json | null
+          marketing_pricing_diagnosis: Json | null
+          marketing_verdict: Json | null
+          mrr_month12_cents: number | null
+          next_steps: Json | null
+          opportunity_score: number | null
+          pivot_readiness_score: number | null
+          pivot_scenarios: Json | null
           product_stage: string | null
+          projection_data: Json | null
+          quantified_differentiation: Json | null
           report_content: Json | null
+          resource_requirements: Json | null
+          risk_quantification: Json | null
+          risk_score: number | null
+          risks: Json | null
           saas_logo_url: string | null
           saas_name: string
           saas_type: string | null
@@ -99,29 +146,85 @@ export type Database = {
           selected_features: string[] | null
           selected_tier: string | null
           status: string
+          success_metrics: Json | null
           target_audience: string | null
+          tech_stack: Json | null
           timeline: string | null
+          timing_analysis: Json | null
+          timing_score: number | null
+          uaicode_info: Json | null
+          unit_economics: Json | null
           updated_at: string
           user_id: string
+          verdict: string | null
+          verdict_headline: string | null
+          verdict_summary: string | null
           viability_score: number | null
         }
         Insert: {
+          arr_projected_cents?: number | null
+          assets_brand_copy?: Json | null
+          assets_brand_identity?: Json | null
+          assets_landing_page?: Json | null
+          assets_logos?: Json | null
+          assets_mockup_previews?: Json | null
+          assets_screen_mockups?: Json | null
+          break_even_months?: number | null
           budget?: string | null
+          business_model?: Json | null
           challenge?: string | null
+          competitive_advantages?: Json | null
+          competitors?: Json | null
           complexity_score?: number | null
           created_at?: string
           customer_types?: string[] | null
+          demand_validation?: Json | null
           description?: string | null
+          differentiation_score?: number | null
+          execution_timeline?: Json | null
+          expected_roi_year1?: number | null
+          financial_scenarios?: Json | null
+          first_mover_score?: number | null
           generated_at?: string | null
+          go_to_market_preview?: Json | null
           goal?: string | null
           goal_other?: string | null
+          highlights?: Json | null
           id?: string
           industry?: string | null
           industry_other?: string | null
+          investment_breakdown?: Json | null
+          investment_comparison?: Json | null
+          investment_included?: Json | null
+          investment_not_included?: Json | null
+          investment_total_cents?: number | null
+          key_metrics?: Json | null
+          ltv_cac_ratio?: number | null
+          market_benchmarks?: Json | null
+          market_opportunity?: Json | null
           market_size?: string | null
           market_type?: string | null
+          marketing_competitive_advantages?: Json | null
+          marketing_four_ps?: Json | null
+          marketing_growth_strategy?: Json | null
+          marketing_paid_media_action_plan?: Json | null
+          marketing_paid_media_diagnosis?: Json | null
+          marketing_pricing_action_plan?: Json | null
+          marketing_pricing_diagnosis?: Json | null
+          marketing_verdict?: Json | null
+          mrr_month12_cents?: number | null
+          next_steps?: Json | null
+          opportunity_score?: number | null
+          pivot_readiness_score?: number | null
+          pivot_scenarios?: Json | null
           product_stage?: string | null
+          projection_data?: Json | null
+          quantified_differentiation?: Json | null
           report_content?: Json | null
+          resource_requirements?: Json | null
+          risk_quantification?: Json | null
+          risk_score?: number | null
+          risks?: Json | null
           saas_logo_url?: string | null
           saas_name: string
           saas_type?: string | null
@@ -129,29 +232,85 @@ export type Database = {
           selected_features?: string[] | null
           selected_tier?: string | null
           status?: string
+          success_metrics?: Json | null
           target_audience?: string | null
+          tech_stack?: Json | null
           timeline?: string | null
+          timing_analysis?: Json | null
+          timing_score?: number | null
+          uaicode_info?: Json | null
+          unit_economics?: Json | null
           updated_at?: string
           user_id: string
+          verdict?: string | null
+          verdict_headline?: string | null
+          verdict_summary?: string | null
           viability_score?: number | null
         }
         Update: {
+          arr_projected_cents?: number | null
+          assets_brand_copy?: Json | null
+          assets_brand_identity?: Json | null
+          assets_landing_page?: Json | null
+          assets_logos?: Json | null
+          assets_mockup_previews?: Json | null
+          assets_screen_mockups?: Json | null
+          break_even_months?: number | null
           budget?: string | null
+          business_model?: Json | null
           challenge?: string | null
+          competitive_advantages?: Json | null
+          competitors?: Json | null
           complexity_score?: number | null
           created_at?: string
           customer_types?: string[] | null
+          demand_validation?: Json | null
           description?: string | null
+          differentiation_score?: number | null
+          execution_timeline?: Json | null
+          expected_roi_year1?: number | null
+          financial_scenarios?: Json | null
+          first_mover_score?: number | null
           generated_at?: string | null
+          go_to_market_preview?: Json | null
           goal?: string | null
           goal_other?: string | null
+          highlights?: Json | null
           id?: string
           industry?: string | null
           industry_other?: string | null
+          investment_breakdown?: Json | null
+          investment_comparison?: Json | null
+          investment_included?: Json | null
+          investment_not_included?: Json | null
+          investment_total_cents?: number | null
+          key_metrics?: Json | null
+          ltv_cac_ratio?: number | null
+          market_benchmarks?: Json | null
+          market_opportunity?: Json | null
           market_size?: string | null
           market_type?: string | null
+          marketing_competitive_advantages?: Json | null
+          marketing_four_ps?: Json | null
+          marketing_growth_strategy?: Json | null
+          marketing_paid_media_action_plan?: Json | null
+          marketing_paid_media_diagnosis?: Json | null
+          marketing_pricing_action_plan?: Json | null
+          marketing_pricing_diagnosis?: Json | null
+          marketing_verdict?: Json | null
+          mrr_month12_cents?: number | null
+          next_steps?: Json | null
+          opportunity_score?: number | null
+          pivot_readiness_score?: number | null
+          pivot_scenarios?: Json | null
           product_stage?: string | null
+          projection_data?: Json | null
+          quantified_differentiation?: Json | null
           report_content?: Json | null
+          resource_requirements?: Json | null
+          risk_quantification?: Json | null
+          risk_score?: number | null
+          risks?: Json | null
           saas_logo_url?: string | null
           saas_name?: string
           saas_type?: string | null
@@ -159,10 +318,19 @@ export type Database = {
           selected_features?: string[] | null
           selected_tier?: string | null
           status?: string
+          success_metrics?: Json | null
           target_audience?: string | null
+          tech_stack?: Json | null
           timeline?: string | null
+          timing_analysis?: Json | null
+          timing_score?: number | null
+          uaicode_info?: Json | null
+          unit_economics?: Json | null
           updated_at?: string
           user_id?: string
+          verdict?: string | null
+          verdict_headline?: string | null
+          verdict_summary?: string | null
           viability_score?: number | null
         }
         Relationships: [
