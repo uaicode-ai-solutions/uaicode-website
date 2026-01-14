@@ -8,26 +8,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { StoredReport, getProjectDisplayName, getIndustryDisplayName } from "@/lib/reportsStorage";
+import { ReportRow } from "@/types/report";
 import { format } from "date-fns";
 
 interface ReportCardProps {
-  report: StoredReport;
+  report: ReportRow;
   onDelete: (id: string) => void;
 }
 
 const ReportCard = ({ report, onDelete }: ReportCardProps) => {
   const navigate = useNavigate();
   
-  const projectName = getProjectDisplayName(report);
-  const industry = getIndustryDisplayName(report) || "Technology";
-  const viabilityScore = report.reportData?.viabilityScore || 0;
-  const formattedDate = format(new Date(report.createdAt), "MMM dd, yyyy");
+  // Read directly from database fields
+  const projectName = report.saas_name || "Untitled Project";
+  const industry = report.industry_other || report.industry || "Technology";
+  const viabilityScore = report.viability_score || 0;
+  const formattedDate = format(new Date(report.created_at), "MMM dd, yyyy");
 
   const handleView = () => {
     navigate(`/planningmysaas/dashboard/${report.id}`);
   };
-
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-amber-400";

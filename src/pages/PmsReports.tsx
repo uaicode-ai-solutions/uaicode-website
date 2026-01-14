@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, User, LogOut, Settings, Sparkles, TrendingUp, Calendar, BarChart3, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,52 +15,42 @@ import EmptyReports from "@/components/planningmysaas/reports/EmptyReports";
 import DeleteReportDialog from "@/components/planningmysaas/reports/DeleteReportDialog";
 import ReportCardSkeleton from "@/components/planningmysaas/skeletons/ReportCardSkeleton";
 import StatsCardSkeleton from "@/components/planningmysaas/skeletons/StatsCardSkeleton";
-import { 
-  getReports, 
-  deleteReport, 
-  StoredReport, 
-  getProjectDisplayName 
-} from "@/lib/reportsStorage";
+import { useReports, useDeleteReport } from "@/hooks/useReports";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/contexts/AuthContext";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
+import { ReportRow } from "@/types/report";
 
 const PmsReports = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { signOut, pmsUser } = useAuthContext();
-  const [reports, setReports] = useState<StoredReport[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [reportToDelete, setReportToDelete] = useState<StoredReport | null>(null);
+  const [reportToDelete, setReportToDelete] = useState<ReportRow | null>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setReports(getReports());
-      setIsLoading(false);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, []);
+  // Use database data
+  const { data: reports = [], isLoading } = useReports();
+  const deleteReportMutation = useDeleteReport();
 
-  // Calculate stats
+  // Calculate stats from database reports
   const stats = useMemo(() => {
     if (reports.length === 0) return null;
     
     const totalReports = reports.length;
     const scores = reports
-      .map(r => r.reportData?.viabilityScore || 0)
+      .map(r => r.viability_score || 0)
       .filter(s => s > 0);
     const avgScore = scores.length > 0 
       ? Math.round(scores.reduce((acc, s) => acc + s, 0) / scores.length) 
       : 0;
     
     const sortedReports = [...reports].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
     const latestReport = sortedReports[0];
     const daysSinceLatest = Math.floor(
-      (Date.now() - new Date(latestReport.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+      (Date.now() - new Date(latestReport.created_at).getTime()) / (1000 * 60 * 60 * 24)
     );
     
     return { totalReports, avgScore, daysSinceLatest };
@@ -77,7 +67,6 @@ const PmsReports = () => {
       navigate("/planningmysaas/login");
     } catch (error) {
       console.error("Logout error:", error);
-      // Even on error, navigate to login (signOut is resilient now)
       navigate("/planningmysaas/login");
     } finally {
       setIsLoggingOut(false);
@@ -92,14 +81,21 @@ const PmsReports = () => {
     }
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (reportToDelete) {
-      deleteReport(reportToDelete.id);
-      setReports(getReports());
-      toast({
-        title: "Report deleted",
-        description: `"${getProjectDisplayName(reportToDelete)}" has been deleted.`,
-      });
+      try {
+        await deleteReportMutation.mutateAsync(reportToDelete.id);
+        toast({
+          title: "Report deleted",
+          description: `"${reportToDelete.saas_name}" has been deleted.`,
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete report. Please try again.",
+          variant: "destructive",
+        });
+      }
       setReportToDelete(null);
       setDeleteDialogOpen(false);
     }
@@ -324,7 +320,7 @@ const PmsReports = () => {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
-        projectName={reportToDelete ? getProjectDisplayName(reportToDelete) : ""}
+        projectName={reportToDelete?.saas_name || ""}
       />
     </div>
   );
