@@ -47,7 +47,7 @@ const ResourceRequirementsSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Founder Time Commitment</h3>
+              <h3 className="font-semibold text-foreground text-sm">Founder Time Commitment</h3>
             </div>
             
             <div className="space-y-3">
@@ -80,7 +80,7 @@ const ResourceRequirementsSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Briefcase className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Team Timeline</h3>
+              <h3 className="font-semibold text-foreground text-sm">Team Timeline</h3>
               <InfoTooltip size="sm">
                 When to hire key roles as you scale
               </InfoTooltip>
@@ -121,7 +121,7 @@ const ResourceRequirementsSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <GraduationCap className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Critical Skills</h3>
+              <h3 className="font-semibold text-foreground text-sm">Critical Skills</h3>
             </div>
             
             <div className="space-y-3">
@@ -148,7 +148,7 @@ const ResourceRequirementsSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Handshake className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">External Support</h3>
+              <h3 className="font-semibold text-foreground text-sm">External Support</h3>
               <InfoTooltip size="sm">
                 Recommended external services and their costs
               </InfoTooltip>

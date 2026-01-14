@@ -74,7 +74,7 @@ const GoToMarketPreviewSection = ({ onNavigateToMarketing }: GoToMarketPreviewSe
                   {channel.roi}x ROI
                 </Badge>
               </div>
-              <h4 className="font-semibold text-foreground mb-2">{channel.name}</h4>
+              <h4 className="font-semibold text-foreground text-sm mb-2">{channel.name}</h4>
               <p className="text-xs text-muted-foreground">
                 Results in {channel.timeToResults}
               </p>
@@ -90,7 +90,7 @@ const GoToMarketPreviewSection = ({ onNavigateToMarketing }: GoToMarketPreviewSe
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Zap className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Quick Wins</h3>
+              <h3 className="font-semibold text-foreground text-sm">Quick Wins</h3>
               <InfoTooltip size="sm">
                 Immediate actions with high impact and low effort
               </InfoTooltip>
@@ -119,7 +119,7 @@ const GoToMarketPreviewSection = ({ onNavigateToMarketing }: GoToMarketPreviewSe
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Calendar className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">First 90 Days</h3>
+              <h3 className="font-semibold text-foreground text-sm">First 90 Days</h3>
             </div>
             
             <div className="relative">
@@ -155,7 +155,7 @@ const GoToMarketPreviewSection = ({ onNavigateToMarketing }: GoToMarketPreviewSe
         <CardContent className="p-5">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-foreground mb-1">See the Full Marketing Strategy</h3>
+              <h3 className="font-semibold text-foreground text-sm mb-1">See the Full Marketing Strategy</h3>
               <p className="text-sm text-muted-foreground">
                 Detailed channel analysis, ICP definition, paid media strategy, and more.
               </p>

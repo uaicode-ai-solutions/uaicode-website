@@ -60,7 +60,7 @@ const BusinessModelSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <DollarSign className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Revenue Streams</h3>
+              <h3 className="font-semibold text-foreground text-sm">Revenue Streams</h3>
             </div>
             
             <div className="space-y-4">
@@ -107,7 +107,7 @@ const BusinessModelSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Layers className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Recommended Pricing</h3>
+              <h3 className="font-semibold text-foreground text-sm">Recommended Pricing</h3>
             </div>
             
             <div className="space-y-3">
@@ -151,7 +151,7 @@ const BusinessModelSection = () => {
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="h-4 w-4 text-accent" />
-            <h3 className="font-semibold text-foreground">Monetization Timeline</h3>
+            <h3 className="font-semibold text-foreground text-sm">Monetization Timeline</h3>
             <InfoTooltip size="sm">
               When each revenue stream becomes active
             </InfoTooltip>

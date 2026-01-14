@@ -48,7 +48,7 @@ const SuccessMetricsSection = () => {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Star className="h-5 w-5 text-accent" />
-            <h3 className="font-semibold text-foreground">North Star Metric</h3>
+            <h3 className="font-semibold text-foreground text-sm">North Star Metric</h3>
             <Badge className="bg-accent text-accent-foreground text-xs ml-auto">
               Primary KPI
             </Badge>
@@ -86,7 +86,7 @@ const SuccessMetricsSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Target className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Launch Milestones</h3>
+              <h3 className="font-semibold text-foreground text-sm">Launch Milestones</h3>
             </div>
             
             <div className="relative">
@@ -125,7 +125,7 @@ const SuccessMetricsSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Activity className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Health Indicators</h3>
+              <h3 className="font-semibold text-foreground text-sm">Health Indicators</h3>
               <InfoTooltip size="sm">
                 KPIs to monitor product health
               </InfoTooltip>
@@ -161,7 +161,7 @@ const SuccessMetricsSection = () => {
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle className="h-4 w-4 text-orange-400" />
-            <h3 className="font-semibold text-foreground">Warning Signs to Watch</h3>
+            <h3 className="font-semibold text-foreground text-sm">Warning Signs to Watch</h3>
           </div>
           
           <div className="grid md:grid-cols-3 gap-4">

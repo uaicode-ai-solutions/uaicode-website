@@ -46,7 +46,7 @@ const DemandValidationSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Market Signals</h3>
+              <h3 className="font-semibold text-foreground text-sm">Market Signals</h3>
             </div>
             
             <div className="grid grid-cols-3 gap-4">
@@ -78,7 +78,7 @@ const DemandValidationSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <AlertCircle className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Customer Pain Points</h3>
+              <h3 className="font-semibold text-foreground text-sm">Customer Pain Points</h3>
               <InfoTooltip size="sm">
                 Validated pain points ranked by intensity
               </InfoTooltip>
@@ -116,7 +116,7 @@ const DemandValidationSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <MessageSquare className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Demand Evidence</h3>
+              <h3 className="font-semibold text-foreground text-sm">Demand Evidence</h3>
             </div>
             
             <div className="space-y-3">
@@ -156,7 +156,7 @@ const DemandValidationSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Lightbulb className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Quick Validation Methods</h3>
+              <h3 className="font-semibold text-foreground text-sm">Quick Validation Methods</h3>
               <InfoTooltip size="sm">
                 Recommended ways to further validate demand before full build
               </InfoTooltip>

@@ -74,7 +74,7 @@ const PivotScenariosSection = () => {
                 </Badge>
               </div>
               
-              <h4 className="font-semibold text-foreground mb-3">{scenario.name}</h4>
+              <h4 className="font-semibold text-foreground text-sm mb-3">{scenario.name}</h4>
               
               <div className="space-y-2 mb-3">
                 <div className="flex items-center justify-between text-sm">
@@ -107,7 +107,7 @@ const PivotScenariosSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Package className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Reusable Assets</h3>
+              <h3 className="font-semibold text-foreground text-sm">Reusable Assets</h3>
               <InfoTooltip size="sm">
                 What can be preserved if you need to pivot
               </InfoTooltip>
@@ -146,7 +146,7 @@ const PivotScenariosSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Decision Triggers</h3>
+              <h3 className="font-semibold text-foreground text-sm">Decision Triggers</h3>
             </div>
             
             <div className="space-y-3">

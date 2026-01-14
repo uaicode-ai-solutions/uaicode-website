@@ -76,7 +76,7 @@ const TimingAnalysisSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Macro Trends</h3>
+              <h3 className="font-semibold text-foreground text-sm">Macro Trends</h3>
               <InfoTooltip size="sm">
                 Large-scale market trends supporting this timing
               </InfoTooltip>
@@ -106,7 +106,7 @@ const TimingAnalysisSection = () => {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Calendar className="h-4 w-4 text-accent" />
-              <h3 className="font-semibold text-foreground">Window of Opportunity</h3>
+              <h3 className="font-semibold text-foreground text-sm">Window of Opportunity</h3>
             </div>
             
             <div className="space-y-4">
@@ -155,7 +155,7 @@ const TimingAnalysisSection = () => {
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <Target className="h-4 w-4 text-accent" />
-            <h3 className="font-semibold text-foreground">First Mover Advantage</h3>
+            <h3 className="font-semibold text-foreground text-sm">First Mover Advantage</h3>
             <Badge className="bg-accent/10 text-accent border-accent/20 ml-auto">
               Score: {timingAnalysis.firstMoverAdvantage.score}/100
             </Badge>
