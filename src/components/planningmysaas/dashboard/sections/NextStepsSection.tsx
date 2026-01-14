@@ -23,7 +23,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, parseScoreField, parseCentsField } from "@/lib/reportDataUtils";
+import { NextSteps, ExecutionPhase } from "@/types/report";
 import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
 
@@ -83,7 +85,26 @@ interface NextStepsSectionProps {
 }
 
 const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionProps) => {
-  const { nextSteps, viabilityScore, verdictHeadline, investment, timeline } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse data from report
+  const nextSteps = parseJsonField<NextSteps>(report?.next_steps, {
+    verdictSummary: "Your project is ready to be built.",
+    steps: [
+      { step: 1, title: "Free Consultation", description: "45min to align expectations and validate the scope", icon: "Calendar" },
+      { step: 2, title: "Proposal & Sign Contract", description: "Clear documentation with scope, timeline, and investment", icon: "FileText" },
+      { step: 3, title: "Start in 5 Business Days", description: "We begin the project right after approval", icon: "PlayCircle" },
+      { step: 4, title: "First Delivery in 2 Weeks", description: "You'll see real progress quickly", icon: "Package" },
+    ],
+    cta: { primary: "Schedule a Call", secondary: "Download PDF Report" },
+    contact: { email: "contact@uaicode.dev", whatsapp: "+1 (555) 123-4567", calendly: "https://calendly.com/uaicode" }
+  });
+  
+  const viabilityScore = parseScoreField(report?.viability_score, 87);
+  const verdictHeadline = report?.verdict_headline || "High viability, your idea has real traction potential.";
+  const investmentTotal = parseCentsField(report?.investment_total_cents, 60500);
+  const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
+  
   const [selectedPackage, setSelectedPackage] = useState<'mvp-only' | 'mvp-marketing'>('mvp-marketing');
   const [kyleDialogOpen, setKyleDialogOpen] = useState(false);
   const [selectedConsultPackage, setSelectedConsultPackage] = useState<string>('');
@@ -91,11 +112,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
   // Calculate total weeks from timeline
   const totalWeeks = timeline.reduce((acc, phase) => {
-    const match = phase.duration.match(/(\d+)/);
+    const match = phase.duration?.match(/(\d+)/);
     return acc + (match ? parseInt(match[1]) : 0);
   }, 0);
 
-  const mvpPrice = investment.total;
+  const mvpPrice = investmentTotal > 0 ? investmentTotal : 60500;
   // MVP Development - 10% discount
   const mvpDevDiscountedPrice = Math.round(investment.total * 0.9);
   const mvpDevSavings = mvpPrice - mvpDevDiscountedPrice;

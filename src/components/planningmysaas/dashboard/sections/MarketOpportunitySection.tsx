@@ -2,37 +2,61 @@ import { Target, TrendingUp, CheckCircle2, Globe, Crosshair } from "lucide-react
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+import { MarketOpportunity } from "@/types/report";
 
 const MarketOpportunitySection = () => {
-  const { market } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse market opportunity from report
+  const rawMarket = parseJsonField<MarketOpportunity>(report?.market_opportunity, null);
+  
+  const market = rawMarket || emptyStates.marketOpportunity;
 
   const marketLevels = [
     { 
       key: "tam",
       label: "TAM",
       fullName: "Total Addressable Market",
-      ...market.tam, 
+      value: market.tam?.value || "$0",
       icon: Globe,
-      description: "The entire global market demand for your product/service category. This represents the total revenue opportunity if you achieved 100% market share."
+      description: market.tam?.description || "The entire global market demand for your product/service category. This represents the total revenue opportunity if you achieved 100% market share."
     },
     { 
       key: "sam",
       label: "SAM",
       fullName: "Serviceable Available Market",
-      ...market.sam, 
+      value: market.sam?.value || "$0",
       icon: Target,
-      description: "The segment of TAM you can realistically serve based on your geography, capabilities, and business model constraints."
+      description: market.sam?.description || "The segment of TAM you can realistically serve based on your geography, capabilities, and business model constraints."
     },
     { 
       key: "som",
       label: "SOM",
       fullName: "Serviceable Obtainable Market",
-      ...market.som, 
+      value: market.som?.value || "$0",
       icon: Crosshair,
-      description: "The portion of SAM you can realistically capture in the first 3 years. This is your immediate addressable opportunity."
+      description: market.som?.description || "The portion of SAM you can realistically capture in the first 3 years. This is your immediate addressable opportunity."
     },
   ];
+  
+  // Early return if no data
+  if (!rawMarket) {
+    return (
+      <section id="market-opportunity" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Target className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">The Opportunity</h2>
+            <p className="text-sm text-muted-foreground">Market data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="market-opportunity" className="space-y-6 animate-fade-in">

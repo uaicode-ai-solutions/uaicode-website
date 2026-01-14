@@ -2,10 +2,27 @@ import { GitBranch, RefreshCw, Package, AlertTriangle, CheckCircle2, ArrowRight 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, parseScoreField, emptyStates } from "@/lib/reportDataUtils";
+
+interface PivotScenariosData {
+  readinessScore: number;
+  scenarios: Array<{ name: string; effortToShift: string; viability: number; marketSize: string; trigger: string }>;
+  reusableAssets: Array<{ asset: string; reusabilityScore: number }>;
+  decisionTriggers: Array<{ metric: string; threshold: string; action: string }>;
+}
 
 const PivotScenariosSection = () => {
-  const { pivotScenarios } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse pivot scenarios from report
+  const rawPivotScenarios = parseJsonField<PivotScenariosData>(report?.pivot_scenarios, null);
+  const pivotReadinessScore = parseScoreField(report?.pivot_readiness_score, 0);
+  
+  const pivotScenarios = rawPivotScenarios ? {
+    ...rawPivotScenarios,
+    readinessScore: pivotReadinessScore || rawPivotScenarios.readinessScore || 0
+  } : emptyStates.pivotScenarios;
 
   const getViabilityColor = (viability: number) => {
     if (viability >= 75) return "text-green-400";
@@ -14,12 +31,29 @@ const PivotScenariosSection = () => {
   };
 
   const getEffortColor = (effort: string) => {
-    switch (effort.toLowerCase()) {
+    switch (effort?.toLowerCase()) {
       case "low": return "bg-green-500/10 text-green-400 border-green-500/20";
       case "medium": return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
       default: return "bg-red-500/10 text-red-400 border-red-500/20";
     }
   };
+  
+  // Early return if no data
+  if (!rawPivotScenarios) {
+    return (
+      <section id="pivot-scenarios" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <GitBranch className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Plan B & Beyond</h2>
+            <p className="text-sm text-muted-foreground">Pivot scenarios data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="pivot-scenarios" className="space-y-6 animate-fade-in">

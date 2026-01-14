@@ -2,7 +2,9 @@ import { Award, Users, Zap, HeadphonesIcon, CheckCircle2, Quote, Star, TrendingU
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+import { UaicodeInfo } from "@/types/report";
 
 const iconMap: Record<string, React.ElementType> = {
   Award,
@@ -12,7 +14,31 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const WhyUaicodeSection = () => {
-  const { uaicode } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse uaicode info from report
+  const rawUaicode = parseJsonField<UaicodeInfo>(report?.uaicode_info, null);
+  
+  // Use default values for Uaicode (this is company info, not project-specific)
+  const uaicode: UaicodeInfo = rawUaicode || {
+    successRate: 94,
+    projectsDelivered: 47,
+    avgDeliveryWeeks: 12,
+    differentials: [
+      { icon: "Award", title: "94% Success Rate", description: "Projects delivered successfully on time and budget" },
+      { icon: "Users", title: "SaaS-Specialized Team", description: "Senior developers focused on digital products" },
+      { icon: "Zap", title: "Agile Methodology", description: "Weekly deliveries with demos and transparent communication" },
+      { icon: "HeadphonesIcon", title: "Post-Launch Support", description: "30 days of support included after go-live" }
+    ],
+    testimonials: [],
+    guarantees: [
+      "Weekly demos for progress tracking",
+      "Fixed price for MVP scope",
+      "30 days post-launch support",
+      "100% ownership of source code",
+      "Complete documentation"
+    ]
+  };
 
   // Stats data with metadata
   const statsData = [

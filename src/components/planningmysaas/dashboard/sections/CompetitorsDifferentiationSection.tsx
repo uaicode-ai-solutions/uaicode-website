@@ -2,13 +2,36 @@ import { Swords, ExternalLink, Tag, Trophy, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+import { Competitor } from "@/types/report";
 
 const CompetitorsDifferentiationSection = () => {
-  const { competitors, competitiveAdvantages } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse competitors and advantages from report
+  const competitors = parseJsonField<Competitor[]>(report?.competitors, []);
+  const competitiveAdvantages = parseJsonField<string[]>(report?.competitive_advantages, []);
   
   // Calculate max price for chart scaling
-  const maxPrice = Math.max(...competitors.map(c => c.price));
+  const maxPrice = competitors.length > 0 ? Math.max(...competitors.map(c => c.price || 0)) : 100;
+  
+  // Early return if no data
+  if (competitors.length === 0) {
+    return (
+      <section id="competitors-differentiation" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Swords className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Competitive Analysis</h2>
+            <p className="text-sm text-muted-foreground">Competitor data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="competitors-differentiation" className="space-y-6 animate-fade-in">

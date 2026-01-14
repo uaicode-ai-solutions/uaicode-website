@@ -2,10 +2,17 @@ import { Briefcase, DollarSign, Layers, Clock, Star, TrendingUp } from "lucide-r
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+import { BusinessModel } from "@/types/report";
 
 const BusinessModelSection = () => {
-  const { businessModel } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse business model from report
+  const rawBusinessModel = parseJsonField<BusinessModel>(report?.business_model, null);
+  
+  const businessModel = rawBusinessModel || emptyStates.businessModel;
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -26,6 +33,23 @@ const BusinessModelSection = () => {
       default: return "bg-accent/10 text-accent border-accent/20";
     }
   };
+  
+  // Early return if no data
+  if (!rawBusinessModel) {
+    return (
+      <section id="business-model" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Briefcase className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">The Model</h2>
+            <p className="text-sm text-muted-foreground">Business model data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="business-model" className="space-y-6 animate-fade-in">

@@ -2,7 +2,9 @@ import { DollarSign, Check, X, PieChart, AlertCircle, Sparkles, Megaphone } from
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Badge } from "@/components/ui/badge";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, parseCentsField, emptyStates } from "@/lib/reportDataUtils";
+import { InvestmentBreakdown } from "@/types/report";
 import PricingComparisonSlider from "../PricingComparisonSlider";
 import MarketingComparisonSlider from "../MarketingComparisonSlider";
 import {
@@ -14,7 +16,22 @@ import {
 } from "recharts";
 
 const InvestmentSection = () => {
-  const { investment } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse investment data from report
+  const investmentBreakdown = parseJsonField<InvestmentBreakdown["breakdown"]>(report?.investment_breakdown, []);
+  const investmentIncluded = parseJsonField<{ items: string[] }>(report?.investment_included, { items: [] });
+  const investmentNotIncluded = parseJsonField<{ items: string[] }>(report?.investment_not_included, { items: [] });
+  const investmentComparison = parseJsonField<InvestmentBreakdown["comparison"]>(report?.investment_comparison, null);
+  const investmentTotalCents = parseCentsField(report?.investment_total_cents, 0);
+  
+  // Build investment object
+  const investment = {
+    total: investmentTotalCents > 0 ? investmentTotalCents : investmentBreakdown.reduce((acc, item) => acc + (item.value || 0), 0),
+    breakdown: investmentBreakdown,
+    included: investmentIncluded?.items || [],
+    notIncluded: investmentNotIncluded?.items || []
+  };
 
   // Marketing Investment Data
   const marketingInvestment = {

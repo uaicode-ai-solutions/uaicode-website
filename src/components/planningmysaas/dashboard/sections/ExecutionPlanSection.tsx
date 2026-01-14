@@ -2,7 +2,9 @@ import { Search, Code, Users, Rocket, CheckCircle2, Cpu, Zap, Clock, ArrowRight,
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { reportData } from "@/lib/reportMockData";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+import { ExecutionPhase, TechStackCategory } from "@/types/report";
 
 const iconMap: Record<string, React.ElementType> = {
   Search,
@@ -32,7 +34,12 @@ const categoryIcons: Record<string, React.ElementType> = {
 };
 
 const ExecutionPlanSection = () => {
-  const { timeline, techStack, recommendedPlan } = reportData;
+  const { report } = useReportContext();
+  
+  // Parse execution data from report
+  const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
+  const techStack = parseJsonField<TechStackCategory[]>(report?.tech_stack, []);
+  const recommendedPlan = (report?.selected_tier as "starter" | "growth" | "enterprise") || "growth";
 
   // Calculate total time based on recommended plan
   const getTotalTime = () => {
@@ -41,7 +48,7 @@ const ExecutionPlanSection = () => {
     
     timeline.forEach(phase => {
       const phaseData = phase as any;
-      const duration = phaseData.planDurations?.[recommendedPlan] || phase.duration;
+      const duration = phaseData.planDurations?.[recommendedPlan] || phase.duration || "0";
       const match = duration.match(/(\d+)-?(\d+)?/);
       if (match) {
         minWeeks += parseInt(match[1]);
@@ -49,8 +56,25 @@ const ExecutionPlanSection = () => {
       }
     });
     
-    return `${minWeeks}-${maxWeeks} weeks`;
+    return minWeeks > 0 ? `${minWeeks}-${maxWeeks} weeks` : "TBD";
   };
+  
+  // Early return if no data
+  if (timeline.length === 0 && techStack.length === 0) {
+    return (
+      <section id="execution-plan" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Rocket className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">The Plan</h2>
+            <p className="text-sm text-muted-foreground">Execution plan data not available</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="execution-plan" className="space-y-6 animate-fade-in">
