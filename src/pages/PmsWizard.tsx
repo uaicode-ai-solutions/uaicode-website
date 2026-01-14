@@ -276,8 +276,8 @@ const PmsWizard = () => {
           challenge: data.challenge,
           budget: data.budget,
           timeline: data.timeline,
-          viability_score: viabilityScore,
-          complexity_score: complexityScore,
+          viability_score: String(viabilityScore),
+          complexity_score: String(complexityScore),
         });
 
       if (insertError) {

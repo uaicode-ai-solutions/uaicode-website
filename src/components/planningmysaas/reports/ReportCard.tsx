@@ -22,7 +22,7 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
   // Read directly from database fields
   const projectName = report.saas_name || "Untitled Project";
   const industry = report.industry_other || report.industry || "Technology";
-  const viabilityScore = report.viability_score || 0;
+  const viabilityScore = parseInt(String(report.viability_score || "0"), 10) || 0;
   const formattedDate = format(new Date(report.created_at), "MMM dd, yyyy");
 
   const handleView = () => {

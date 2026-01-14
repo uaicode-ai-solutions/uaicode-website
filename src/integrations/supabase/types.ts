@@ -76,29 +76,29 @@ export type Database = {
       }
       tb_pms_reports: {
         Row: {
-          arr_projected_cents: number | null
+          arr_projected_cents: string | null
           assets_brand_copy: Json | null
           assets_brand_identity: Json | null
           assets_landing_page: Json | null
           assets_logos: Json | null
           assets_mockup_previews: Json | null
           assets_screen_mockups: Json | null
-          break_even_months: number | null
+          break_even_months: string | null
           budget: string | null
           business_model: Json | null
           challenge: string | null
           competitive_advantages: Json | null
           competitors: Json | null
-          complexity_score: number | null
+          complexity_score: string | null
           created_at: string
           customer_types: string[] | null
           demand_validation: Json | null
           description: string | null
-          differentiation_score: number | null
+          differentiation_score: string | null
           execution_timeline: Json | null
-          expected_roi_year1: number | null
+          expected_roi_year1: string | null
           financial_scenarios: Json | null
-          first_mover_score: number | null
+          first_mover_score: string | null
           generated_at: string | null
           go_to_market_preview: Json | null
           goal: string | null
@@ -111,9 +111,9 @@ export type Database = {
           investment_comparison: Json | null
           investment_included: Json | null
           investment_not_included: Json | null
-          investment_total_cents: number | null
+          investment_total_cents: string | null
           key_metrics: Json | null
-          ltv_cac_ratio: number | null
+          ltv_cac_ratio: string | null
           market_benchmarks: Json | null
           market_opportunity: Json | null
           market_size: string | null
@@ -126,10 +126,10 @@ export type Database = {
           marketing_pricing_action_plan: Json | null
           marketing_pricing_diagnosis: Json | null
           marketing_verdict: Json | null
-          mrr_month12_cents: number | null
+          mrr_month12_cents: string | null
           next_steps: Json | null
-          opportunity_score: number | null
-          pivot_readiness_score: number | null
+          opportunity_score: string | null
+          pivot_readiness_score: string | null
           pivot_scenarios: Json | null
           product_stage: string | null
           projection_data: Json | null
@@ -137,7 +137,7 @@ export type Database = {
           report_content: Json | null
           resource_requirements: Json | null
           risk_quantification: Json | null
-          risk_score: number | null
+          risk_score: string | null
           risks: Json | null
           saas_logo_url: string | null
           saas_name: string
@@ -151,7 +151,7 @@ export type Database = {
           tech_stack: Json | null
           timeline: string | null
           timing_analysis: Json | null
-          timing_score: number | null
+          timing_score: string | null
           uaicode_info: Json | null
           unit_economics: Json | null
           updated_at: string
@@ -159,32 +159,32 @@ export type Database = {
           verdict: string | null
           verdict_headline: string | null
           verdict_summary: string | null
-          viability_score: number | null
+          viability_score: string | null
         }
         Insert: {
-          arr_projected_cents?: number | null
+          arr_projected_cents?: string | null
           assets_brand_copy?: Json | null
           assets_brand_identity?: Json | null
           assets_landing_page?: Json | null
           assets_logos?: Json | null
           assets_mockup_previews?: Json | null
           assets_screen_mockups?: Json | null
-          break_even_months?: number | null
+          break_even_months?: string | null
           budget?: string | null
           business_model?: Json | null
           challenge?: string | null
           competitive_advantages?: Json | null
           competitors?: Json | null
-          complexity_score?: number | null
+          complexity_score?: string | null
           created_at?: string
           customer_types?: string[] | null
           demand_validation?: Json | null
           description?: string | null
-          differentiation_score?: number | null
+          differentiation_score?: string | null
           execution_timeline?: Json | null
-          expected_roi_year1?: number | null
+          expected_roi_year1?: string | null
           financial_scenarios?: Json | null
-          first_mover_score?: number | null
+          first_mover_score?: string | null
           generated_at?: string | null
           go_to_market_preview?: Json | null
           goal?: string | null
@@ -197,9 +197,9 @@ export type Database = {
           investment_comparison?: Json | null
           investment_included?: Json | null
           investment_not_included?: Json | null
-          investment_total_cents?: number | null
+          investment_total_cents?: string | null
           key_metrics?: Json | null
-          ltv_cac_ratio?: number | null
+          ltv_cac_ratio?: string | null
           market_benchmarks?: Json | null
           market_opportunity?: Json | null
           market_size?: string | null
@@ -212,10 +212,10 @@ export type Database = {
           marketing_pricing_action_plan?: Json | null
           marketing_pricing_diagnosis?: Json | null
           marketing_verdict?: Json | null
-          mrr_month12_cents?: number | null
+          mrr_month12_cents?: string | null
           next_steps?: Json | null
-          opportunity_score?: number | null
-          pivot_readiness_score?: number | null
+          opportunity_score?: string | null
+          pivot_readiness_score?: string | null
           pivot_scenarios?: Json | null
           product_stage?: string | null
           projection_data?: Json | null
@@ -223,7 +223,7 @@ export type Database = {
           report_content?: Json | null
           resource_requirements?: Json | null
           risk_quantification?: Json | null
-          risk_score?: number | null
+          risk_score?: string | null
           risks?: Json | null
           saas_logo_url?: string | null
           saas_name: string
@@ -237,7 +237,7 @@ export type Database = {
           tech_stack?: Json | null
           timeline?: string | null
           timing_analysis?: Json | null
-          timing_score?: number | null
+          timing_score?: string | null
           uaicode_info?: Json | null
           unit_economics?: Json | null
           updated_at?: string
@@ -245,32 +245,32 @@ export type Database = {
           verdict?: string | null
           verdict_headline?: string | null
           verdict_summary?: string | null
-          viability_score?: number | null
+          viability_score?: string | null
         }
         Update: {
-          arr_projected_cents?: number | null
+          arr_projected_cents?: string | null
           assets_brand_copy?: Json | null
           assets_brand_identity?: Json | null
           assets_landing_page?: Json | null
           assets_logos?: Json | null
           assets_mockup_previews?: Json | null
           assets_screen_mockups?: Json | null
-          break_even_months?: number | null
+          break_even_months?: string | null
           budget?: string | null
           business_model?: Json | null
           challenge?: string | null
           competitive_advantages?: Json | null
           competitors?: Json | null
-          complexity_score?: number | null
+          complexity_score?: string | null
           created_at?: string
           customer_types?: string[] | null
           demand_validation?: Json | null
           description?: string | null
-          differentiation_score?: number | null
+          differentiation_score?: string | null
           execution_timeline?: Json | null
-          expected_roi_year1?: number | null
+          expected_roi_year1?: string | null
           financial_scenarios?: Json | null
-          first_mover_score?: number | null
+          first_mover_score?: string | null
           generated_at?: string | null
           go_to_market_preview?: Json | null
           goal?: string | null
@@ -283,9 +283,9 @@ export type Database = {
           investment_comparison?: Json | null
           investment_included?: Json | null
           investment_not_included?: Json | null
-          investment_total_cents?: number | null
+          investment_total_cents?: string | null
           key_metrics?: Json | null
-          ltv_cac_ratio?: number | null
+          ltv_cac_ratio?: string | null
           market_benchmarks?: Json | null
           market_opportunity?: Json | null
           market_size?: string | null
@@ -298,10 +298,10 @@ export type Database = {
           marketing_pricing_action_plan?: Json | null
           marketing_pricing_diagnosis?: Json | null
           marketing_verdict?: Json | null
-          mrr_month12_cents?: number | null
+          mrr_month12_cents?: string | null
           next_steps?: Json | null
-          opportunity_score?: number | null
-          pivot_readiness_score?: number | null
+          opportunity_score?: string | null
+          pivot_readiness_score?: string | null
           pivot_scenarios?: Json | null
           product_stage?: string | null
           projection_data?: Json | null
@@ -309,7 +309,7 @@ export type Database = {
           report_content?: Json | null
           resource_requirements?: Json | null
           risk_quantification?: Json | null
-          risk_score?: number | null
+          risk_score?: string | null
           risks?: Json | null
           saas_logo_url?: string | null
           saas_name?: string
@@ -323,7 +323,7 @@ export type Database = {
           tech_stack?: Json | null
           timeline?: string | null
           timing_analysis?: Json | null
-          timing_score?: number | null
+          timing_score?: string | null
           uaicode_info?: Json | null
           unit_economics?: Json | null
           updated_at?: string
@@ -331,7 +331,7 @@ export type Database = {
           verdict?: string | null
           verdict_headline?: string | null
           verdict_summary?: string | null
-          viability_score?: number | null
+          viability_score?: string | null
         }
         Relationships: [
           {

@@ -39,7 +39,7 @@ const PmsReports = () => {
     
     const totalReports = reports.length;
     const scores = reports
-      .map(r => r.viability_score || 0)
+      .map(r => parseInt(String(r.viability_score || "0"), 10) || 0)
       .filter(s => s > 0);
     const avgScore = scores.length > 0 
       ? Math.round(scores.reduce((acc, s) => acc + s, 0) / scores.length) 
