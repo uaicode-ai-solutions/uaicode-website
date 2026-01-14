@@ -118,10 +118,10 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
   const mvpPrice = investmentTotal > 0 ? investmentTotal : 60500;
   // MVP Development - 10% discount
-  const mvpDevDiscountedPrice = Math.round(investment.total * 0.9);
+  const mvpDevDiscountedPrice = Math.round(mvpPrice * 0.9);
   const mvpDevSavings = mvpPrice - mvpDevDiscountedPrice;
   // MVP + Marketing - 20% discount on MVP
-  const mvpMarketingDiscountedPrice = Math.round(investment.total * 0.8);
+  const mvpMarketingDiscountedPrice = Math.round(mvpPrice * 0.8);
   const mvpMarketingSavings = mvpPrice - mvpMarketingDiscountedPrice;
   const marketingMonthly = 10000;
 
