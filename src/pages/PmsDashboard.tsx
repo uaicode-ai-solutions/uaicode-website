@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getReportById, getReports, getProjectDisplayName, StoredReport } from "@/lib/reportsStorage";
 import { 
   Download, 
   FileText, 
@@ -15,7 +14,6 @@ import {
   Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,10 +22,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { reportData } from "@/lib/reportMockData";
 import { BackToTopButton } from "@/components/blog/BackToTopButton";
 import DashboardSkeleton from "@/components/planningmysaas/skeletons/DashboardSkeleton";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
+import { ReportProvider } from "@/contexts/ReportContext";
+import { useReport } from "@/hooks/useReport";
 
 // Section Components
 import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHero";
@@ -54,15 +53,15 @@ import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/Brand
 import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
 import ShareReportDialog from "@/components/planningmysaas/dashboard/ShareReportDialog";
 
-const PmsDashboard = () => {
+const PmsDashboardContent = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("report");
-  const [report, setReport] = useState<StoredReport | null>(null);
-  const [reportsCount, setReportsCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+
+  // Use database data
+  const { data: report, isLoading, error } = useReport(id);
 
   const handleLogout = () => {
     navigate("/planningmysaas/login");
@@ -88,39 +87,20 @@ const PmsDashboard = () => {
     }
   };
 
-  // Load reports count
-  useEffect(() => {
-    setReportsCount(getReports().length);
-  }, []);
-
   // Scroll to top when tab changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [activeTab]);
 
-  // Load report by ID
+  // Redirect if no report found after loading
   useEffect(() => {
-    if (!id) {
+    if (!isLoading && !report && id) {
       navigate("/planningmysaas/reports");
-      return;
     }
-    
-    const timer = setTimeout(() => {
-      const loadedReport = getReportById(id);
-      if (!loadedReport) {
-        navigate("/planningmysaas/reports");
-        return;
-      }
-      
-      setReport(loadedReport);
-      setIsLoading(false);
-    }, 300);
+  }, [isLoading, report, id, navigate]);
 
-    return () => clearTimeout(timer);
-  }, [id, navigate]);
-
-  // Get project name from report or fallback to mock data
-  const projectName = report ? getProjectDisplayName(report) : reportData.projectName;
+  // Get project name from database
+  const projectName = report?.saas_name || "Untitled Project";
 
   const handleDownloadPDF = () => {
     console.log("Downloading Launch Plan PDF...");
@@ -364,6 +344,27 @@ const PmsDashboard = () => {
         projectName={projectName}
       />
     </div>
+  );
+};
+
+// Main component with ReportProvider wrapper
+const PmsDashboard = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  // Redirect if no ID provided
+  useEffect(() => {
+    if (!id) {
+      navigate("/planningmysaas/reports");
+    }
+  }, [id, navigate]);
+
+  if (!id) return null;
+
+  return (
+    <ReportProvider reportId={id}>
+      <PmsDashboardContent />
+    </ReportProvider>
   );
 };
 
