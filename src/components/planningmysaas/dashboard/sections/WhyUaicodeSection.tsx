@@ -102,24 +102,18 @@ const WhyUaicodeSection = () => {
           return (
             <Card 
               key={index}
-              className={`group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+              className={`transition-colors ${
                 stat.highlight 
-                  ? 'bg-gradient-to-br from-accent/20 via-accent/10 to-accent/5 border-accent/40 ring-2 ring-accent/20 hover:ring-accent/40 hover:shadow-accent/20' 
-                  : 'bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 hover:shadow-accent/10'
+                  ? 'bg-accent/10 border-accent/30 hover:border-accent/40' 
+                  : 'bg-card/50 border-border/30 hover:border-accent/30'
               }`}
             >
-              {/* Decorative glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
-              {/* Corner decoration */}
-              <div className="absolute top-0 right-0 w-16 h-16 bg-accent/10 rounded-bl-[40px] -mr-4 -mt-4" />
-              
               <CardContent className="relative p-5 text-center">
                 {/* Icon */}
-                <div className={`mx-auto mb-3 w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${
+                <div className={`mx-auto mb-3 w-12 h-12 rounded-xl flex items-center justify-center ${
                   stat.highlight 
-                    ? 'bg-accent/30 ring-2 ring-accent/40' 
-                    : 'bg-accent/20'
+                    ? 'bg-accent/20' 
+                    : 'bg-accent/10'
                 }`}>
                   <IconComponent className={`h-6 w-6 ${stat.highlight ? 'text-accent' : 'text-accent/80'}`} />
                 </div>

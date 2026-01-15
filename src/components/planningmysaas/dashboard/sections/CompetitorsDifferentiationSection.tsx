@@ -63,7 +63,7 @@ const CompetitorsDifferentiationSection = () => {
       {/* Competitors Grid - 3x2 */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {competitors.map((competitor, index) => (
-          <Card key={index} className="metric-card-premium bg-card/50 border-border/30 hover:border-accent/30 transition-colors flex flex-col h-full">
+          <Card key={index} className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors flex flex-col h-full">
             <CardContent className="p-4 flex flex-col flex-1">
               <div className="flex justify-between items-start mb-2">
                 <span className="font-semibold text-foreground text-sm">{competitor.name}</span>
@@ -100,7 +100,7 @@ const CompetitorsDifferentiationSection = () => {
       {/* Bottom Row: Price Positioning + Your Advantages */}
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Price Positioning Chart */}
-        <Card className="metric-card-premium bg-card/50 border-border/30">
+        <Card className="bg-card/50 border-border/30">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-4">
               <Tag className="w-4 h-4 text-accent" />
@@ -129,7 +129,7 @@ const CompetitorsDifferentiationSection = () => {
         </Card>
 
         {/* Your Competitive Advantages */}
-        <Card className="metric-card-premium bg-card/50 border-border/30">
+        <Card className="bg-card/50 border-border/30">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-4">
               <Trophy className="w-4 h-4 text-green-400" />

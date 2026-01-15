@@ -260,24 +260,18 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             return (
               <Card 
                 key={index}
-                className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 hover:shadow-accent/10"
+                className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors"
               >
-                {/* Decorative glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
-                {/* Corner decoration */}
-                <div className="absolute top-0 right-0 w-12 h-12 bg-accent/10 rounded-bl-[30px] -mr-3 -mt-3" />
-                
-                <CardContent className="relative p-5 text-center">
+                <CardContent className="p-5 text-center">
                   {/* Step Number Badge */}
                   <div className="absolute top-3 left-3">
-                    <div className="w-6 h-6 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center">
                       <span className="text-xs font-bold text-accent">{step.step}</span>
                     </div>
                   </div>
                   
                   {/* Icon */}
-                  <div className="mx-auto mb-3 w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                  <div className="mx-auto mb-3 w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
                     <IconComponent className="h-6 w-6 text-accent" />
                   </div>
                   

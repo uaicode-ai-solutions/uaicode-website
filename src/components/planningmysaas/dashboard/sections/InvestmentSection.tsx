@@ -208,12 +208,8 @@ const InvestmentSection = () => {
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Main Investment Card with Chart */}
-        <Card className="group relative overflow-hidden bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 transition-all duration-300">
-          {/* Glow effect on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          {/* Corner decoration */}
-          <div className="absolute top-0 right-0 w-12 h-12 bg-accent/10 rounded-bl-[30px] -mr-2 -mt-2" />
-          <CardContent className="relative p-5">
+        <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
+          <CardContent className="p-5">
             {/* Total Investment */}
             <div className="text-center mb-6">
               <p className="text-sm text-muted-foreground mb-1">Total MVP Investment</p>
@@ -310,12 +306,8 @@ const InvestmentSection = () => {
         </Card>
 
         {/* Interactive Comparison Slider */}
-        <Card className="group relative overflow-hidden bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 transition-all duration-300">
-          {/* Glow effect on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          {/* Corner decoration */}
-          <div className="absolute top-0 right-0 w-12 h-12 bg-accent/10 rounded-bl-[30px] -mr-2 -mt-2" />
-          <CardContent className="relative p-5">
+        <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
+          <CardContent className="p-5">
             <PricingComparisonSlider />
           </CardContent>
         </Card>
@@ -349,12 +341,8 @@ const InvestmentSection = () => {
         />
 
         {/* Marketing Cost Comparison Slider - Dynamic */}
-        <Card className="group relative overflow-hidden bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 transition-all duration-300">
-          {/* Glow effect on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          {/* Corner decoration */}
-          <div className="absolute top-0 right-0 w-12 h-12 bg-accent/10 rounded-bl-[30px] -mr-2 -mt-2" />
-          <CardContent className="relative p-5">
+        <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
+          <CardContent className="p-5">
             <MarketingComparisonSlider 
               uaicodeTotal={marketingTotals.uaicodeTotal}
               traditionalMin={marketingTotals.traditionalMinTotal}
@@ -378,16 +366,14 @@ const InvestmentSection = () => {
         </InfoTooltip>
       </div>
 
-      <Card className="bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20">
+      <Card className="bg-card/50 border-border/30">
         <CardContent className="p-5">
           {/* Main Grid - 4 columns on desktop */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* MVP Development */}
-            <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 hover:shadow-accent/10">
-              <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute top-0 right-0 w-8 h-8 bg-accent/10 rounded-bl-[20px] -mr-2 -mt-2" />
-              <CardContent className="relative p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+            <Card className="bg-accent/5 border-border/30 hover:border-accent/30 transition-colors">
+              <CardContent className="p-4 text-center">
+                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                   <Sparkles className="h-5 w-5 text-accent" />
                 </div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">MVP Development</p>
@@ -399,11 +385,9 @@ const InvestmentSection = () => {
             </Card>
             
             {/* Marketing Services */}
-            <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 hover:shadow-accent/10">
-              <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute top-0 right-0 w-8 h-8 bg-accent/10 rounded-bl-[20px] -mr-2 -mt-2" />
-              <CardContent className="relative p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+            <Card className="bg-accent/5 border-border/30 hover:border-accent/30 transition-colors">
+              <CardContent className="p-4 text-center">
+                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                   <Megaphone className="h-5 w-5 text-accent" />
                 </div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Marketing Services</p>
@@ -415,11 +399,9 @@ const InvestmentSection = () => {
             </Card>
             
             {/* Paid Media */}
-            <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 hover:shadow-accent/10">
-              <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute top-0 right-0 w-8 h-8 bg-accent/10 rounded-bl-[20px] -mr-2 -mt-2" />
-              <CardContent className="relative p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+            <Card className="bg-accent/5 border-border/30 hover:border-accent/30 transition-colors">
+              <CardContent className="p-4 text-center">
+                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                   <TrendingUp className="h-5 w-5 text-accent" />
                 </div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Paid Media*</p>
@@ -433,11 +415,9 @@ const InvestmentSection = () => {
             </Card>
             
             {/* Total Year 1 - Highlighted */}
-            <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-gradient-to-br from-accent/20 via-accent/10 to-transparent border-accent/30 hover:border-accent/40 hover:shadow-accent/20">
-              <div className="absolute inset-0 bg-gradient-to-t from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute top-0 right-0 w-10 h-10 bg-accent/15 rounded-bl-[24px] -mr-2 -mt-2" />
-              <CardContent className="relative p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/30 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+            <Card className="bg-accent/10 border-accent/30 hover:border-accent/40 transition-colors">
+              <CardContent className="p-4 text-center">
+                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
                   <DollarSign className="h-5 w-5 text-accent" />
                 </div>
                 <p className="text-[10px] text-accent uppercase tracking-wide font-medium mb-1">Total Year 1</p>
