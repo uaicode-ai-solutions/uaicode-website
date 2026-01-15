@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { DollarSign, Check, X, PieChart, AlertCircle, Sparkles, Megaphone, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -7,7 +7,7 @@ import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField, parseCentsField, emptyStates } from "@/lib/reportDataUtils";
 import { InvestmentBreakdown } from "@/types/report";
 import { useMvpTier } from "@/hooks/useMvpTier";
-import { useMarketingTiers, MarketingTotals, calculateMarketingTotals } from "@/hooks/useMarketingTiers";
+import { useMarketingTiers, MarketingTotals } from "@/hooks/useMarketingTiers";
 import PricingComparisonSlider from "../PricingComparisonSlider";
 import MarketingComparisonSlider from "../MarketingComparisonSlider";
 import MarketingServiceSelector from "../marketing/MarketingServiceSelector";
@@ -21,24 +21,10 @@ import {
 } from "recharts";
 
 const InvestmentSection = () => {
-  const { report, reportData } = useReportContext();
+  const { report, reportData, selectedMarketingIds, setSelectedMarketingIds, marketingTotals, setMarketingTotals } = useReportContext();
   const selectedFeatures = report?.selected_features || [];
   const { tier, pricing, featureCounts, isLoading: tierLoading } = useMvpTier(selectedFeatures);
   const { services, isLoading: marketingLoading } = useMarketingTiers();
-  
-  // Marketing selection state
-  const [selectedMarketingIds, setSelectedMarketingIds] = useState<string[]>([]);
-  const [marketingTotals, setMarketingTotals] = useState<MarketingTotals>({
-    uaicodeTotal: 0,
-    traditionalMinTotal: 0,
-    traditionalMaxTotal: 0,
-    savingsMinCents: 0,
-    savingsMaxCents: 0,
-    savingsPercentMin: 0,
-    savingsPercentMax: 0,
-    annualSavingsMin: 0,
-    annualSavingsMax: 0,
-  });
   
   // Calculate suggested paid media based on wizard budget selection
   const calculateSuggestedPaidMedia = (budget: string | null | undefined, uaicodeTotal: number): number => {
