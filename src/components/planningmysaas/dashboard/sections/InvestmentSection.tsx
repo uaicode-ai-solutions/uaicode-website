@@ -358,7 +358,7 @@ const InvestmentSection = () => {
       </div>
 
 
-      {/* Total First Year Investment - Uaicode Premium Pattern */}
+      {/* Total First Year Investment - Matching Marketing Investment Summary Style */}
       <div className="flex items-center gap-2 mt-10">
         <h3 className="font-semibold text-foreground text-lg">Total First Year Investment</h3>
         <InfoTooltip side="right" size="sm">
@@ -366,78 +366,120 @@ const InvestmentSection = () => {
         </InfoTooltip>
       </div>
 
-      <Card className="bg-card/50 border-border/30">
+      <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
         <CardContent className="p-5">
-          {/* Main Grid - 4 columns on desktop */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {/* MVP Development */}
-            <Card className="bg-accent/5 border-border/30 hover:border-accent/30 transition-colors">
-              <CardContent className="p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <Sparkles className="h-5 w-5 text-accent" />
-                </div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">MVP Development</p>
-                <p className="text-base md:text-lg font-bold text-foreground">
-                  {formatCurrency(investment.total)}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-1">(one-time)</p>
-              </CardContent>
-            </Card>
-            
-            {/* Marketing Services */}
-            <Card className="bg-accent/5 border-border/30 hover:border-accent/30 transition-colors">
-              <CardContent className="p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <Megaphone className="h-5 w-5 text-accent" />
-                </div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Marketing Services</p>
-                <p className="text-base md:text-lg font-bold text-foreground">
-                  {formatCurrency(marketingTotals.uaicodeTotal * 12 / 100)}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-1">(selected × 12)</p>
-              </CardContent>
-            </Card>
-            
-            {/* Paid Media */}
-            <Card className="bg-accent/5 border-border/30 hover:border-accent/30 transition-colors">
-              <CardContent className="p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-accent" />
-                </div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Paid Media*</p>
-                <p className="text-base md:text-lg font-bold text-foreground">
-                  {formatCurrency(suggestedPaidMedia * 12 / 100)}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  ({formatCurrency(suggestedPaidMedia / 100)}/mo)
-                </p>
-              </CardContent>
-            </Card>
-            
-            {/* Total Year 1 - Highlighted */}
-            <Card className="bg-accent/10 border-accent/30 hover:border-accent/40 transition-colors">
-              <CardContent className="p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
-                  <DollarSign className="h-5 w-5 text-accent" />
-                </div>
-                <p className="text-[10px] text-accent uppercase tracking-wide font-medium mb-1">Total Year 1</p>
-                <p className="text-lg md:text-xl font-bold text-gradient-gold">
-                  {formatCurrency(investment.total + marketingYearlyTotal / 100)}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* After Year 1 - Subtle footer */}
-          <div className="mt-4 pt-4 border-t border-accent/20 flex items-center justify-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-accent/20 flex items-center justify-center">
-              <TrendingUp className="w-3.5 h-3.5 text-accent" />
+          {/* Total Investment - Centralized */}
+          <div className="text-center mb-6">
+            <p className="text-sm text-muted-foreground mb-1">Total First Year Investment</p>
+            <div className="text-4xl md:text-5xl font-bold text-gradient-gold">
+              {formatCurrency(investment.total + marketingYearlyTotal / 100)}
             </div>
-            <span className="text-sm text-muted-foreground">After Year 1:</span>
-            <span className="text-sm font-semibold text-accent">
-              {formatCurrency(marketingYearlyTotal / 100)}/year
-            </span>
-            <span className="text-xs text-muted-foreground">(marketing only)</span>
+            <p className="text-xs text-muted-foreground mt-1">
+              MVP + Marketing Services + Paid Media
+            </p>
+          </div>
+
+          {/* Breakdown with Donut Chart */}
+          <div className="grid md:grid-cols-2 gap-4 mb-5">
+            {/* Donut Chart */}
+            <div className="h-48 md:h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPieChart>
+                  <Pie
+                    data={[
+                      { 
+                        name: "MVP Development", 
+                        value: investment.total, 
+                        fill: "hsl(var(--accent))" 
+                      },
+                      { 
+                        name: "Marketing Services", 
+                        value: marketingTotals.uaicodeTotal * 12 / 100, 
+                        fill: "hsl(45, 100%, 50%)" 
+                      },
+                      { 
+                        name: "Paid Media Budget", 
+                        value: suggestedPaidMedia * 12 / 100, 
+                        fill: "hsl(var(--muted-foreground))" 
+                      },
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={75}
+                    paddingAngle={2}
+                    dataKey="value"
+                    stroke="transparent"
+                  >
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border) / 0.5)',
+                      borderRadius: '0.5rem'
+                    }}
+                  />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Legend - Breakdown */}
+            <div className="space-y-3 flex flex-col justify-center">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="p-2 rounded-lg bg-accent/10">
+                  <DollarSign className="h-4 w-4 text-accent" />
+                </div>
+                <h4 className="font-medium text-foreground text-sm">Investment Breakdown</h4>
+              </div>
+              
+              {/* MVP Development */}
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-accent/5 border-l-4 border-accent">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-accent" />
+                  <span className="text-xs text-foreground">MVP Development</span>
+                  <span className="text-[10px] text-muted-foreground">(one-time)</span>
+                </div>
+                <span className="text-sm font-semibold text-foreground">
+                  {formatCurrency(investment.total)}
+                </span>
+              </div>
+              
+              {/* Marketing Services */}
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-accent/5 border-l-4 border-[hsl(45,100%,50%)]">
+                <div className="flex items-center gap-2">
+                  <Megaphone className="h-3.5 w-3.5 text-[hsl(45,100%,50%)]" />
+                  <span className="text-xs text-foreground">Marketing Services</span>
+                  <span className="text-[10px] text-muted-foreground">(yearly)</span>
+                </div>
+                <span className="text-sm font-semibold text-foreground">
+                  {formatCurrency(marketingTotals.uaicodeTotal * 12 / 100)}
+                </span>
+              </div>
+              
+              {/* Paid Media */}
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border-l-4 border-muted-foreground/50">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs text-foreground">Paid Media Budget</span>
+                  <span className="text-[10px] text-muted-foreground">(yearly)</span>
+                </div>
+                <span className="text-sm font-semibold text-foreground">
+                  {formatCurrency(suggestedPaidMedia * 12 / 100)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* After Year 1 Footer */}
+          <div className="pt-5 border-t border-border/30">
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-accent" />
+              <span>
+                <span className="font-medium text-foreground">After Year 1:</span>{" "}
+                {formatCurrency(marketingYearlyTotal / 100)}/year (marketing only — no MVP development costs)
+              </span>
+            </div>
           </div>
         </CardContent>
       </Card>
