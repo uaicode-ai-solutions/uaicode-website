@@ -188,8 +188,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         "12 months hosting included",
         "30 days post-launch premium support",
         "Full documentation & training",
-        "Source code ownership",
-        "Priority bug fixes"
+        "Source code ownership"
       ],
       maintenanceNote: {
         afterMonths: 12,
@@ -436,7 +435,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                     <div>
                       <p className="text-xs text-foreground/70">
                         <span className="font-medium text-foreground">After {option.maintenanceNote.afterMonths} months:</span>{" "}
-                        Hosting infrastructure + priority bug fixes will be covered by a new maintenance contract.
+                        Hosting infrastructure or Premium Support will be covered by a new maintenance contract.
                       </p>
                     </div>
                   </div>
@@ -462,6 +461,28 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                     </div>
                     <p className="text-xs text-muted-foreground">
                       50% upfront, 50% on delivery
+                    </p>
+                  </div>
+
+                  {/* Hosting infrastructure Free */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-green-400 font-medium">Hosting infrastructure</span>
+                      <span className="text-green-400 font-bold">Free</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Valid for 12 months
+                    </p>
+                  </div>
+
+                  {/* Premium Support Free */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-green-400 font-medium">Premium Support</span>
+                      <span className="text-green-400 font-bold">Free</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Valid for 12 months
                     </p>
                   </div>
                 </div>
