@@ -179,23 +179,11 @@ const InvestmentSection = () => {
       </div>
 
       {/* MVP Development - Subtitle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-foreground text-sm">MVP Development</h3>
-          <InfoTooltip side="right" size="sm">
-            One-time investment to build your minimum viable product.
-          </InfoTooltip>
-        </div>
-        {tier && (
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs bg-accent/10 border-accent/30 text-accent">
-              {tier.tier_name}
-            </Badge>
-            <span className="text-xs text-muted-foreground hidden sm:inline">
-              {featureCounts.starter}E + {featureCounts.growth}A + {featureCounts.enterprise}Ent features
-            </span>
-          </div>
-        )}
+      <div className="flex items-center gap-2">
+        <h3 className="font-semibold text-foreground text-sm">MVP Development</h3>
+        <InfoTooltip side="right" size="sm">
+          One-time investment to build your minimum viable product.
+        </InfoTooltip>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
