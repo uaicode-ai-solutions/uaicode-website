@@ -445,36 +445,50 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
               {/* Marketing Note */}
               {option.marketingNote && (
-                <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 mb-4 space-y-3">
+                <div className="p-4 rounded-lg bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 mb-4 space-y-4">
                   {/* Header */}
-                  <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-accent" />
-                    <span className="text-sm font-medium text-foreground">Payment details</span>
+                  <div className="flex items-center gap-2 pb-2 border-b border-accent/20">
+                    <CreditCard className="h-4 w-4 text-accent" />
+                    <span className="text-sm font-semibold text-foreground">Payment details</span>
                   </div>
                   
-                  {/* Line items */}
-                  <div className="space-y-2 text-sm">
-                    {/* Annual contract - AMARELO */}
-                    <div className="flex justify-between items-center">
-                      <span className="text-accent font-medium">Annual contract</span>
-                      <span className="text-accent font-medium">
-                        {formatCurrency(option.marketingNote.contractAnnual)}/y*
+                  {/* MVP Development */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-foreground font-medium">MVP Development*</span>
+                      <span className="text-foreground font-bold">
+                        {formatCurrency(mvpMarketingDiscountedPrice)}
                       </span>
                     </div>
-                    
-                    {/* Recommended ad spend - BRANCO */}
-                    <div className="flex justify-between items-center">
-                      <span className="text-foreground/80">Recommended ad spend**</span>
-                      <span className="text-foreground/80">{formatCurrency(option.marketingNote.recommendedAds)}/mo</span>
-                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      50% upfront, 50% on delivery
+                    </p>
                   </div>
                   
-                  {/* Notes */}
-                  <div className="pt-2 border-t border-border/30 space-y-1">
-                    {/* Note 1 - AMARELO */}
-                    <p className="text-xs text-accent">*In up to 12x {formatCurrency(option.marketingNote.contractMonthly)}</p>
-                    {/* Note 2 - BRANCO */}
-                    <p className="text-xs text-foreground/70">**Suggested investment, not included in contract, after MVP launch</p>
+                  {/* Marketing Annual Contract */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-accent font-medium">Marketing Annual contract</span>
+                      <span className="text-accent font-bold">
+                        {formatCurrency(option.marketingNote.contractAnnual)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-accent/70">
+                      Up to 12x of {formatCurrency(option.marketingNote.contractMonthly)}
+                    </p>
+                  </div>
+                  
+                  {/* Recommended ADS */}
+                  <div className="space-y-1 pt-2 border-t border-border/20">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground font-medium">Recommended ADS spend</span>
+                      <span className="text-muted-foreground font-medium">
+                        {formatCurrency(option.marketingNote.recommendedAds)}/mo
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground/70">
+                      Monthly investment, no contract, starts after MVP
+                    </p>
                   </div>
                 </div>
               )}
