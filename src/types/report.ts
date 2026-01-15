@@ -115,6 +115,13 @@ export interface ReportData {
   opportunity_sam: string | null;
   opportunity_som: string | null;
   opportunity_year_rate: string | null;
+  // Investment fields
+  investment_one_payment_cents: number | null;
+  investment_front_cents: number | null;
+  investment_back_cents: number | null;
+  investment_integrations_cents: number | null;
+  investment_infra_cents: number | null;
+  investment_testing_cents: number | null;
 }
 
 // Helper function to safely get value with fallback
