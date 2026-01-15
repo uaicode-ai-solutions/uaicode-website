@@ -488,8 +488,8 @@ const PmsDashboardContent = () => {
                 <div className="space-y-16">
                   <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
                 <ExecutiveVerdict />
-                <BusinessModelSection />
                 <MarketOpportunitySection />
+                <BusinessModelSection />
                 <DemandValidationSection />
                 <TimingAnalysisSection />
                 <MarketBenchmarksSection />
