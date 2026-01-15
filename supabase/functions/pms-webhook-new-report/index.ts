@@ -7,7 +7,8 @@ const corsHeaders = {
 };
 
 interface RequestPayload {
-  report_id: string;
+  wizard_id?: string;
+  report_id?: string; // Legacy support
 }
 
 const getWebhookUrl = (): string => {
@@ -40,32 +41,32 @@ const callInternalFunction = async (functionName: string, body: Record<string, u
   }
 };
 
-const fetchReportAndUserData = async (reportId: string) => {
+const fetchWizardAndUserData = async (wizardId: string) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-  const { data: reportData, error: reportError } = await supabaseAdmin
-    .from("tb_pms_reports")
+  const { data: wizardData, error: wizardError } = await supabaseAdmin
+    .from("tb_pms_wizard")
     .select("*")
-    .eq("id", reportId)
+    .eq("id", wizardId)
     .single();
 
-  if (reportError || !reportData) {
-    throw new Error(`Report not found: ${reportError?.message}`);
+  if (wizardError || !wizardData) {
+    throw new Error(`Wizard not found: ${wizardError?.message}`);
   }
 
   const { data: userData, error: userError } = await supabaseAdmin
     .from("tb_pms_users")
     .select("*")
-    .eq("id", reportData.user_id)
+    .eq("id", wizardData.user_id)
     .single();
 
   if (userError) {
     console.error("Error fetching user:", userError);
   }
 
-  return { reportData, userData };
+  return { wizardData, userData };
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -74,53 +75,52 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { report_id } = (await req.json()) as RequestPayload;
+    const payload = (await req.json()) as RequestPayload;
+    const wizardId = payload.wizard_id || payload.report_id; // Support both
 
-    if (!report_id) {
+    if (!wizardId) {
       return new Response(
-        JSON.stringify({ error: "report_id is required" }),
+        JSON.stringify({ error: "wizard_id is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("Processing report:", report_id);
+    console.log("Processing wizard:", wizardId);
 
     // Execute BOTH calls in parallel, independently
     const results = await Promise.allSettled([
       // 1. N8N Webhook (external notification) - fire and forget
       (async () => {
         try {
-          const { reportData, userData } = await fetchReportAndUserData(report_id);
+          const { wizardData, userData } = await fetchWizardAndUserData(wizardId);
           
           const webhookPayload = {
-            event: "report.created",
+            event: "wizard.created",
             timestamp: new Date().toISOString(),
             data: {
-              report: {
-                id: reportData.id,
-                status: reportData.status,
-                saas_name: reportData.saas_name,
-                saas_logo_url: reportData.saas_logo_url,
-                product_stage: reportData.product_stage,
-                saas_type: reportData.saas_type,
-                saas_type_other: reportData.saas_type_other,
-                industry: reportData.industry,
-                industry_other: reportData.industry_other,
-                description: reportData.description,
-                customer_types: reportData.customer_types,
-                market_size: reportData.market_size,
-                target_audience: reportData.target_audience,
-                market_type: reportData.market_type,
-                selected_features: reportData.selected_features,
-                selected_tier: reportData.selected_tier,
-                goal: reportData.goal,
-                goal_other: reportData.goal_other,
-                challenge: reportData.challenge,
-                budget: reportData.budget,
-                timeline: reportData.timeline,
-                viability_score: reportData.viability_score,
-                complexity_score: reportData.complexity_score,
-                created_at: reportData.created_at,
+              wizard: {
+                id: wizardData.id,
+                status: wizardData.status,
+                saas_name: wizardData.saas_name,
+                saas_logo_url: wizardData.saas_logo_url,
+                product_stage: wizardData.product_stage,
+                saas_type: wizardData.saas_type,
+                saas_type_other: wizardData.saas_type_other,
+                industry: wizardData.industry,
+                industry_other: wizardData.industry_other,
+                description: wizardData.description,
+                customer_types: wizardData.customer_types,
+                market_size: wizardData.market_size,
+                target_audience: wizardData.target_audience,
+                market_type: wizardData.market_type,
+                selected_features: wizardData.selected_features,
+                selected_tier: wizardData.selected_tier,
+                goal: wizardData.goal,
+                goal_other: wizardData.goal_other,
+                challenge: wizardData.challenge,
+                budget: wizardData.budget,
+                timeline: wizardData.timeline,
+                created_at: wizardData.created_at,
               },
               user: userData ? {
                 id: userData.id,
@@ -146,7 +146,7 @@ const handler = async (req: Request): Promise<Response> => {
             throw new Error(`Webhook failed: ${webhookResponse.status} - ${errorText}`);
           }
 
-          console.log("N8N Webhook sent successfully for report:", report_id);
+          console.log("N8N Webhook sent successfully for wizard:", wizardId);
           return { success: true };
         } catch (error) {
           console.error("N8N Webhook failed (non-blocking):", error);
@@ -157,9 +157,9 @@ const handler = async (req: Request): Promise<Response> => {
       // 2. Report Generation (main process) - must run regardless of webhook
       (async () => {
         try {
-          console.log("Starting report generation for:", report_id);
-          await callInternalFunction("pms-generate-report", { reportId: report_id });
-          console.log("Report generation started successfully for:", report_id);
+          console.log("Starting report generation for wizard:", wizardId);
+          await callInternalFunction("pms-generate-report", { wizardId: wizardId });
+          console.log("Report generation started successfully for wizard:", wizardId);
           return { success: true };
         } catch (error) {
           console.error("Report generation call failed:", error);

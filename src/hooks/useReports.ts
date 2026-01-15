@@ -7,7 +7,7 @@ export const useReports = () => {
     queryKey: ["reports"],
     queryFn: async (): Promise<ReportRow[]> => {
       const { data, error } = await supabase
-        .from("tb_pms_reports")
+        .from("tb_pms_wizard")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -29,7 +29,7 @@ export const useDeleteReport = () => {
   return useMutation({
     mutationFn: async (reportId: string) => {
       const { error } = await supabase
-        .from("tb_pms_reports")
+        .from("tb_pms_wizard")
         .delete()
         .eq("id", reportId);
 

@@ -9,7 +9,7 @@ export const useReport = (reportId: string | undefined) => {
       if (!reportId) return null;
 
       const { data, error } = await supabase
-        .from("tb_pms_reports")
+        .from("tb_pms_wizard")
         .select("*")
         .eq("id", reportId)
         .single();

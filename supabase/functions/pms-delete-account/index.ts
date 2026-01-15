@@ -89,17 +89,17 @@ const handler = async (req: Request): Promise<Response> => {
         console.log("Deleted payments count:", deletedPayments?.length || 0);
       }
 
-      // 3. Delete user's reports using the CORRECT ID (pmsUserId, not auth user.id)
-      const { data: deletedReports, error: reportsError } = await supabaseAdmin
-        .from("tb_pms_reports")
+      // 3. Delete user's wizard entries using the CORRECT ID (pmsUserId, not auth user.id)
+      const { data: deletedWizards, error: wizardsError } = await supabaseAdmin
+        .from("tb_pms_wizard")
         .delete()
         .eq("user_id", pmsUserId)
         .select("id");
 
-      if (reportsError) {
-        console.error("Error deleting reports:", reportsError.message);
+      if (wizardsError) {
+        console.error("Error deleting wizards:", wizardsError.message);
       } else {
-        console.log("Deleted reports count:", deletedReports?.length || 0);
+        console.log("Deleted wizards count:", deletedWizards?.length || 0);
       }
     } else {
       console.log("No pmsUserId found - skipping payments/reports deletion");

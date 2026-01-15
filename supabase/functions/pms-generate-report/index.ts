@@ -196,35 +196,35 @@ async function processReportGeneration(reportId: string): Promise<void> {
     // ============================================================
     console.log(`[pms-generate-report] Phase 1: Collecting Wizard Data`);
     
-    const { data: report, error: fetchError } = await supabase
-      .from("tb_pms_reports")
+    const { data: wizard, error: fetchError } = await supabase
+      .from("tb_pms_wizard")
       .select("*")
       .eq("id", reportId)
       .single();
 
-    if (fetchError || !report) {
-      throw new Error(`Report not found: ${reportId}`);
+    if (fetchError || !wizard) {
+      throw new Error(`Wizard not found: ${reportId}`);
     }
 
-    console.log(`[pms-generate-report] Found report: ${report.saas_name}`);
+    console.log(`[pms-generate-report] Found wizard: ${wizard.saas_name}`);
 
     // Prepare wizard data for AI context
     const wizardData = {
-      saasName: report.saas_name,
-      description: report.description,
-      industry: report.industry === "other" ? report.industry_other : report.industry,
-      saasType: report.saas_type === "other" ? report.saas_type_other : report.saas_type,
-      productStage: report.product_stage,
-      customerTypes: report.customer_types,
-      marketSize: report.market_size,
-      targetAudience: report.target_audience,
-      marketType: report.market_type,
-      selectedFeatures: report.selected_features,
-      selectedTier: report.selected_tier,
-      goal: report.goal === "other" ? report.goal_other : report.goal,
-      challenge: report.challenge,
-      budget: report.budget,
-      timeline: report.timeline,
+      saasName: wizard.saas_name,
+      description: wizard.description,
+      industry: wizard.industry === "other" ? wizard.industry_other : wizard.industry,
+      saasType: wizard.saas_type === "other" ? wizard.saas_type_other : wizard.saas_type,
+      productStage: wizard.product_stage,
+      customerTypes: wizard.customer_types,
+      marketSize: wizard.market_size,
+      targetAudience: wizard.target_audience,
+      marketType: wizard.market_type,
+      selectedFeatures: wizard.selected_features,
+      selectedTier: wizard.selected_tier,
+      goal: wizard.goal === "other" ? wizard.goal_other : wizard.goal,
+      challenge: wizard.challenge,
+      budget: wizard.budget,
+      timeline: wizard.timeline,
     };
 
     // ============================================================
@@ -601,12 +601,13 @@ async function processReportGeneration(reportId: string): Promise<void> {
       assets_mockup_previews: { previews: [] },
     };
 
-    // Update report in database
-    console.log(`[pms-generate-report] Saving report to database...`);
+    // TODO: Save to NEW tb_pms_reports table when created
+    // For now, just update status on wizard table
+    console.log(`[pms-generate-report] Updating wizard status to completed...`);
 
     const { error: updateError } = await supabase
-      .from("tb_pms_reports")
-      .update(updatePayload)
+      .from("tb_pms_wizard")
+      .update({ status: "completed" })
       .eq("id", reportId);
 
     if (updateError) {
@@ -616,6 +617,7 @@ async function processReportGeneration(reportId: string): Promise<void> {
 
     console.log(`[pms-generate-report] ✅ Report generation complete for: ${reportId}`);
     console.log(`[pms-generate-report] Summary: scraped ${scrapedCompetitors.length} competitors, generated all sections`);
+    console.log(`[pms-generate-report] NOTE: Report data NOT saved yet - waiting for new tb_pms_reports table`);
 
   } catch (error) {
     console.error(`[pms-generate-report] ❌ Background generation failed for ${reportId}:`, error);
@@ -623,11 +625,8 @@ async function processReportGeneration(reportId: string): Promise<void> {
     // Update status to failed
     try {
       await supabase
-        .from("tb_pms_reports")
-        .update({ 
-          status: "failed",
-          error_message: error instanceof Error ? error.message : "Unknown error"
-        })
+        .from("tb_pms_wizard")
+        .update({ status: "failed" })
         .eq("id", reportId);
       console.log(`[pms-generate-report] Status updated to 'failed' for ${reportId}`);
     } catch (dbError) {
@@ -651,28 +650,29 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { reportId } = await req.json() as ReportRequest;
+    const body = await req.json() as ReportRequest & { wizardId?: string };
+    const reportId = body.reportId || body.wizardId; // Support both
     
-    console.log(`[pms-generate-report] 📥 Request received for report: ${reportId}`);
+    console.log(`[pms-generate-report] 📥 Request received for wizard: ${reportId}`);
 
-    // Validate report exists
-    const { data: report, error: fetchError } = await supabase
-      .from("tb_pms_reports")
+    // Validate wizard exists
+    const { data: wizard, error: fetchError } = await supabase
+      .from("tb_pms_wizard")
       .select("id, status")
       .eq("id", reportId)
       .single();
 
-    if (fetchError || !report) {
-      console.error(`[pms-generate-report] Report not found: ${reportId}`);
+    if (fetchError || !wizard) {
+      console.error(`[pms-generate-report] Wizard not found: ${reportId}`);
       return new Response(
-        JSON.stringify({ success: false, error: "Report not found" }),
+        JSON.stringify({ success: false, error: "Wizard not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     // Update status to "processing" immediately
     await supabase
-      .from("tb_pms_reports")
+      .from("tb_pms_wizard")
       .update({ status: "processing" })
       .eq("id", reportId);
 
@@ -693,7 +693,7 @@ serve(async (req) => {
 
     // ✅ PROCESS IN BACKGROUND with EdgeRuntime.waitUntil
     EdgeRuntime.waitUntil(
-      processReportGeneration(reportId)
+      processReportGeneration(reportId!)
         .catch(error => {
           console.error(`[pms-generate-report] Background processing error for ${reportId}:`, error);
         })
