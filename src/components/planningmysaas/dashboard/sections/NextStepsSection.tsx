@@ -467,9 +467,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       <span className="text-amber-400 font-medium">Premium Support</span>
                       <span className="text-amber-400 font-bold">Free</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Valid for 12 months
-                    </p>
+                            <p className="text-xs text-muted-foreground">
+                              Valid for 30 days post-launch
+                            </p>
                   </div>
                 </div>
               )}
