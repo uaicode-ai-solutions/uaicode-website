@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      tb_pms_mkt_tier: {
+        Row: {
+          ad_spend_fee_percent: number | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          is_recommended: boolean | null
+          market_notes: string | null
+          market_source: string | null
+          monthly_deliverables: Json | null
+          research_date: string | null
+          service_description: string
+          service_icon: string
+          service_id: string
+          service_name: string
+          traditional_max_cents: number
+          traditional_min_cents: number
+          uaicode_differentiator: string | null
+          uaicode_price_cents: number
+          updated_at: string | null
+          whats_included: Json | null
+          whats_not_included: Json | null
+        }
+        Insert: {
+          ad_spend_fee_percent?: number | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_recommended?: boolean | null
+          market_notes?: string | null
+          market_source?: string | null
+          monthly_deliverables?: Json | null
+          research_date?: string | null
+          service_description: string
+          service_icon: string
+          service_id: string
+          service_name: string
+          traditional_max_cents: number
+          traditional_min_cents: number
+          uaicode_differentiator?: string | null
+          uaicode_price_cents: number
+          updated_at?: string | null
+          whats_included?: Json | null
+          whats_not_included?: Json | null
+        }
+        Update: {
+          ad_spend_fee_percent?: number | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_recommended?: boolean | null
+          market_notes?: string | null
+          market_source?: string | null
+          monthly_deliverables?: Json | null
+          research_date?: string | null
+          service_description?: string
+          service_icon?: string
+          service_id?: string
+          service_name?: string
+          traditional_max_cents?: number
+          traditional_min_cents?: number
+          uaicode_differentiator?: string | null
+          uaicode_price_cents?: number
+          updated_at?: string | null
+          whats_included?: Json | null
+          whats_not_included?: Json | null
+        }
+        Relationships: []
+      }
       tb_pms_mvp_tier: {
         Row: {
           created_at: string

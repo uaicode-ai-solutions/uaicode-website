@@ -1,91 +1,108 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, X, DollarSign, Target, Palette, Sparkles, FileText, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface ComparisonData {
-  uaicode: number;
-  traditional: number;
-  savings: string;
-  savingsAmountMin: number;
-  savingsAmountMax: number;
-  savingsContext: string;
-  features: {
-    label: string;
-    icon: React.ElementType;
-    uaicode: string;
-    traditional: string;
-  }[];
+interface MarketingComparisonSliderProps {
+  uaicodeTotal?: number; // in cents
+  traditionalMin?: number; // in cents
+  traditionalMax?: number; // in cents
+  savingsPercentMin?: number;
+  savingsPercentMax?: number;
+  annualSavingsMin?: number; // in cents
+  annualSavingsMax?: number; // in cents
+  isLoading?: boolean;
 }
 
-const comparisonData: ComparisonData = {
-  uaicode: 10000,
-  traditional: 17375, // Average of $13,750 - $21,000
-  savings: "42%",
-  savingsAmountMin: 88500,
-  savingsAmountMax: 132000,
-  savingsContext: "Reinvest in paid media for faster growth!",
-  features: [
-    {
-      label: "Pricing Model",
-      icon: DollarSign,
-      uaicode: "Fixed price",
-      traditional: "Variable",
-    },
-    {
-      label: "Strategy",
-      icon: Target,
-      uaicode: "Included",
-      traditional: "Extra charge",
-    },
-    {
-      label: "Creative",
-      icon: Palette,
-      uaicode: "Included",
-      traditional: "Hourly billing",
-    },
-    {
-      label: "AI Optimization",
-      icon: Sparkles,
-      uaicode: "AI-powered",
-      traditional: "None",
-    },
-    {
-      label: "Reporting",
-      icon: FileText,
-      uaicode: "Advanced",
-      traditional: "Basic",
-    },
-  ],
-};
-
-const formatCurrency = (value: number) => {
+const formatCurrency = (cents: number) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(cents / 100);
 };
 
-const MarketingComparisonSlider = () => {
+const formatCurrencyK = (cents: number) => {
+  const value = cents / 100;
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}K`;
+  }
+  return formatCurrency(cents);
+};
+
+// Feature comparison (static data)
+const features = [
+  {
+    label: "Pricing Model",
+    icon: DollarSign,
+    uaicode: "Fixed price",
+    traditional: "Variable",
+  },
+  {
+    label: "Strategy",
+    icon: Target,
+    uaicode: "Included",
+    traditional: "Extra charge",
+  },
+  {
+    label: "Creative",
+    icon: Palette,
+    uaicode: "Included",
+    traditional: "Hourly billing",
+  },
+  {
+    label: "AI Optimization",
+    icon: Sparkles,
+    uaicode: "AI-powered",
+    traditional: "None",
+  },
+  {
+    label: "Reporting",
+    icon: FileText,
+    uaicode: "Advanced",
+    traditional: "Basic",
+  },
+];
+
+const MarketingComparisonSlider = ({
+  uaicodeTotal = 500000, // $5,000 default
+  traditionalMin = 1650000, // $16,500 default
+  traditionalMax = 6000000, // $60,000 default
+  savingsPercentMin = 69,
+  savingsPercentMax = 91,
+  annualSavingsMin = 13800000, // $138,000 default
+  annualSavingsMax = 66000000, // $660,000 default
+  isLoading = false,
+}: MarketingComparisonSliderProps) => {
   const [animatedUaicode, setAnimatedUaicode] = useState(0);
   const [animatedTraditional, setAnimatedTraditional] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const animationKey = useRef(0);
 
-  // Animate bars on mount
+  // Calculate traditional average for the bar
+  const traditionalAvg = (traditionalMin + traditionalMax) / 2;
+
+  // Reset animation when values change
   useEffect(() => {
+    animationKey.current += 1;
+    setHasAnimated(false);
+    setAnimatedUaicode(0);
+    setAnimatedTraditional(0);
+    
     const timer = setTimeout(() => {
       setHasAnimated(true);
     }, 100);
+    
     return () => clearTimeout(timer);
-  }, []);
+  }, [uaicodeTotal, traditionalMin, traditionalMax]);
 
   // Animate numbers
   useEffect(() => {
-    if (!hasAnimated) return;
+    if (!hasAnimated || isLoading) return;
     
-    const duration = 1500;
-    const steps = 60;
+    const duration = 1200;
+    const steps = 50;
     const stepDuration = duration / steps;
     
     let currentStep = 0;
@@ -94,20 +111,36 @@ const MarketingComparisonSlider = () => {
       const progress = currentStep / steps;
       const easeOut = 1 - Math.pow(1 - progress, 3);
       
-      setAnimatedUaicode(Math.floor(comparisonData.uaicode * easeOut));
-      setAnimatedTraditional(Math.floor(comparisonData.traditional * easeOut));
+      setAnimatedUaicode(Math.floor(uaicodeTotal * easeOut));
+      setAnimatedTraditional(Math.floor(traditionalAvg * easeOut));
       
       if (currentStep >= steps) {
         clearInterval(interval);
-        setAnimatedUaicode(comparisonData.uaicode);
-        setAnimatedTraditional(comparisonData.traditional);
+        setAnimatedUaicode(uaicodeTotal);
+        setAnimatedTraditional(traditionalAvg);
       }
     }, stepDuration);
     
     return () => clearInterval(interval);
-  }, [hasAnimated]);
+  }, [hasAnimated, uaicodeTotal, traditionalAvg, isLoading]);
 
-  const uaicodeWidth = (comparisonData.uaicode / comparisonData.traditional) * 100;
+  const uaicodeWidth = traditionalAvg > 0 ? (uaicodeTotal / traditionalAvg) * 100 : 50;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-5">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <div className="space-y-2">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-8 w-full" />
+          ))}
+        </div>
+        <Skeleton className="h-20 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -118,7 +151,7 @@ const MarketingComparisonSlider = () => {
           <h4 className="font-medium text-foreground text-sm">Marketing Cost Comparison</h4>
         </div>
         <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-400 text-xs">
-          Save {comparisonData.savings}
+          Save {savingsPercentMin}-{savingsPercentMax}%
         </Badge>
       </div>
 
@@ -128,14 +161,16 @@ const MarketingComparisonSlider = () => {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Traditional Agency</span>
-            <span className="font-medium text-red-400">{formatCurrency(animatedTraditional)}/mo</span>
+            <span className="font-medium text-red-400">
+              {formatCurrencyK(traditionalMin)} - {formatCurrencyK(traditionalMax)}/mo
+            </span>
           </div>
           <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-border/30">
             <div 
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500/40 to-red-400/30 rounded-lg transition-all duration-1000 ease-out flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? '100%' : '0%' }}
             >
-              <span className="text-xs font-medium text-red-300">~$17K</span>
+              <span className="text-xs font-medium text-red-300">~{formatCurrencyK(animatedTraditional)}</span>
             </div>
           </div>
         </div>
@@ -149,9 +184,9 @@ const MarketingComparisonSlider = () => {
           <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-accent/30">
             <div 
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent/60 to-accent/40 rounded-lg transition-all duration-1000 ease-out delay-300 flex items-center justify-end pr-3"
-              style={{ width: hasAnimated ? `${uaicodeWidth}%` : '0%' }}
+              style={{ width: hasAnimated ? `${Math.min(uaicodeWidth, 100)}%` : '0%' }}
             >
-              <span className="text-xs font-medium text-accent-foreground">$10K</span>
+              <span className="text-xs font-medium text-accent-foreground">{formatCurrencyK(uaicodeTotal)}</span>
             </div>
           </div>
         </div>
@@ -165,7 +200,7 @@ const MarketingComparisonSlider = () => {
           <span className="text-center text-accent">Uaicode</span>
         </div>
         
-        {comparisonData.features.map((feature, index) => {
+        {features.map((feature, index) => {
           const IconComponent = feature.icon;
           
           return (
@@ -198,11 +233,11 @@ const MarketingComparisonSlider = () => {
             <Check className="h-3.5 w-3.5 text-green-400" />
           </div>
           <span className="font-bold text-green-400 text-sm md:text-lg">
-            You Save: {formatCurrency(comparisonData.savingsAmountMin)} - {formatCurrency(comparisonData.savingsAmountMax)}/year
+            You Save: {formatCurrencyK(annualSavingsMin)} - {formatCurrencyK(annualSavingsMax)}/year
           </span>
         </div>
         <p className="text-xs text-muted-foreground pl-7">
-          {comparisonData.savingsContext}
+          Reinvest in paid media for faster growth!
         </p>
       </div>
     </div>
