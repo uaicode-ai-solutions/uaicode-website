@@ -139,6 +139,12 @@ export type Database = {
           created_at: string
           expected_roi: string | null
           id: string
+          investment_back_cents: number | null
+          investment_front_cents: number | null
+          investment_infra_cents: number | null
+          investment_integrations_cents: number | null
+          investment_one_payment_cents: number | null
+          investment_testing_cents: number | null
           opportunity_sam: string | null
           opportunity_som: string | null
           opportunity_tam: string | null
@@ -155,6 +161,12 @@ export type Database = {
           created_at?: string
           expected_roi?: string | null
           id?: string
+          investment_back_cents?: number | null
+          investment_front_cents?: number | null
+          investment_infra_cents?: number | null
+          investment_integrations_cents?: number | null
+          investment_one_payment_cents?: number | null
+          investment_testing_cents?: number | null
           opportunity_sam?: string | null
           opportunity_som?: string | null
           opportunity_tam?: string | null
@@ -171,6 +183,12 @@ export type Database = {
           created_at?: string
           expected_roi?: string | null
           id?: string
+          investment_back_cents?: number | null
+          investment_front_cents?: number | null
+          investment_infra_cents?: number | null
+          investment_integrations_cents?: number | null
+          investment_one_payment_cents?: number | null
+          investment_testing_cents?: number | null
           opportunity_sam?: string | null
           opportunity_som?: string | null
           opportunity_tam?: string | null
