@@ -445,44 +445,37 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
               {/* Marketing Note */}
               {option.marketingNote && (
-                <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 mb-4 space-y-2">
-                  {/* Header - Monthly contract value */}
+                <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 mb-4 space-y-3">
+                  {/* Header */}
                   <div className="flex items-center gap-2">
                     <Zap className="h-4 w-4 text-accent" />
-                    <span className="text-sm font-medium text-foreground">
-                      + {formatCurrency(option.marketingNote.contractMonthly)}/month
-                    </span>
+                    <span className="text-sm font-medium text-foreground">Payment details</span>
                   </div>
                   
-                  {/* Contract breakdown */}
-                  <div className="pl-6 space-y-1 text-xs">
+                  {/* Line items */}
+                  <div className="space-y-2 text-sm">
+                    {/* Annual contract - AMARELO */}
                     <div className="flex justify-between items-center">
-                      <span className="text-foreground/70">Annual contract</span>
-                      <span className="text-foreground font-medium">
-                        {formatCurrency(option.marketingNote.contractAnnual)}
-                        <span className="text-muted-foreground ml-1">(12x of {formatCurrency(option.marketingNote.contractMonthly)})</span>
+                      <span className="text-accent font-medium">Annual contract</span>
+                      <span className="text-accent font-medium">
+                        {formatCurrency(option.marketingNote.contractAnnual)} (12x of {formatCurrency(option.marketingNote.contractMonthly)})*
                       </span>
                     </div>
-                  </div>
-                  
-                  {/* Separator */}
-                  <div className="border-t border-border/30 my-2"></div>
-                  
-                  {/* Recommended ad spend - clearly marked as optional */}
-                  <div className="pl-6 space-y-1 text-xs">
-                    <div className="flex justify-between items-start">
-                      <span className="text-foreground/70">Recommended ad spend*</span>
-                      <span className="text-accent font-medium">{formatCurrency(option.marketingNote.recommendedAds)}/mo</span>
+                    
+                    {/* Recommended ad spend - BRANCO */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-foreground/80">Recommended ad spend**</span>
+                      <span className="text-foreground/80">{formatCurrency(option.marketingNote.recommendedAds)}/mo</span>
                     </div>
-                    <p className="text-muted-foreground italic">
-                      *Suggested monthly investment, not included in contract
-                    </p>
                   </div>
                   
-                  {/* Final note */}
-                  <p className="text-xs text-accent/80 pt-1">
-                    Annual contract • {option.marketingNote.note}
-                  </p>
+                  {/* Notes */}
+                  <div className="pt-2 border-t border-border/30 space-y-1">
+                    {/* Note 1 - AMARELO */}
+                    <p className="text-xs text-accent">*Annual contract</p>
+                    {/* Note 2 - BRANCO */}
+                    <p className="text-xs text-foreground/70">**Suggested monthly investment, not included in contract, starts after MVP launch</p>
+                  </div>
                 </div>
               )}
 
