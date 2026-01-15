@@ -10,6 +10,39 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
+// ==========================================
+// Feature Tier Helpers (duplicated from src/types/report.ts for Deno)
+// ==========================================
+
+const FEATURE_TIERS = {
+  starter: ['auth', 'profiles', 'crud', 'reporting', 'notifications', 'admin', 'responsive', 'security'],
+  growth: ['advancedAnalytics', 'apiIntegrations', 'payments', 'roles', 'search', 'fileUpload', 'realtime', 'workflows', 'advancedReporting', 'emailMarketing'],
+  enterprise: ['ai', 'dataAnalytics', 'multiTenant', 'sso', 'customIntegrations', 'apiManagement', 'collaboration', 'automation', 'customReporting', 'support']
+};
+
+const INVESTMENT_PERCENTAGES = {
+  front: 0.30,
+  back: 0.28,
+  integrations: 0.20,
+  infra: 0.12,
+  testing: 0.10
+};
+
+function countFeaturesByTier(selectedFeatures: string[]): { starter: number; growth: number; enterprise: number } {
+  return {
+    starter: selectedFeatures.filter(f => FEATURE_TIERS.starter.includes(f)).length,
+    growth: selectedFeatures.filter(f => FEATURE_TIERS.growth.includes(f)).length,
+    enterprise: selectedFeatures.filter(f => FEATURE_TIERS.enterprise.includes(f)).length,
+  };
+}
+
+function determineMvpTier(selectedFeatures: string[]): 'starter' | 'growth' | 'enterprise' {
+  const counts = countFeaturesByTier(selectedFeatures);
+  if (counts.enterprise > 0) return 'enterprise';
+  if (counts.growth > 0) return 'growth';
+  return 'starter';
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function processN8nWebhook(
   supabase: any,
@@ -113,12 +146,78 @@ serve(async (req) => {
       );
     }
 
-    // Create new report entry in tb_pms_reports with status 'pending'
+    // ==========================================
+    // Calculate Tier and Investment Breakdown
+    // ==========================================
+    
+    const selectedFeatures = wizard.selected_features || [];
+    const correctTier = determineMvpTier(selectedFeatures);
+    
+    console.log(`📊 Calculated tier: ${correctTier} (wizard had: ${wizard.selected_tier})`);
+    
+    // Update wizard tier if different
+    if (wizard.selected_tier !== correctTier) {
+      const { error: tierUpdateError } = await supabase
+        .from("tb_pms_wizard")
+        .update({ selected_tier: correctTier })
+        .eq("id", wizard_id);
+      
+      if (tierUpdateError) {
+        console.error("⚠️ Failed to update wizard tier:", tierUpdateError);
+      } else {
+        console.log(`✅ Updated wizard tier to: ${correctTier}`);
+      }
+    }
+    
+    // Fetch tier pricing data
+    const { data: tierData, error: tierError } = await supabase
+      .from("tb_pms_mvp_tier")
+      .select("*")
+      .eq("tier_id", correctTier)
+      .eq("is_active", true)
+      .single();
+    
+    if (tierError) {
+      console.error("⚠️ Failed to fetch tier data:", tierError);
+    }
+    
+    // Calculate dynamic price based on features
+    const counts = countFeaturesByTier(selectedFeatures);
+    let calculatedPrice = 0;
+    
+    if (tierData) {
+      calculatedPrice = 
+        (counts.starter * tierData.price_per_essential_cents) +
+        (counts.growth * tierData.price_per_advanced_cents) +
+        (counts.enterprise * tierData.price_per_enterprise_cents);
+    }
+    
+    console.log(`💰 Calculated price: ${calculatedPrice} cents (starter: ${counts.starter}, growth: ${counts.growth}, enterprise: ${counts.enterprise})`);
+    
+    // Calculate investment breakdown
+    const investmentBreakdown = {
+      one_payment: calculatedPrice,
+      front: Math.round(calculatedPrice * INVESTMENT_PERCENTAGES.front),
+      back: Math.round(calculatedPrice * INVESTMENT_PERCENTAGES.back),
+      integrations: Math.round(calculatedPrice * INVESTMENT_PERCENTAGES.integrations),
+      infra: Math.round(calculatedPrice * INVESTMENT_PERCENTAGES.infra),
+      testing: Math.round(calculatedPrice * INVESTMENT_PERCENTAGES.testing),
+    };
+    
+    console.log(`📦 Investment breakdown:`, investmentBreakdown);
+
+    // Create new report entry in tb_pms_reports with status 'pending' and investment values
     const { data: report, error: reportError } = await supabase
       .from("tb_pms_reports")
       .insert({
         wizard_id: wizard_id,
         status: "pending",
+        investment_one_payment_cents: investmentBreakdown.one_payment,
+        investment_front_cents: investmentBreakdown.front,
+        investment_back_cents: investmentBreakdown.back,
+        investment_integrations_cents: investmentBreakdown.integrations,
+        investment_infra_cents: investmentBreakdown.infra,
+        investment_testing_cents: investmentBreakdown.testing,
       })
       .select()
       .single();
@@ -131,7 +230,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`📝 Created report entry: ${report.id}`);
+    console.log(`📝 Created report entry: ${report.id} with investment values`);
 
     // Update report status to 'processing'
     const { error: updateError } = await supabase

@@ -15,7 +15,7 @@ interface MvpTierResult {
     uaicode: { min: number; max: number };
     traditional: { min: number; max: number };
   };
-  featureCounts: { essential: number; advanced: number; enterprise: number };
+  featureCounts: { starter: number; growth: number; enterprise: number };
   isLoading: boolean;
   error: Error | null;
 }
