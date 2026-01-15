@@ -118,29 +118,30 @@ const WhyUaicodeSection = () => {
           return (
             <Card 
               key={index} 
-              className={`bg-card/50 border-border/30 relative ${stat.highlight ? 'border-accent/50' : ''}`}
+              className={`relative overflow-hidden ${
+                stat.highlight 
+                  ? 'bg-gradient-to-br from-accent/10 to-accent/5 border-accent/40' 
+                  : 'bg-card/80 border-border/40'
+              }`}
             >
-              <CardContent className="p-5">
-                {/* Badge TOP RATED - canto superior direito */}
-                {stat.highlight && (
-                  <Badge className="absolute top-3 right-3 text-[10px] bg-accent text-background font-semibold px-2 py-0.5">
-                    TOP RATED
-                  </Badge>
-                )}
-                
-                {/* Valor e labels */}
-                <div className="space-y-1">
-                  <div className={`text-4xl md:text-5xl font-bold ${stat.highlight ? 'text-accent' : 'text-foreground'}`}>
-                    {stat.value}
-                  </div>
-                  <div className="text-sm font-medium text-foreground">{stat.label}</div>
-                  <div className="text-xs text-muted-foreground">{stat.sublabel}</div>
+              {/* Badge TOP RATED - canto superior esquerdo */}
+              {stat.highlight && (
+                <Badge className="absolute top-3 left-3 text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 font-medium px-2 py-0.5">
+                  <span className="mr-1">●</span> TOP RATED
+                </Badge>
+              )}
+              
+              {/* Ícone - canto superior direito com fundo sólido dourado */}
+              <div className="absolute top-4 right-4 p-2.5 rounded-lg bg-accent">
+                <IconComponent className="h-5 w-5 text-background" />
+              </div>
+              
+              <CardContent className="p-6 pt-14 flex flex-col items-center justify-center text-center min-h-[140px]">
+                <div className="text-4xl md:text-5xl font-bold text-accent mb-1">
+                  {stat.value}
                 </div>
-                
-                {/* Ícone - canto inferior direito */}
-                <div className="absolute bottom-4 right-4 p-2.5 rounded-xl bg-accent/10">
-                  <IconComponent className="h-5 w-5 text-accent" />
-                </div>
+                <div className="text-sm font-medium text-foreground">{stat.label}</div>
+                <div className="text-xs text-muted-foreground">{stat.sublabel}</div>
               </CardContent>
             </Card>
           );
