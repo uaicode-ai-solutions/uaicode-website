@@ -26,7 +26,15 @@ CRITICAL RULES:
 4. Provide actionable, realistic insights based on the provided research data.
 5. Be creative but grounded in market realities.
 6. Consider the target audience, industry, and budget constraints.
-7. Output ONLY valid JSON matching the exact schema provided. No markdown, no explanations.`;
+7. Output ONLY valid JSON matching the exact schema provided. No markdown, no explanations.
+
+CRITICAL - SCRAPED COMPETITOR DATA:
+8. When scrapedCompetitors data is available in researchData, PRIORITIZE using this REAL data over estimates.
+9. For competitor pricing analysis: if scrapedCompetitors contains pricing data, use the EXACT prices from the scraped data.
+10. For competitor features: if scrapedCompetitors contains features data, reference the ACTUAL features listed.
+11. For branding analysis: use real taglines, value propositions, and CTAs from scraped data.
+12. Always include competitor website URLs when available from scraped data.
+13. If scraped data is incomplete or missing for a competitor, use Perplexity research data as fallback.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -43,6 +51,12 @@ serve(async (req) => {
 
     console.log(`[pms-ai-analyze] Analyzing section: ${section}`);
 
+    // Check if we have scraped competitor data
+    const hasScrapedData = Array.isArray(researchData.scrapedCompetitors) && researchData.scrapedCompetitors.length > 0;
+    if (hasScrapedData) {
+      console.log(`[pms-ai-analyze] Using ${(researchData.scrapedCompetitors as unknown[]).length} scraped competitors for enhanced analysis`);
+    }
+
     // Build section-specific prompt
     const sectionPrompts: Record<string, string> = {
       executive_verdict: `Generate an executive verdict for this SaaS idea. Include:
@@ -57,7 +71,9 @@ serve(async (req) => {
 - Opportunity score (0-100) - overall market opportunity
 - Key metrics object with: marketSize (string like "$50B"), marketLabel (string), expectedROI (string like "250%"), roiLabel (string), paybackMonths (number), paybackLabel (string), mrrMonth12 (string like "$15,000"), arrProjected (string like "$180,000")
 - Top 3 highlights (strengths) with title and description
-- Top 3 risks with title, description, priority (high/medium/low), and mitigation`,
+- Top 3 risks with title, description, priority (high/medium/low), and mitigation
+
+${hasScrapedData ? 'IMPORTANT: Base differentiation score on REAL features and pricing from scrapedCompetitors data.' : ''}`,
 
       market_opportunity: `Analyze the market opportunity. Include:
 - TAM (Total Addressable Market) with value (string like "$50B") and description
@@ -67,15 +83,33 @@ serve(async (req) => {
 - Growth label (string describing the growth)
 - Market conclusion`,
 
-      competitors: `Analyze the competitive landscape. Include:
-- 3-5 relevant competitors with name, description, pricing, target market, weakness, and your advantage
+      competitors: `Analyze the competitive landscape.
+${hasScrapedData ? `
+CRITICAL: Use the REAL DATA from scrapedCompetitors for your analysis:
+- Use actual website URLs from scraped data
+- Use actual pricing from scrapedCompetitors.pricing.plans (exact prices, not estimates)
+- Use actual features from scrapedCompetitors.features.mainFeatures
+- Use actual taglines/value props from scrapedCompetitors.branding
+
+For each competitor include:
+- name: company name (from scraped branding.companyName if available)
+- website: the actual URL from scraped data
+- pricing: the REAL price from scrapedCompetitors.pricing (e.g., "$29/mo" from actual scraped plans)
+- targetMarket: who they target
+- features: list actual features from scraped data
+- weakness: identify gaps based on their real features
+- advantage: how the user's SaaS can compete
+` : `Include:
+- 3-5 relevant competitors with name, description, pricing, target market, weakness, and your advantage`}
 - 3-5 competitive advantages with descriptions and competitor gaps`,
 
       business_model: `Recommend a business model. Include:
 - Primary model type (SaaS, marketplace, etc.)
 - 3-4 revenue streams with percentages and MRR projections
 - 3 pricing tiers with features and target customers
-- Monetization timeline for first 6 months`,
+- Monetization timeline for first 6 months
+
+${hasScrapedData ? 'IMPORTANT: Base pricing recommendations on REAL competitor pricing from scrapedCompetitors data. Position strategically relative to actual market prices.' : ''}`,
 
       investment: `Calculate investment requirements. Include:
 - Total investment in cents (integer number)
@@ -92,7 +126,9 @@ serve(async (req) => {
 - LTV/CAC ratio (number like 3.5)
 - Monthly churn rate (string like "5%")
 - Gross margin percentage (string like "80%")
-- How it works (brief explanation of the economics)`,
+- How it works (brief explanation of the economics)
+
+${hasScrapedData ? 'IMPORTANT: Base pricing on REAL competitor pricing from scrapedCompetitors. Consider their price points when recommending ideal ticket.' : ''}`,
 
       financial_scenarios: `Create financial projections. Include:
 - 3 scenarios (pessimistic, realistic, optimistic)
@@ -152,12 +188,27 @@ serve(async (req) => {
 - 5-7 key metrics comparing industry average, top quartile, and your target
 - Overall conclusion on positioning`,
 
-      quantified_differentiation: `Quantify differentiation vs competitors. Include:
+      quantified_differentiation: `Quantify differentiation vs competitors.
+${hasScrapedData ? `
+CRITICAL: Use REAL scraped data for comparison:
+- Compare against actual features from scrapedCompetitors.features
+- Reference actual pricing from scrapedCompetitors.pricing
+- Use real competitor names and websites
+` : ''}
+Include:
 - 3-5 metrics comparing your solution vs competitors
 - Each metric should have: metric (name), yourValue (string), competitorAvg (string), advantage (percentage string like "+25%"), source (where data comes from)
 - Overall advantage summary (string)`,
 
-      marketing_four_ps: `Analyze competitors using 4Ps framework. Include:
+      marketing_four_ps: `Analyze competitors using 4Ps framework.
+${hasScrapedData ? `
+CRITICAL: Use REAL scraped data:
+- Product: reference actual features from scrapedCompetitors.features
+- Price: use EXACT prices from scrapedCompetitors.pricing.plans
+- Place: note their website, any integrations from scraped data
+- Promotion: reference CTAs and messaging from scrapedCompetitors.branding
+` : ''}
+Include:
 - 2-3 competitors with detailed Product, Price, Place, Promotion analysis
 - Scores for each P (0-100)`,
 
@@ -173,13 +224,24 @@ serve(async (req) => {
 - Creative requirements
 - Weekly timeline for first month`,
 
-      marketing_pricing_diagnosis: `Diagnose pricing landscape. Include:
-- Price map of competitors
+      marketing_pricing_diagnosis: `Diagnose pricing landscape.
+${hasScrapedData ? `
+CRITICAL: Build priceMap using REAL prices from scrapedCompetitors:
+- Extract actual plan names and prices from scrapedCompetitors.pricing.plans
+- Note which competitors have free tiers (hasFreeTier) and trials (hasTrial, trialDays)
+- Use real currency from scraped data
+
+Example: If scrapedCompetitors shows Competitor A has plans at $0, $29, $99/mo - use THESE EXACT values.
+` : ''}
+Include:
+- Price map of competitors (use REAL scraped prices when available)
 - Pricing models used in market
 - Pricing gaps and opportunities
 - Price elasticity assessment`,
 
-      marketing_pricing_action: `Create pricing action plan. Include:
+      marketing_pricing_action: `Create pricing action plan.
+${hasScrapedData ? 'IMPORTANT: Base recommended pricing on REAL competitor prices from scrapedCompetitors to ensure competitive positioning.' : ''}
+Include:
 - Recommended pricing model with rationale
 - 3 pricing tiers with features and targets
 - Psychological pricing tactics
@@ -206,7 +268,9 @@ serve(async (req) => {
 - 5 tagline options
 - Key messages
 - CTA examples
-- Email subject line examples`,
+- Email subject line examples
+
+${hasScrapedData ? 'IMPORTANT: Differentiate from competitor messaging found in scrapedCompetitors.branding (taglines, value propositions, CTAs).' : ''}`,
 
       brand_identity: `Create brand identity. Include:
 - Primary colors (3-4) with hex codes and usage
@@ -242,6 +306,17 @@ ${JSON.stringify(wizardData, null, 2)}
 
 RESEARCH DATA (Market intelligence gathered):
 ${JSON.stringify(researchData, null, 2)}
+
+${hasScrapedData ? `
+SCRAPED COMPETITOR DATA AVAILABLE:
+The researchData.scrapedCompetitors array contains REAL data extracted directly from competitor websites.
+Each competitor may have:
+- branding: companyName, tagline, valueProposition, brandTone, ctaTexts
+- pricing: plans (with name, price, period, features), hasFreeTier, hasTrial, trialDays, currency
+- features: mainFeatures, integrations, useCases, targetAudience, uniqueSellingPoints
+
+PRIORITIZE using this real scraped data over Perplexity research estimates!
+` : ''}
 
 TASK: ${sectionPrompts[section] || `Analyze the ${section} section.`}
 
