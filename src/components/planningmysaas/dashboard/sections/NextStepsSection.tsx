@@ -427,20 +427,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 ))}
               </ul>
 
-              {/* Maintenance Note - for MVP Development */}
-              {option.maintenanceNote && (
-                <div className="p-3 rounded-lg bg-muted/30 border border-border/50 mb-4">
-                  <div className="flex items-start gap-2">
-                    <Calendar className="h-4 w-4 text-foreground/70 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs text-foreground/70">
-                        <span className="font-medium text-foreground">After {option.maintenanceNote.afterMonths} months:</span>{" "}
-                        Hosting infrastructure or Premium Support will be covered by a new maintenance contract.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Payment Details - MVP Only */}
               {option.id === 'mvp-only' && (
@@ -467,8 +453,8 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   {/* Hosting infrastructure Free */}
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-green-400 font-medium">Hosting infrastructure</span>
-                      <span className="text-green-400 font-bold">Free</span>
+                      <span className="text-amber-400 font-medium">Hosting infrastructure</span>
+                      <span className="text-amber-400 font-bold">Free</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Valid for 12 months
@@ -478,8 +464,8 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   {/* Premium Support Free */}
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-green-400 font-medium">Premium Support</span>
-                      <span className="text-green-400 font-bold">Free</span>
+                      <span className="text-amber-400 font-medium">Premium Support</span>
+                      <span className="text-amber-400 font-bold">Free</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Valid for 12 months
