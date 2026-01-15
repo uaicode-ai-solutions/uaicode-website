@@ -362,7 +362,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </Badge>
               </div>
             )}
-            <CardContent className={`p-6 flex flex-col h-full ${option.badge ? 'pt-8' : ''}`}>
+            <CardContent className="p-6 pt-8 flex flex-col h-full">
               {/* Package Name */}
               <h3 className="text-lg font-bold text-foreground mb-4 text-center">{option.name}</h3>
               
@@ -445,7 +445,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                         {formatCurrency(mvpDevDiscountedPrice)}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground leading-4 min-h-[32px]">
                       50% upfront, 50% on delivery
                     </p>
                   </div>
@@ -456,7 +456,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       <span className="text-amber-400 font-medium">Hosting infrastructure</span>
                       <span className="text-amber-400 font-bold">Free</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground leading-4 min-h-[32px]">
                       Valid for 12 months
                     </p>
                   </div>
@@ -467,9 +467,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       <span className="text-amber-400 font-medium">Premium Support</span>
                       <span className="text-amber-400 font-bold">Free</span>
                     </div>
-                            <p className="text-xs text-muted-foreground">
-                              Valid for 30 days post-launch
-                            </p>
+                    <p className="text-xs text-muted-foreground leading-4 min-h-[32px]">
+                      Valid for 30 days post-launch
+                    </p>
                   </div>
                 </div>
               )}
@@ -491,7 +491,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                         {formatCurrency(mvpMarketingDiscountedPrice)}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground leading-4 min-h-[32px]">
                       50% upfront, 50% on delivery
                     </p>
                   </div>
@@ -504,7 +504,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                         {formatCurrency(option.marketingNote.contractAnnual)}
                       </span>
                     </div>
-                    <p className="text-xs text-accent/70">
+                    <p className="text-xs text-accent/70 leading-4 min-h-[32px]">
                       Up to 12x of {formatCurrency(option.marketingNote.contractMonthly)}
                     </p>
                   </div>
@@ -513,12 +513,12 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-muted-foreground font-medium">Recommended ADS spend</span>
-                    <span className="text-muted-foreground font-bold">
+                      <span className="text-muted-foreground font-bold">
                         {formatCurrency(option.marketingNote.recommendedAds)}/mo
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground/70">
-                      Monthly investment, no contract, starts after MVP
+                    <p className="text-xs text-muted-foreground/70 leading-4 min-h-[32px]">
+                      Monthly. No contract. After MVP.
                     </p>
                   </div>
                 </div>
