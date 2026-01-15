@@ -1,10 +1,11 @@
-import { DollarSign, Check, X, PieChart, AlertCircle, Sparkles, Megaphone } from "lucide-react";
+import { DollarSign, Check, X, PieChart, AlertCircle, Sparkles, Megaphone, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Badge } from "@/components/ui/badge";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField, parseCentsField, emptyStates } from "@/lib/reportDataUtils";
 import { InvestmentBreakdown } from "@/types/report";
+import { useMvpTier } from "@/hooks/useMvpTier";
 import PricingComparisonSlider from "../PricingComparisonSlider";
 import MarketingComparisonSlider from "../MarketingComparisonSlider";
 import {
@@ -17,6 +18,8 @@ import {
 
 const InvestmentSection = () => {
   const { report } = useReportContext();
+  const selectedFeatures = report?.selected_features || [];
+  const { tier, pricing, featureCounts, isLoading: tierLoading } = useMvpTier(selectedFeatures);
   
   // Parse investment data from report
   const investmentBreakdown = parseJsonField<InvestmentBreakdown["breakdown"]>(report?.investment_breakdown, []);
@@ -25,9 +28,16 @@ const InvestmentSection = () => {
   const investmentComparison = parseJsonField<InvestmentBreakdown["comparison"]>(report?.investment_comparison, null);
   const investmentTotalCents = parseCentsField(report?.investment_total_cents, 0);
   
+  // Use dynamic pricing from tier if available, fallback to report data
+  const dynamicTotal = pricing.uaicode.calculated > 0 
+    ? pricing.uaicode.calculated / 100 
+    : investmentTotalCents > 0 
+      ? investmentTotalCents 
+      : investmentBreakdown.reduce((acc, item) => acc + (item.value || 0), 0);
+  
   // Build investment object
   const investment = {
-    total: investmentTotalCents > 0 ? investmentTotalCents : investmentBreakdown.reduce((acc, item) => acc + (item.value || 0), 0),
+    total: dynamicTotal,
     breakdown: investmentBreakdown,
     included: investmentIncluded?.items || [],
     notIncluded: investmentNotIncluded?.items || []
@@ -129,11 +139,23 @@ const InvestmentSection = () => {
       </div>
 
       {/* MVP Development - Subtitle */}
-      <div className="flex items-center gap-2">
-        <h3 className="font-semibold text-foreground text-sm">MVP Development</h3>
-        <InfoTooltip side="right" size="sm">
-          One-time investment to build your minimum viable product.
-        </InfoTooltip>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-foreground text-sm">MVP Development</h3>
+          <InfoTooltip side="right" size="sm">
+            One-time investment to build your minimum viable product.
+          </InfoTooltip>
+        </div>
+        {tier && (
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs bg-accent/10 border-accent/30 text-accent">
+              {tier.tier_name}
+            </Badge>
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              {featureCounts.essential}E + {featureCounts.advanced}A + {featureCounts.enterprise}Ent features
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
@@ -146,7 +168,14 @@ const InvestmentSection = () => {
               <div className="text-4xl md:text-5xl font-bold text-gradient-gold">
                 {formatCurrency(investment.total)}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">One-time payment</p>
+              {tier && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Range: {formatCurrency(pricing.uaicode.min / 100)} - {formatCurrency(pricing.uaicode.max / 100)}
+                </p>
+              )}
+              {!tier && (
+                <p className="text-xs text-muted-foreground mt-1">One-time payment</p>
+              )}
             </div>
 
             {/* Breakdown with Donut Chart */}

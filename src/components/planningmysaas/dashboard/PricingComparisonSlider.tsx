@@ -1,34 +1,57 @@
 import { useState, useEffect } from "react";
 import { Check, X, Clock, Shield, FileText, Code, Headphones, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useReportContext } from "@/contexts/ReportContext";
+import { useMvpTier } from "@/hooks/useMvpTier";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface ComparisonData {
-  uaicode: number;
-  traditional: number;
-  savings: string;
-  savingsAmount: number;
-  savingsContext: string;
-  features: {
-    label: string;
-    icon: React.ElementType;
-    uaicode: string;
-    traditional: string;
-    uaicodePositive: boolean;
-  }[];
-}
+const formatCurrency = (cents: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
+};
 
-const comparisonData: ComparisonData = {
-  uaicode: 60500,
-  traditional: 132000,
-  savings: "54%",
-  savingsAmount: 71500,
-  savingsContext: "That's enough for 14 months of marketing budget!",
-  features: [
+const formatDays = (days: number) => {
+  if (days < 30) return `${days} days`;
+  const weeks = Math.round(days / 7);
+  if (weeks <= 12) return `${weeks} weeks`;
+  const months = Math.round(days / 30);
+  return `${months} months`;
+};
+
+const PricingComparisonSlider = () => {
+  const { report } = useReportContext();
+  const selectedFeatures = report?.selected_features || [];
+  const { tier, pricing, timeline, isLoading } = useMvpTier(selectedFeatures);
+  
+  const [animatedUaicode, setAnimatedUaicode] = useState(0);
+  const [animatedTraditional, setAnimatedTraditional] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  // Calculate values
+  const uaicodePrice = pricing.uaicode.calculated > 0 
+    ? pricing.uaicode.calculated 
+    : pricing.uaicode.min;
+  const traditionalPrice = pricing.traditional.min;
+  const savingsAmount = traditionalPrice - uaicodePrice;
+  const savingsPercentage = traditionalPrice > 0 
+    ? Math.round((savingsAmount / traditionalPrice) * 100) 
+    : 0;
+
+  // Features comparison based on tier data
+  const features = [
     {
       label: "Delivery Time",
       icon: Clock,
-      uaicode: "12-18 weeks",
-      traditional: "6-9 months",
+      uaicode: timeline.uaicode.min > 0 
+        ? `${formatDays(timeline.uaicode.min)}-${formatDays(timeline.uaicode.max)}`
+        : "30-75 days",
+      traditional: timeline.traditional.min > 0 
+        ? `${formatDays(timeline.traditional.min)}-${formatDays(timeline.traditional.max)}`
+        : "75-150 days",
       uaicodePositive: true,
     },
     {
@@ -59,34 +82,20 @@ const comparisonData: ComparisonData = {
       traditional: "Often missing",
       uaicodePositive: true,
     },
-  ],
-};
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
-
-const PricingComparisonSlider = () => {
-  const [animatedUaicode, setAnimatedUaicode] = useState(0);
-  const [animatedTraditional, setAnimatedTraditional] = useState(0);
-  const [hasAnimated, setHasAnimated] = useState(false);
+  ];
 
   // Animate bars on mount
   useEffect(() => {
+    if (isLoading || !tier) return;
     const timer = setTimeout(() => {
       setHasAnimated(true);
     }, 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isLoading, tier]);
 
   // Animate numbers
   useEffect(() => {
-    if (!hasAnimated) return;
+    if (!hasAnimated || isLoading) return;
     
     const duration = 1500;
     const steps = 60;
@@ -98,20 +107,37 @@ const PricingComparisonSlider = () => {
       const progress = currentStep / steps;
       const easeOut = 1 - Math.pow(1 - progress, 3);
       
-      setAnimatedUaicode(Math.floor(comparisonData.uaicode * easeOut));
-      setAnimatedTraditional(Math.floor(comparisonData.traditional * easeOut));
+      setAnimatedUaicode(Math.floor(uaicodePrice * easeOut));
+      setAnimatedTraditional(Math.floor(traditionalPrice * easeOut));
       
       if (currentStep >= steps) {
         clearInterval(interval);
-        setAnimatedUaicode(comparisonData.uaicode);
-        setAnimatedTraditional(comparisonData.traditional);
+        setAnimatedUaicode(uaicodePrice);
+        setAnimatedTraditional(traditionalPrice);
       }
     }, stepDuration);
     
     return () => clearInterval(interval);
-  }, [hasAnimated]);
+  }, [hasAnimated, uaicodePrice, traditionalPrice, isLoading]);
 
-  const uaicodeWidth = (comparisonData.uaicode / comparisonData.traditional) * 100;
+  const uaicodeWidth = traditionalPrice > 0 
+    ? (uaicodePrice / traditionalPrice) * 100 
+    : 50;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-5">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <div className="space-y-2">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-8 w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -122,16 +148,28 @@ const PricingComparisonSlider = () => {
           <h4 className="font-medium text-foreground text-sm">Price Comparison</h4>
         </div>
         <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-400 text-xs">
-          Save {comparisonData.savings}
+          Save {savingsPercentage}%
         </Badge>
       </div>
+
+      {/* Tier Badge */}
+      {tier && (
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs bg-accent/10 border-accent/30 text-accent">
+            {tier.tier_name}
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            Based on {selectedFeatures.length} selected features
+          </span>
+        </div>
+      )}
 
       {/* Price Bars */}
       <div className="space-y-3">
         {/* Traditional Agency Bar */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Traditional Agency</span>
+            <span className="text-muted-foreground">Traditional Agency (US Market)</span>
             <span className="font-medium text-red-400">{formatCurrency(animatedTraditional)}</span>
           </div>
           <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-border/30">
@@ -139,8 +177,13 @@ const PricingComparisonSlider = () => {
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500/40 to-red-400/30 rounded-lg transition-all duration-1000 ease-out flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? '100%' : '0%' }}
             >
-              <span className="text-xs font-medium text-red-300">$132K</span>
+              <span className="text-xs font-medium text-red-300">
+                {formatCurrency(traditionalPrice)}
+              </span>
             </div>
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            Range: {formatCurrency(pricing.traditional.min)} - {formatCurrency(pricing.traditional.max)}
           </div>
         </div>
 
@@ -155,8 +198,13 @@ const PricingComparisonSlider = () => {
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent/60 to-accent/40 rounded-lg transition-all duration-1000 ease-out delay-300 flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? `${uaicodeWidth}%` : '0%' }}
             >
-              <span className="text-xs font-medium text-accent-foreground">$60.5K</span>
+              <span className="text-xs font-medium text-accent-foreground">
+                {formatCurrency(uaicodePrice)}
+              </span>
             </div>
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            Range: {formatCurrency(pricing.uaicode.min)} - {formatCurrency(pricing.uaicode.max)}
           </div>
         </div>
       </div>
@@ -169,7 +217,7 @@ const PricingComparisonSlider = () => {
           <span className="text-center text-accent">Uaicode</span>
         </div>
         
-        {comparisonData.features.map((feature, index) => {
+        {features.map((feature, index) => {
           const IconComponent = feature.icon;
           
           return (
@@ -202,11 +250,11 @@ const PricingComparisonSlider = () => {
             <Check className="h-3.5 w-3.5 text-green-400" />
           </div>
           <span className="font-bold text-green-400 text-lg">
-            You Save: {formatCurrency(comparisonData.savingsAmount)}
+            You Save: {formatCurrency(savingsAmount)}
           </span>
         </div>
         <p className="text-xs text-muted-foreground pl-7">
-          {comparisonData.savingsContext}
+          That's {savingsPercentage}% less than traditional agencies — enough for months of marketing!
         </p>
       </div>
     </div>
