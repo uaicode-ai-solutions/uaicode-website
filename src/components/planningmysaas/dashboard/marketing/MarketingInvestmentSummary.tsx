@@ -58,10 +58,10 @@ const MarketingInvestmentSummary = ({
     <Card className="bg-card/50 border-border/30 ring-1 ring-accent/20">
       <CardContent className="p-5">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-accent" />
-            <h4 className="font-semibold text-foreground">Your Marketing Investment</h4>
+            <DollarSign className="h-4 w-4 text-accent" />
+            <h4 className="font-medium text-foreground text-sm">Your Marketing Investment</h4>
           </div>
           <Badge className="text-[10px] bg-green-500/10 text-green-400 border-green-500/30">
             {selectedServiceIds.length} service{selectedServiceIds.length !== 1 ? "s" : ""} selected
@@ -69,9 +69,9 @@ const MarketingInvestmentSummary = ({
         </div>
 
         {/* Selected Services List */}
-        <div className="space-y-2 mb-4 pb-4 border-b border-border/30">
+        <div className="space-y-1.5 mb-3 pb-3 border-b border-border/30">
           {selectedServices.map((service) => (
-            <div key={service.service_id} className="flex items-center justify-between text-sm">
+            <div key={service.service_id} className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">• {service.service_name}</span>
               <span className="font-medium text-foreground">
                 {formatCurrency(service.uaicode_price_cents)}/mo
@@ -81,33 +81,33 @@ const MarketingInvestmentSummary = ({
         </div>
 
         {/* Totals */}
-        <div className="space-y-2 mb-4">
+        <div className="space-y-1.5 mb-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Uaicode Subscription</span>
-            <span className="text-lg font-bold text-gradient-gold">
+            <span className="text-xs text-muted-foreground">Uaicode Subscription</span>
+            <span className="text-sm font-bold text-gradient-gold">
               {formatCurrency(totals.uaicodeTotal)}/mo
             </span>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
-              <span className="text-sm text-muted-foreground">Suggested Paid Media*</span>
+              <span className="text-xs text-muted-foreground">Suggested Paid Media*</span>
             </div>
-            <span className="text-sm text-foreground">{formatCurrency(suggestedPaidMedia)}/mo</span>
+            <span className="text-xs text-foreground">{formatCurrency(suggestedPaidMedia)}/mo</span>
           </div>
           <div className="pt-2 border-t border-border/30 flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">Total Monthly</span>
-            <span className="text-xl font-bold text-accent">{formatCurrency(totalMonthly)}/mo</span>
+            <span className="text-xs font-medium text-foreground">Total Monthly</span>
+            <span className="text-base font-bold text-accent">{formatCurrency(totalMonthly)}/mo</span>
           </div>
         </div>
 
         {/* Comparison vs Traditional */}
-        <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/20 mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="h-4 w-4 text-green-400" />
-            <span className="font-medium text-foreground text-sm">Comparison vs Traditional</span>
+        <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/20 mb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="h-3.5 w-3.5 text-green-400" />
+            <span className="font-medium text-foreground text-xs">Comparison vs Traditional</span>
           </div>
           
-          <div className="space-y-2 text-sm">
+          <div className="space-y-1.5 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Traditional Agency Cost</span>
               <span className="text-red-400">
@@ -118,14 +118,14 @@ const MarketingInvestmentSummary = ({
             <div className="pt-2 border-t border-green-500/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
-                  <Sparkles className="h-4 w-4 text-green-400" />
-                  <span className="font-bold text-green-400">Your Savings</span>
+                  <Sparkles className="h-3.5 w-3.5 text-green-400" />
+                  <span className="font-bold text-green-400 text-xs">Your Savings</span>
                 </div>
-                <span className="font-bold text-green-400 text-lg">
+                <span className="font-bold text-green-400 text-sm">
                   {totals.savingsPercentMin}-{totals.savingsPercentMax}%
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] text-muted-foreground mt-1">
                 Save {formatCurrencyK(totals.savingsMinCents)} - {formatCurrencyK(totals.savingsMaxCents)}/month
               </p>
             </div>
@@ -133,15 +133,15 @@ const MarketingInvestmentSummary = ({
         </div>
 
         {/* Annual Savings Highlight */}
-        <div className="p-3 rounded-lg bg-accent/10 border border-accent/30 text-center">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <Calendar className="h-4 w-4 text-accent" />
-            <span className="text-xs text-muted-foreground">Annual Savings</span>
+        <div className="p-2.5 rounded-lg bg-accent/10 border border-accent/30 text-center">
+          <div className="flex items-center justify-center gap-1.5 mb-1">
+            <Calendar className="h-3.5 w-3.5 text-accent" />
+            <span className="text-[10px] text-muted-foreground">Annual Savings</span>
           </div>
-          <p className="text-xl font-bold text-gradient-gold">
+          <p className="text-base font-bold text-gradient-gold">
             {formatCurrencyK(totals.annualSavingsMin)} - {formatCurrencyK(totals.annualSavingsMax)}
           </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[10px] text-muted-foreground mt-0.5">
             Reinvest in paid media for faster growth!
           </p>
         </div>
