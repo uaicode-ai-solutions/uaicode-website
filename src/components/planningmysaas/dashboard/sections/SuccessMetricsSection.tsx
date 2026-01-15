@@ -134,7 +134,7 @@ const SuccessMetricsSection = () => {
               <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-border/50" />
               
               <div className="space-y-4">
-                {successMetrics.launchMilestones.map((item, index) => (
+                {(successMetrics.launchMilestones || []).map((item, index) => (
                   <div key={index} className="flex items-start gap-4 relative">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 ${
                       item.status === 'critical' 
@@ -172,7 +172,7 @@ const SuccessMetricsSection = () => {
             </div>
             
             <div className="space-y-3">
-              {successMetrics.healthIndicators.map((indicator, index) => (
+              {(successMetrics.healthIndicators || []).map((indicator, index) => (
                 <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30">
                   <p className="text-sm font-medium text-foreground mb-2">{indicator.kpi}</p>
                   <div className="grid grid-cols-3 gap-2 text-xs">
@@ -208,7 +208,7 @@ const SuccessMetricsSection = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-4">
-            {successMetrics.warningSigns.map((warning, index) => (
+            {(successMetrics.warningSigns || []).map((warning, index) => (
               <div key={index} className="p-3 rounded-lg bg-orange-500/5 border border-orange-500/20">
                 <p className="text-sm font-medium text-foreground mb-2">{warning.sign}</p>
                 <div className="flex items-center justify-between text-xs">
@@ -230,9 +230,11 @@ const SuccessMetricsSection = () => {
             <CheckCircle2 className="h-4 w-4 text-green-400" />
           </div>
           <p className="text-sm text-foreground/90">
-            Focus on "{successMetrics.northStar.metric}" as your North Star metric. 
-            Hit {successMetrics.launchMilestones[0].milestone} (Month 1) and {successMetrics.launchMilestones[1].milestone} (Month 3) 
-            as critical early milestones. Monitor health indicators weekly to catch issues early.
+            Focus on "{successMetrics.northStar?.metric || 'your key metric'}" as your North Star metric. 
+            {(successMetrics.launchMilestones || []).length >= 2 
+              ? ` Hit ${successMetrics.launchMilestones[0]?.milestone || 'first milestone'} (Month 1) and ${successMetrics.launchMilestones[1]?.milestone || 'second milestone'} (Month 3) as critical early milestones.`
+              : ''
+            } Monitor health indicators weekly to catch issues early.
           </p>
         </div>
       </div>

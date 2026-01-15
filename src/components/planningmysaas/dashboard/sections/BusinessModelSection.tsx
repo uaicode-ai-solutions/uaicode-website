@@ -91,7 +91,7 @@ const BusinessModelSection = () => {
             </div>
             
             <div className="space-y-4">
-              {businessModel.revenueStreams.map((stream, index) => (
+              {(businessModel.revenueStreams || []).map((stream, index) => (
                 <div key={index} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -107,11 +107,11 @@ const BusinessModelSection = () => {
                     <div className="flex-1 h-2 bg-muted/30 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-accent/60 to-accent rounded-full transition-all duration-500"
-                        style={{ width: `${stream.percentage}%` }}
+                        style={{ width: `${stream.percentage || 0}%` }}
                       />
                     </div>
                     <span className="text-xs text-muted-foreground w-20 text-right">
-                      ${stream.mrr.toLocaleString()}/mo
+                      ${(stream.mrr ?? 0).toLocaleString()}/mo
                     </span>
                   </div>
                 </div>
@@ -122,7 +122,7 @@ const BusinessModelSection = () => {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Total Projected MRR</span>
                 <span className="text-lg font-bold text-accent">
-                  ${businessModel.revenueStreams.reduce((acc, s) => acc + s.mrr, 0).toLocaleString()}
+                  ${(businessModel.revenueStreams || []).reduce((acc, s) => acc + (s.mrr ?? 0), 0).toLocaleString()}
                 </span>
               </div>
             </div>
@@ -141,7 +141,7 @@ const BusinessModelSection = () => {
             </div>
             
             <div className="space-y-3">
-              {businessModel.pricingTiers.map((tier, index) => (
+              {(businessModel.pricingTiers || []).map((tier, index) => (
                 <div 
                   key={index} 
                   className={`p-3 rounded-lg border transition-all ${
@@ -161,12 +161,12 @@ const BusinessModelSection = () => {
                       )}
                     </div>
                     <div className="text-right">
-                      <span className="text-xl font-bold text-accent">${tier.price}</span>
+                      <span className="text-xl font-bold text-accent">${tier.price ?? 0}</span>
                       <span className="text-xs text-muted-foreground">/mo</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{tier.features} features</span>
+                    <span>{tier.features ?? 0} features</span>
                     <span>{tier.targetCustomers}</span>
                   </div>
                 </div>
@@ -192,7 +192,7 @@ const BusinessModelSection = () => {
             <div className="absolute top-4 left-0 right-0 h-0.5 bg-border/50" />
             
             <div className="flex justify-between relative">
-              {businessModel.monetizationTimeline.map((item, index) => (
+              {(businessModel.monetizationTimeline || []).map((item, index) => (
                 <div key={index} className="flex flex-col items-center">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${
                     item.status === 'active' 

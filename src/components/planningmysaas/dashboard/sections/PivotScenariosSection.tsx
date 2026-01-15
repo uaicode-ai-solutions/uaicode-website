@@ -96,7 +96,7 @@ const PivotScenariosSection = () => {
 
       {/* Pivot Scenario Cards */}
       <div className="grid md:grid-cols-3 gap-4">
-        {pivotScenarios.scenarios.map((scenario, index) => (
+        {(pivotScenarios.scenarios || []).map((scenario, index) => (
           <Card key={index} className="bg-card/50 border-border/30">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
@@ -113,8 +113,8 @@ const PivotScenariosSection = () => {
               <div className="space-y-2 mb-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Viability</span>
-                  <span className={`font-bold ${getViabilityColor(scenario.viability)}`}>
-                    {scenario.viability}%
+                  <span className={`font-bold ${getViabilityColor(scenario.viability ?? 0)}`}>
+                    {scenario.viability ?? 0}%
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
@@ -148,30 +148,32 @@ const PivotScenariosSection = () => {
             </div>
             
             <div className="space-y-3">
-              {pivotScenarios.reusableAssets.map((asset, index) => (
+              {(pivotScenarios.reusableAssets || []).map((asset, index) => (
                 <div key={index} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-foreground">{asset.asset}</span>
-                    <span className="text-sm font-medium text-accent">{asset.reusabilityScore}%</span>
+                    <span className="text-sm font-medium text-accent">{asset.reusabilityScore ?? 0}%</span>
                   </div>
                   <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-green-500/60 to-green-500 rounded-full transition-all duration-500"
-                      style={{ width: `${asset.reusabilityScore}%` }}
+                      style={{ width: `${asset.reusabilityScore ?? 0}%` }}
                     />
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-border/30">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Avg. Reusability</span>
-                <span className="text-lg font-bold text-green-400">
-                  {Math.round(pivotScenarios.reusableAssets.reduce((acc, a) => acc + a.reusabilityScore, 0) / pivotScenarios.reusableAssets.length)}%
-                </span>
+            {(pivotScenarios.reusableAssets || []).length > 0 && (
+              <div className="mt-4 pt-4 border-t border-border/30">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Avg. Reusability</span>
+                  <span className="text-lg font-bold text-green-400">
+                    {Math.round((pivotScenarios.reusableAssets || []).reduce((acc, a) => acc + (a.reusabilityScore ?? 0), 0) / (pivotScenarios.reusableAssets?.length || 1))}%
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -187,7 +189,7 @@ const PivotScenariosSection = () => {
             </div>
             
             <div className="space-y-3">
-              {pivotScenarios.decisionTriggers.map((trigger, index) => (
+              {(pivotScenarios.decisionTriggers || []).map((trigger, index) => (
                 <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-foreground">{trigger.metric}</span>
@@ -214,7 +216,7 @@ const PivotScenariosSection = () => {
             <CheckCircle2 className="h-4 w-4 text-green-400" />
           </div>
           <p className="text-sm text-foreground/90">
-            With a {pivotScenarios.readinessScore}% pivot readiness score and ~{Math.round(pivotScenarios.reusableAssets.reduce((acc, a) => acc + a.reusabilityScore, 0) / pivotScenarios.reusableAssets.length)}% average asset reusability, 
+            With a {pivotScenarios.readinessScore ?? 0}% pivot readiness score and ~{Math.round((pivotScenarios.reusableAssets || []).reduce((acc, a) => acc + (a.reusabilityScore ?? 0), 0) / (pivotScenarios.reusableAssets?.length || 1))}% average asset reusability, 
             you have strong optionality. If triggers are hit, you can pivot efficiently while preserving most of your investment.
           </p>
         </div>
