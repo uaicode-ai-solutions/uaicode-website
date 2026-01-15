@@ -86,7 +86,7 @@ const MarketBenchmarksSection = () => {
             </div>
             
             <div className="space-y-3">
-              {marketBenchmarks.industryComparison.map((item, index) => (
+              {(marketBenchmarks.industryComparison || []).map((item, index) => (
                 <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-muted-foreground">{item.metric}</span>
@@ -116,6 +116,7 @@ const MarketBenchmarksSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <Award className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Success Rate Statistics</h3>
+              {/* Safe access with optional chaining */}
               <InfoTooltip size="sm">
                 Based on {marketBenchmarks.successRates.category} historical data
               </InfoTooltip>
@@ -204,7 +205,7 @@ const MarketBenchmarksSection = () => {
             </div>
             
             <div className="space-y-3">
-              {marketBenchmarks.exitScenarios.map((scenario, index) => (
+              {(marketBenchmarks.exitScenarios || []).map((scenario, index) => (
                 <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-foreground">{scenario.type}</span>

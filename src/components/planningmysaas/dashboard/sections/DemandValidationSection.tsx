@@ -78,15 +78,15 @@ const DemandValidationSection = () => {
             
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-3 rounded-lg bg-muted/20 border border-border/30">
-                <p className="text-2xl font-bold text-accent">{(demandValidation.searchVolume / 1000).toFixed(0)}K</p>
+                <p className="text-2xl font-bold text-accent">{((demandValidation.searchVolume ?? 0) / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-muted-foreground mt-1">Monthly Searches</p>
               </div>
               <div className="text-center p-3 rounded-lg bg-muted/20 border border-border/30">
-                <p className="text-2xl font-bold text-accent">{demandValidation.trendsScore}</p>
+                <p className="text-2xl font-bold text-accent">{demandValidation.trendsScore ?? 0}</p>
                 <p className="text-xs text-muted-foreground mt-1">Trends Score</p>
               </div>
               <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                <p className="text-2xl font-bold text-green-400">{demandValidation.growthRate}</p>
+                <p className="text-2xl font-bold text-green-400">{demandValidation.growthRate ?? '0%'}</p>
                 <p className="text-xs text-muted-foreground mt-1">YoY Growth</p>
               </div>
             </div>
@@ -112,21 +112,21 @@ const DemandValidationSection = () => {
             </div>
             
             <div className="space-y-3">
-              {demandValidation.painPoints.map((point, index) => (
+              {(demandValidation.painPoints || []).map((point, index) => (
                 <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground">{point.pain}</p>
                       <p className="text-xs text-muted-foreground mt-1">Source: {point.source}</p>
                     </div>
-                    <Badge className={`${getIntensityColor(point.intensity)} text-xs`}>
-                      {point.intensity}% intensity
+                    <Badge className={`${getIntensityColor(point.intensity ?? 0)} text-xs`}>
+                      {point.intensity ?? 0}% intensity
                     </Badge>
                   </div>
                   <div className="mt-2 h-1.5 bg-muted/30 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-red-500/60 to-red-500 rounded-full"
-                      style={{ width: `${point.intensity}%` }}
+                      style={{ width: `${point.intensity ?? 0}%` }}
                     />
                   </div>
                 </div>
@@ -150,13 +150,13 @@ const DemandValidationSection = () => {
             </div>
             
             <div className="space-y-3">
-              {demandValidation.evidences.map((evidence, index) => (
+              {(demandValidation.evidences || []).map((evidence, index) => (
                 <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/10 border border-border/30">
                   <div>
                     <p className="text-sm font-medium text-foreground">{evidence.type}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs text-muted-foreground">
-                        {evidence.count.toLocaleString()} data points
+                        {(evidence.count ?? 0).toLocaleString()} data points
                       </span>
                       {evidence.growth && (
                         <Badge className="bg-green-500/10 text-green-400 border-green-500/20 text-xs">
@@ -193,7 +193,7 @@ const DemandValidationSection = () => {
             </div>
             
             <div className="space-y-3">
-              {demandValidation.validationMethods.map((method, index) => (
+              {(demandValidation.validationMethods || []).map((method, index) => (
                 <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30 hover:border-accent/30 transition-colors">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">{method.method}</span>
@@ -219,7 +219,7 @@ const DemandValidationSection = () => {
             <CheckCircle2 className="h-4 w-4 text-green-400" />
           </div>
           <p className="text-sm text-foreground/90">
-            Strong demand signals detected with {demandValidation.trendsScore}/100 trends score and {demandValidation.growthRate} year-over-year growth. 
+            Strong demand signals detected with {demandValidation.trendsScore ?? 0}/100 trends score and {demandValidation.growthRate ?? '0%'} year-over-year growth. 
             Customer pain points are validated across multiple sources, indicating a genuine market need for this solution.
           </p>
         </div>

@@ -33,11 +33,12 @@ const ResourceRequirementsSection = () => {
     }
   };
 
-  const founderTimePhases = resourceRequirements.founderTime ? [
-    { ...resourceRequirements.founderTime.phase1, phase: 1 },
-    { ...resourceRequirements.founderTime.phase2, phase: 2 },
-    { ...resourceRequirements.founderTime.phase3, phase: 3 },
-    { ...resourceRequirements.founderTime.phase4, phase: 4 },
+  const founderTime = resourceRequirements.founderTime;
+  const founderTimePhases = founderTime && founderTime.phase1 && founderTime.phase2 && founderTime.phase3 && founderTime.phase4 ? [
+    { ...founderTime.phase1, phase: 1 },
+    { ...founderTime.phase2, phase: 2 },
+    { ...founderTime.phase3, phase: 3 },
+    { ...founderTime.phase4, phase: 4 },
   ] : [];
   
   // Early return if no data
@@ -125,7 +126,7 @@ const ResourceRequirementsSection = () => {
             </div>
             
             <div className="space-y-3">
-              {resourceRequirements.teamTimeline.map((hire, index) => (
+              {(resourceRequirements.teamTimeline || []).map((hire, index) => (
                 <div key={index} className={`p-3 rounded-lg border ${
                   hire.critical 
                     ? 'bg-accent/5 border-accent/20' 
@@ -166,7 +167,7 @@ const ResourceRequirementsSection = () => {
             </div>
             
             <div className="space-y-3">
-              {resourceRequirements.criticalSkills.map((skill, index) => (
+              {(resourceRequirements.criticalSkills || []).map((skill, index) => (
                 <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-foreground">{skill.skill}</span>
@@ -196,7 +197,7 @@ const ResourceRequirementsSection = () => {
             </div>
             
             <div className="space-y-3">
-              {resourceRequirements.externalSupport.map((support, index) => (
+              {(resourceRequirements.externalSupport || []).map((support, index) => (
                 <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/10 border border-border/30">
                   <span className="text-sm text-foreground">{support.type}</span>
                   <Badge className="bg-accent/10 text-accent border-accent/20 text-xs">
@@ -223,7 +224,7 @@ const ResourceRequirementsSection = () => {
             <CheckCircle2 className="h-4 w-4 text-green-400" />
           </div>
           <p className="text-sm text-foreground/90">
-            Start with {resourceRequirements.founderTime.phase1.hoursPerWeek} hours/week and scale to full-time by Phase 4. 
+            Start with {founderTime?.phase1?.hoursPerWeek ?? 10} hours/week and scale to full-time by Phase 4. 
             First critical hire (Customer Success) needed around Month 4-6. 
             Total non-capital resources needed are manageable with proper planning.
           </p>
