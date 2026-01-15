@@ -1,7 +1,13 @@
-import { DollarSign, AlertCircle } from "lucide-react";
+import { PieChart as PieChartIcon, Check, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { MarketingTotals, MarketingService } from "@/hooks/useMarketingTiers";
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+} from "recharts";
 
 interface MarketingInvestmentSummaryProps {
   selectedServiceIds: string[];
@@ -20,12 +26,23 @@ const formatCurrency = (cents: number) => {
   }).format(cents / 100);
 };
 
-const formatCurrencyK = (cents: number) => {
-  const value = cents / 100;
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}K`;
+const CHART_COLORS = [
+  "hsl(var(--accent))",
+  "hsl(var(--muted-foreground))",
+];
+
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-card border border-border/50 rounded-lg px-3 py-2 shadow-lg">
+        <p className="text-xs text-muted-foreground">{payload[0].name}</p>
+        <p className="text-sm font-semibold text-foreground">
+          ${payload[0].value.toLocaleString()}/mo
+        </p>
+      </div>
+    );
   }
-  return formatCurrency(cents);
+  return null;
 };
 
 const MarketingInvestmentSummary = ({
@@ -40,7 +57,20 @@ const MarketingInvestmentSummary = ({
   );
 
   const totalMonthly = totals.uaicodeTotal + suggestedPaidMedia;
-  const totalYearly = totalMonthly * 12;
+
+  // Chart data
+  const marketingChartData = [
+    {
+      name: "Uaicode Subscription",
+      value: totals.uaicodeTotal / 100,
+      fill: CHART_COLORS[0],
+    },
+    {
+      name: "Paid Media Budget",
+      value: suggestedPaidMedia / 100,
+      fill: CHART_COLORS[1],
+    },
+  ];
 
   // No services selected
   if (selectedServiceIds.length === 0) {
@@ -59,64 +89,106 @@ const MarketingInvestmentSummary = ({
   return (
     <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
       <CardContent className="p-5">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-accent" />
-            <h4 className="font-medium text-foreground text-sm">Your Marketing Investment</h4>
+        {/* Total Investment - Centralized */}
+        <div className="text-center mb-6">
+          <p className="text-sm text-muted-foreground mb-1">Your Marketing Investment</p>
+          <div className="text-4xl md:text-5xl font-bold text-gradient-gold">
+            {formatCurrency(totalMonthly)}
           </div>
-          <Badge className="text-[10px] bg-green-500/10 text-green-400 border-green-500/30">
-            {selectedServiceIds.length} service{selectedServiceIds.length !== 1 ? "s" : ""} selected
-          </Badge>
+          <p className="text-xs text-muted-foreground mt-1">
+            per month • {selectedServiceIds.length} service{selectedServiceIds.length !== 1 ? "s" : ""} selected
+          </p>
         </div>
 
-        {/* Selected Services List */}
-        <div className="space-y-1.5 mb-3 pb-3 border-b border-border/30">
-          {selectedServices.map((service) => (
-            <div key={service.service_id} className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">• {service.service_name}</span>
-              <span className="font-medium text-foreground">
-                {formatCurrency(service.uaicode_price_cents)}/mo
+        {/* Grid: Chart + Legend */}
+        <div className="grid md:grid-cols-2 gap-4 mb-5">
+          {/* Donut Chart */}
+          <div className="h-48 md:h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={marketingChartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={75}
+                  paddingAngle={2}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {marketingChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Legend - Breakdown */}
+          <div className="space-y-3 flex flex-col justify-center">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="p-2 rounded-lg bg-accent/10">
+                <PieChartIcon className="h-4 w-4 text-accent" />
+              </div>
+              <h4 className="font-medium text-foreground text-sm">Monthly Breakdown</h4>
+            </div>
+
+            {/* Uaicode Subscription */}
+            <div className="flex items-center justify-between p-2.5 rounded-lg bg-accent/5 border-l-4 border-accent/30">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[0] }} />
+                <span className="text-xs text-foreground">Uaicode Subscription</span>
+              </div>
+              <span className="text-sm font-semibold text-foreground">
+                {formatCurrency(totals.uaicodeTotal)}
               </span>
             </div>
-          ))}
+
+            {/* Paid Media Budget */}
+            <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border-l-4 border-muted-foreground/30">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[1] }} />
+                <span className="text-xs text-foreground">Paid Media Budget*</span>
+              </div>
+              <span className="text-sm font-semibold text-foreground">
+                {formatCurrency(suggestedPaidMedia)}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Totals - Full width rows with background */}
-        <div className="space-y-2">
-          {/* Uaicode Subscription */}
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-accent/5 border border-accent/20">
-            <span className="text-xs font-medium text-foreground">Uaicode Subscription</span>
-            <span className="text-sm font-bold text-gradient-gold">
-              {formatCurrency(totals.uaicodeTotal)}/mo
-            </span>
-          </div>
-
-          {/* Suggested Paid Media */}
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border/30">
-            <span className="text-xs text-muted-foreground">Suggested Paid Media*</span>
-            <span className="text-xs font-medium text-foreground">
-              {formatCurrency(suggestedPaidMedia)}/mo
-            </span>
-          </div>
-
-          {/* Total Monthly - Highlighted */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/30">
-            <span className="text-sm font-semibold text-foreground">Total Monthly</span>
-            <span className="text-base font-bold text-green-400">
-              {formatCurrency(totalMonthly)}/mo
-            </span>
-          </div>
+        {/* Services Included */}
+        <div className="pt-5 border-t border-border/30">
+          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm">
+            <Check className="h-4 w-4 text-green-400" />
+            Services Included
+          </h3>
+          <ul className="space-y-2">
+            {selectedServices.map((service) => (
+              <li 
+                key={service.service_id} 
+                className="flex items-center justify-between text-xs bg-accent/5 p-2 rounded-lg"
+              >
+                <div className="flex items-center gap-2">
+                  <Check className="h-3 w-3 text-green-400 flex-shrink-0" />
+                  <span className="text-muted-foreground">{service.service_name}</span>
+                </div>
+                <span className="font-medium text-foreground">
+                  {formatCurrency(service.uaicode_price_cents)}/mo
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* Disclaimer */}
         <div className="mt-4 flex items-start gap-2 text-[10px] text-muted-foreground">
           <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
           <span>
-            {budgetSource && budgetSource !== 'guidance' 
-              ? `*Based on your selected budget range (${budgetSource.replace('-', ' - $').replace('k', 'K')}). You can adjust as needed.`
-              : '*Calculated at 75% of your subscription (min $3K, max $15K). You can start smaller and scale as you see results.'
-            }
+            {budgetSource && budgetSource !== "guidance"
+              ? `*Based on your selected budget range (${budgetSource.replace("-", " - $").replace("k", "K")}). You can adjust as needed.`
+              : "*Calculated at 75% of your subscription (min $3K, max $15K). You can start smaller and scale as you see results."}
           </span>
         </div>
       </CardContent>
