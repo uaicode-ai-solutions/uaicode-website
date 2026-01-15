@@ -17,21 +17,21 @@ import {
 } from "recharts";
 
 const InvestmentSection = () => {
-  const { report } = useReportContext();
+  const { report, reportData } = useReportContext();
   const selectedFeatures = report?.selected_features || [];
   const { tier, pricing, featureCounts, isLoading: tierLoading } = useMvpTier(selectedFeatures);
   
-  // Parse investment data from report - NEW: use direct fields from tb_pms_reports
+  // Parse investment data from report
   const investmentNotIncluded = parseJsonField<{ items: string[] }>(report?.investment_not_included, { items: [] });
   
-  // MVP Investment breakdown values from database (in cents)
+  // MVP Investment breakdown values from tb_pms_reports table (in cents)
   const mvpBreakdown = {
-    onePayment: report?.investment_one_payment_cents ?? null,
-    frontend: report?.investment_front_cents ?? null,
-    backend: report?.investment_back_cents ?? null,
-    integrations: report?.investment_integrations_cents ?? null,
-    infra: report?.investment_infra_cents ?? null,
-    testing: report?.investment_testing_cents ?? null,
+    onePayment: reportData?.investment_one_payment_cents ?? null,
+    frontend: reportData?.investment_front_cents ?? null,
+    backend: reportData?.investment_back_cents ?? null,
+    integrations: reportData?.investment_integrations_cents ?? null,
+    infra: reportData?.investment_infra_cents ?? null,
+    testing: reportData?.investment_testing_cents ?? null,
   };
 
   // Format currency with fallback "..."
