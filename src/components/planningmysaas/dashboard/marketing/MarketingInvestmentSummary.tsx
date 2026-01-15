@@ -80,23 +80,30 @@ const MarketingInvestmentSummary = ({
           ))}
         </div>
 
-        {/* Totals */}
-        <div className="space-y-1.5 mb-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Uaicode Subscription</span>
+        {/* Totals - Full width rows with background */}
+        <div className="space-y-2">
+          {/* Uaicode Subscription */}
+          <div className="flex items-center justify-between p-2.5 rounded-lg bg-accent/5 border border-accent/20">
+            <span className="text-xs font-medium text-foreground">Uaicode Subscription</span>
             <span className="text-sm font-bold text-gradient-gold">
               {formatCurrency(totals.uaicodeTotal)}/mo
             </span>
           </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-muted-foreground">Suggested Paid Media*</span>
-            </div>
-            <span className="text-xs text-foreground">{formatCurrency(suggestedPaidMedia)}/mo</span>
+
+          {/* Suggested Paid Media */}
+          <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border/30">
+            <span className="text-xs text-muted-foreground">Suggested Paid Media*</span>
+            <span className="text-xs font-medium text-foreground">
+              {formatCurrency(suggestedPaidMedia)}/mo
+            </span>
           </div>
-          <div className="pt-2 border-t border-border/30 flex items-center justify-between">
-            <span className="text-xs font-medium text-foreground">Total Monthly</span>
-            <span className="text-base font-bold text-accent">{formatCurrency(totalMonthly)}/mo</span>
+
+          {/* Total Monthly - Highlighted */}
+          <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+            <span className="text-sm font-semibold text-foreground">Total Monthly</span>
+            <span className="text-base font-bold text-green-400">
+              {formatCurrency(totalMonthly)}/mo
+            </span>
           </div>
         </div>
 
