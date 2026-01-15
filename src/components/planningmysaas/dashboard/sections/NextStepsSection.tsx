@@ -28,7 +28,7 @@ import { parseJsonField } from "@/lib/reportDataUtils";
 import { NextSteps, ExecutionPhase } from "@/types/report";
 import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
-import { useMarketingTiers, calculateMarketingTotals } from "@/hooks/useMarketingTiers";
+
 
 // Countdown Timer Hook
 const useCountdownTimer = () => {
@@ -86,8 +86,7 @@ interface NextStepsSectionProps {
 }
 
 const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionProps) => {
-  const { report, reportData } = useReportContext();
-  const { services } = useMarketingTiers();
+  const { report, reportData, marketingTotals } = useReportContext();
   
   // Parse data from report
   const nextSteps = parseJsonField<NextSteps>(report?.next_steps, {
@@ -122,11 +121,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   const mvpPriceCents = reportData?.investment_one_payment_cents ?? 0;
   const mvpPrice = mvpPriceCents > 0 ? mvpPriceCents / 100 : 0;
   
-  // Marketing total from recommended services (same logic as InvestmentSection)
-  const recommendedServiceIds = services
-    .filter(s => s.is_recommended)
-    .map(s => s.service_id);
-  const marketingTotals = calculateMarketingTotals(recommendedServiceIds, services);
+  // Marketing total from shared context (synced with InvestmentSection selections)
   const marketingMonthlyUaicode = marketingTotals.uaicodeTotal / 100; // cents to dollars
   
   // Calculate suggested paid media based on wizard budget selection (same as InvestmentSection)
