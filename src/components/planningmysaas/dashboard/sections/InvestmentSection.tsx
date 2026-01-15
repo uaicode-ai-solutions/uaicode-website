@@ -358,53 +358,87 @@ const InvestmentSection = () => {
       </div>
 
 
-      {/* Total First Year Investment - Subtitle */}
-      <div className="flex items-center gap-2 mt-8">
-        <h3 className="font-semibold text-foreground text-sm">Total First Year Investment</h3>
+      {/* Total First Year Investment - Redesigned */}
+      <div className="flex items-center gap-2 mt-10">
+        <h3 className="font-semibold text-foreground text-lg">Total First Year Investment</h3>
         <InfoTooltip side="right" size="sm">
           Complete first year investment including MVP development and marketing.
         </InfoTooltip>
       </div>
 
-      <Card className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent border-accent/30">
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            {/* Left side - Total */}
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Complete First Year</p>
-              <p className="text-2xl font-bold text-foreground">
-                {formatCurrency(investment.total + marketingYearlyTotal / 100)}
+      <Card className="bg-gradient-to-br from-accent/10 via-accent/5 to-card border-accent/30">
+        <CardContent className="p-6 md:p-8">
+          {/* Hero Total */}
+          <div className="text-center mb-8">
+            <p className="text-sm text-muted-foreground mb-2">Complete First Year Investment</p>
+            <p className="text-4xl md:text-5xl font-bold text-gradient-gold">
+              {formatCurrency(investment.total + marketingYearlyTotal / 100)}
+            </p>
+            <p className="text-sm text-accent mt-2">MVP Development + 12 months of Marketing</p>
+          </div>
+          
+          {/* Breakdown Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+            {/* MVP Development */}
+            <div className="p-4 md:p-5 bg-muted/30 rounded-xl border border-border/50 text-center">
+              <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-accent/10 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-accent" />
+              </div>
+              <p className="text-xs md:text-sm text-muted-foreground mb-1">MVP Development</p>
+              <p className="text-lg md:text-xl font-bold text-foreground">
+                {formatCurrency(investment.total)}
               </p>
-              <p className="text-xs text-accent">MVP + 12 months of marketing</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">(one-time)</p>
             </div>
             
-            {/* Right side - Breakdown */}
-            <div className="flex flex-wrap gap-2">
-              <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[70px]">
-                <p className="text-[10px] text-muted-foreground">MVP Dev</p>
-                <p className="text-sm font-bold text-foreground">{formatCurrency(investment.total)}</p>
-                <p className="text-[9px] text-muted-foreground/70">(one-time)</p>
+            {/* Marketing Services */}
+            <div className="p-4 md:p-5 bg-muted/30 rounded-xl border border-border/50 text-center">
+              <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Megaphone className="h-5 w-5 text-blue-400" />
               </div>
-              <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[70px]">
-                <p className="text-[10px] text-muted-foreground">Marketing Sub.</p>
-                <p className="text-sm font-bold text-foreground">{formatCurrency(marketingTotals.uaicodeTotal * 12 / 100)}</p>
-                <p className="text-[9px] text-muted-foreground/70">(selected × 12)</p>
+              <p className="text-xs md:text-sm text-muted-foreground mb-1">Marketing Services</p>
+              <p className="text-lg md:text-xl font-bold text-foreground">
+                {formatCurrency(marketingTotals.uaicodeTotal * 12 / 100)}
+              </p>
+              <p className="text-xs text-muted-foreground/70 mt-1">(selected × 12)</p>
+            </div>
+            
+            {/* Paid Media */}
+            <div className="p-4 md:p-5 bg-muted/30 rounded-xl border border-border/50 text-center">
+              <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-purple-400" />
               </div>
-              <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[70px]">
-                <p className="text-[10px] text-muted-foreground">Paid Media*</p>
-                <p className="text-sm font-bold text-foreground">{formatCurrency(suggestedPaidMedia * 12 / 100)}</p>
-                <p className="text-[9px] text-muted-foreground/70">({formatCurrency(suggestedPaidMedia / 100)} × 12)</p>
+              <p className="text-xs md:text-sm text-muted-foreground mb-1">Paid Media*</p>
+              <p className="text-lg md:text-xl font-bold text-foreground">
+                {formatCurrency(suggestedPaidMedia * 12 / 100)}
+              </p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                ({formatCurrency(suggestedPaidMedia / 100)}/mo × 12)
+              </p>
+            </div>
+            
+            {/* Total Year 1 - Highlighted */}
+            <div className="p-4 md:p-5 bg-accent/20 rounded-xl border border-accent/40 text-center">
+              <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-accent/20 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-accent" />
               </div>
-              <div className="px-3 py-2 bg-accent/20 rounded-lg border border-accent/30 text-center min-w-[70px]">
-                <p className="text-[10px] text-accent/80">Total</p>
-                <p className="text-sm font-bold text-accent">{formatCurrency(investment.total + marketingYearlyTotal / 100)}</p>
-                <p className="text-[9px] text-muted-foreground/70">(1st year)</p>
+              <p className="text-xs md:text-sm text-accent mb-1 font-medium">Total Year 1</p>
+              <p className="text-lg md:text-xl font-bold text-accent">
+                {formatCurrency(investment.total + marketingYearlyTotal / 100)}
+              </p>
+              <p className="text-xs text-muted-foreground/70 mt-1">(complete)</p>
+            </div>
+            
+            {/* After Year 1 */}
+            <div className="p-4 md:p-5 bg-green-500/10 rounded-xl border border-green-500/30 text-center col-span-2 md:col-span-1">
+              <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-green-500/10 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-green-400" />
               </div>
-              <div className="px-3 py-2 bg-green-500/10 rounded-lg border border-green-500/30 text-center min-w-[70px]">
-                <p className="text-[10px] text-green-400/80">After Year 1</p>
-                <p className="text-sm font-bold text-green-400">{formatCurrency(marketingYearlyTotal / 100)}</p>
-                <p className="text-[9px] text-muted-foreground/70">/year only</p>
-              </div>
+              <p className="text-xs md:text-sm text-green-400 mb-1 font-medium">After Year 1</p>
+              <p className="text-lg md:text-xl font-bold text-green-400">
+                {formatCurrency(marketingYearlyTotal / 100)}
+              </p>
+              <p className="text-xs text-muted-foreground/70 mt-1">/year only</p>
             </div>
           </div>
         </CardContent>
