@@ -1,62 +1,69 @@
 import { Target, TrendingUp, CheckCircle2, Globe, Crosshair } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
-import { MarketOpportunity } from "@/types/report";
+import { safeValue } from "@/types/report";
+
+// Industry ID to label mapping
+const industryLabels: Record<string, string> = {
+  healthcare: "Healthcare",
+  education: "Education",
+  finance: "Finance",
+  realestate: "Real Estate",
+  retail: "Retail",
+  technology: "Technology",
+  marketing: "Marketing",
+  other: "",
+};
 
 const MarketOpportunitySection = () => {
-  const { report } = useReportContext();
-  
-  // Parse market opportunity from report
-  const rawMarket = parseJsonField<MarketOpportunity>(report?.market_opportunity, null);
-  
-  const market = rawMarket || emptyStates.marketOpportunity;
+  const { report, reportData } = useReportContext();
+
+  // Get values from reportData (tb_pms_reports) with fallback
+  const tam = safeValue(reportData?.opportunity_tam);
+  const sam = safeValue(reportData?.opportunity_sam);
+  const som = safeValue(reportData?.opportunity_som);
+  const growthRate = reportData?.opportunity_year_rate
+    ? `${reportData.opportunity_year_rate}%`
+    : "...";
+
+  // Build headline from wizard industry field
+  const industryLabel =
+    report?.industry === "other"
+      ? report?.industry_other || "..."
+      : industryLabels[report?.industry || ""] || "...";
+
+  const headline = `There is clear room for a new player focused on ${industryLabel} businesses.`;
 
   const marketLevels = [
-    { 
+    {
       key: "tam",
       label: "TAM",
       fullName: "Total Addressable Market",
-      value: market.tam?.value || "$0",
+      value: tam,
       icon: Globe,
-      description: market.tam?.description || "The entire global market demand for your product/service category. This represents the total revenue opportunity if you achieved 100% market share."
+      description:
+        "The entire global market demand for your product/service category. This represents the total revenue opportunity if you achieved 100% market share.",
     },
-    { 
+    {
       key: "sam",
       label: "SAM",
       fullName: "Serviceable Available Market",
-      value: market.sam?.value || "$0",
+      value: sam,
       icon: Target,
-      description: market.sam?.description || "The segment of TAM you can realistically serve based on your geography, capabilities, and business model constraints."
+      description:
+        "The segment of TAM you can realistically serve based on your geography, capabilities, and business model constraints.",
     },
-    { 
+    {
       key: "som",
       label: "SOM",
       fullName: "Serviceable Obtainable Market",
-      value: market.som?.value || "$0",
+      value: som,
       icon: Crosshair,
-      description: market.som?.description || "The portion of SAM you can realistically capture in the first 3 years. This is your immediate addressable opportunity."
+      description:
+        "The portion of SAM you can realistically capture in the first 3 years. This is your immediate addressable opportunity.",
     },
   ];
-  
-  // Early return if no data
-  if (!rawMarket) {
-    return (
-      <section id="market-opportunity" className="space-y-6 animate-fade-in">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-accent/10">
-            <Target className="h-5 w-5 text-accent" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">The Opportunity</h2>
-            <p className="text-sm text-muted-foreground">Market data not available</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section id="market-opportunity" className="space-y-6 animate-fade-in">
@@ -90,7 +97,7 @@ const MarketOpportunitySection = () => {
                 {/* TAM Label - Top */}
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center">
                   <span className="text-xs font-medium text-accent/70 uppercase tracking-wider">TAM</span>
-                  <span className="text-xl font-bold text-foreground">{market.tam.value}</span>
+                  <span className="text-xl font-bold text-foreground">{tam}</span>
                 </div>
 
                 {/* SAM - Middle Circle */}
@@ -98,7 +105,7 @@ const MarketOpportunitySection = () => {
                   {/* SAM Label - Top */}
                   <div className="absolute top-3 left-1/2 -translate-x-1/2 flex flex-col items-center">
                     <span className="text-xs font-medium text-accent/80 uppercase tracking-wider">SAM</span>
-                    <span className="text-xl font-bold text-foreground">{market.sam.value}</span>
+                    <span className="text-xl font-bold text-foreground">{sam}</span>
                   </div>
 
                   {/* SOM - Inner Circle */}
@@ -106,7 +113,7 @@ const MarketOpportunitySection = () => {
                     {/* SOM Label - Centered */}
                     <div className="flex flex-col items-center">
                       <span className="text-xs font-medium text-accent uppercase tracking-wider">SOM</span>
-                      <span className="text-2xl font-bold text-foreground">{market.som.value}</span>
+                      <span className="text-2xl font-bold text-foreground">{som}</span>
                     </div>
                   </div>
                 </div>
@@ -119,7 +126,7 @@ const MarketOpportunitySection = () => {
             {/* Growth Legend */}
             <div className="mt-4 flex items-center justify-center gap-2 text-sm">
               <TrendingUp className="h-4 w-4 text-green-400" />
-              <span className="font-semibold text-green-400">{market.growthRate}</span>
+              <span className="font-semibold text-green-400">{growthRate}</span>
               <span className="text-muted-foreground">Year-over-Year market growth rate</span>
             </div>
           </CardContent>
@@ -174,7 +181,7 @@ const MarketOpportunitySection = () => {
           <div className="p-1.5 rounded-lg bg-green-500/20 flex-shrink-0">
             <CheckCircle2 className="h-4 w-4 text-green-400" />
           </div>
-          <p className="text-sm text-foreground/90 leading-relaxed">{market.conclusion}</p>
+          <p className="text-sm text-foreground/90 leading-relaxed">{headline}</p>
         </div>
       </div>
     </section>

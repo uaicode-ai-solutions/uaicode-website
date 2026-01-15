@@ -104,6 +104,11 @@ export interface ReportData {
   verdict_headline: string | null;
   created_at: string;
   updated_at: string;
+  // Opportunity fields
+  opportunity_tam: string | null;
+  opportunity_sam: string | null;
+  opportunity_som: string | null;
+  opportunity_year_rate: string | null;
 }
 
 // Helper function to safely get value with fallback
