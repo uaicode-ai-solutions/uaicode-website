@@ -45,7 +45,7 @@ const MarketingInvestmentSummary = ({
   // No services selected
   if (selectedServiceIds.length === 0) {
     return (
-      <Card className="bg-muted/20 border-border/30">
+      <Card className="bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20">
         <CardContent className="p-5 text-center">
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <AlertCircle className="h-4 w-4" />
@@ -57,8 +57,12 @@ const MarketingInvestmentSummary = ({
   }
 
   return (
-    <Card className="bg-card/50 border-border/30 ring-1 ring-accent/20">
-      <CardContent className="p-5">
+    <Card className="group relative overflow-hidden bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 transition-all duration-300">
+      {/* Glow effect on hover */}
+      <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* Corner decoration */}
+      <div className="absolute top-0 right-0 w-12 h-12 bg-accent/10 rounded-bl-[30px] -mr-2 -mt-2" />
+      <CardContent className="relative p-5">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
