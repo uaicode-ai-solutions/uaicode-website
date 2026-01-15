@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, Calendar, Sparkles, AlertCircle } from "lucide-react";
+import { DollarSign, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MarketingTotals, MarketingService } from "@/hooks/useMarketingTiers";
@@ -98,52 +98,6 @@ const MarketingInvestmentSummary = ({
             <span className="text-xs font-medium text-foreground">Total Monthly</span>
             <span className="text-base font-bold text-accent">{formatCurrency(totalMonthly)}/mo</span>
           </div>
-        </div>
-
-        {/* Comparison vs Traditional */}
-        <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/20 mb-3">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="h-3.5 w-3.5 text-green-400" />
-            <span className="font-medium text-foreground text-xs">Comparison vs Traditional</span>
-          </div>
-          
-          <div className="space-y-1.5 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Traditional Agency Cost</span>
-              <span className="text-red-400">
-                {formatCurrencyK(totals.traditionalMinTotal)} - {formatCurrencyK(totals.traditionalMaxTotal)}/mo
-              </span>
-            </div>
-            
-            <div className="pt-2 border-t border-green-500/20">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1">
-                  <Sparkles className="h-3.5 w-3.5 text-green-400" />
-                  <span className="font-bold text-green-400 text-xs">Your Savings</span>
-                </div>
-                <span className="font-bold text-green-400 text-sm">
-                  {totals.savingsPercentMin}-{totals.savingsPercentMax}%
-                </span>
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">
-                Save {formatCurrencyK(totals.savingsMinCents)} - {formatCurrencyK(totals.savingsMaxCents)}/month
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Annual Savings Highlight */}
-        <div className="p-2.5 rounded-lg bg-accent/10 border border-accent/30 text-center">
-          <div className="flex items-center justify-center gap-1.5 mb-1">
-            <Calendar className="h-3.5 w-3.5 text-accent" />
-            <span className="text-[10px] text-muted-foreground">Annual Savings</span>
-          </div>
-          <p className="text-base font-bold text-gradient-gold">
-            {formatCurrencyK(totals.annualSavingsMin)} - {formatCurrencyK(totals.annualSavingsMax)}
-          </p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">
-            Reinvest in paid media for faster growth!
-          </p>
         </div>
 
         {/* Disclaimer */}
