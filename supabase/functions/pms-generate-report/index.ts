@@ -1,5 +1,13 @@
+/// <reference lib="deno.ns" />
+/// <reference lib="deno.unstable" />
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// Declare EdgeRuntime for background processing
+declare const EdgeRuntime: {
+  waitUntil(promise: Promise<unknown>): void;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -172,20 +180,17 @@ async function scrapeAllCompetitors(urls: string[]): Promise<ScrapedCompetitor[]
   return scraped;
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+// ============================================================
+// MAIN BACKGROUND PROCESSING FUNCTION
+// ============================================================
+async function processReportGeneration(reportId: string): Promise<void> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  try {
-    const { reportId } = await req.json() as ReportRequest;
-    
-    console.log(`[pms-generate-report] Starting generation for report: ${reportId}`);
+  console.log(`[pms-generate-report] 🚀 Starting background generation for: ${reportId}`);
 
+  try {
     // ============================================================
     // PHASE 1: Fetch wizard data from database
     // ============================================================
@@ -609,33 +614,95 @@ serve(async (req) => {
       throw updateError;
     }
 
-    console.log(`[pms-generate-report] Report generation complete for: ${reportId}`);
+    console.log(`[pms-generate-report] ✅ Report generation complete for: ${reportId}`);
     console.log(`[pms-generate-report] Summary: scraped ${scrapedCompetitors.length} competitors, generated all sections`);
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        reportId,
-        scrapedCompetitors: scrapedCompetitors.length,
-        message: "Report generated successfully"
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-
   } catch (error) {
-    console.error("[pms-generate-report] Error:", error);
+    console.error(`[pms-generate-report] ❌ Background generation failed for ${reportId}:`, error);
     
-    // Try to update status to failed
+    // Update status to failed
     try {
-      const { reportId } = await req.json() as ReportRequest;
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
       await supabase
         .from("tb_pms_reports")
-        .update({ status: "failed" })
+        .update({ 
+          status: "failed",
+          error_message: error instanceof Error ? error.message : "Unknown error"
+        })
         .eq("id", reportId);
-    } catch {
-      // Ignore
+      console.log(`[pms-generate-report] Status updated to 'failed' for ${reportId}`);
+    } catch (dbError) {
+      console.error(`[pms-generate-report] Failed to update status:`, dbError);
     }
+    
+    throw error;
+  }
+}
+
+// ============================================================
+// MAIN HTTP HANDLER - Responds immediately, processes in background
+// ============================================================
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  try {
+    const { reportId } = await req.json() as ReportRequest;
+    
+    console.log(`[pms-generate-report] 📥 Request received for report: ${reportId}`);
+
+    // Validate report exists
+    const { data: report, error: fetchError } = await supabase
+      .from("tb_pms_reports")
+      .select("id, status")
+      .eq("id", reportId)
+      .single();
+
+    if (fetchError || !report) {
+      console.error(`[pms-generate-report] Report not found: ${reportId}`);
+      return new Response(
+        JSON.stringify({ success: false, error: "Report not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Update status to "processing" immediately
+    await supabase
+      .from("tb_pms_reports")
+      .update({ status: "processing" })
+      .eq("id", reportId);
+
+    console.log(`[pms-generate-report] ✅ Status updated to 'processing', returning immediate response`);
+
+    // ✅ RETURN IMMEDIATELY to client (prevents timeout!)
+    const immediateResponse = new Response(
+      JSON.stringify({ 
+        success: true, 
+        status: "processing",
+        message: "Report generation started. Check status via polling."
+      }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      }
+    );
+
+    // ✅ PROCESS IN BACKGROUND with EdgeRuntime.waitUntil
+    EdgeRuntime.waitUntil(
+      processReportGeneration(reportId)
+        .catch(error => {
+          console.error(`[pms-generate-report] Background processing error for ${reportId}:`, error);
+        })
+    );
+
+    return immediateResponse;
+
+  } catch (error) {
+    console.error("[pms-generate-report] Request error:", error);
     
     return new Response(
       JSON.stringify({ 
