@@ -1,175 +1,167 @@
-import { Award, Users, Zap, HeadphonesIcon, CheckCircle2, Quote, Star, TrendingUp, Package, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { useReportContext } from "@/contexts/ReportContext";
-import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
-import { UaicodeInfo } from "@/types/report";
+import { 
+  Award, 
+  TrendingUp, 
+  Package, 
+  Clock, 
+  Users, 
+  Zap, 
+  HeadphonesIcon, 
+  Star,
+  Quote,
+  CheckCircle2,
+  Building2
+} from "lucide-react";
 
-const iconMap: Record<string, React.ElementType> = {
-  Award,
-  Users,
-  Zap,
-  HeadphonesIcon,
-};
+const statsData = [
+  { 
+    value: "94%", 
+    label: "Success Rate", 
+    sublabel: "Client satisfaction", 
+    icon: TrendingUp, 
+    highlight: true 
+  },
+  { 
+    value: "47+", 
+    label: "Projects Delivered", 
+    sublabel: "MVPs launched", 
+    icon: Package, 
+    highlight: false 
+  },
+  { 
+    value: "12", 
+    label: "Avg. Weeks", 
+    sublabel: "Time to market", 
+    icon: Clock, 
+    highlight: false 
+  },
+];
+
+const differentials = [
+  { 
+    icon: Award, 
+    title: "94% Success Rate", 
+    description: "Projects delivered successfully on time and budget" 
+  },
+  { 
+    icon: Users, 
+    title: "SaaS-Specialized Team", 
+    description: "Senior developers focused on digital products" 
+  },
+  { 
+    icon: Zap, 
+    title: "Agile Methodology", 
+    description: "Weekly deliveries with demos and transparent communication" 
+  },
+  { 
+    icon: HeadphonesIcon, 
+    title: "Post-Launch Support", 
+    description: "30 days of support included after go-live" 
+  },
+];
+
+const testimonials = [
+  {
+    quote: "Uaicode delivered our MVP in 12 weeks with quality that exceeded expectations. Highly recommend.",
+    name: "Sarah Mitchell",
+    role: "CEO",
+    company: "Startup Innovate",
+  },
+  {
+    quote: "Professional, agile, and transparent. Exactly what we needed to bring our idea to life.",
+    name: "Robert Taylor",
+    role: "Founder",
+    company: "TechFlow Solutions",
+  },
+];
+
+const guarantees = [
+  "Weekly demos for progress tracking",
+  "Fixed price for MVP scope",
+  "30 days post-launch support",
+  "100% ownership of source code",
+  "Complete documentation",
+];
+
+const StarRating = () => (
+  <div className="flex gap-0.5">
+    {[...Array(5)].map((_, i) => (
+      <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+    ))}
+  </div>
+);
 
 const WhyUaicodeSection = () => {
-  const { report } = useReportContext();
-  
-  // Parse uaicode info from report
-  const rawUaicode = parseJsonField<UaicodeInfo>(report?.uaicode_info, null);
-  
-  // Use default values for Uaicode (this is company info, not project-specific)
-  const uaicode: UaicodeInfo = rawUaicode || {
-    successRate: 94,
-    projectsDelivered: 47,
-    avgDeliveryWeeks: 12,
-    differentials: [
-      { icon: "Award", title: "94% Success Rate", description: "Projects delivered successfully on time and budget" },
-      { icon: "Users", title: "SaaS-Specialized Team", description: "Senior developers focused on digital products" },
-      { icon: "Zap", title: "Agile Methodology", description: "Weekly deliveries with demos and transparent communication" },
-      { icon: "HeadphonesIcon", title: "Post-Launch Support", description: "30 days of support included after go-live" }
-    ],
-    testimonials: [],
-    guarantees: [
-      "Weekly demos for progress tracking",
-      "Fixed price for MVP scope",
-      "30 days post-launch support",
-      "100% ownership of source code",
-      "Complete documentation"
-    ]
-  };
-
-  // Stats data with metadata
-  const statsData = [
-    {
-      value: `${uaicode.successRate}%`,
-      label: "Success Rate",
-      sublabel: "Client satisfaction",
-      icon: TrendingUp,
-      highlight: true,
-    },
-    {
-      value: `${uaicode.projectsDelivered}+`,
-      label: "Projects Delivered",
-      sublabel: "MVPs launched",
-      icon: Package,
-      highlight: false,
-    },
-    {
-      value: `${uaicode.avgDeliveryWeeks}`,
-      label: "Avg. Weeks",
-      sublabel: "Time to market",
-      icon: Clock,
-      highlight: false,
-    },
-  ];
-
-  // Star rating component
-  const StarRating = ({ rating = 5 }: { rating?: number }) => (
-    <div className="flex gap-0.5">
-      {[...Array(5)].map((_, i) => (
-        <Star 
-          key={i} 
-          className={`h-3 w-3 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30'}`} 
-        />
-      ))}
-    </div>
-  );
-
   return (
     <section id="why-uaicode" className="space-y-6 animate-fade-in">
-      {/* Section Header */}
+      {/* Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10">
-          <Award className="h-5 w-5 text-accent" />
+          <Building2 className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-foreground">Why Uaicode</h2>
-            <InfoTooltip side="right" size="sm">
-              Our track record, differentials, client testimonials, and guarantees for your project's success.
-            </InfoTooltip>
-          </div>
+          <h2 className="text-xl font-semibold text-foreground">Why Uaicode</h2>
           <p className="text-sm text-muted-foreground">Our differentials and guarantees</p>
         </div>
       </div>
 
-      {/* Premium Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {statsData.map((stat, index) => {
           const IconComponent = stat.icon;
           return (
             <Card 
-              key={index}
-              className={`transition-colors ${
-                stat.highlight 
-                  ? 'bg-accent/10 border-accent/30 hover:border-accent/40' 
-                  : 'bg-card/50 border-border/30 hover:border-accent/30'
-              }`}
+              key={index} 
+              className={`bg-card/50 border-border/30 ${stat.highlight ? 'border-accent/50' : ''}`}
             >
-              <CardContent className="relative p-5 text-center">
-                {/* Icon */}
-                <div className={`mx-auto mb-3 w-12 h-12 rounded-xl flex items-center justify-center ${
-                  stat.highlight 
-                    ? 'bg-accent/20' 
-                    : 'bg-accent/10'
-                }`}>
-                  <IconComponent className={`h-6 w-6 ${stat.highlight ? 'text-accent' : 'text-accent/80'}`} />
-                </div>
-                
-                {/* Value */}
-                <div className={`text-3xl md:text-4xl font-bold mb-1 transition-transform duration-300 group-hover:scale-105 ${
-                  stat.highlight ? 'text-accent' : 'text-foreground'
-                }`}>
-                  {stat.value}
-                </div>
-                
-                {/* Label */}
-                <p className="text-sm font-medium text-foreground mb-0.5">{stat.label}</p>
-                
-                {/* Sublabel */}
-                <p className="text-xs text-muted-foreground">{stat.sublabel}</p>
-                
-                {/* Highlight badge for main stat */}
-                {stat.highlight && (
-                  <div className="absolute top-3 left-3">
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-accent/20 border border-accent/30">
-                      <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                      <span className="text-[10px] font-semibold text-accent uppercase">Top Rated</span>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <div className={`text-3xl font-bold ${stat.highlight ? 'text-accent' : 'text-foreground'}`}>
+                      {stat.value}
+                    </div>
+                    <div className="text-sm font-medium text-foreground">{stat.label}</div>
+                    <div className="text-xs text-muted-foreground">{stat.sublabel}</div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    {stat.highlight && (
+                      <Badge className="text-[9px] bg-accent/10 text-accent border-accent/30 px-1.5 py-0.5">
+                        TOP RATED
+                      </Badge>
+                    )}
+                    <div className="p-2 rounded-lg bg-accent/10">
+                      <IconComponent className="h-4 w-4 text-accent" />
                     </div>
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-4">
-        {/* Differentials */}
+      {/* Differentials and Testimonials Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Our Differentials */}
         <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <h3 className="font-semibold text-foreground text-sm">Our Differentials</h3>
-              <InfoTooltip size="sm">
-                What makes Uaicode unique compared to other agencies
-              </InfoTooltip>
+          <CardContent className="p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4 text-accent" />
+              <h3 className="text-sm font-semibold text-foreground">Our Differentials</h3>
             </div>
-            <div className="grid gap-3">
-              {uaicode.differentials.map((diff, index) => {
-                const IconComponent = iconMap[diff.icon] || Award;
+            <div className="space-y-3">
+              {differentials.map((item, index) => {
+                const IconComponent = item.icon;
                 return (
-                  <div 
-                    key={index}
-                    className="flex gap-3 p-3 rounded-lg bg-muted/20 border border-border/30 hover:border-accent/30 transition-all duration-300 hover:shadow-md"
-                  >
-                    <div className="p-2 rounded-lg bg-accent/10 h-fit">
-                      <IconComponent className="h-4 w-4 text-accent" />
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="p-1.5 rounded-md bg-accent/10 mt-0.5">
+                      <IconComponent className="h-3.5 w-3.5 text-accent" />
                     </div>
-                    <div>
-                      <h4 className="font-medium text-foreground text-sm">{diff.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">{diff.description}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-foreground">{item.title}</div>
+                      <div className="text-xs text-muted-foreground">{item.description}</div>
                     </div>
                   </div>
                 );
@@ -178,41 +170,38 @@ const WhyUaicodeSection = () => {
           </CardContent>
         </Card>
 
-        {/* Testimonials */}
+        {/* What Our Clients Say */}
         <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <h3 className="font-semibold text-foreground text-sm">What Our Clients Say</h3>
-              <InfoTooltip size="sm">
-                Real testimonials from satisfied clients
-              </InfoTooltip>
+          <CardContent className="p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <Quote className="h-4 w-4 text-accent" />
+              <h3 className="text-sm font-semibold text-foreground">What Our Clients Say</h3>
             </div>
-            <div className="space-y-3">
-              {uaicode.testimonials.map((testimonial, index) => (
-                <div 
-                  key={index}
-                  className="p-3 rounded-lg bg-muted/20 border border-border/30 hover:border-border/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <Quote className="h-5 w-5 text-accent/50" />
-                    <StarRating rating={5} />
+            <div className="space-y-4">
+              {testimonials.map((testimonial, index) => (
+                <div key={index} className="space-y-3">
+                  <div className="flex items-start gap-2">
+                    <Quote className="h-5 w-5 text-accent/40 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground italic leading-relaxed">
+                      "{testimonial.quote}"
+                    </p>
                   </div>
-                  <p className="text-foreground/90 italic text-sm mb-3">
-                    "{testimonial.quote}"
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                      <AvatarFallback className="bg-accent/20 text-accent text-xs">
-                        {testimonial.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-foreground text-xs">{testimonial.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {testimonial.role}, {testimonial.company}
-                      </p>
+                  <div className="flex items-center justify-between pl-7">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src="/placeholder.svg" />
+                        <AvatarFallback className="text-[10px] bg-accent/10 text-accent">
+                          {testimonial.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="text-xs font-medium text-foreground">{testimonial.name}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {testimonial.role}, {testimonial.company}
+                        </div>
+                      </div>
                     </div>
+                    <StarRating />
                   </div>
                 </div>
               ))}
@@ -221,23 +210,21 @@ const WhyUaicodeSection = () => {
         </Card>
       </div>
 
-      {/* Guarantees */}
+      {/* Our Guarantees */}
       <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-5">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <h3 className="font-semibold text-foreground text-sm">Our Guarantees</h3>
-            <InfoTooltip size="sm">
-              Commitments we make to every client
-            </InfoTooltip>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-green-400" />
+            <h3 className="text-sm font-semibold text-foreground">Our Guarantees</h3>
           </div>
-          <div className="flex flex-wrap justify-center gap-2">
-            {uaicode.guarantees.map((guarantee, index) => (
+          <div className="flex flex-wrap gap-2">
+            {guarantees.map((guarantee, index) => (
               <div 
-                key={index}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 hover:bg-green-500/15 transition-colors cursor-default"
+                key={index} 
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-green-500/10 border border-green-500/20"
               >
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
-                <span className="text-xs text-foreground">{guarantee}</span>
+                <CheckCircle2 className="h-3 w-3 text-green-400" />
+                <span className="text-xs text-green-400">{guarantee}</span>
               </div>
             ))}
           </div>
