@@ -33,6 +33,9 @@ export type Database = {
           traditional_max_days: number
           traditional_min_cents: number
           traditional_min_days: number
+          traditional_price_per_advanced_cents: number | null
+          traditional_price_per_enterprise_cents: number | null
+          traditional_price_per_essential_cents: number | null
         }
         Insert: {
           created_at?: string
@@ -52,6 +55,9 @@ export type Database = {
           traditional_max_days: number
           traditional_min_cents: number
           traditional_min_days: number
+          traditional_price_per_advanced_cents?: number | null
+          traditional_price_per_enterprise_cents?: number | null
+          traditional_price_per_essential_cents?: number | null
         }
         Update: {
           created_at?: string
@@ -71,6 +77,9 @@ export type Database = {
           traditional_max_days?: number
           traditional_min_cents?: number
           traditional_min_days?: number
+          traditional_price_per_advanced_cents?: number | null
+          traditional_price_per_enterprise_cents?: number | null
+          traditional_price_per_essential_cents?: number | null
         }
         Relationships: []
       }
