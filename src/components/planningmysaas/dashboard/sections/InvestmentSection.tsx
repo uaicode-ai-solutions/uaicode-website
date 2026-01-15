@@ -21,25 +21,72 @@ const InvestmentSection = () => {
   const selectedFeatures = report?.selected_features || [];
   const { tier, pricing, featureCounts, isLoading: tierLoading } = useMvpTier(selectedFeatures);
   
-  // Parse investment data from report
-  const investmentBreakdown = parseJsonField<InvestmentBreakdown["breakdown"]>(report?.investment_breakdown, []);
-  const investmentIncluded = parseJsonField<{ items: string[] }>(report?.investment_included, { items: [] });
+  // Parse investment data from report - NEW: use direct fields from tb_pms_reports
   const investmentNotIncluded = parseJsonField<{ items: string[] }>(report?.investment_not_included, { items: [] });
-  const investmentComparison = parseJsonField<InvestmentBreakdown["comparison"]>(report?.investment_comparison, null);
-  const investmentTotalCents = parseCentsField(report?.investment_total_cents, 0);
   
-  // Use dynamic pricing from tier if available, fallback to report data
-  const dynamicTotal = pricing.uaicode.calculated > 0 
-    ? pricing.uaicode.calculated / 100 
-    : investmentTotalCents > 0 
-      ? investmentTotalCents 
-      : investmentBreakdown.reduce((acc, item) => acc + (item.value || 0), 0);
-  
-  // Build investment object
+  // MVP Investment breakdown values from database (in cents)
+  const mvpBreakdown = {
+    onePayment: report?.investment_one_payment_cents ?? null,
+    frontend: report?.investment_front_cents ?? null,
+    backend: report?.investment_back_cents ?? null,
+    integrations: report?.investment_integrations_cents ?? null,
+    infra: report?.investment_infra_cents ?? null,
+    testing: report?.investment_testing_cents ?? null,
+  };
+
+  // Format currency with fallback "..."
+  const formatValueOrFallback = (cents: number | null | undefined) => {
+    if (cents === null || cents === undefined) return "...";
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(cents / 100);
+  };
+
+  // Colors for donut chart
+  const COLORS = [
+    'hsl(var(--accent))',
+    'hsl(45, 100%, 45%)',
+    'hsl(var(--accent) / 0.7)',
+    'hsl(45, 80%, 55%)',
+    'hsl(var(--accent) / 0.5)',
+  ];
+
+  // Breakdown items with updated names
+  const breakdownItems = [
+    { name: "Frontend Development", value: mvpBreakdown.frontend, color: COLORS[0] },
+    { name: "Backend & API", value: mvpBreakdown.backend, color: COLORS[1] },
+    { name: "Integrations", value: mvpBreakdown.integrations, color: COLORS[2] },
+    { name: "Infrastructure", value: mvpBreakdown.infra, color: COLORS[3] },
+    { name: "Testing & QA", value: mvpBreakdown.testing, color: COLORS[4] },
+  ];
+
+  // Fixed "What's Included" items
+  const includedItems = [
+    "Complete MVP development",
+    "Build infrastructure",
+    "Build integrations",
+    "Responsive web app",
+  ];
+
+  // Calculate total from breakdown for chart (use 0 for null values in chart)
+  const totalFromBreakdown = breakdownItems.reduce((acc, item) => acc + (item.value ?? 0), 0);
+
+  // Chart data for donut
+  const chartData = breakdownItems.map((item) => ({
+    name: item.name,
+    value: item.value ?? 0,
+    percentage: totalFromBreakdown > 0 && item.value 
+      ? Math.round((item.value / totalFromBreakdown) * 100) 
+      : 0,
+    fill: item.color,
+  }));
+
+  // Build investment object for other parts of the component
   const investment = {
-    total: dynamicTotal,
-    breakdown: investmentBreakdown,
-    included: investmentIncluded?.items || [],
+    total: mvpBreakdown.onePayment ? mvpBreakdown.onePayment / 100 : 0,
     notIncluded: investmentNotIncluded?.items || []
   };
 
@@ -90,29 +137,14 @@ const InvestmentSection = () => {
     }).format(value);
   };
 
-  // Colors for donut chart
-  const COLORS = [
-    'hsl(var(--accent))',
-    'hsl(45, 100%, 45%)',
-    'hsl(var(--accent) / 0.7)',
-    'hsl(45, 80%, 55%)',
-    'hsl(var(--accent) / 0.5)',
-  ];
-
-  const chartData = investment.breakdown.map((item, index) => ({
-    name: item.name,
-    value: item.value,
-    percentage: item.percentage,
-    fill: COLORS[index % COLORS.length],
-  }));
-
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
+      const originalItem = breakdownItems.find(item => item.name === data.name);
       return (
         <div className="bg-card border border-border/50 rounded-lg p-3 shadow-lg">
           <p className="font-medium text-foreground text-sm">{data.name}</p>
-          <p className="text-accent font-bold">{formatCurrency(data.value)}</p>
+          <p className="text-accent font-bold">{formatValueOrFallback(originalItem?.value)}</p>
           <p className="text-xs text-muted-foreground">{data.percentage}% of total</p>
         </div>
       );
@@ -166,16 +198,9 @@ const InvestmentSection = () => {
             <div className="text-center mb-6">
               <p className="text-sm text-muted-foreground mb-1">Total MVP Investment</p>
               <div className="text-4xl md:text-5xl font-bold text-gradient-gold">
-                {formatCurrency(investment.total)}
+                {formatValueOrFallback(mvpBreakdown.onePayment)}
               </div>
-              {tier && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Range: {formatCurrency(pricing.uaicode.min / 100)} - {formatCurrency(pricing.uaicode.max / 100)}
-                </p>
-              )}
-              {!tier && (
-                <p className="text-xs text-muted-foreground mt-1">One-time payment</p>
-              )}
+              <p className="text-xs text-muted-foreground mt-1">One-time payment</p>
             </div>
 
             {/* Breakdown with Donut Chart */}
@@ -209,17 +234,17 @@ const InvestmentSection = () => {
                   <PieChart className="h-4 w-4 text-accent" />
                   <h4 className="font-medium text-foreground text-sm">Breakdown</h4>
                 </div>
-                {investment.breakdown.map((item, index) => (
+                {breakdownItems.map((item, index) => (
                   <div key={index} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div 
                         className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        style={{ backgroundColor: item.color }}
                       />
                       <span className="text-muted-foreground text-xs">{item.name}</span>
                     </div>
                     <span className="text-foreground font-medium text-xs">
-                      {formatCurrency(item.value)}
+                      {formatValueOrFallback(item.value)}
                     </span>
                   </div>
                 ))}
@@ -237,7 +262,7 @@ const InvestmentSection = () => {
                   </InfoTooltip>
                 </h3>
                 <ul className="space-y-1.5">
-                  {investment.included.slice(0, 4).map((item, index) => (
+                  {includedItems.map((item, index) => (
                     <li key={index} className="flex items-start gap-2 text-xs">
                       <Check className="h-3 w-3 text-green-400 mt-0.5 flex-shrink-0" />
                       <span className="text-foreground/90">{item}</span>

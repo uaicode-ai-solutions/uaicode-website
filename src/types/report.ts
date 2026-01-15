@@ -27,6 +27,12 @@ export type ReportRow = WizardRow & {
   
   // Financial metrics
   investment_total_cents?: string | null;
+  investment_one_payment_cents?: number | null;
+  investment_front_cents?: number | null;
+  investment_back_cents?: number | null;
+  investment_integrations_cents?: number | null;
+  investment_infra_cents?: number | null;
+  investment_testing_cents?: number | null;
   break_even_months?: string | null;
   expected_roi_year1?: string | null;
   mrr_month12_cents?: string | null;
