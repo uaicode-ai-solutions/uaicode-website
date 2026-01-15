@@ -298,13 +298,13 @@ const ExecutionPlanSection = () => {
                 
                 {/* Tech badges */}
                 <div className="flex flex-wrap gap-1.5">
-                  {stack.items.map((tech, idx) => (
+                  {(stack.items || []).map((tech, idx) => (
                     <Badge 
                       key={idx} 
                       variant="outline" 
                       className="text-[10px] bg-background/80 border-border/50 text-foreground/80 px-2 py-0.5 hover:border-accent/40 hover:text-accent transition-colors"
                     >
-                      {tech}
+                      {typeof tech === 'string' ? tech : String(tech)}
                     </Badge>
                   ))}
                 </div>
