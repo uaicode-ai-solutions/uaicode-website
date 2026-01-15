@@ -5,6 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
 // Helper to safely convert values to string
 function toStringValue(value: unknown, defaultValue: string): string {
   if (value === null || value === undefined) return defaultValue;
@@ -13,6 +14,39 @@ function toStringValue(value: unknown, defaultValue: string): string {
 
 interface ReportRequest {
   reportId: string;
+}
+
+// Interface for scraped competitor data
+interface ScrapedCompetitor {
+  url: string;
+  domain: string;
+  branding: {
+    companyName: string;
+    tagline: string;
+    valueProposition: string;
+    brandTone: string;
+    ctaTexts: string[];
+  } | null;
+  pricing: {
+    plans: Array<{
+      name: string;
+      price: string;
+      period: string;
+      features: string[];
+      recommended: boolean;
+    }>;
+    hasFreeTier: boolean;
+    hasTrial: boolean;
+    trialDays: number;
+    currency: string;
+  } | null;
+  features: {
+    mainFeatures: string[];
+    integrations: string[];
+    useCases: string[];
+    targetAudience: string;
+    uniqueSellingPoints: string[];
+  } | null;
 }
 
 // Helper to call internal edge functions
@@ -53,6 +87,91 @@ async function analyzeSection(
   }
 }
 
+// Extract valid competitor URLs from Perplexity citations
+function extractCompetitorUrls(citations: unknown): string[] {
+  if (!Array.isArray(citations)) return [];
+  
+  const excludedDomains = [
+    'wikipedia.org', 'reddit.com', 'twitter.com', 'x.com',
+    'linkedin.com', 'youtube.com', 'medium.com', 'forbes.com',
+    'techcrunch.com', 'bloomberg.com', 'crunchbase.com',
+    'g2.com', 'capterra.com', 'trustpilot.com', 'google.com',
+    'facebook.com', 'instagram.com', 'tiktok.com', 'quora.com',
+    'stackoverflow.com', 'github.com', 'news.ycombinator.com',
+    'producthunt.com', 'bing.com', 'yahoo.com', 'amazon.com',
+    'apple.com', 'microsoft.com', 'oracle.com', 'ibm.com',
+    'bbc.com', 'cnn.com', 'nytimes.com', 'wsj.com'
+  ];
+  
+  return citations
+    .filter((url: unknown) => {
+      if (typeof url !== 'string') return false;
+      try {
+        const domain = new URL(url).hostname.toLowerCase();
+        return !excludedDomains.some(d => domain.includes(d));
+      } catch {
+        return false;
+      }
+    })
+    .map((url: string) => {
+      // Normalize URLs to base domain
+      try {
+        const parsed = new URL(url);
+        return `${parsed.protocol}//${parsed.hostname}`;
+      } catch {
+        return url;
+      }
+    })
+    .filter((url: string, index: number, self: string[]) => self.indexOf(url) === index) // unique
+    .slice(0, 5); // Limit to 5 competitors
+}
+
+// Scrape a specific competitor's pages
+async function scrapeCompetitor(baseUrl: string): Promise<ScrapedCompetitor> {
+  const domain = new URL(baseUrl).hostname;
+  
+  console.log(`[pms-generate-report] Scraping competitor: ${domain}`);
+  
+  // Scrape homepage for branding, pricing page, and features page in parallel
+  const [brandingResult, pricingResult, featuresResult] = await Promise.allSettled([
+    callFunction("pms-firecrawl-scrape", { url: baseUrl, extractType: "branding" }),
+    callFunction("pms-firecrawl-scrape", { url: `${baseUrl}/pricing`, extractType: "pricing" }),
+    callFunction("pms-firecrawl-scrape", { url: `${baseUrl}/features`, extractType: "features" }),
+  ]);
+  
+  return {
+    url: baseUrl,
+    domain,
+    branding: brandingResult.status === 'fulfilled' && (brandingResult.value as Record<string, unknown>)?.success
+      ? (brandingResult.value as Record<string, unknown>).extractedData as ScrapedCompetitor['branding']
+      : null,
+    pricing: pricingResult.status === 'fulfilled' && (pricingResult.value as Record<string, unknown>)?.success
+      ? (pricingResult.value as Record<string, unknown>).extractedData as ScrapedCompetitor['pricing']
+      : null,
+    features: featuresResult.status === 'fulfilled' && (featuresResult.value as Record<string, unknown>)?.success
+      ? (featuresResult.value as Record<string, unknown>).extractedData as ScrapedCompetitor['features']
+      : null,
+  };
+}
+
+// Scrape all competitors in parallel with timeout
+async function scrapeAllCompetitors(urls: string[]): Promise<ScrapedCompetitor[]> {
+  console.log(`[pms-generate-report] Starting scrape of ${urls.length} competitors...`);
+  
+  const results = await Promise.allSettled(
+    urls.map(url => scrapeCompetitor(url))
+  );
+  
+  const scraped = results
+    .filter((r): r is PromiseFulfilledResult<ScrapedCompetitor> => r.status === 'fulfilled')
+    .map(r => r.value)
+    .filter(c => c.branding || c.pricing || c.features); // Keep only those with some data
+  
+  console.log(`[pms-generate-report] Successfully scraped ${scraped.length}/${urls.length} competitors`);
+  
+  return scraped;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -67,7 +186,11 @@ serve(async (req) => {
     
     console.log(`[pms-generate-report] Starting generation for report: ${reportId}`);
 
-    // 1. Fetch report data from database
+    // ============================================================
+    // PHASE 1: Fetch wizard data from database
+    // ============================================================
+    console.log(`[pms-generate-report] Phase 1: Collecting Wizard Data`);
+    
     const { data: report, error: fetchError } = await supabase
       .from("tb_pms_reports")
       .select("*")
@@ -80,7 +203,7 @@ serve(async (req) => {
 
     console.log(`[pms-generate-report] Found report: ${report.saas_name}`);
 
-    // 2. Prepare wizard data for AI context
+    // Prepare wizard data for AI context
     const wizardData = {
       saasName: report.saas_name,
       description: report.description,
@@ -99,45 +222,95 @@ serve(async (req) => {
       timeline: report.timeline,
     };
 
-    // 3. Phase 1: Research with Perplexity
-    console.log(`[pms-generate-report] Phase 1: Market Research`);
+    // ============================================================
+    // PHASE 2: Research with Perplexity
+    // ============================================================
+    console.log(`[pms-generate-report] Phase 2: Market Research with Perplexity`);
     
     const searchContext = `${wizardData.saasName} - ${wizardData.description}. Industry: ${wizardData.industry}. Target: ${wizardData.targetAudience}`;
     
     const [marketResearch, competitorResearch, demandResearch, trendsResearch] = await Promise.all([
       callFunction("pms-perplexity-search", {
-        query: `What is the market size (TAM, SAM, SOM) for ${wizardData.industry} SaaS products targeting ${wizardData.targetAudience}? Include growth rates and market trends.`,
+        query: `What is the market size (TAM, SAM, SOM) for ${wizardData.industry} SaaS products targeting ${wizardData.targetAudience}? Include growth rates and market trends. Provide specific dollar amounts and percentages.`,
         searchType: "market",
         context: searchContext,
       }),
       callFunction("pms-perplexity-search", {
-        query: `Who are the main competitors for a ${wizardData.saasType} SaaS in the ${wizardData.industry} industry? Include their pricing, features, and market position.`,
+        // Enhanced query to get competitor URLs
+        query: `List the top 5 direct competitors for a ${wizardData.saasType} SaaS in the ${wizardData.industry} industry targeting ${wizardData.targetAudience}. For each competitor, include their official website URL, company name, pricing model (freemium, subscription, etc.), starting price, and key differentiating features. Focus on established SaaS products with active websites.`,
         searchType: "competitors",
         context: searchContext,
       }),
       callFunction("pms-perplexity-search", {
-        query: `What is the demand for ${wizardData.saasType} solutions in ${wizardData.industry}? Include search volumes, pain points, and customer needs.`,
+        query: `What is the demand for ${wizardData.saasType} solutions in ${wizardData.industry}? Include search volumes, pain points, customer needs, and willingness to pay. Provide specific numbers and statistics.`,
         searchType: "demand",
         context: searchContext,
       }),
       callFunction("pms-perplexity-search", {
-        query: `What are the current trends and future outlook for ${wizardData.industry} ${wizardData.saasType} market? Include regulatory changes, technology shifts, and timing analysis.`,
+        query: `What are the current trends and future outlook for ${wizardData.industry} ${wizardData.saasType} market? Include regulatory changes, technology shifts, timing analysis, and market dynamics for the next 2-3 years.`,
         searchType: "trends",
         context: searchContext,
       }),
     ]);
 
+    console.log(`[pms-generate-report] Perplexity research complete`);
+
+    // ============================================================
+    // PHASE 3: Scrape competitors with Firecrawl
+    // ============================================================
+    console.log(`[pms-generate-report] Phase 3: Competitor Scraping with Firecrawl`);
+    
+    // Extract competitor URLs from Perplexity citations
+    const competitorCitations = (competitorResearch as Record<string, unknown>)?.citations || [];
+    const competitorUrls = extractCompetitorUrls(competitorCitations);
+    
+    console.log(`[pms-generate-report] Found ${competitorUrls.length} competitor URLs to scrape:`, competitorUrls);
+
+    let scrapedCompetitors: ScrapedCompetitor[] = [];
+    
+    if (competitorUrls.length > 0) {
+      try {
+        // Timeout of 60 seconds for scraping (won't block if it fails)
+        const scrapePromise = scrapeAllCompetitors(competitorUrls);
+        const timeoutPromise = new Promise<ScrapedCompetitor[]>((_, reject) => 
+          setTimeout(() => reject(new Error('Scrape timeout after 60s')), 60000)
+        );
+        
+        scrapedCompetitors = await Promise.race([scrapePromise, timeoutPromise]);
+        console.log(`[pms-generate-report] Scraping complete: ${scrapedCompetitors.length} competitors with data`);
+      } catch (error) {
+        console.error(`[pms-generate-report] Scraping failed, continuing without scraped data:`, error);
+        scrapedCompetitors = [];
+      }
+    } else {
+      console.log(`[pms-generate-report] No competitor URLs found in citations, skipping scraping`);
+    }
+
+    // ============================================================
+    // PHASE 4: AI Analysis with enriched data
+    // ============================================================
+    console.log(`[pms-generate-report] Phase 4: AI Analysis`);
+    
+    // Combine all research data including scraped competitors
     const researchData = {
       market: marketResearch,
       competitors: competitorResearch,
       demand: demandResearch,
       trends: trendsResearch,
+      // NEW: Real scraped data from competitor websites
+      scrapedCompetitors: scrapedCompetitors,
     };
 
-    console.log(`[pms-generate-report] Research complete. Starting AI analysis...`);
+    // Log scraped data summary for debugging
+    if (scrapedCompetitors.length > 0) {
+      console.log(`[pms-generate-report] Scraped data summary:`);
+      scrapedCompetitors.forEach(c => {
+        console.log(`  - ${c.domain}: branding=${!!c.branding}, pricing=${!!c.pricing}, features=${!!c.features}`);
+      });
+    }
 
-    // 4. Phase 2: AI Analysis - Core Report Sections
-    console.log(`[pms-generate-report] Phase 2: Core Analysis`);
+    // Phase 4a: Core Analysis (parallel)
+    console.log(`[pms-generate-report] Phase 4a: Core Analysis`);
 
     const [
       executiveVerdict,
@@ -197,8 +370,8 @@ serve(async (req) => {
       }),
     ]);
 
-    // 5. Phase 3: Additional Sections
-    console.log(`[pms-generate-report] Phase 3: Additional Sections`);
+    // Phase 4b: Additional Sections (parallel)
+    console.log(`[pms-generate-report] Phase 4b: Additional Sections`);
 
     const [
       financialScenarios,
@@ -247,8 +420,8 @@ serve(async (req) => {
       }),
     ]);
 
-    // 6. Phase 4: Marketing Analysis
-    console.log(`[pms-generate-report] Phase 4: Marketing Analysis`);
+    // Phase 4c: Marketing Analysis (parallel)
+    console.log(`[pms-generate-report] Phase 4c: Marketing Analysis`);
 
     const [
       marketingFourPs,
@@ -283,8 +456,8 @@ serve(async (req) => {
       }),
     ]);
 
-    // 7. Phase 5: Brand Assets
-    console.log(`[pms-generate-report] Phase 5: Brand Assets`);
+    // Phase 4d: Brand Assets (parallel)
+    console.log(`[pms-generate-report] Phase 4d: Brand Assets`);
 
     const [
       brandCopy,
@@ -313,7 +486,12 @@ serve(async (req) => {
       }),
     ]);
 
-    // 8. Extract scores and key metrics from analyzed data
+    // ============================================================
+    // PHASE 5: Save to database
+    // ============================================================
+    console.log(`[pms-generate-report] Phase 5: Saving to Database`);
+    
+    // Extract scores and key metrics from analyzed data
     const execVerdict = executiveVerdict as Record<string, unknown> || {};
     const timing = timingAnalysis as Record<string, unknown> || {};
     const pivot = pivotScenarios as Record<string, unknown> || {};
@@ -323,7 +501,7 @@ serve(async (req) => {
     const keyMetrics = execVerdict.key_metrics as Record<string, unknown> || {};
     const quantDiff = quantifiedDifferentiation as Record<string, unknown> || {};
 
-    // 9. Prepare update payload - ALL fields populated by AI (no static fallbacks)
+    // Prepare update payload - ALL fields populated by AI
     const updatePayload = {
       // Status
       status: "completed",
@@ -331,7 +509,7 @@ serve(async (req) => {
       // Generated timestamp
       generated_at: new Date().toISOString(),
       
-      // Scores - ALL extracted from AI responses (no fallbacks)
+      // Scores - ALL extracted from AI responses
       viability_score: toStringValue(execVerdict.viability_score, ""),
       complexity_score: toStringValue(execVerdict.complexity_score, ""),
       timing_score: toStringValue(execVerdict.timing_score || timing.score, ""),
@@ -418,7 +596,7 @@ serve(async (req) => {
       assets_mockup_previews: { previews: [] },
     };
 
-    // 10. Update report in database
+    // Update report in database
     console.log(`[pms-generate-report] Saving report to database...`);
 
     const { error: updateError } = await supabase
@@ -428,13 +606,19 @@ serve(async (req) => {
 
     if (updateError) {
       console.error(`[pms-generate-report] Database update error:`, updateError);
-      throw new Error(`Failed to update report: ${updateError.message}`);
+      throw updateError;
     }
 
-    console.log(`[pms-generate-report] Report generation complete: ${reportId}`);
+    console.log(`[pms-generate-report] Report generation complete for: ${reportId}`);
+    console.log(`[pms-generate-report] Summary: scraped ${scrapedCompetitors.length} competitors, generated all sections`);
 
     return new Response(
-      JSON.stringify({ success: true, reportId, message: "Report generated successfully" }),
+      JSON.stringify({ 
+        success: true, 
+        reportId,
+        scrapedCompetitors: scrapedCompetitors.length,
+        message: "Report generated successfully"
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
@@ -443,19 +627,21 @@ serve(async (req) => {
     
     // Try to update status to failed
     try {
-      const { reportId } = await req.clone().json();
-      if (reportId) {
-        await supabase
-          .from("tb_pms_reports")
-          .update({ status: "failed" })
-          .eq("id", reportId);
-      }
+      const { reportId } = await req.json() as ReportRequest;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      await supabase
+        .from("tb_pms_reports")
+        .update({ status: "failed" })
+        .eq("id", reportId);
     } catch {
       // Ignore
     }
     
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
