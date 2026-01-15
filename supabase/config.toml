@@ -71,3 +71,6 @@ verify_jwt = false
 
 [functions.pms-ai-analyze]
 verify_jwt = false
+
+[functions.pms-trigger-n8n-report]
+verify_jwt = false

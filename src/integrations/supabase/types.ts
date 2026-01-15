@@ -74,6 +74,38 @@ export type Database = {
           },
         ]
       }
+      tb_pms_reports: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          wizard_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          wizard_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          wizard_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tb_pms_reports_wizard_id_fkey"
+            columns: ["wizard_id"]
+            isOneToOne: false
+            referencedRelation: "tb_pms_wizard"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tb_pms_users: {
         Row: {
           auth_user_id: string

@@ -65,7 +65,7 @@ const PmsDashboardContent = () => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
 
-  // Poll for report status changes
+  // Poll for report status changes in tb_pms_reports
   const pollReportStatus = async (reportId: string) => {
     console.log("📊 Starting polling for report status...");
     
@@ -87,8 +87,9 @@ const PmsDashboardContent = () => {
       }
 
       try {
+        // Poll tb_pms_reports for status by report_id
         const { data: reportStatus, error } = await supabase
-          .from("tb_pms_wizard")
+          .from("tb_pms_reports")
           .select("status")
           .eq("id", reportId)
           .single();
@@ -133,51 +134,66 @@ const PmsDashboardContent = () => {
       }
     };
 
-    // Start first poll after 5 seconds
-    setTimeout(poll, 5000);
+    // Start first poll after 2 seconds
+    setTimeout(poll, 2000);
   };
 
-  // Regenerate report handler - fire-and-forget pattern (same as wizard)
-  const handleRegenerateReport = () => {
+  // Regenerate report handler - calls pms-trigger-n8n-report
+  const handleRegenerateReport = async () => {
     if (!id) return;
     
     setIsRegenerating(true);
-    console.log("🔄 Starting report regeneration...");
-    
-    // Update status to 'pending' first
-    supabase
-      .from('tb_pms_wizard')
-      .update({ status: 'pending' })
-      .eq('id', id)
-      .then(({ error }) => {
-        if (error) {
-          console.error("Failed to update status:", error);
-        } else {
-          console.log("✅ Status updated to pending");
-        }
-      });
-    
-    // Fire-and-forget - same pattern as wizard
-    supabase.functions.invoke('pms-generate-report', {
-      body: { reportId: id }
-    }).then(({ error }) => {
-      if (error) {
-        console.error("AI report generation error:", error);
-      } else {
-        console.log("✅ AI report generation started successfully");
-      }
-    }).catch((err) => {
-      console.error("Failed to trigger AI report generation:", err);
-    });
+    console.log("🔄 Starting report regeneration via n8n...");
 
     // Show toast immediately
     toast({
       title: "🔄 Regenerating Report",
-      description: "The report is being regenerated. This may take 2-5 minutes.",
+      description: "Triggering n8n workflow. Please wait...",
     });
+    
+    try {
+      // Call the new edge function that triggers n8n
+      const { data, error } = await supabase.functions.invoke('pms-trigger-n8n-report', {
+        body: { wizard_id: id }
+      });
 
-    // Start polling for status change
-    pollReportStatus(id);
+      if (error) {
+        console.error("❌ Failed to trigger n8n:", error);
+        toast({
+          title: "Error",
+          description: "Failed to trigger report generation.",
+          variant: "destructive",
+        });
+        setIsRegenerating(false);
+        return;
+      }
+
+      console.log("✅ n8n triggered successfully:", data);
+
+      // If we got a report_id, start polling
+      if (data?.report_id) {
+        pollReportStatus(data.report_id);
+      } else {
+        // If already completed, reload
+        if (data?.status === "completed") {
+          toast({
+            title: "✅ Report Ready!",
+            description: "Your report has been regenerated successfully.",
+          });
+          window.location.reload();
+        } else {
+          setIsRegenerating(false);
+        }
+      }
+    } catch (err) {
+      console.error("❌ Error calling pms-trigger-n8n-report:", err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+      setIsRegenerating(false);
+    }
   };
 
   // Use database data
