@@ -57,10 +57,10 @@ const ServiceCard = ({
   return (
     <Card
       className={cn(
-        "relative cursor-pointer transition-all duration-300 hover:scale-[1.02]",
+        "relative cursor-pointer transition-colors duration-200",
         isSelected
-          ? "bg-accent/10 border-accent/50 ring-1 ring-accent/30"
-          : "bg-card/50 border-border/30 hover:border-border/50"
+          ? "bg-accent/10 border-accent/40"
+          : "bg-card/50 border-border/30 hover:border-accent/30"
       )}
       onClick={onToggle}
     >
@@ -71,19 +71,24 @@ const ServiceCard = ({
             {/* Custom Checkbox */}
             <div
               className={cn(
-                "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all",
+                "w-4 h-4 rounded-md border flex items-center justify-center transition-colors",
                 isSelected
-                  ? "bg-accent border-accent"
-                  : "border-muted-foreground/30 bg-transparent"
+                  ? "bg-accent/20 border-accent/50"
+                  : "border-border/50 bg-transparent"
               )}
             >
-              {isSelected && <Check className="h-3 w-3 text-accent-foreground" />}
+              {isSelected && <Check className="h-2.5 w-2.5 text-accent" />}
             </div>
             
-            <IconComponent className={cn(
-              "h-4 w-4",
-              isSelected ? "text-accent" : "text-muted-foreground"
-            )} />
+            <div className={cn(
+              "p-1.5 rounded-md",
+              isSelected ? "bg-accent/15" : "bg-accent/10"
+            )}>
+              <IconComponent className={cn(
+                "h-3.5 w-3.5",
+                isSelected ? "text-accent" : "text-muted-foreground"
+              )} />
+            </div>
             <span className={cn(
               "font-medium text-sm",
               isSelected ? "text-foreground" : "text-foreground/80"
@@ -112,9 +117,9 @@ const ServiceCard = ({
               <span className="text-accent font-medium">Uaicode</span>
               <span className="font-bold text-accent">{formatCurrency(service.uaicode_price_cents)}/mo</span>
             </div>
-            <div className="relative h-2 bg-muted/20 rounded-full overflow-hidden">
+            <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
               <div 
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent to-accent/70 rounded-full transition-all duration-500"
+                className="absolute inset-y-0 left-0 bg-accent/80 rounded-full transition-all duration-300"
                 style={{ width: `${uaicodeWidth}%` }}
               />
             </div>
@@ -128,7 +133,7 @@ const ServiceCard = ({
                 {formatCurrencyK(service.traditional_min_cents)}-{formatCurrencyK(service.traditional_max_cents)}/mo
               </span>
             </div>
-            <div className="relative h-2 bg-muted/20 rounded-full overflow-hidden">
+            <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
               {/* Min range indicator */}
               <div 
                 className="absolute inset-y-0 left-0 bg-red-500/30 rounded-full"
@@ -136,7 +141,7 @@ const ServiceCard = ({
               />
               {/* Max range indicator */}
               <div 
-                className="absolute inset-y-0 left-0 bg-red-500/50 rounded-full transition-all duration-500"
+                className="absolute inset-y-0 left-0 bg-red-500/50 rounded-full transition-all duration-300"
                 style={{ width: '100%' }}
               />
             </div>
@@ -145,9 +150,9 @@ const ServiceCard = ({
         
         {/* Savings Badge */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1 text-green-400">
-            <Sparkles className="h-3 w-3" />
-            <span className="text-[10px] font-medium">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 border border-green-500/20">
+            <Sparkles className="h-3 w-3 text-green-400" />
+            <span className="text-[10px] font-medium text-green-400">
               Save {service.savings_percent_min}-{service.savings_percent_max}%
             </span>
           </div>
