@@ -208,8 +208,12 @@ const InvestmentSection = () => {
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Main Investment Card with Chart */}
-        <Card className="bg-card/50 border-border/30 ring-1 ring-accent/10">
-          <CardContent className="p-5">
+        <Card className="group relative overflow-hidden bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 transition-all duration-300">
+          {/* Glow effect on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {/* Corner decoration */}
+          <div className="absolute top-0 right-0 w-12 h-12 bg-accent/10 rounded-bl-[30px] -mr-2 -mt-2" />
+          <CardContent className="relative p-5">
             {/* Total Investment */}
             <div className="text-center mb-6">
               <p className="text-sm text-muted-foreground mb-1">Total MVP Investment</p>
@@ -306,8 +310,12 @@ const InvestmentSection = () => {
         </Card>
 
         {/* Interactive Comparison Slider */}
-        <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-5">
+        <Card className="group relative overflow-hidden bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 transition-all duration-300">
+          {/* Glow effect on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {/* Corner decoration */}
+          <div className="absolute top-0 right-0 w-12 h-12 bg-accent/10 rounded-bl-[30px] -mr-2 -mt-2" />
+          <CardContent className="relative p-5">
             <PricingComparisonSlider />
           </CardContent>
         </Card>
@@ -341,8 +349,12 @@ const InvestmentSection = () => {
         />
 
         {/* Marketing Cost Comparison Slider - Dynamic */}
-        <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-5">
+        <Card className="group relative overflow-hidden bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 transition-all duration-300">
+          {/* Glow effect on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {/* Corner decoration */}
+          <div className="absolute top-0 right-0 w-12 h-12 bg-accent/10 rounded-bl-[30px] -mr-2 -mt-2" />
+          <CardContent className="relative p-5">
             <MarketingComparisonSlider 
               uaicodeTotal={marketingTotals.uaicodeTotal}
               traditionalMin={marketingTotals.traditionalMinTotal}
