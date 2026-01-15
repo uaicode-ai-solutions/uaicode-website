@@ -250,9 +250,9 @@ const PmsWizard = () => {
         console.log("User data updated successfully for user:", pmsUser.id);
       }
 
-      // 2. Save report to Supabase database
+      // 2. Save wizard data to Supabase database
       const { error: insertError } = await supabase
-        .from('tb_pms_reports')
+        .from('tb_pms_wizard')
         .insert({
           id: reportId,
           user_id: pmsUser.id,
@@ -276,8 +276,6 @@ const PmsWizard = () => {
           challenge: data.challenge,
           budget: data.budget,
           timeline: data.timeline,
-          viability_score: String(viabilityScore),
-          complexity_score: String(complexityScore),
         });
 
       if (insertError) {

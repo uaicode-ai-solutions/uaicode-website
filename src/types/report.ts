@@ -4,8 +4,80 @@
 
 import { Database } from "@/integrations/supabase/types";
 
-// Type alias for the report row from the database
-export type ReportRow = Database["public"]["Tables"]["tb_pms_reports"]["Row"];
+// Type alias for the wizard row from the database
+export type WizardRow = Database["public"]["Tables"]["tb_pms_wizard"]["Row"];
+
+// TEMPORARY: ReportRow extends WizardRow with optional AI-generated fields
+// This will be replaced when we create the new tb_pms_reports table
+export type ReportRow = WizardRow & {
+  // AI-generated scores
+  viability_score?: string | null;
+  complexity_score?: string | null;
+  timing_score?: string | null;
+  risk_score?: string | null;
+  differentiation_score?: string | null;
+  pivot_readiness_score?: string | null;
+  opportunity_score?: string | null;
+  first_mover_score?: string | null;
+  
+  // Verdict
+  verdict?: string | null;
+  verdict_headline?: string | null;
+  verdict_summary?: string | null;
+  
+  // Financial metrics
+  investment_total_cents?: string | null;
+  break_even_months?: string | null;
+  expected_roi_year1?: string | null;
+  mrr_month12_cents?: string | null;
+  arr_projected_cents?: string | null;
+  ltv_cac_ratio?: string | null;
+  generated_at?: string | null;
+  
+  // JSONB fields
+  report_content?: unknown;
+  key_metrics?: unknown;
+  highlights?: unknown;
+  risks?: unknown;
+  market_opportunity?: unknown;
+  competitors?: unknown;
+  competitive_advantages?: unknown;
+  investment_breakdown?: unknown;
+  investment_included?: unknown;
+  investment_not_included?: unknown;
+  investment_comparison?: unknown;
+  unit_economics?: unknown;
+  financial_scenarios?: unknown;
+  projection_data?: unknown;
+  execution_timeline?: unknown;
+  tech_stack?: unknown;
+  demand_validation?: unknown;
+  business_model?: unknown;
+  go_to_market_preview?: unknown;
+  quantified_differentiation?: unknown;
+  timing_analysis?: unknown;
+  pivot_scenarios?: unknown;
+  success_metrics?: unknown;
+  resource_requirements?: unknown;
+  risk_quantification?: unknown;
+  market_benchmarks?: unknown;
+  uaicode_info?: unknown;
+  next_steps?: unknown;
+  marketing_four_ps?: unknown;
+  marketing_paid_media_diagnosis?: unknown;
+  marketing_paid_media_action_plan?: unknown;
+  marketing_pricing_diagnosis?: unknown;
+  marketing_pricing_action_plan?: unknown;
+  marketing_growth_strategy?: unknown;
+  marketing_competitive_advantages?: unknown;
+  marketing_verdict?: unknown;
+  assets_screen_mockups?: unknown;
+  assets_brand_copy?: unknown;
+  assets_brand_identity?: unknown;
+  assets_logos?: unknown;
+  assets_landing_page?: unknown;
+  assets_mockup_previews?: unknown;
+};
 
 // ==========================================
 // Key Metrics & Highlights

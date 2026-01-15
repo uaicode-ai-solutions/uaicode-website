@@ -88,7 +88,7 @@ const PmsDashboardContent = () => {
 
       try {
         const { data: reportStatus, error } = await supabase
-          .from("tb_pms_reports")
+          .from("tb_pms_wizard")
           .select("status")
           .eq("id", reportId)
           .single();
@@ -146,7 +146,7 @@ const PmsDashboardContent = () => {
     
     // Update status to 'pending' first
     supabase
-      .from('tb_pms_reports')
+      .from('tb_pms_wizard')
       .update({ status: 'pending' })
       .eq('id', id)
       .then(({ error }) => {
