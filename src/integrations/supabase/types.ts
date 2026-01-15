@@ -79,6 +79,10 @@ export type Database = {
           created_at: string
           expected_roi: string | null
           id: string
+          opportunity_sam: string | null
+          opportunity_som: string | null
+          opportunity_tam: string | null
+          opportunity_year_rate: string | null
           payback_period: string | null
           status: string
           total_market: string | null
@@ -91,6 +95,10 @@ export type Database = {
           created_at?: string
           expected_roi?: string | null
           id?: string
+          opportunity_sam?: string | null
+          opportunity_som?: string | null
+          opportunity_tam?: string | null
+          opportunity_year_rate?: string | null
           payback_period?: string | null
           status?: string
           total_market?: string | null
@@ -103,6 +111,10 @@ export type Database = {
           created_at?: string
           expected_roi?: string | null
           id?: string
+          opportunity_sam?: string | null
+          opportunity_som?: string | null
+          opportunity_tam?: string | null
+          opportunity_year_rate?: string | null
           payback_period?: string | null
           status?: string
           total_market?: string | null
