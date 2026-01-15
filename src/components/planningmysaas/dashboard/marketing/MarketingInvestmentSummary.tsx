@@ -8,6 +8,7 @@ interface MarketingInvestmentSummaryProps {
   services: MarketingService[];
   totals: MarketingTotals;
   suggestedPaidMedia?: number; // in cents
+  budgetSource?: string | null; // User's budget selection from wizard
 }
 
 const formatCurrency = (cents: number) => {
@@ -32,6 +33,7 @@ const MarketingInvestmentSummary = ({
   services,
   totals,
   suggestedPaidMedia = 500000, // $5,000 default
+  budgetSource,
 }: MarketingInvestmentSummaryProps) => {
   const selectedServices = services.filter((s) =>
     selectedServiceIds.includes(s.service_id)
@@ -111,7 +113,10 @@ const MarketingInvestmentSummary = ({
         <div className="mt-4 flex items-start gap-2 text-[10px] text-muted-foreground">
           <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
           <span>
-            *Suggested budget based on market analysis. You can start smaller and scale as you see results.
+            {budgetSource && budgetSource !== 'guidance' 
+              ? `*Based on your selected budget range (${budgetSource.replace('-', ' - $').replace('k', 'K')}). You can adjust as needed.`
+              : '*Calculated at 75% of your subscription (min $3K, max $15K). You can start smaller and scale as you see results.'
+            }
           </span>
         </div>
       </CardContent>
