@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { KeyMetrics } from "@/types/report";
+import { safeValue, safeNumber } from "@/types/report";
 
 interface ReportHeroProps {
   projectName?: string;
@@ -12,20 +12,17 @@ interface ReportHeroProps {
 }
 
 const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHeroProps) => {
-  const { report } = useReportContext();
+  const { report, reportData } = useReportContext();
   
   // Use real data only - no mock fallbacks for validation
-  const displayName = projectName || report?.saas_name || "Untitled Project";
-  const viabilityScore = parseInt(report?.viability_score || "0");
-  const verdictHeadline = report?.verdict_headline || "";
+  const displayName = projectName || report?.saas_name || "...";
   
-  // Parse key_metrics from JSONB
-  const keyMetrics = report?.key_metrics as unknown as KeyMetrics | undefined;
-  
-  // For TEXT fields, use directly (already formatted by AI)
-  const expectedROI = report?.expected_roi_year1 || "-";
-  const breakEvenMonths = report?.break_even_months || "-";
-  const marketSize = report?.market_size || keyMetrics?.marketSize || "-";
+  // Get metrics from tb_pms_reports with fallback
+  const viabilityScore = safeNumber(reportData?.viability_score, 0);
+  const verdictHeadline = safeValue(reportData?.verdict_headline);
+  const totalMarket = safeValue(reportData?.total_market);
+  const expectedROI = safeValue(reportData?.expected_roi);
+  const paybackPeriod = safeValue(reportData?.payback_period);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-amber-400";
@@ -36,22 +33,22 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   const metrics = [
     { 
       icon: TrendingUp, 
-      value: marketSize, 
-      label: keyMetrics?.marketLabel || "Total Market",
+      value: totalMarket, 
+      label: "Total Market",
       sublabel: "Global TAM",
       tooltip: "Total Addressable Market - The total global market demand for your product or service."
     },
     { 
       icon: DollarSign, 
       value: expectedROI, 
-      label: keyMetrics?.roiLabel || "Expected ROI",
+      label: "Expected ROI",
       sublabel: "Year 1",
       tooltip: "Return on Investment - The projected percentage gain on your investment in the first year."
     },
     { 
       icon: Clock, 
-      value: breakEvenMonths, 
-      label: keyMetrics?.paybackLabel || "Payback Period",
+      value: paybackPeriod, 
+      label: "Payback Period",
       sublabel: "To break-even",
       tooltip: "The estimated time until your cumulative revenue exceeds your total investment."
     },

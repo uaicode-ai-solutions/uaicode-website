@@ -1,9 +1,11 @@
 import React, { createContext, useContext, ReactNode } from "react";
 import { useReport } from "@/hooks/useReport";
-import { ReportRow } from "@/types/report";
+import { useReportData } from "@/hooks/useReportData";
+import { ReportRow, ReportData } from "@/types/report";
 
 interface ReportContextType {
   report: ReportRow | null | undefined;
+  reportData: ReportData | null | undefined;
   isLoading: boolean;
   error: Error | null;
   reportId: string | undefined;
@@ -17,14 +19,16 @@ interface ReportProviderProps {
 }
 
 export const ReportProvider = ({ reportId, children }: ReportProviderProps) => {
-  const { data: report, isLoading, error } = useReport(reportId);
+  const { data: report, isLoading: isLoadingWizard, error: wizardError } = useReport(reportId);
+  const { data: reportData, isLoading: isLoadingReport, error: reportError } = useReportData(reportId);
 
   return (
     <ReportContext.Provider
       value={{
         report,
-        isLoading,
-        error: error as Error | null,
+        reportData,
+        isLoading: isLoadingWizard || isLoadingReport,
+        error: (wizardError || reportError) as Error | null,
         reportId,
       }}
     >

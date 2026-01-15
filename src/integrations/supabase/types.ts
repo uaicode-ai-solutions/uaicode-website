@@ -77,23 +77,38 @@ export type Database = {
       tb_pms_reports: {
         Row: {
           created_at: string
+          expected_roi: string | null
           id: string
+          payback_period: string | null
           status: string
+          total_market: string | null
           updated_at: string
+          verdict_headline: string | null
+          viability_score: number | null
           wizard_id: string
         }
         Insert: {
           created_at?: string
+          expected_roi?: string | null
           id?: string
+          payback_period?: string | null
           status?: string
+          total_market?: string | null
           updated_at?: string
+          verdict_headline?: string | null
+          viability_score?: number | null
           wizard_id: string
         }
         Update: {
           created_at?: string
+          expected_roi?: string | null
           id?: string
+          payback_period?: string | null
           status?: string
+          total_market?: string | null
           updated_at?: string
+          verdict_headline?: string | null
+          viability_score?: number | null
           wizard_id?: string
         }
         Relationships: [
