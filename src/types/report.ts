@@ -122,6 +122,13 @@ export interface ReportData {
   investment_integrations_cents: number | null;
   investment_infra_cents: number | null;
   investment_testing_cents: number | null;
+  // Price Comparison fields
+  investment_one_payment_cents_traditional: number | null;
+  savings_percentage: number | null;
+  savings_amount_cents: number | null;
+  savings_marketing_months: number | null;
+  delivery_time_traditional: string | null;
+  delivery_time_uaicode: string | null;
 }
 
 // Helper function to safely get value with fallback

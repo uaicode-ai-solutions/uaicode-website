@@ -206,18 +206,63 @@ serve(async (req) => {
     
     console.log(`📦 Investment breakdown:`, investmentBreakdown);
 
-    // Create new report entry in tb_pms_reports with status 'pending' and investment values
+    // ==========================================
+    // Calculate Price Comparison Fields
+    // ==========================================
+    
+    // Traditional price from tier data
+    const traditionalPrice = tierData?.traditional_min_cents ?? 0;
+    
+    // Calculate savings
+    const savingsAmountCents = traditionalPrice - calculatedPrice;
+    const savingsPercentage = traditionalPrice > 0 
+      ? Math.round((savingsAmountCents / traditionalPrice) * 100)
+      : 0;
+    
+    // Calculate marketing months ($5,000/month = 500000 cents)
+    const MARKETING_MONTHLY_BUDGET_CENTS = 500000;
+    const savingsMarketingMonths = Math.floor(savingsAmountCents / MARKETING_MONTHLY_BUDGET_CENTS);
+    
+    // Convert days to WEEKS for delivery times
+    function formatDeliveryTimeInWeeks(minDays: number, maxDays: number): string {
+      const minWeeks = Math.round(minDays / 7);
+      const maxWeeks = Math.round(maxDays / 7);
+      return `${minWeeks}-${maxWeeks} weeks`;
+    }
+    
+    // Traditional: traditional_min_days/traditional_max_days → weeks
+    const deliveryTimeTraditional = tierData 
+      ? formatDeliveryTimeInWeeks(tierData.traditional_min_days, tierData.traditional_max_days)
+      : "24-36 weeks";
+    
+    // Uaicode: min_days/max_days → weeks
+    const deliveryTimeUaicode = tierData
+      ? formatDeliveryTimeInWeeks(tierData.min_days, tierData.max_days)
+      : "9-18 weeks";
+    
+    console.log(`💰 Price comparison: Traditional ${traditionalPrice} vs Uaicode ${calculatedPrice} (${savingsPercentage}% savings)`);
+    console.log(`📅 Delivery times: Traditional ${deliveryTimeTraditional}, Uaicode ${deliveryTimeUaicode}`);
+
+    // Create new report entry in tb_pms_reports with status 'pending' and all calculated values
     const { data: report, error: reportError } = await supabase
       .from("tb_pms_reports")
       .insert({
         wizard_id: wizard_id,
         status: "pending",
+        // Investment breakdown
         investment_one_payment_cents: investmentBreakdown.one_payment,
         investment_front_cents: investmentBreakdown.front,
         investment_back_cents: investmentBreakdown.back,
         investment_integrations_cents: investmentBreakdown.integrations,
         investment_infra_cents: investmentBreakdown.infra,
         investment_testing_cents: investmentBreakdown.testing,
+        // Price comparison fields
+        investment_one_payment_cents_traditional: traditionalPrice,
+        savings_percentage: savingsPercentage,
+        savings_amount_cents: savingsAmountCents,
+        savings_marketing_months: savingsMarketingMonths,
+        delivery_time_traditional: deliveryTimeTraditional,
+        delivery_time_uaicode: deliveryTimeUaicode,
       })
       .select()
       .single();
