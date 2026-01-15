@@ -40,7 +40,35 @@ const InvestmentSection = () => {
     annualSavingsMax: 0,
   });
   
-  const suggestedPaidMedia = 500000; // $5,000 in cents
+  // Calculate suggested paid media based on wizard budget selection
+  const calculateSuggestedPaidMedia = (budget: string | null | undefined, uaicodeTotal: number): number => {
+    const budgetMap: Record<string, number> = {
+      '5k-10k': 200000,     // $2,000
+      '10k-25k': 450000,    // $4,500
+      '25k-50k': 900000,    // $9,000
+      '50k-100k': 1800000,  // $18,000
+      '100k+': 3500000,     // $35,000
+    };
+    
+    // If user chose a specific budget range
+    if (budget && budgetMap[budget]) {
+      return budgetMap[budget];
+    }
+    
+    // If "guidance" or not defined, use 75% of uaicodeTotal with min/max caps
+    if (uaicodeTotal > 0) {
+      const suggested = Math.round(uaicodeTotal * 0.75);
+      const min = 300000;  // $3,000 minimum
+      const max = 1500000; // $15,000 maximum
+      return Math.min(Math.max(suggested, min), max);
+    }
+    
+    // Fallback default
+    return 500000; // $5,000
+  };
+
+  const userBudget = report?.budget;
+  const suggestedPaidMedia = calculateSuggestedPaidMedia(userBudget, marketingTotals.uaicodeTotal);
   
   const handleMarketingSelectionChange = useCallback((selectedIds: string[], totals: MarketingTotals) => {
     setSelectedMarketingIds(selectedIds);
@@ -309,6 +337,7 @@ const InvestmentSection = () => {
           services={services}
           totals={marketingTotals}
           suggestedPaidMedia={suggestedPaidMedia}
+          budgetSource={userBudget}
         />
 
         {/* Marketing Cost Comparison Slider - Dynamic */}
@@ -364,7 +393,7 @@ const InvestmentSection = () => {
               <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/30 text-center min-w-[70px]">
                 <p className="text-[10px] text-muted-foreground">Paid Media*</p>
                 <p className="text-sm font-bold text-foreground">{formatCurrency(suggestedPaidMedia * 12 / 100)}</p>
-                <p className="text-[9px] text-muted-foreground/70">($5K × 12)</p>
+                <p className="text-[9px] text-muted-foreground/70">({formatCurrency(suggestedPaidMedia / 100)} × 12)</p>
               </div>
               <div className="px-3 py-2 bg-accent/20 rounded-lg border border-accent/30 text-center min-w-[70px]">
                 <p className="text-[10px] text-accent/80">Total</p>
