@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { 
   Award, 
   TrendingUp, 
@@ -11,8 +12,7 @@ import {
   HeadphonesIcon, 
   Star,
   Quote,
-  CheckCircle2,
-  Building2
+  CheckCircle2
 } from "lucide-react";
 import sarahAvatar from "@/assets/testimonial-sarah-johnson.webp";
 import marcusAvatar from "@/assets/author-marcus.webp";
@@ -103,10 +103,15 @@ const WhyUaicodeSection = () => {
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg bg-accent/10">
-          <Building2 className="h-5 w-5 text-accent" />
+          <Award className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Why Uaicode</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-foreground">Why Uaicode</h2>
+            <InfoTooltip size="sm">
+              Our track record, differentials, and guarantees.
+            </InfoTooltip>
+          </div>
           <p className="text-sm text-muted-foreground">Our differentials and guarantees</p>
         </div>
       </div>
@@ -126,8 +131,8 @@ const WhyUaicodeSection = () => {
             >
               {/* Badge TOP RATED - canto superior esquerdo */}
               {stat.highlight && (
-                <Badge className="absolute top-3 left-3 text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 font-medium px-2 py-0.5">
-                  <span className="mr-1">●</span> TOP RATED
+                <Badge className="absolute top-3 left-3 text-[10px] bg-accent text-background font-semibold px-2 py-0.5 border-0">
+                  <span className="mr-1 text-green-400">●</span> TOP RATED
                 </Badge>
               )}
               
@@ -137,7 +142,7 @@ const WhyUaicodeSection = () => {
               </div>
               
               <CardContent className="p-6 pt-14 flex flex-col items-center justify-center text-center min-h-[140px]">
-                <div className="text-4xl md:text-5xl font-bold text-accent mb-1">
+                <div className={`text-4xl md:text-5xl font-bold mb-1 ${stat.highlight ? 'text-accent' : 'text-foreground'}`}>
                   {stat.value}
                 </div>
                 <div className="text-sm font-medium text-foreground">{stat.label}</div>
@@ -156,6 +161,9 @@ const WhyUaicodeSection = () => {
             <div className="flex items-center gap-2">
               <Award className="h-4 w-4 text-accent" />
               <h3 className="text-sm font-semibold text-foreground">Our Differentials</h3>
+              <InfoTooltip size="sm">
+                What sets us apart from other development teams.
+              </InfoTooltip>
             </div>
             <div className="space-y-3">
               {differentials.map((item, index) => {
@@ -182,6 +190,9 @@ const WhyUaicodeSection = () => {
             <div className="flex items-center gap-2">
               <Quote className="h-4 w-4 text-accent" />
               <h3 className="text-sm font-semibold text-foreground">What Our Clients Say</h3>
+              <InfoTooltip size="sm">
+                Real feedback from our satisfied clients.
+              </InfoTooltip>
             </div>
             <div className="space-y-4">
               {testimonials.map((testimonial, index) => (
