@@ -71,6 +71,14 @@ const InvestmentSection = () => {
     "Responsive web app",
   ];
 
+  // Fixed "Not Included" items
+  const notIncludedItems = [
+    "Marketing and customer acquisition",
+    "Native iOS/Android apps",
+    "Additional custom integrations",
+    "24/7 support after initial period",
+  ];
+
   // Calculate total from breakdown for chart (use 0 for null values in chart)
   const totalFromBreakdown = breakdownItems.reduce((acc, item) => acc + (item.value ?? 0), 0);
 
@@ -277,10 +285,10 @@ const InvestmentSection = () => {
                   Not Included
                 </h3>
                 <ul className="space-y-1.5">
-                  {investment.notIncluded.slice(0, 4).map((item, index) => (
+                  {notIncludedItems.map((item, index) => (
                     <li key={index} className="flex items-start gap-2 text-xs">
-                      <X className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">{item}</span>
+                      <X className="h-3 w-3 text-red-400 mt-0.5 flex-shrink-0" />
+                      <span className="text-foreground/70">{item}</span>
                     </li>
                   ))}
                 </ul>
