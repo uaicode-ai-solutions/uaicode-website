@@ -92,6 +92,29 @@ export interface KeyMetrics {
   paybackLabel: string;
 }
 
+// Report data from tb_pms_reports table
+export interface ReportData {
+  id: string;
+  wizard_id: string;
+  status: string;
+  viability_score: number | null;
+  total_market: string | null;
+  expected_roi: string | null;
+  payback_period: string | null;
+  verdict_headline: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Helper function to safely get value with fallback
+export const safeValue = (value: string | null | undefined, fallback = "..."): string => {
+  return value?.trim() || fallback;
+};
+
+export const safeNumber = (value: number | null | undefined, fallback = 0): number => {
+  return value ?? fallback;
+};
+
 export interface Highlight {
   icon: string;
   text: string;
