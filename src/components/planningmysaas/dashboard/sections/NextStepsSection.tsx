@@ -161,6 +161,15 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   const MVP_MARKETING_DISCOUNT = 0.15;
   const mvpMarketingDiscountedPrice = Math.round(mvpPrice * (1 - MVP_MARKETING_DISCOUNT));
   const mvpMarketingSavings = Math.round(mvpPrice * MVP_MARKETING_DISCOUNT);
+  
+  // Annual marketing contract (12 months)
+  const marketingAnnualUaicode = marketingMonthlyUaicode * 12;
+  
+  // Total MVP + Marketing package price (MVP with 15% OFF + annual marketing)
+  const mvpMarketingTotalPrice = mvpMarketingDiscountedPrice + marketingAnnualUaicode;
+  
+  // Original price before discount (MVP full price + marketing annual)
+  const mvpMarketingOriginalPrice = mvpPrice + marketingAnnualUaicode;
 
   const pricingOptions = [
     {
@@ -193,10 +202,10 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       id: 'mvp-marketing' as const,
       name: 'MVP + Marketing',
       badge: 'RECOMMENDED',
-      price: mvpMarketingDiscountedPrice,
+      price: mvpMarketingTotalPrice,
       priceLabel: '15% OFF on MVP',
       discount: {
-        original: mvpPrice,
+        original: mvpMarketingOriginalPrice,
         savings: mvpMarketingSavings
       },
       features: [
