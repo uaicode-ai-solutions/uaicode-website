@@ -4,14 +4,23 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
-import { Competitor } from "@/types/report";
+import { Competitor, CompetitiveAdvantage } from "@/types/report";
+
+// Flexible type to handle both string[] and object[] from AI
+type AdvantageItem = string | { name?: string; advantage?: string; description?: string; competitor_gap?: string; competitorGap?: string };
 
 const CompetitorsDifferentiationSection = () => {
   const { report } = useReportContext();
   
   // Parse competitors and advantages from report
   const competitors = parseJsonField<Competitor[]>(report?.competitors, []);
-  const competitiveAdvantages = parseJsonField<string[]>(report?.competitive_advantages, []);
+  const rawAdvantages = parseJsonField<AdvantageItem[]>(report?.competitive_advantages, []);
+  
+  // Normalize advantages to always get the display text
+  const getAdvantageText = (item: AdvantageItem): string => {
+    if (typeof item === 'string') return item;
+    return item.name || item.advantage || item.description || 'Unknown advantage';
+  };
   
   // Calculate max price for chart scaling
   const maxPrice = competitors.length > 0 ? Math.max(...competitors.map(c => c.price || 0)) : 100;
@@ -130,12 +139,12 @@ const CompetitorsDifferentiationSection = () => {
               </InfoTooltip>
             </div>
             <div className="grid md:grid-cols-2 gap-x-6 gap-y-2">
-              {competitiveAdvantages.map((advantage, index) => (
+              {(rawAdvantages || []).map((advantage, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <div className="p-1 rounded bg-accent/10">
                     <Zap className="w-3 h-3 text-accent" />
                   </div>
-                  <span className="text-xs text-foreground">{advantage}</span>
+                  <span className="text-xs text-foreground">{getAdvantageText(advantage)}</span>
                 </div>
               ))}
             </div>
