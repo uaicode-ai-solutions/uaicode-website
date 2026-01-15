@@ -11,8 +11,10 @@ import {
   Settings,
   Share2,
   Link,
-  Mail
+  Mail,
+  RefreshCw
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -61,6 +63,47 @@ const PmsDashboardContent = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("report");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  // DEBUG: Regenerate report handler
+  const handleRegenerateReport = async () => {
+    if (!id) return;
+    
+    setIsRegenerating(true);
+    
+    try {
+      // Update status to "pending" in database
+      const { error: updateError } = await supabase
+        .from("tb_pms_reports")
+        .update({ status: "pending" })
+        .eq("id", id);
+
+      if (updateError) throw updateError;
+
+      // Call the edge function directly
+      const { error } = await supabase.functions.invoke("pms-generate-report", {
+        body: { report_id: id },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Report regeneration started!",
+        description: "The report is being regenerated with Firecrawl data.",
+      });
+
+      // Reload page to show generating skeleton
+      window.location.reload();
+    } catch (error) {
+      console.error("Error regenerating report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate report. Check console for details.",
+        variant: "destructive",
+      });
+      setIsRegenerating(false);
+    }
+  };
 
   // Use database data
   const { data: report, isLoading, error } = useReport(id);
@@ -212,6 +255,20 @@ const PmsDashboardContent = () => {
 
             {/* Right side - Download Button + Share + User Dropdown */}
             <div className="flex items-center gap-2">
+              {/* DEBUG: Temporary Regenerate Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerateReport}
+                disabled={isRegenerating}
+                className="gap-2 border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 hover:border-yellow-500"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRegenerating ? "animate-spin" : ""}`} />
+                <span className="hidden sm:inline">
+                  {isRegenerating ? "Regenerating..." : "Regenerate"}
+                </span>
+              </Button>
+
               <Button
                 onClick={handleDownloadPDF}
                 className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
