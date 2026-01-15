@@ -126,6 +126,31 @@ export const safeNumber = (value: number | null | undefined, fallback = 0): numb
   return value ?? fallback;
 };
 
+// ==========================================
+// Feature Tier Helpers
+// ==========================================
+
+export const FEATURE_TIERS = {
+  starter: ['auth', 'profiles', 'crud', 'reporting', 'notifications', 'admin', 'responsive', 'security'],
+  growth: ['advancedAnalytics', 'apiIntegrations', 'payments', 'roles', 'search', 'fileUpload', 'realtime', 'workflows', 'advancedReporting', 'emailMarketing'],
+  enterprise: ['ai', 'dataAnalytics', 'multiTenant', 'sso', 'customIntegrations', 'apiManagement', 'collaboration', 'automation', 'customReporting', 'support']
+};
+
+export function countFeaturesByTier(selectedFeatures: string[]): { starter: number; growth: number; enterprise: number } {
+  return {
+    starter: selectedFeatures.filter(f => FEATURE_TIERS.starter.includes(f)).length,
+    growth: selectedFeatures.filter(f => FEATURE_TIERS.growth.includes(f)).length,
+    enterprise: selectedFeatures.filter(f => FEATURE_TIERS.enterprise.includes(f)).length,
+  };
+}
+
+export function determineMvpTier(selectedFeatures: string[]): 'starter' | 'growth' | 'enterprise' {
+  const counts = countFeaturesByTier(selectedFeatures);
+  if (counts.enterprise > 0) return 'enterprise';
+  if (counts.growth > 0) return 'growth';
+  return 'starter';
+}
+
 export interface Highlight {
   icon: string;
   text: string;
@@ -928,29 +953,8 @@ export interface MvpTier {
   created_at: string;
 }
 
-// Feature tier mapping for calculating MVP tier
-export const FEATURE_TIERS = {
-  essential: ['auth', 'profiles', 'crud', 'reporting', 'notifications', 'admin', 'responsive', 'security'],
-  advanced: ['advancedAnalytics', 'apiIntegrations', 'payments', 'roles', 'search', 'fileUpload', 'realtime', 'workflows', 'advancedReporting', 'emailMarketing'],
-  enterprise: ['ai', 'dataAnalytics', 'multiTenant', 'sso', 'customIntegrations', 'apiManagement', 'collaboration', 'automation', 'customReporting', 'support']
-} as const;
-
-// Helper to count features by tier
-export function countFeaturesByTier(selectedFeatures: string[]): { essential: number; advanced: number; enterprise: number } {
-  return {
-    essential: selectedFeatures.filter(f => FEATURE_TIERS.essential.includes(f as any)).length,
-    advanced: selectedFeatures.filter(f => FEATURE_TIERS.advanced.includes(f as any)).length,
-    enterprise: selectedFeatures.filter(f => FEATURE_TIERS.enterprise.includes(f as any)).length,
-  };
-}
-
-// Helper to determine MVP tier based on selected features
-export function determineMvpTier(selectedFeatures: string[]): 'starter' | 'growth' | 'enterprise' {
-  const counts = countFeaturesByTier(selectedFeatures);
-  if (counts.enterprise > 0) return 'enterprise';
-  if (counts.advanced > 0) return 'growth';
-  return 'starter';
-}
+// Note: FEATURE_TIERS, countFeaturesByTier, and determineMvpTier 
+// are now defined near the top of this file (after safeNumber)
 
 // Helper to calculate dynamic price based on features
 export function calculateDynamicPrice(
@@ -960,8 +964,8 @@ export function calculateDynamicPrice(
   const counts = countFeaturesByTier(selectedFeatures);
   
   const calculatedCents = 
-    (counts.essential * tier.price_per_essential_cents) +
-    (counts.advanced * tier.price_per_advanced_cents) +
+    (counts.starter * tier.price_per_essential_cents) +
+    (counts.growth * tier.price_per_advanced_cents) +
     (counts.enterprise * tier.price_per_enterprise_cents);
   
   // Clamp to tier range

@@ -192,7 +192,7 @@ const InvestmentSection = () => {
               {tier.tier_name}
             </Badge>
             <span className="text-xs text-muted-foreground hidden sm:inline">
-              {featureCounts.essential}E + {featureCounts.advanced}A + {featureCounts.enterprise}Ent features
+              {featureCounts.starter}E + {featureCounts.growth}A + {featureCounts.enterprise}Ent features
             </span>
           </div>
         )}

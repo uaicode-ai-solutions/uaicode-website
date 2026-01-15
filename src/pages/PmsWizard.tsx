@@ -11,6 +11,7 @@ import { useConfetti } from "@/hooks/useConfetti";
 import { saveReport, generateReportId, StoredReport } from "@/lib/reportsStorage";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { determineMvpTier } from "@/types/report";
 
 interface WizardData {
   // User Info (from login or step 1)
@@ -251,6 +252,9 @@ const PmsWizard = () => {
       }
 
       // 2. Save wizard data to Supabase database
+      // Calculate the correct tier based on selected features
+      const correctTier = determineMvpTier(data.selectedFeatures);
+      
       const { error: insertError } = await supabase
         .from('tb_pms_wizard')
         .insert({
@@ -270,7 +274,7 @@ const PmsWizard = () => {
           target_audience: data.targetAudience,
           market_type: data.marketType,
           selected_features: data.selectedFeatures,
-          selected_tier: data.selectedTier || selectedPlan,
+          selected_tier: correctTier,
           goal: data.goal,
           goal_other: data.goal === 'other' ? data.goalOther : null,
           challenge: data.challenge,
