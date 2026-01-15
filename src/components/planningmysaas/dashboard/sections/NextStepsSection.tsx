@@ -476,7 +476,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
               {/* Marketing Note */}
               {option.marketingNote && (
-                <div className="p-4 rounded-lg bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 mb-4 space-y-4">
+                <div className="p-4 rounded-lg bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 mb-4 space-y-3">
                   {/* Header */}
                   <div className="flex items-center gap-2 pb-2 border-b border-accent/20">
                     <CreditCard className="h-4 w-4 text-accent" />
@@ -510,7 +510,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   </div>
                   
                   {/* Recommended ADS */}
-                  <div className="space-y-1 pt-2 border-t border-border/20">
+                  <div className="space-y-1">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-muted-foreground font-medium">Recommended ADS spend</span>
                       <span className="text-muted-foreground font-medium">
