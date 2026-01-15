@@ -129,6 +129,34 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   const marketingTotals = calculateMarketingTotals(recommendedServiceIds, services);
   const marketingMonthlyUaicode = marketingTotals.uaicodeTotal / 100; // cents to dollars
   
+  // Calculate suggested paid media based on wizard budget selection (same as InvestmentSection)
+  const calculateSuggestedPaidMedia = (budget: string | null | undefined, uaicodeTotal: number): number => {
+    const budgetMap: Record<string, number> = {
+      '5k-10k': 200000,     // $2,000
+      '10k-25k': 450000,    // $4,500
+      '25k-50k': 900000,    // $9,000
+      '50k-100k': 1800000,  // $18,000
+      '100k+': 3500000,     // $35,000
+    };
+    
+    if (budget && budgetMap[budget]) {
+      return budgetMap[budget];
+    }
+    
+    if (uaicodeTotal > 0) {
+      const suggested = Math.round(uaicodeTotal * 0.75);
+      const min = 300000;
+      const max = 1500000;
+      return Math.min(Math.max(suggested, min), max);
+    }
+    
+    return 500000;
+  };
+  
+  const userBudget = report?.budget;
+  const suggestedPaidMedia = calculateSuggestedPaidMedia(userBudget, marketingTotals.uaicodeTotal);
+  const suggestedPaidMediaDollars = suggestedPaidMedia / 100;
+  
   // MVP Development - 10% discount
   const MVP_DEV_DISCOUNT = 0.10;
   const mvpDevDiscountedPrice = Math.round(mvpPrice * (1 - MVP_DEV_DISCOUNT));
@@ -185,9 +213,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         "Dedicated account manager"
       ],
       marketingNote: {
-        contract: 5000,
-        recommendedAds: 5000,
-        total: marketingMonthlyUaicode > 0 ? marketingMonthlyUaicode : 10000,
+        contract: marketingMonthlyUaicode,
+        recommendedAds: suggestedPaidMediaDollars,
+        total: marketingMonthlyUaicode + suggestedPaidMediaDollars,
         note: "Annual contract • Starts after MVP launch"
       },
       recommended: true
