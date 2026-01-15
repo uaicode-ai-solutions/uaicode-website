@@ -513,7 +513,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-muted-foreground font-medium">Recommended ADS spend</span>
-                      <span className="text-muted-foreground font-medium">
+                    <span className="text-muted-foreground font-bold">
                         {formatCurrency(option.marketingNote.recommendedAds)}/mo
                       </span>
                     </div>
