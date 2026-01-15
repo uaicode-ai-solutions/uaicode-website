@@ -899,6 +899,77 @@ export interface AssetsMockupPreviews {
 }
 
 // ==========================================
+// MVP Tier Pricing
+// ==========================================
+
+export interface MvpTier {
+  id: string;
+  tier_id: string;
+  tier_name: string;
+  min_price_cents: number;
+  max_price_cents: number;
+  traditional_min_cents: number;
+  traditional_max_cents: number;
+  min_days: number;
+  max_days: number;
+  traditional_min_days: number;
+  traditional_max_days: number;
+  price_per_essential_cents: number;
+  price_per_advanced_cents: number;
+  price_per_enterprise_cents: number;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+// Feature tier mapping for calculating MVP tier
+export const FEATURE_TIERS = {
+  essential: ['auth', 'profiles', 'crud', 'reporting', 'notifications', 'admin', 'responsive', 'security'],
+  advanced: ['advancedAnalytics', 'apiIntegrations', 'payments', 'roles', 'search', 'fileUpload', 'realtime', 'workflows', 'advancedReporting', 'emailMarketing'],
+  enterprise: ['ai', 'dataAnalytics', 'multiTenant', 'sso', 'customIntegrations', 'apiManagement', 'collaboration', 'automation', 'customReporting', 'support']
+} as const;
+
+// Helper to count features by tier
+export function countFeaturesByTier(selectedFeatures: string[]): { essential: number; advanced: number; enterprise: number } {
+  return {
+    essential: selectedFeatures.filter(f => FEATURE_TIERS.essential.includes(f as any)).length,
+    advanced: selectedFeatures.filter(f => FEATURE_TIERS.advanced.includes(f as any)).length,
+    enterprise: selectedFeatures.filter(f => FEATURE_TIERS.enterprise.includes(f as any)).length,
+  };
+}
+
+// Helper to determine MVP tier based on selected features
+export function determineMvpTier(selectedFeatures: string[]): 'starter' | 'growth' | 'enterprise' {
+  const counts = countFeaturesByTier(selectedFeatures);
+  if (counts.enterprise > 0) return 'enterprise';
+  if (counts.advanced > 0) return 'growth';
+  return 'starter';
+}
+
+// Helper to calculate dynamic price based on features
+export function calculateDynamicPrice(
+  selectedFeatures: string[],
+  tier: MvpTier
+): { min: number; max: number; calculated: number } {
+  const counts = countFeaturesByTier(selectedFeatures);
+  
+  const calculatedCents = 
+    (counts.essential * tier.price_per_essential_cents) +
+    (counts.advanced * tier.price_per_advanced_cents) +
+    (counts.enterprise * tier.price_per_enterprise_cents);
+  
+  // Clamp to tier range
+  const clampedMin = Math.max(tier.min_price_cents, calculatedCents * 0.85);
+  const clampedMax = Math.min(tier.max_price_cents, calculatedCents * 1.15);
+  
+  return {
+    min: clampedMin,
+    max: clampedMax,
+    calculated: calculatedCents
+  };
+}
+
+// ==========================================
 // Helper function to safely cast JSONB data
 // ==========================================
 
