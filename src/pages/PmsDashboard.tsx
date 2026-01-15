@@ -65,6 +65,78 @@ const PmsDashboardContent = () => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
 
+  // Poll for report status changes
+  const pollReportStatus = async (reportId: string) => {
+    console.log("📊 Starting polling for report status...");
+    
+    const maxAttempts = 60; // 5 minutes (5s interval)
+    let attempts = 0;
+
+    const poll = async (): Promise<void> => {
+      attempts++;
+      
+      if (attempts > maxAttempts) {
+        console.error("⏰ Polling timeout - report generation took too long");
+        toast({
+          title: "Timeout",
+          description: "Report generation is taking longer than expected. Please refresh the page.",
+          variant: "destructive",
+        });
+        setIsRegenerating(false);
+        return;
+      }
+
+      try {
+        const { data: reportStatus, error } = await supabase
+          .from("tb_pms_reports")
+          .select("status")
+          .eq("id", reportId)
+          .single();
+
+        if (error) throw error;
+
+        console.log(`📊 Poll attempt ${attempts}: status=${reportStatus.status}`);
+
+        if (reportStatus.status === "completed") {
+          console.log("✅ Report completed! Reloading...");
+          toast({
+            title: "✅ Report Ready!",
+            description: "Your report has been regenerated successfully.",
+          });
+          // Reload page to show new data
+          window.location.reload();
+          return;
+        }
+
+        if (reportStatus.status === "failed" || reportStatus.status === "error") {
+          console.error("❌ Report generation failed");
+          toast({
+            title: "Error",
+            description: "Report generation failed. Please try again.",
+            variant: "destructive",
+          });
+          setIsRegenerating(false);
+          return;
+        }
+
+        // Still processing, continue polling
+        setTimeout(poll, 5000); // Poll every 5 seconds
+        
+      } catch (error) {
+        console.error("Polling error:", error);
+        setIsRegenerating(false);
+        toast({
+          title: "Error",
+          description: "Failed to check report status.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    // Start first poll after 5 seconds
+    setTimeout(poll, 5000);
+  };
+
   // DEBUG: Regenerate report handler
   const handleRegenerateReport = async () => {
     if (!id) return;
@@ -72,33 +144,30 @@ const PmsDashboardContent = () => {
     setIsRegenerating(true);
     
     try {
-      // Update status to "pending" in database
-      const { error: updateError } = await supabase
-        .from("tb_pms_reports")
-        .update({ status: "pending" })
-        .eq("id", id);
-
-      if (updateError) throw updateError;
-
-      // Call the edge function directly
-      const { error } = await supabase.functions.invoke("pms-generate-report", {
+      console.log("🔄 Calling pms-generate-report...");
+      
+      // Call the edge function (returns immediately with fire-and-forget pattern)
+      const { data, error } = await supabase.functions.invoke("pms-generate-report", {
         body: { reportId: id },
       });
 
       if (error) throw error;
 
+      console.log("✅ Report generation started:", data);
+
       toast({
-        title: "Report regeneration started!",
-        description: "The report is being regenerated with Firecrawl data.",
+        title: "🔄 Regenerating Report",
+        description: "The report is being regenerated. This may take 2-5 minutes.",
       });
 
-      // Reload page to show generating skeleton
-      window.location.reload();
+      // Start polling for status change
+      pollReportStatus(id);
+
     } catch (error) {
       console.error("Error regenerating report:", error);
       toast({
         title: "Error",
-        description: "Failed to regenerate report. Check console for details.",
+        description: "Failed to start report regeneration. Check console for details.",
         variant: "destructive",
       });
       setIsRegenerating(false);
@@ -198,8 +267,8 @@ const PmsDashboardContent = () => {
     );
   }
 
-  // Show fullscreen generating animation if report is pending - NO navigation allowed
-  if (report?.status === "pending") {
+  // Show fullscreen generating animation if report is pending or processing - NO navigation allowed
+  if (report?.status === "pending" || report?.status === "processing") {
     return (
       <div className="fixed inset-0 z-[100] bg-background">
         <GeneratingReportSkeleton projectName={projectName} />
