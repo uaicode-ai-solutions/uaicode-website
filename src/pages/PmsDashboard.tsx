@@ -53,6 +53,7 @@ import DirectContactSection from "@/components/planningmysaas/dashboard/sections
 import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/BrandAssetsTab";
 import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
 import ShareReportDialog from "@/components/planningmysaas/dashboard/ShareReportDialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PmsDashboardContent = () => {
   const navigate = useNavigate();
@@ -114,6 +115,56 @@ const PmsDashboardContent = () => {
     }
   };
 
+  // Show loading skeleton while fetching
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header skeleton */}
+        <header className="fixed top-0 left-0 right-0 z-50 glass-premium border-b border-accent/10">
+          <div className="max-w-6xl mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-9 w-9 rounded-full" />
+              <Skeleton className="h-9 w-9 rounded-lg" />
+              <Skeleton className="h-6 w-32" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-32 rounded-md" />
+              <Skeleton className="h-9 w-9 rounded-full" />
+              <Skeleton className="h-9 w-9 rounded-full" />
+            </div>
+          </div>
+        </header>
+
+        {/* Tabs skeleton */}
+        <div className="fixed top-16 left-0 right-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border/50">
+          <div className="max-w-5xl mx-auto flex justify-center py-2">
+            <div className="flex gap-6">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-28" />
+              <Skeleton className="h-10 w-24" />
+            </div>
+          </div>
+        </div>
+
+        <main className="pt-32 pb-16">
+          <div className="max-w-5xl mx-auto px-4 lg:px-6">
+            <DashboardSkeleton />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show fullscreen generating animation if report is pending - NO navigation allowed
+  if (report?.status === "pending") {
+    return (
+      <div className="fixed inset-0 z-[100] bg-background">
+        <GeneratingReportSkeleton projectName={projectName} />
+      </div>
+    );
+  }
+
+  // Normal dashboard layout for completed reports
   return (
     <div className="min-h-screen bg-background">
       {/* Header Premium */}
@@ -281,58 +332,50 @@ const PmsDashboardContent = () => {
         </div>
 
           {/* Tab Content */}
-          {isLoading ? (
-            <div className="animate-smooth-fade">
-              <DashboardSkeleton />
-            </div>
-          ) : report?.status === "pending" ? (
-            <GeneratingReportSkeleton projectName={projectName} />
-          ) : (
-            <div 
-              key={activeTab} 
-              className="py-6 animate-tab-enter"
-            >
-              {activeTab === "report" && (
-                  <div className="space-y-16">
-                    <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
-                  <ExecutiveVerdict />
-                  <BusinessModelSection />
-                  <MarketOpportunitySection />
-                  <DemandValidationSection />
-                  <TimingAnalysisSection />
-                  <MarketBenchmarksSection />
-                  <CompetitorsDifferentiationSection />
-                  <GoToMarketPreviewSection onNavigateToMarketing={() => setActiveTab("marketing")} />
-                  <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
-                  <InvestmentSection />
-                  <ResourceRequirementsSection />
-                  <FinancialReturnSection />
-                  <PivotScenariosSection />
-                  <ExecutionPlanSection />
-                  <SuccessMetricsSection />
-                  <WhyUaicodeSection />
-                  <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
-                  <ScheduleCallSection projectName={projectName} />
-                  <DirectContactSection />
-                  </div>
-              )}
+          <div 
+            key={activeTab} 
+            className="py-6 animate-tab-enter"
+          >
+            {activeTab === "report" && (
+                <div className="space-y-16">
+                  <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
+                <ExecutiveVerdict />
+                <BusinessModelSection />
+                <MarketOpportunitySection />
+                <DemandValidationSection />
+                <TimingAnalysisSection />
+                <MarketBenchmarksSection />
+                <CompetitorsDifferentiationSection />
+                <GoToMarketPreviewSection onNavigateToMarketing={() => setActiveTab("marketing")} />
+                <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
+                <InvestmentSection />
+                <ResourceRequirementsSection />
+                <FinancialReturnSection />
+                <PivotScenariosSection />
+                <ExecutionPlanSection />
+                <SuccessMetricsSection />
+                <WhyUaicodeSection />
+                <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
+                <ScheduleCallSection projectName={projectName} />
+                <DirectContactSection />
+                </div>
+            )}
 
-              {activeTab === "marketing" && (
-                <MarketingAnalysisTab 
-                  projectName={projectName}
-                  onScheduleCall={handleScheduleCall}
-                  onDownloadPDF={handleDownloadPDF}
-                />
-              )}
+            {activeTab === "marketing" && (
+              <MarketingAnalysisTab 
+                projectName={projectName}
+                onScheduleCall={handleScheduleCall}
+                onDownloadPDF={handleDownloadPDF}
+              />
+            )}
 
-              {activeTab === "assets" && (
-                <BrandAssetsTab />
-              )}
+            {activeTab === "assets" && (
+              <BrandAssetsTab />
+            )}
 
-              {/* Footer spacing */}
-              <div className="h-16" />
-            </div>
-          )}
+            {/* Footer spacing */}
+            <div className="h-16" />
+          </div>
         </div>
       </main>
 

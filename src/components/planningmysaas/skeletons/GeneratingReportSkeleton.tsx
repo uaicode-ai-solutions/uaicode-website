@@ -43,7 +43,7 @@ const GeneratingReportSkeleton = ({ projectName }: GeneratingReportSkeletonProps
   }, []);
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center py-16">
+    <div className="min-h-screen flex items-center justify-center py-8">
       <div className="max-w-lg w-full mx-auto text-center space-y-8 px-4">
         {/* Animated Logo */}
         <div className="relative mx-auto w-24 h-24">
