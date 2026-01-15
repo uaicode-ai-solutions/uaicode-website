@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   Building2
 } from "lucide-react";
+import sarahAvatar from "@/assets/testimonial-sarah-johnson.webp";
+import marcusAvatar from "@/assets/author-marcus.webp";
 
 const statsData = [
   { 
@@ -68,12 +70,14 @@ const testimonials = [
     name: "Sarah Mitchell",
     role: "CEO",
     company: "Startup Innovate",
+    avatar: sarahAvatar,
   },
   {
     quote: "Professional, agile, and transparent. Exactly what we needed to bring our idea to life.",
     name: "Robert Taylor",
     role: "Founder",
     company: "TechFlow Solutions",
+    avatar: marcusAvatar,
   },
 ];
 
@@ -88,7 +92,7 @@ const guarantees = [
 const StarRating = () => (
   <div className="flex gap-0.5">
     {[...Array(5)].map((_, i) => (
-      <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
     ))}
   </div>
 );
@@ -114,27 +118,28 @@ const WhyUaicodeSection = () => {
           return (
             <Card 
               key={index} 
-              className={`bg-card/50 border-border/30 ${stat.highlight ? 'border-accent/50' : ''}`}
+              className={`bg-card/50 border-border/30 relative ${stat.highlight ? 'border-accent/50' : ''}`}
             >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <div className={`text-3xl font-bold ${stat.highlight ? 'text-accent' : 'text-foreground'}`}>
-                      {stat.value}
-                    </div>
-                    <div className="text-sm font-medium text-foreground">{stat.label}</div>
-                    <div className="text-xs text-muted-foreground">{stat.sublabel}</div>
+              <CardContent className="p-5">
+                {/* Badge TOP RATED - canto superior direito */}
+                {stat.highlight && (
+                  <Badge className="absolute top-3 right-3 text-[10px] bg-accent text-background font-semibold px-2 py-0.5">
+                    TOP RATED
+                  </Badge>
+                )}
+                
+                {/* Valor e labels */}
+                <div className="space-y-1">
+                  <div className={`text-4xl md:text-5xl font-bold ${stat.highlight ? 'text-accent' : 'text-foreground'}`}>
+                    {stat.value}
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    {stat.highlight && (
-                      <Badge className="text-[9px] bg-accent/10 text-accent border-accent/30 px-1.5 py-0.5">
-                        TOP RATED
-                      </Badge>
-                    )}
-                    <div className="p-2 rounded-lg bg-accent/10">
-                      <IconComponent className="h-4 w-4 text-accent" />
-                    </div>
-                  </div>
+                  <div className="text-sm font-medium text-foreground">{stat.label}</div>
+                  <div className="text-xs text-muted-foreground">{stat.sublabel}</div>
+                </div>
+                
+                {/* Ícone - canto inferior direito */}
+                <div className="absolute bottom-4 right-4 p-2.5 rounded-xl bg-accent/10">
+                  <IconComponent className="h-5 w-5 text-accent" />
                 </div>
               </CardContent>
             </Card>
@@ -179,24 +184,27 @@ const WhyUaicodeSection = () => {
             </div>
             <div className="space-y-4">
               {testimonials.map((testimonial, index) => (
-                <div key={index} className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <Quote className="h-5 w-5 text-accent/40 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-muted-foreground italic leading-relaxed">
+                <div key={index} className="space-y-3 p-3 rounded-lg bg-accent/5">
+                  {/* Quote + texto */}
+                  <div className="flex items-start gap-3">
+                    <Quote className="h-8 w-8 text-accent flex-shrink-0 mt-1" />
+                    <p className="text-sm text-muted-foreground italic leading-relaxed">
                       "{testimonial.quote}"
                     </p>
                   </div>
-                  <div className="flex items-center justify-between pl-7">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src="/placeholder.svg" />
-                        <AvatarFallback className="text-[10px] bg-accent/10 text-accent">
+                  
+                  {/* Avatar + Info + Estrelas */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={testimonial.avatar} />
+                        <AvatarFallback className="bg-accent/20 text-accent">
                           {testimonial.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="text-xs font-medium text-foreground">{testimonial.name}</div>
-                        <div className="text-[10px] text-muted-foreground">
+                        <div className="text-sm font-medium text-foreground">{testimonial.name}</div>
+                        <div className="text-xs text-muted-foreground">
                           {testimonial.role}, {testimonial.company}
                         </div>
                       </div>
