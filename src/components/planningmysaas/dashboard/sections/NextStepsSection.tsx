@@ -24,10 +24,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { parseJsonField, parseScoreField, parseCentsField } from "@/lib/reportDataUtils";
+import { parseJsonField } from "@/lib/reportDataUtils";
 import { NextSteps, ExecutionPhase } from "@/types/report";
 import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
+import { useMarketingTiers, calculateMarketingTotals } from "@/hooks/useMarketingTiers";
 
 // Countdown Timer Hook
 const useCountdownTimer = () => {
@@ -85,7 +86,8 @@ interface NextStepsSectionProps {
 }
 
 const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionProps) => {
-  const { report } = useReportContext();
+  const { report, reportData } = useReportContext();
+  const { services } = useMarketingTiers();
   
   // Parse data from report
   const nextSteps = parseJsonField<NextSteps>(report?.next_steps, {
@@ -100,9 +102,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
     contact: { email: "contact@uaicode.dev", whatsapp: "+1 (555) 123-4567", calendly: "https://calendly.com/uaicode" }
   });
   
-  const viabilityScore = parseScoreField(report?.viability_score, 87);
-  const verdictHeadline = report?.verdict_headline || "High viability, your idea has real traction potential.";
-  const investmentTotal = parseCentsField(report?.investment_total_cents, 60500);
+  // Viability score from reportData (same source as ReportHero)
+  const viabilityScore = reportData?.viability_score ?? 0;
+  const verdictHeadline = reportData?.verdict_headline || "High viability, your idea has real traction potential.";
   const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
   
   const [selectedPackage, setSelectedPackage] = useState<'mvp-only' | 'mvp-marketing'>('mvp-marketing');
@@ -116,14 +118,26 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
     return acc + (match ? parseInt(match[1]) : 0);
   }, 0);
 
-  const mvpPrice = investmentTotal > 0 ? investmentTotal : 60500;
+  // MVP Price from reportData (same source as InvestmentSection)
+  const mvpPriceCents = reportData?.investment_one_payment_cents ?? 0;
+  const mvpPrice = mvpPriceCents > 0 ? mvpPriceCents / 100 : 0;
+  
+  // Marketing total from recommended services (same logic as InvestmentSection)
+  const recommendedServiceIds = services
+    .filter(s => s.is_recommended)
+    .map(s => s.service_id);
+  const marketingTotals = calculateMarketingTotals(recommendedServiceIds, services);
+  const marketingMonthlyUaicode = marketingTotals.uaicodeTotal / 100; // cents to dollars
+  
   // MVP Development - 10% discount
-  const mvpDevDiscountedPrice = Math.round(mvpPrice * 0.9);
-  const mvpDevSavings = mvpPrice - mvpDevDiscountedPrice;
-  // MVP + Marketing - 20% discount on MVP
-  const mvpMarketingDiscountedPrice = Math.round(mvpPrice * 0.8);
-  const mvpMarketingSavings = mvpPrice - mvpMarketingDiscountedPrice;
-  const marketingMonthly = 10000;
+  const MVP_DEV_DISCOUNT = 0.10;
+  const mvpDevDiscountedPrice = Math.round(mvpPrice * (1 - MVP_DEV_DISCOUNT));
+  const mvpDevSavings = Math.round(mvpPrice * MVP_DEV_DISCOUNT);
+  
+  // MVP + Marketing - 15% discount on MVP
+  const MVP_MARKETING_DISCOUNT = 0.15;
+  const mvpMarketingDiscountedPrice = Math.round(mvpPrice * (1 - MVP_MARKETING_DISCOUNT));
+  const mvpMarketingSavings = Math.round(mvpPrice * MVP_MARKETING_DISCOUNT);
 
   const pricingOptions = [
     {
@@ -157,14 +171,14 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       name: 'MVP + Marketing',
       badge: 'RECOMMENDED',
       price: mvpMarketingDiscountedPrice,
-      priceLabel: '20% OFF on MVP',
+      priceLabel: '15% OFF on MVP',
       discount: {
         original: mvpPrice,
         savings: mvpMarketingSavings
       },
       features: [
         "Everything in MVP Development",
-        `20% discount on MVP (save ${formatCurrency(mvpMarketingSavings)})`,
+        `15% discount on MVP (save ${formatCurrency(mvpMarketingSavings)})`,
         "Full-stack marketing team",
         "Paid media management included",
         "AI-powered campaign optimization",
@@ -173,7 +187,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       marketingNote: {
         contract: 5000,
         recommendedAds: 5000,
-        total: 10000,
+        total: marketingMonthlyUaicode > 0 ? marketingMonthlyUaicode : 10000,
         note: "Annual contract • Starts after MVP launch"
       },
       recommended: true
