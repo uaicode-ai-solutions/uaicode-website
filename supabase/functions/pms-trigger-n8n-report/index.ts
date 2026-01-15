@@ -1,10 +1,63 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Declare EdgeRuntime for background processing
+declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function processN8nWebhook(
+  supabase: any,
+  reportId: string,
+  webhookUrl: string,
+  payload: Record<string, unknown>
+): Promise<void> {
+  console.log(`📤 [Background] Sending payload to n8n webhook for report ${reportId}...`);
+
+  try {
+    const n8nResponse = await fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log(`📥 [Background] n8n response status: ${n8nResponse.status}`);
+
+    if (n8nResponse.ok) {
+      const { error: completeError } = await supabase
+        .from("tb_pms_reports")
+        .update({ status: "completed" })
+        .eq("id", reportId);
+
+      if (completeError) {
+        console.error("⚠️ [Background] Failed to update status to completed:", completeError);
+      } else {
+        console.log(`✅ [Background] Report ${reportId} marked as completed`);
+      }
+    } else {
+      const errorText = await n8nResponse.text();
+      console.error(`❌ [Background] n8n webhook failed: ${n8nResponse.status} - ${errorText}`);
+
+      await supabase
+        .from("tb_pms_reports")
+        .update({ status: "failed" })
+        .eq("id", reportId);
+    }
+  } catch (webhookError) {
+    console.error("❌ [Background] Failed to call n8n webhook:", webhookError);
+
+    await supabase
+      .from("tb_pms_reports")
+      .update({ status: "failed" })
+      .eq("id", reportId);
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -146,82 +199,23 @@ serve(async (req) => {
       },
     };
 
-    console.log(`📤 Sending payload to n8n webhook...`);
+    // Process n8n webhook in background using EdgeRuntime.waitUntil
+    EdgeRuntime.waitUntil(
+      processN8nWebhook(supabase, report.id, webhookUrl, payload)
+    );
 
-    // Send to n8n webhook and wait for response
-    try {
-      const n8nResponse = await fetch(webhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+    console.log(`🚀 Report ${report.id} processing started in background`);
 
-      console.log(`📥 n8n response status: ${n8nResponse.status}`);
-
-      if (n8nResponse.ok) {
-        // n8n returned success - update status to completed
-        const { error: completeError } = await supabase
-          .from("tb_pms_reports")
-          .update({ status: "completed" })
-          .eq("id", report.id);
-
-        if (completeError) {
-          console.error("⚠️ Failed to update status to completed:", completeError);
-        } else {
-          console.log(`✅ Report ${report.id} marked as completed`);
-        }
-
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            report_id: report.id,
-            status: "completed",
-            message: "Report generation completed successfully" 
-          }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } else {
-        // n8n returned error
-        const errorText = await n8nResponse.text();
-        console.error(`❌ n8n webhook failed: ${n8nResponse.status} - ${errorText}`);
-
-        // Update status to failed
-        await supabase
-          .from("tb_pms_reports")
-          .update({ status: "failed" })
-          .eq("id", report.id);
-
-        return new Response(
-          JSON.stringify({ 
-            error: "n8n webhook failed", 
-            report_id: report.id,
-            status: "failed",
-            details: errorText 
-          }),
-          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-    } catch (webhookError) {
-      console.error("❌ Failed to call n8n webhook:", webhookError);
-
-      // Update status to failed
-      await supabase
-        .from("tb_pms_reports")
-        .update({ status: "failed" })
-        .eq("id", report.id);
-
-      return new Response(
-        JSON.stringify({ 
-          error: "Failed to call n8n webhook", 
-          report_id: report.id,
-          status: "failed",
-          details: String(webhookError) 
-        }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // Return immediately to frontend
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        report_id: report.id,
+        status: "processing",
+        message: "Report generation started" 
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
 
   } catch (error) {
     console.error("❌ Error in pms-trigger-n8n-report:", error);
