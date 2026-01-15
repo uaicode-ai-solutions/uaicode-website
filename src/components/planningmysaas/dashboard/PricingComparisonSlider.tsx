@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
 import { Check, X, Clock, Shield, FileText, Code, Headphones, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useReportContext } from "@/contexts/ReportContext";
-import { useMvpTier } from "@/hooks/useMvpTier";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const formatCurrency = (cents: number) => {
@@ -14,115 +12,65 @@ const formatCurrency = (cents: number) => {
   }).format(cents / 100);
 };
 
-const formatDays = (days: number) => {
-  if (days < 30) return `${days} days`;
-  const weeks = Math.round(days / 7);
-  if (weeks <= 12) return `${weeks} weeks`;
-  const months = Math.round(days / 30);
-  return `${months} months`;
+const formatCurrencyShort = (cents: number) => {
+  const value = cents / 100;
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}K`;
+  }
+  return formatCurrency(cents);
 };
 
 const PricingComparisonSlider = () => {
-  const { report } = useReportContext();
-  const selectedFeatures = report?.selected_features || [];
-  const { tier, pricing, timeline, isLoading } = useMvpTier(selectedFeatures);
+  const { reportData } = useReportContext();
   
-  const [animatedUaicode, setAnimatedUaicode] = useState(0);
-  const [animatedTraditional, setAnimatedTraditional] = useState(0);
-  const [hasAnimated, setHasAnimated] = useState(false);
+  // Values from database
+  const traditionalPrice = reportData?.investment_one_payment_cents_traditional ?? 0;
+  const uaicodePrice = reportData?.investment_one_payment_cents ?? 0;
+  const savingsPercentage = reportData?.savings_percentage ?? 0;
+  const savingsAmount = reportData?.savings_amount_cents ?? 0;
+  const marketingMonths = reportData?.savings_marketing_months ?? 0;
+  const deliveryTraditional = reportData?.delivery_time_traditional ?? "24-36 weeks";
+  const deliveryUaicode = reportData?.delivery_time_uaicode ?? "9-18 weeks";
 
-  // Calculate values
-  const uaicodePrice = pricing.uaicode.calculated > 0 
-    ? pricing.uaicode.calculated 
-    : pricing.uaicode.min;
-  const traditionalPrice = pricing.traditional.min;
-  const savingsAmount = traditionalPrice - uaicodePrice;
-  const savingsPercentage = traditionalPrice > 0 
-    ? Math.round((savingsAmount / traditionalPrice) * 100) 
-    : 0;
-
-  // Features comparison based on tier data
+  // Features comparison (FIXED texts as per reference image)
   const features = [
     {
       label: "Delivery Time",
       icon: Clock,
-      uaicode: timeline.uaicode.min > 0 
-        ? `${formatDays(timeline.uaicode.min)}-${formatDays(timeline.uaicode.max)}`
-        : "30-75 days",
-      traditional: timeline.traditional.min > 0 
-        ? `${formatDays(timeline.traditional.min)}-${formatDays(timeline.traditional.max)}`
-        : "75-150 days",
-      uaicodePositive: true,
+      uaicode: deliveryUaicode,
+      traditional: deliveryTraditional,
     },
     {
       label: "Hidden Costs",
       icon: Shield,
       uaicode: "Fixed price",
       traditional: "Common extras",
-      uaicodePositive: true,
     },
     {
       label: "Post-Launch Support",
       icon: Headphones,
       uaicode: "30 days included",
       traditional: "Paid hourly",
-      uaicodePositive: true,
     },
     {
       label: "Code Ownership",
       icon: Code,
       uaicode: "100% yours",
       traditional: "Often retained",
-      uaicodePositive: true,
     },
     {
       label: "Documentation",
       icon: FileText,
       uaicode: "Complete",
       traditional: "Often missing",
-      uaicodePositive: true,
     },
   ];
-
-  // Animate bars on mount
-  useEffect(() => {
-    if (isLoading || !tier) return;
-    const timer = setTimeout(() => {
-      setHasAnimated(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [isLoading, tier]);
-
-  // Animate numbers
-  useEffect(() => {
-    if (!hasAnimated || isLoading) return;
-    
-    const duration = 1500;
-    const steps = 60;
-    const stepDuration = duration / steps;
-    
-    let currentStep = 0;
-    const interval = setInterval(() => {
-      currentStep++;
-      const progress = currentStep / steps;
-      const easeOut = 1 - Math.pow(1 - progress, 3);
-      
-      setAnimatedUaicode(Math.floor(uaicodePrice * easeOut));
-      setAnimatedTraditional(Math.floor(traditionalPrice * easeOut));
-      
-      if (currentStep >= steps) {
-        clearInterval(interval);
-        setAnimatedUaicode(uaicodePrice);
-        setAnimatedTraditional(traditionalPrice);
-      }
-    }, stepDuration);
-    
-    return () => clearInterval(interval);
-  }, [hasAnimated, uaicodePrice, traditionalPrice, isLoading]);
 
   const uaicodeWidth = traditionalPrice > 0 
     ? (uaicodePrice / traditionalPrice) * 100 
     : 50;
+
+  const isLoading = !reportData;
 
   if (isLoading) {
     return (
@@ -152,38 +100,22 @@ const PricingComparisonSlider = () => {
         </Badge>
       </div>
 
-      {/* Tier Badge */}
-      {tier && (
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs bg-accent/10 border-accent/30 text-accent">
-            {tier.tier_name}
-          </Badge>
-          <span className="text-xs text-muted-foreground">
-            Based on {selectedFeatures.length} selected features
-          </span>
-        </div>
-      )}
-
       {/* Price Bars */}
       <div className="space-y-3">
         {/* Traditional Agency Bar */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Traditional Agency (US Market)</span>
-            <span className="font-medium text-red-400">{formatCurrency(animatedTraditional)}</span>
+            <span className="text-muted-foreground">Traditional Agency</span>
+            <span className="font-medium text-red-400">{formatCurrency(traditionalPrice)}</span>
           </div>
           <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-border/30">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500/40 to-red-400/30 rounded-lg transition-all duration-1000 ease-out flex items-center justify-end pr-3"
-              style={{ width: hasAnimated ? '100%' : '0%' }}
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500/40 to-red-400/30 rounded-lg w-full flex items-center justify-end pr-3"
             >
               <span className="text-xs font-medium text-red-300">
-                {formatCurrency(traditionalPrice)}
+                {formatCurrencyShort(traditionalPrice)}
               </span>
             </div>
-          </div>
-          <div className="text-[10px] text-muted-foreground">
-            Range: {formatCurrency(pricing.traditional.min)} - {formatCurrency(pricing.traditional.max)}
           </div>
         </div>
 
@@ -191,26 +123,23 @@ const PricingComparisonSlider = () => {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="text-accent font-medium">Uaicode</span>
-            <span className="font-bold text-accent">{formatCurrency(animatedUaicode)}</span>
+            <span className="font-bold text-accent">{formatCurrency(uaicodePrice)}</span>
           </div>
           <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-accent/30">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent/60 to-accent/40 rounded-lg transition-all duration-1000 ease-out delay-300 flex items-center justify-end pr-3"
-              style={{ width: hasAnimated ? `${uaicodeWidth}%` : '0%' }}
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent/60 to-accent/40 rounded-lg flex items-center pl-3"
+              style={{ width: `${Math.max(uaicodeWidth, 15)}%` }}
             >
               <span className="text-xs font-medium text-accent-foreground">
-                {formatCurrency(uaicodePrice)}
+                {formatCurrencyShort(uaicodePrice)}
               </span>
             </div>
-          </div>
-          <div className="text-[10px] text-muted-foreground">
-            Range: {formatCurrency(pricing.uaicode.min)} - {formatCurrency(pricing.uaicode.max)}
           </div>
         </div>
       </div>
 
       {/* Feature Comparison */}
-      <div className="space-y-2 animate-fade-in">
+      <div className="space-y-2">
         <div className="grid grid-cols-3 gap-2 text-xs font-medium text-muted-foreground pb-2 border-b border-border/30">
           <span>Feature</span>
           <span className="text-center text-red-400/70">Traditional</span>
@@ -223,8 +152,7 @@ const PricingComparisonSlider = () => {
           return (
             <div 
               key={index}
-              className="grid grid-cols-3 gap-2 py-2 border-b border-border/20 last:border-0 items-center animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="grid grid-cols-3 gap-2 py-2 border-b border-border/20 last:border-0 items-center"
             >
               <div className="flex items-center gap-1.5">
                 <IconComponent className="h-3.5 w-3.5 text-muted-foreground" />
@@ -244,7 +172,7 @@ const PricingComparisonSlider = () => {
       </div>
 
       {/* Savings Callout */}
-      <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 animate-fade-in">
+      <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
         <div className="flex items-center gap-2 mb-1">
           <div className="p-1 rounded-full bg-green-500/20">
             <Check className="h-3.5 w-3.5 text-green-400" />
@@ -254,7 +182,7 @@ const PricingComparisonSlider = () => {
           </span>
         </div>
         <p className="text-xs text-muted-foreground pl-7">
-          That's {savingsPercentage}% less than traditional agencies — enough for months of marketing!
+          That's enough for {marketingMonths} months of marketing budget!
         </p>
       </div>
     </div>

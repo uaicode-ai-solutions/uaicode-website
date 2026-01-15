@@ -137,6 +137,8 @@ export type Database = {
       tb_pms_reports: {
         Row: {
           created_at: string
+          delivery_time_traditional: string | null
+          delivery_time_uaicode: string | null
           expected_roi: string | null
           id: string
           investment_back_cents: number | null
@@ -144,12 +146,16 @@ export type Database = {
           investment_infra_cents: number | null
           investment_integrations_cents: number | null
           investment_one_payment_cents: number | null
+          investment_one_payment_cents_traditional: number | null
           investment_testing_cents: number | null
           opportunity_sam: string | null
           opportunity_som: string | null
           opportunity_tam: string | null
           opportunity_year_rate: string | null
           payback_period: string | null
+          savings_amount_cents: number | null
+          savings_marketing_months: number | null
+          savings_percentage: number | null
           status: string
           total_market: string | null
           updated_at: string
@@ -159,6 +165,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          delivery_time_traditional?: string | null
+          delivery_time_uaicode?: string | null
           expected_roi?: string | null
           id?: string
           investment_back_cents?: number | null
@@ -166,12 +174,16 @@ export type Database = {
           investment_infra_cents?: number | null
           investment_integrations_cents?: number | null
           investment_one_payment_cents?: number | null
+          investment_one_payment_cents_traditional?: number | null
           investment_testing_cents?: number | null
           opportunity_sam?: string | null
           opportunity_som?: string | null
           opportunity_tam?: string | null
           opportunity_year_rate?: string | null
           payback_period?: string | null
+          savings_amount_cents?: number | null
+          savings_marketing_months?: number | null
+          savings_percentage?: number | null
           status?: string
           total_market?: string | null
           updated_at?: string
@@ -181,6 +193,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          delivery_time_traditional?: string | null
+          delivery_time_uaicode?: string | null
           expected_roi?: string | null
           id?: string
           investment_back_cents?: number | null
@@ -188,12 +202,16 @@ export type Database = {
           investment_infra_cents?: number | null
           investment_integrations_cents?: number | null
           investment_one_payment_cents?: number | null
+          investment_one_payment_cents_traditional?: number | null
           investment_testing_cents?: number | null
           opportunity_sam?: string | null
           opportunity_som?: string | null
           opportunity_tam?: string | null
           opportunity_year_rate?: string | null
           payback_period?: string | null
+          savings_amount_cents?: number | null
+          savings_marketing_months?: number | null
+          savings_percentage?: number | null
           status?: string
           total_market?: string | null
           updated_at?: string
