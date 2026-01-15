@@ -458,7 +458,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                     <div className="flex justify-between items-center">
                       <span className="text-accent font-medium">Annual contract</span>
                       <span className="text-accent font-medium">
-                        {formatCurrency(option.marketingNote.contractAnnual)} (12x of {formatCurrency(option.marketingNote.contractMonthly)})*
+                        {formatCurrency(option.marketingNote.contractAnnual)}/y*
                       </span>
                     </div>
                     
@@ -472,9 +472,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   {/* Notes */}
                   <div className="pt-2 border-t border-border/30 space-y-1">
                     {/* Note 1 - AMARELO */}
-                    <p className="text-xs text-accent">*Annual contract</p>
+                    <p className="text-xs text-accent">*In up to 12x {formatCurrency(option.marketingNote.contractMonthly)}</p>
                     {/* Note 2 - BRANCO */}
-                    <p className="text-xs text-foreground/70">**Suggested monthly investment, not included in contract, starts after MVP launch</p>
+                    <p className="text-xs text-foreground/70">**Suggested investment, not included in contract, after MVP launch</p>
                   </div>
                 </div>
               )}
