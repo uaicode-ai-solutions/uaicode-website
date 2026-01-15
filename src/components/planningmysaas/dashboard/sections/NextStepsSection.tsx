@@ -561,8 +561,8 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
           </p>
         </div>
         <p className="text-xs text-foreground/60 text-center">
-          The $3,000/month contract is an annual commitment. 
-          The $5,000/month ad spend is a recommendation and can be adjusted based on your budget.
+          The {formatCurrency(marketingMonthlyUaicode)}/month contract is an annual commitment. 
+          The {formatCurrency(suggestedPaidMediaDollars)}/month ad spend is a recommendation and can be adjusted based on your budget.
         </p>
       </div>
 
