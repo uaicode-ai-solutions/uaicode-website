@@ -116,35 +116,34 @@ const MarketBenchmarksSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <Award className="h-4 w-4 text-accent" />
               <h3 className="font-semibold text-foreground text-sm">Success Rate Statistics</h3>
-              {/* Safe access with optional chaining */}
               <InfoTooltip size="sm">
-                Based on {marketBenchmarks.successRates.category} historical data
+                Based on {marketBenchmarks.successRates?.category || 'industry'} historical data
               </InfoTooltip>
             </div>
             
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-lg bg-muted/10 border border-border/30 text-center">
-                  <p className="text-2xl font-bold text-foreground">{marketBenchmarks.successRates.survivalYear1}</p>
+                  <p className="text-2xl font-bold text-foreground">{marketBenchmarks.successRates?.survivalYear1 || 'N/A'}</p>
                   <p className="text-xs text-muted-foreground">Year 1 Survival</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/10 border border-border/30 text-center">
-                  <p className="text-2xl font-bold text-foreground">{marketBenchmarks.successRates.survivalYear3}</p>
+                  <p className="text-2xl font-bold text-foreground">{marketBenchmarks.successRates?.survivalYear3 || 'N/A'}</p>
                   <p className="text-xs text-muted-foreground">Year 3 Survival</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/10 border border-border/30 text-center">
-                  <p className="text-2xl font-bold text-foreground">{marketBenchmarks.successRates.reaching1MARR}</p>
+                  <p className="text-2xl font-bold text-foreground">{marketBenchmarks.successRates?.reaching1MARR || 'N/A'}</p>
                   <p className="text-xs text-muted-foreground">Reach $1M ARR</p>
                 </div>
                 <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
-                  <p className="text-2xl font-bold text-green-400">{marketBenchmarks.successRates.yourEstimatedProbability}</p>
+                  <p className="text-2xl font-bold text-green-400">{marketBenchmarks.successRates?.yourEstimatedProbability || 'N/A'}</p>
                   <p className="text-xs text-muted-foreground">Your Est. Success</p>
                 </div>
               </div>
               
               <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
                 <p className="text-xs text-muted-foreground mb-1">Why above average:</p>
-                <p className="text-sm text-foreground">{marketBenchmarks.successRates.whyHigher}</p>
+                <p className="text-sm text-foreground">{marketBenchmarks.successRates?.whyHigher || 'Data not available'}</p>
               </div>
             </div>
           </CardContent>
@@ -169,25 +168,25 @@ const MarketBenchmarksSection = () => {
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium text-foreground">Seed Round</span>
                   <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-xs">
-                    {marketBenchmarks.fundingBenchmarks.seedRound.typical}
+                    {marketBenchmarks.fundingBenchmarks?.seedRound?.typical || 'N/A'}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">{marketBenchmarks.fundingBenchmarks.seedRound.requires}</p>
+                <p className="text-xs text-muted-foreground">{marketBenchmarks.fundingBenchmarks?.seedRound?.requires || 'Data not available'}</p>
               </div>
               
               <div className="p-3 rounded-lg bg-muted/10 border border-border/30">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium text-foreground">Series A</span>
                   <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20 text-xs">
-                    {marketBenchmarks.fundingBenchmarks.seriesA.typical}
+                    {marketBenchmarks.fundingBenchmarks?.seriesA?.typical || 'N/A'}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">{marketBenchmarks.fundingBenchmarks.seriesA.requires}</p>
+                <p className="text-xs text-muted-foreground">{marketBenchmarks.fundingBenchmarks?.seriesA?.requires || 'Data not available'}</p>
               </div>
               
               <div className="p-3 rounded-lg bg-accent/10 border border-accent/20">
                 <p className="text-xs text-muted-foreground mb-1">Your Current Readiness</p>
-                <p className="text-sm text-foreground">{marketBenchmarks.fundingBenchmarks.yourReadiness}</p>
+                <p className="text-sm text-foreground">{marketBenchmarks.fundingBenchmarks?.yourReadiness || 'Data not available'}</p>
               </div>
             </div>
           </CardContent>
@@ -229,7 +228,7 @@ const MarketBenchmarksSection = () => {
           </div>
           <p className="text-sm text-foreground/90">
             Your projections position you in the top 20% of comparable SaaS companies. 
-            With an estimated {marketBenchmarks.successRates.yourEstimatedProbability} success probability, 
+            With an estimated {marketBenchmarks.successRates?.yourEstimatedProbability || 'strong'} success probability, 
             the fundamentals are strong for both bootstrapping and future fundraising.
           </p>
         </div>
