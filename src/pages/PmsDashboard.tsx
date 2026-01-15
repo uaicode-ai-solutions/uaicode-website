@@ -137,41 +137,47 @@ const PmsDashboardContent = () => {
     setTimeout(poll, 5000);
   };
 
-  // DEBUG: Regenerate report handler
-  const handleRegenerateReport = async () => {
+  // Regenerate report handler - fire-and-forget pattern (same as wizard)
+  const handleRegenerateReport = () => {
     if (!id) return;
     
     setIsRegenerating(true);
+    console.log("🔄 Starting report regeneration...");
     
-    try {
-      console.log("🔄 Calling pms-generate-report...");
-      
-      // Call the edge function (returns immediately with fire-and-forget pattern)
-      const { data, error } = await supabase.functions.invoke("pms-generate-report", {
-        body: { reportId: id },
+    // Update status to 'pending' first
+    supabase
+      .from('tb_pms_reports')
+      .update({ status: 'pending' })
+      .eq('id', id)
+      .then(({ error }) => {
+        if (error) {
+          console.error("Failed to update status:", error);
+        } else {
+          console.log("✅ Status updated to pending");
+        }
       });
+    
+    // Fire-and-forget - same pattern as wizard
+    supabase.functions.invoke('pms-generate-report', {
+      body: { reportId: id }
+    }).then(({ error }) => {
+      if (error) {
+        console.error("AI report generation error:", error);
+      } else {
+        console.log("✅ AI report generation started successfully");
+      }
+    }).catch((err) => {
+      console.error("Failed to trigger AI report generation:", err);
+    });
 
-      if (error) throw error;
+    // Show toast immediately
+    toast({
+      title: "🔄 Regenerating Report",
+      description: "The report is being regenerated. This may take 2-5 minutes.",
+    });
 
-      console.log("✅ Report generation started:", data);
-
-      toast({
-        title: "🔄 Regenerating Report",
-        description: "The report is being regenerated. This may take 2-5 minutes.",
-      });
-
-      // Start polling for status change
-      pollReportStatus(id);
-
-    } catch (error) {
-      console.error("Error regenerating report:", error);
-      toast({
-        title: "Error",
-        description: "Failed to start report regeneration. Check console for details.",
-        variant: "destructive",
-      });
-      setIsRegenerating(false);
-    }
+    // Start polling for status change
+    pollReportStatus(id);
   };
 
   // Use database data
