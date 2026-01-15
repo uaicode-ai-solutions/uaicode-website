@@ -82,7 +82,7 @@ const PmsDashboardContent = () => {
 
       // Call the edge function directly
       const { error } = await supabase.functions.invoke("pms-generate-report", {
-        body: { report_id: id },
+        body: { reportId: id },
       });
 
       if (error) throw error;
