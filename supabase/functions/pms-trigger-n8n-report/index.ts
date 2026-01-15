@@ -210,8 +210,22 @@ serve(async (req) => {
     // Calculate Price Comparison Fields
     // ==========================================
     
-    // Traditional price from tier data
-    const traditionalPrice = tierData?.traditional_min_cents ?? 0;
+    // Calculate TRADITIONAL price dynamically based on features (same logic as Uaicode)
+    // Uses 3.5x multiplier: Essential $4,200, Advanced $8,750, Enterprise $14,000
+    let traditionalPrice = 0;
+    
+    if (tierData) {
+      const traditionalPricePerEssential = tierData.traditional_price_per_essential_cents ?? 420000;
+      const traditionalPricePerAdvanced = tierData.traditional_price_per_advanced_cents ?? 875000;
+      const traditionalPricePerEnterprise = tierData.traditional_price_per_enterprise_cents ?? 1400000;
+      
+      traditionalPrice = 
+        (counts.starter * traditionalPricePerEssential) +
+        (counts.growth * traditionalPricePerAdvanced) +
+        (counts.enterprise * traditionalPricePerEnterprise);
+    }
+    
+    console.log(`💰 Traditional price calculated: $${(traditionalPrice / 100).toLocaleString()} (${counts.starter}E + ${counts.growth}A + ${counts.enterprise}Ent features)`);
     
     // Calculate savings
     const savingsAmountCents = traditionalPrice - calculatedPrice;
