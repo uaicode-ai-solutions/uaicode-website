@@ -443,6 +443,30 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </div>
               )}
 
+              {/* Payment Details - MVP Only */}
+              {option.id === 'mvp-only' && (
+                <div className="p-4 rounded-lg bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 mb-4 space-y-3">
+                  {/* Header */}
+                  <div className="flex items-center gap-2 pb-2 border-b border-accent/20">
+                    <CreditCard className="h-4 w-4 text-accent" />
+                    <span className="text-sm font-semibold text-foreground">Payment details</span>
+                  </div>
+                  
+                  {/* MVP Development */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-foreground font-medium">MVP Development</span>
+                      <span className="text-foreground font-bold">
+                        {formatCurrency(mvpDevDiscountedPrice)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      50% upfront, 50% on delivery
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Marketing Note */}
               {option.marketingNote && (
                 <div className="p-4 rounded-lg bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 mb-4 space-y-4">
@@ -455,7 +479,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   {/* MVP Development */}
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-foreground font-medium">MVP Development*</span>
+                      <span className="text-foreground font-medium">MVP Development</span>
                       <span className="text-foreground font-bold">
                         {formatCurrency(mvpMarketingDiscountedPrice)}
                       </span>
