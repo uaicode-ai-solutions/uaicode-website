@@ -578,9 +578,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       </div>
 
       {/* Aggressive Pricing Cards */}
-      <div className="grid md:grid-cols-2 gap-4 pt-4">
+      <div className="grid md:grid-cols-2 gap-4 pt-4 items-stretch">
         {/* Card 1: MVP Flash Deal (24h - 25% OFF) */}
-        <div className="relative">
+        <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
             <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-accent-foreground px-4 py-1 text-xs font-bold shadow-lg">
@@ -589,7 +589,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </Badge>
           </div>
 
-          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
+          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20 h-full">
             {/* Shimmer Effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
 
@@ -775,7 +775,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         </div>
 
         {/* Card 2: Complete Launch Bundle (30% OFF) */}
-        <div className="relative">
+        <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
             <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-accent-foreground px-4 py-1 text-xs font-bold shadow-lg">
@@ -784,7 +784,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </Badge>
           </div>
 
-          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
+          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20 h-full">
             {/* Shimmer Effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
 
