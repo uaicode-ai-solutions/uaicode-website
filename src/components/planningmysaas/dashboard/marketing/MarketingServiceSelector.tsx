@@ -64,13 +64,13 @@ const ServiceCard = ({
   return (
     <Card
       className={cn(
-        "relative transition-colors duration-200",
+        "group relative transition-all duration-300",
         isLocked 
-          ? "cursor-not-allowed bg-accent/15 border-accent/50" 
-          : "cursor-pointer",
+          ? "cursor-not-allowed bg-muted/30 border-accent shadow-lg shadow-accent/20" 
+          : "cursor-pointer hover:scale-[1.02]",
         isSelected && !isLocked
-          ? "bg-accent/10 border-accent/40"
-          : !isLocked && "bg-card/50 border-border/30 hover:border-accent/30"
+          ? "bg-accent/10 border-accent shadow-lg shadow-accent/20"
+          : !isLocked && "bg-muted/30 border-border/50 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10"
       )}
       onClick={isLocked ? undefined : onToggle}
     >
@@ -80,16 +80,16 @@ const ServiceCard = ({
           <div className="flex items-center gap-2">
             {/* Custom Checkbox or Lock Icon */}
             {isLocked ? (
-              <div className="w-4 h-4 rounded-md bg-accent/30 border border-accent/50 flex items-center justify-center">
+              <div className="w-4 h-4 rounded-md bg-accent/20 border border-accent flex items-center justify-center">
                 <Lock className="h-2.5 w-2.5 text-accent" />
               </div>
             ) : (
               <div
                 className={cn(
-                  "w-4 h-4 rounded-md border flex items-center justify-center transition-colors",
+                  "w-4 h-4 rounded-md border flex items-center justify-center transition-colors duration-300",
                   isSelected
-                    ? "bg-accent/20 border-accent/50"
-                    : "border-border/50 bg-transparent"
+                    ? "bg-accent/20 border-accent"
+                    : "border-border/50 bg-transparent group-hover:border-accent/50"
                 )}
               >
                 {isSelected && <Check className="h-2.5 w-2.5 text-accent" />}
@@ -97,17 +97,17 @@ const ServiceCard = ({
             )}
             
             <div className={cn(
-              "p-1.5 rounded-md",
-              isSelected || isLocked ? "bg-accent/15" : "bg-accent/10"
+              "p-1.5 rounded-lg transition-colors duration-300",
+              isSelected || isLocked ? "bg-accent/20" : "bg-muted/50 group-hover:bg-accent/10"
             )}>
               <IconComponent className={cn(
-                "h-3.5 w-3.5",
-                isSelected || isLocked ? "text-accent" : "text-muted-foreground"
+                "h-3.5 w-3.5 transition-colors duration-300",
+                isSelected || isLocked ? "text-accent" : "text-muted-foreground group-hover:text-accent"
               )} />
             </div>
             <span className={cn(
-              "font-medium text-sm",
-              isSelected || isLocked ? "text-foreground" : "text-foreground/80"
+              "font-medium text-sm transition-colors duration-300",
+              isSelected || isLocked ? "text-foreground" : "text-foreground/90 group-hover:text-foreground"
             )}>
               {service.service_name}
             </span>
@@ -160,19 +160,19 @@ const ServiceCard = ({
           <div className="space-y-1">
             <div className="flex items-center justify-between text-[10px]">
               <span className="text-muted-foreground">Traditional</span>
-              <span className="text-red-400/80">
+              <span className="text-muted-foreground">
                 {formatCurrencyK(service.traditional_min_cents)}-{formatCurrencyK(service.traditional_max_cents)}/mo
               </span>
             </div>
             <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
               {/* Min range indicator */}
               <div 
-                className="absolute inset-y-0 left-0 bg-red-500/30 rounded-full"
+                className="absolute inset-y-0 left-0 bg-accent/20 rounded-full"
                 style={{ width: `${traditionalMinWidth}%` }}
               />
               {/* Max range indicator */}
               <div 
-                className="absolute inset-y-0 left-0 bg-red-500/50 rounded-full transition-all duration-300"
+                className="absolute inset-y-0 left-0 bg-accent/30 rounded-full transition-all duration-300"
                 style={{ width: '100%' }}
               />
             </div>
@@ -181,9 +181,9 @@ const ServiceCard = ({
         
         {/* Savings Badge */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 border border-green-500/20">
-            <Sparkles className="h-3 w-3 text-green-400" />
-            <span className="text-[10px] font-medium text-green-400">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-accent/10 border border-accent/20">
+            <Sparkles className="h-3 w-3 text-accent" />
+            <span className="text-[10px] font-medium text-accent">
               Save {service.savings_percent_min}-{service.savings_percent_max}%
             </span>
           </div>
@@ -202,6 +202,11 @@ const ServiceCard = ({
             </InfoTooltip>
           )}
         </div>
+
+        {/* Selected indicator */}
+        {(isSelected || isLocked) && (
+          <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-accent animate-pulse" />
+        )}
       </CardContent>
     </Card>
   );
