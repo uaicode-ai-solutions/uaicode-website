@@ -75,7 +75,7 @@ const PricingTransparency = () => {
                 <ul className="space-y-2 text-sm text-muted-foreground [&>li]:animate-fade-in [&>li:nth-child(1)]:animation-delay-[50ms] [&>li:nth-child(2)]:animation-delay-[100ms] [&>li:nth-child(3)]:animation-delay-[150ms] [&>li:nth-child(4)]:animation-delay-[200ms] [&>li:nth-child(5)]:animation-delay-[250ms] [&>li:nth-child(6)]:animation-delay-[300ms]">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>3-5 core features</span>
+                    <span>3-8 core features</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
@@ -230,7 +230,7 @@ const PricingTransparency = () => {
                 <ul className="space-y-2 text-sm text-muted-foreground [&>li]:animate-fade-in [&>li:nth-child(1)]:animation-delay-[50ms] [&>li:nth-child(2)]:animation-delay-[100ms] [&>li:nth-child(3)]:animation-delay-[150ms] [&>li:nth-child(4)]:animation-delay-[200ms] [&>li:nth-child(5)]:animation-delay-[250ms] [&>li:nth-child(6)]:animation-delay-[300ms]">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>15+ custom features</span>
+                    <span>12+ custom features</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
