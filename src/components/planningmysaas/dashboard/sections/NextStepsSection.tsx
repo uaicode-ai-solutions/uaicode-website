@@ -583,20 +583,20 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="relative">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-            <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-accent-foreground px-4 py-1 text-xs font-bold shadow-lg animate-pulse">
+            <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-accent-foreground px-4 py-1 text-xs font-bold shadow-lg">
               <Clock className="h-3 w-3 mr-1" />
               24H FLASH DEAL
             </Badge>
           </div>
 
-          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/25 via-yellow-600/15 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
-            {/* Animated Glow Effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-yellow-500/10 to-accent/5 animate-pulse" />
+          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
+            {/* Shimmer Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
 
             <CardContent className="relative p-6 pt-8 flex flex-col h-full">
             {/* Package Name */}
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Zap className="h-5 w-5 text-accent" />
+              <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
               <h3 className="text-lg font-bold text-foreground">MVP Flash Deal</h3>
             </div>
             
@@ -626,11 +626,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </p>
                 <p className="text-[10px] text-green-400/80">You Save</p>
               </div>
-              <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 text-center">
-                <p className="text-lg font-bold text-accent">
+              <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-center">
+                <p className="text-lg font-bold text-yellow-400">
                   {discountStrategy.savings_vs_traditional_24h_percent}%
                 </p>
-                <p className="text-[10px] text-accent/80">vs Traditional</p>
+                <p className="text-[10px] text-yellow-400/80">vs Traditional</p>
               </div>
             </div>
 
@@ -659,19 +659,19 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </ul>
 
             {/* Bonuses */}
-            <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 mb-4">
-              <p className="text-xs font-semibold text-accent mb-2 flex items-center gap-1">
+            <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mb-4">
+              <p className="text-xs font-semibold text-yellow-400 mb-2 flex items-center gap-1">
                 <Sparkles className="h-3 w-3" />
                 Exclusive 24H Bonuses:
               </p>
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
                   <span className="text-foreground/70">Priority support upgrade</span>
-                  <span className="text-accent font-semibold">$2,000 value</span>
+                  <span className="text-yellow-400 font-semibold">$2,000 value</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-foreground/70">Fast-track onboarding</span>
-                  <span className="text-accent font-semibold">$1,500 value</span>
+                  <span className="text-yellow-400 font-semibold">$1,500 value</span>
                 </div>
               </div>
             </div>
@@ -706,9 +706,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 e.stopPropagation();
                 onScheduleCall?.();
               }}
-              className="w-full gap-2 bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-400 text-accent-foreground font-bold text-base py-6 shadow-lg shadow-accent/30 animate-pulse"
+              className="w-full gap-2 bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-600 text-black font-bold text-base py-6 shadow-lg shadow-accent/30"
             >
-              <Zap className="h-5 w-5" />
+              <Star className="h-5 w-5 fill-current" />
               CLAIM 25% DISCOUNT NOW
             </Button>
           </CardContent>
