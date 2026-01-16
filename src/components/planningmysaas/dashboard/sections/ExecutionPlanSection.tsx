@@ -122,7 +122,7 @@ const planLabels: Record<string, string> = {
 const planColors: Record<string, string> = {
   starter: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   growth: "bg-accent/20 text-accent border-accent/30",
-  enterprise: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+  enterprise: "bg-accent/20 text-accent border-accent/30",
 };
 
 // ==========================================
