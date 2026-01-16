@@ -382,39 +382,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                     Save {formatCurrency(option.discount.savings)}
                   </Badge>
                 )}
-                
-                {/* Urgency Timer */}
-                <div className="mt-3 p-2 rounded-lg bg-accent/10 border border-accent/20">
-                  <div className="flex items-center justify-center gap-2 text-accent">
-                    <Clock className="h-3 w-3" />
-                    <span className="text-xs font-medium">Offer expires in:</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-1 mt-1">
-                    <span className="bg-accent/20 px-2 py-1 rounded text-sm font-bold text-accent">
-                      {hours.toString().padStart(2, '0')}
-                    </span>
-                    <span className="text-accent font-bold">:</span>
-                    <span className="bg-accent/20 px-2 py-1 rounded text-sm font-bold text-accent">
-                      {minutes.toString().padStart(2, '0')}
-                    </span>
-                    <span className="text-accent font-bold">:</span>
-                    <span className="bg-accent/20 px-2 py-1 rounded text-sm font-bold text-accent">
-                      {seconds.toString().padStart(2, '0')}
-                    </span>
-                  </div>
-                  <Button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedConsultPackage(option.name);
-                      setKyleDialogOpen(true);
-                    }}
-                    size="sm"
-                    className="w-full mt-2 gap-2 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-black font-semibold"
-                  >
-                    <HandCoins className="h-4 w-4 text-black" />
-                    Get Now
-                  </Button>
-                </div>
               </div>
 
               {/* Features */}
@@ -526,6 +493,39 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-2 mt-auto pt-4">
+                
+                {/* Urgency Timer */}
+                <div className="p-2 rounded-lg bg-accent/10 border border-accent/20">
+                  <div className="flex items-center justify-center gap-2 text-accent">
+                    <Clock className="h-3 w-3" />
+                    <span className="text-xs font-medium">Offer expires in:</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <span className="bg-accent/20 px-2 py-1 rounded text-sm font-bold text-accent">
+                      {hours.toString().padStart(2, '0')}
+                    </span>
+                    <span className="text-accent font-bold">:</span>
+                    <span className="bg-accent/20 px-2 py-1 rounded text-sm font-bold text-accent">
+                      {minutes.toString().padStart(2, '0')}
+                    </span>
+                    <span className="text-accent font-bold">:</span>
+                    <span className="bg-accent/20 px-2 py-1 rounded text-sm font-bold text-accent">
+                      {seconds.toString().padStart(2, '0')}
+                    </span>
+                  </div>
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedConsultPackage(option.name);
+                      setKyleDialogOpen(true);
+                    }}
+                    size="sm"
+                    className="w-full mt-2 gap-2 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-black font-semibold"
+                  >
+                    <HandCoins className="h-4 w-4 text-black" />
+                    Get your discount now!
+                  </Button>
+                </div>
                 
                 <Button 
                   variant="outline"
