@@ -100,6 +100,31 @@ serve(async (req) => {
   }
 
   try {
+    // === TESTE MCP SERVER ===
+    const MCP_URL = "https://uaicode-n8n.ax5vln.easypanel.host/mcp/3ef36ebb-33f6-462c-acdb-c40f6a7d4345";
+    
+    console.log("🔌 Testing MCP connection...");
+    
+    try {
+      const mcpResponse = await fetch(MCP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/list",
+          params: {}
+        })
+      });
+      
+      const mcpData = await mcpResponse.json();
+      console.log(`✅ MCP Response status: ${mcpResponse.status}`);
+      console.log(`📋 MCP Response: ${JSON.stringify(mcpData, null, 2)}`);
+    } catch (mcpError) {
+      console.error("❌ MCP Connection failed:", mcpError);
+    }
+    // === FIM TESTE MCP ===
+
     const { wizard_id } = await req.json();
 
     if (!wizard_id) {
