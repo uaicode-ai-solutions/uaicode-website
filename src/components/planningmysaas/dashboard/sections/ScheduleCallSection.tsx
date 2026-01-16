@@ -102,7 +102,7 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-2xl font-bold text-foreground">🔒 Lock In Your Discount</h2>
+              <h2 className="text-2xl font-bold text-foreground">Lock In Your Discount</h2>
               <Badge variant="outline" className="border-accent/50 text-accent text-xs">
                 Limited Time Offer
               </Badge>
