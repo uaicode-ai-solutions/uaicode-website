@@ -4,10 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Badge } from "@/components/ui/badge";
 import { useReportContext } from "@/contexts/ReportContext";
-import { parseJsonField, parseCentsField, emptyStates } from "@/lib/reportDataUtils";
-import { InvestmentBreakdown } from "@/types/report";
+import { parseJsonField } from "@/lib/reportDataUtils";
 import { useMvpTier } from "@/hooks/useMvpTier";
 import { useMarketingTiers, MarketingTotals } from "@/hooks/useMarketingTiers";
+import { getSectionInvestment, getInvestmentBreakdown } from "@/lib/sectionInvestmentUtils";
 import PricingComparisonSlider from "../PricingComparisonSlider";
 import MarketingComparisonSlider from "../MarketingComparisonSlider";
 import MarketingServiceSelector from "../marketing/MarketingServiceSelector";
@@ -61,18 +61,12 @@ const InvestmentSection = () => {
     setMarketingTotals(totals);
   }, []);
   
-  // Parse investment data from report
+  // Parse investment data from section_investment JSON (with fallback to legacy fields)
+  const sectionInvestment = getSectionInvestment(reportData);
   const investmentNotIncluded = parseJsonField<{ items: string[] }>(report?.investment_not_included, { items: [] });
   
-  // MVP Investment breakdown values from tb_pms_reports table (in cents)
-  const mvpBreakdown = {
-    onePayment: reportData?.investment_one_payment_cents ?? null,
-    frontend: reportData?.investment_front_cents ?? null,
-    backend: reportData?.investment_back_cents ?? null,
-    integrations: reportData?.investment_integrations_cents ?? null,
-    infra: reportData?.investment_infra_cents ?? null,
-    testing: reportData?.investment_testing_cents ?? null,
-  };
+  // MVP Investment breakdown values - prefer section_investment, fallback to legacy fields
+  const mvpBreakdown = getInvestmentBreakdown(reportData, sectionInvestment);
 
   // Format currency with fallback "..."
   const formatValueOrFallback = (cents: number | null | undefined) => {
