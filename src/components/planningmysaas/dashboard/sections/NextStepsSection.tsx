@@ -513,18 +513,17 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       {seconds.toString().padStart(2, '0')}
                     </span>
                   </div>
-                  <Button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedConsultPackage(option.name);
-                      setKyleDialogOpen(true);
-                    }}
-                    size="sm"
-                    className="w-full mt-2 gap-2 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-black font-semibold"
-                  >
-                    <HandCoins className="h-4 w-4 text-black" />
-                    Get your discount now!
-                  </Button>
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onScheduleCall?.();
+                  }}
+                  size="sm"
+                  className="w-full mt-2 gap-2 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-black font-semibold"
+                >
+                  <HandCoins className="h-4 w-4 text-black" />
+                  Get your discount now!
+                </Button>
                 </div>
                 
                 <Button 
