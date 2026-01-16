@@ -959,9 +959,6 @@ export interface MvpTier {
   max_days: number;
   traditional_min_days: number;
   traditional_max_days: number;
-  price_per_essential_cents: number;
-  price_per_advanced_cents: number;
-  price_per_enterprise_cents: number;
   description: string | null;
   is_active: boolean;
   created_at: string;
@@ -970,26 +967,36 @@ export interface MvpTier {
 // Note: FEATURE_TIERS, countFeaturesByTier, and determineMvpTier 
 // are now defined near the top of this file (after safeNumber)
 
-// Helper to calculate dynamic price based on features
+// Helper to calculate dynamic price based on features using proportional interpolation
 export function calculateDynamicPrice(
   selectedFeatures: string[],
   tier: MvpTier
 ): { min: number; max: number; calculated: number } {
-  const counts = countFeaturesByTier(selectedFeatures);
+  const tierId = determineMvpTier(selectedFeatures);
   
-  const calculatedCents = 
-    (counts.starter * tier.price_per_essential_cents) +
-    (counts.growth * tier.price_per_advanced_cents) +
-    (counts.enterprise * tier.price_per_enterprise_cents);
+  // Count features only in the determined tier category
+  const tierFeatures = FEATURE_TIERS[tierId];
+  const totalFeaturesInTier = tierFeatures.length;
+  const selectedInTier = selectedFeatures.filter(f => tierFeatures.includes(f)).length;
   
-  // Clamp to tier range
-  const clampedMin = Math.max(tier.min_price_cents, calculatedCents * 0.85);
-  const clampedMax = Math.min(tier.max_price_cents, calculatedCents * 1.15);
+  // Proportional formula: min when 1 feature, max when all features
+  let calculatedCents: number;
+  
+  if (selectedInTier <= 1) {
+    calculatedCents = tier.min_price_cents;
+  } else if (selectedInTier >= totalFeaturesInTier) {
+    calculatedCents = tier.max_price_cents;
+  } else {
+    // Linear interpolation
+    const ratio = (selectedInTier - 1) / (totalFeaturesInTier - 1);
+    calculatedCents = tier.min_price_cents + 
+      (tier.max_price_cents - tier.min_price_cents) * ratio;
+  }
   
   return {
-    min: clampedMin,
-    max: clampedMax,
-    calculated: calculatedCents
+    min: tier.min_price_cents,
+    max: tier.max_price_cents,
+    calculated: Math.round(calculatedCents)
   };
 }
 

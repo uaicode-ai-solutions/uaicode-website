@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MvpTier, determineMvpTier, calculateDynamicPrice, countFeaturesByTier } from "@/types/report";
+import { MvpTier, determineMvpTier, calculateDynamicPrice, countFeaturesByTier, FEATURE_TIERS } from "@/types/report";
 
 interface MvpTierResult {
   tier: MvpTier | null;
@@ -8,7 +8,7 @@ interface MvpTierResult {
   tierId: 'starter' | 'growth' | 'enterprise';
   pricing: {
     uaicode: { min: number; max: number; calculated: number };
-    traditional: { min: number; max: number };
+    traditional: { min: number; max: number; calculated: number };
     savings: { amount: number; percentage: number };
   };
   timeline: {
@@ -43,21 +43,40 @@ export function useMvpTier(selectedFeatures: string[] = []): MvpTierResult {
   // Calculate pricing
   let pricing = {
     uaicode: { min: 0, max: 0, calculated: 0 },
-    traditional: { min: 0, max: 0 },
+    traditional: { min: 0, max: 0, calculated: 0 },
     savings: { amount: 0, percentage: 0 },
   };
 
   if (tier) {
     const dynamicPrice = calculateDynamicPrice(selectedFeatures, tier);
+    
+    // Calculate proportional traditional price as well
+    const tierFeatures = FEATURE_TIERS[tierId];
+    const selectedInTier = selectedFeatures.filter(f => tierFeatures.includes(f)).length;
+    const totalFeaturesInTier = tierFeatures.length;
+    
+    let traditionalCalculated: number;
+    if (selectedInTier <= 1) {
+      traditionalCalculated = tier.traditional_min_cents;
+    } else if (selectedInTier >= totalFeaturesInTier) {
+      traditionalCalculated = tier.traditional_max_cents;
+    } else {
+      const ratio = (selectedInTier - 1) / (totalFeaturesInTier - 1);
+      traditionalCalculated = tier.traditional_min_cents + 
+        (tier.traditional_max_cents - tier.traditional_min_cents) * ratio;
+    }
+    traditionalCalculated = Math.round(traditionalCalculated);
+    
     pricing = {
       uaicode: dynamicPrice,
       traditional: {
         min: tier.traditional_min_cents,
         max: tier.traditional_max_cents,
+        calculated: traditionalCalculated,
       },
       savings: {
-        amount: tier.traditional_min_cents - dynamicPrice.min,
-        percentage: Math.round(((tier.traditional_min_cents - dynamicPrice.min) / tier.traditional_min_cents) * 100),
+        amount: traditionalCalculated - dynamicPrice.calculated,
+        percentage: Math.round(((traditionalCalculated - dynamicPrice.calculated) / traditionalCalculated) * 100),
       },
     };
   }
