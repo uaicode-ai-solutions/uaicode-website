@@ -1,13 +1,56 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
-import { Calendar, Clock, Video, CheckCircle2 } from "lucide-react";
+import { Calendar, Lock, FileText, Rocket, Shield, Clock, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface ScheduleCallSectionProps {
   projectName?: string;
 }
 
+// Countdown timer hook
+const useCountdownTimer = () => {
+  const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 59, seconds: 59 });
+
+  useEffect(() => {
+    const savedExpiry = localStorage.getItem('discountExpiry');
+    let expiryTime: number;
+
+    if (savedExpiry) {
+      expiryTime = parseInt(savedExpiry);
+    } else {
+      expiryTime = Date.now() + 24 * 60 * 60 * 1000;
+      localStorage.setItem('discountExpiry', expiryTime.toString());
+    }
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const diff = expiryTime - now;
+
+      if (diff <= 0) {
+        // Reset timer for another 24h
+        expiryTime = Date.now() + 24 * 60 * 60 * 1000;
+        localStorage.setItem('discountExpiry', expiryTime.toString());
+      }
+
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      setTimeLeft({ hours: Math.max(0, hours), minutes: Math.max(0, minutes), seconds: Math.max(0, seconds) });
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return timeLeft;
+};
+
 const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
+  const timeLeft = useCountdownTimer();
+
   useEffect(() => {
     (async function () {
       const cal = await getCalApi({ namespace: "diagnostic-45min" });
@@ -25,41 +68,62 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
 
   const features = [
     {
-      icon: Clock,
-      title: "45 Minutes",
-      description: "Free consultation with no obligations"
+      icon: Lock,
+      title: "Lock Your Discount",
+      description: "Confirm your exclusive pricing before the timer expires"
     },
     {
-      icon: Video,
-      title: "Video Call",
-      description: "Via Google Meet or Zoom"
+      icon: FileText,
+      title: "Custom Proposal",
+      description: "Get your detailed quote within 24 hours"
     },
     {
-      icon: CheckCircle2,
-      title: "What We'll Cover",
-      description: "Project review, timeline, pricing & Q&A"
+      icon: Rocket,
+      title: "Fast Start",
+      description: "Begin your project in just 7 days after approval"
     }
   ];
 
+  const guarantees = [
+    "No payment required to schedule",
+    "Cancel anytime - no obligations",
+    "Your discount is guaranteed once you book"
+  ];
+
+  const formatTime = (num: number) => num.toString().padStart(2, '0');
+
   return (
     <section id="schedule-call" className="space-y-6 animate-fade-in scroll-mt-24">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
-          <Calendar className="h-5 w-5 text-accent" />
+      {/* Header with Urgency */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Calendar className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-2xl font-bold text-foreground">🔒 Lock In Your Discount</h2>
+              <Badge variant="outline" className="border-accent/50 text-accent text-xs">
+                Limited Time Offer
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Schedule your call now to secure your exclusive discount on {projectName ? `"${projectName}"` : "your project"}
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Schedule Your Call</h2>
-          <p className="text-sm text-muted-foreground">
-            Book a free 45-minute consultation to discuss {projectName ? `"${projectName}"` : "your project"}
-          </p>
+        
+        {/* Social Proof */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/5 px-3 py-1.5 rounded-full border border-accent/20">
+          <Users className="h-4 w-4 text-accent" />
+          <span><strong className="text-foreground">47</strong> founders booked this month</span>
         </div>
       </div>
 
       {/* What to Expect Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {features.map((feature, index) => (
-          <Card key={index} className="bg-card/50 border-border/30">
+          <Card key={index} className="bg-gradient-to-br from-background to-accent/5 border-accent/20">
             <CardContent className="p-4 flex items-start gap-3">
               <div className="p-2 rounded-lg bg-accent/10 shrink-0">
                 <feature.icon className="h-4 w-4 text-accent" />
@@ -73,8 +137,45 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
         ))}
       </div>
 
+      {/* Countdown Timer */}
+      <Card className="bg-gradient-to-r from-accent/10 via-accent/5 to-accent/10 border-accent/30">
+        <CardContent className="py-4 px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-accent" />
+              <span className="text-sm font-medium text-foreground">Offer expires in:</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <span className="bg-background/80 text-accent font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-accent/30 shadow-lg shadow-accent/10">
+                  {formatTime(timeLeft.hours)}
+                </span>
+                <span className="text-accent font-bold">:</span>
+                <span className="bg-background/80 text-accent font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-accent/30 shadow-lg shadow-accent/10">
+                  {formatTime(timeLeft.minutes)}
+                </span>
+                <span className="text-accent font-bold">:</span>
+                <span className="bg-background/80 text-accent font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-accent/30 shadow-lg shadow-accent/10">
+                  {formatTime(timeLeft.seconds)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Guarantees */}
+      <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+        {guarantees.map((guarantee, index) => (
+          <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Shield className="h-4 w-4 text-green-500" />
+            <span>{guarantee}</span>
+          </div>
+        ))}
+      </div>
+
       {/* Cal.com Embed */}
-      <Card className="bg-card/50 border-border/30 overflow-hidden">
+      <Card className="bg-card/50 border-accent/20 overflow-hidden">
         <CardContent className="p-0">
           <div className="w-full h-[500px] md:h-[650px] overflow-auto">
             <Cal
