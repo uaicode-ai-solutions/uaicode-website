@@ -199,6 +199,7 @@ export type Database = {
       }
       tb_pms_reports: {
         Row: {
+          competitive_analysis_section: Json | null
           created_at: string
           delivery_time_traditional: string | null
           delivery_time_uaicode: string | null
@@ -228,6 +229,7 @@ export type Database = {
           wizard_id: string
         }
         Insert: {
+          competitive_analysis_section?: Json | null
           created_at?: string
           delivery_time_traditional?: string | null
           delivery_time_uaicode?: string | null
@@ -257,6 +259,7 @@ export type Database = {
           wizard_id: string
         }
         Update: {
+          competitive_analysis_section?: Json | null
           created_at?: string
           delivery_time_traditional?: string | null
           delivery_time_uaicode?: string | null
