@@ -49,7 +49,7 @@ const PricingTransparency = () => {
                 $10,000 - $25,000
               </div>
             <p className="text-sm text-muted-foreground mb-6">
-              Timeline: 30-45 days
+              Timeline: 45-60 days
             </p>
             
             <ul className="space-y-3 mb-6 min-h-[120px]">
@@ -99,7 +99,7 @@ const PricingTransparency = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>30 days of support</span>
+                    <span>45 days of support</span>
                   </li>
                 </ul>
               </AccordionContent>
@@ -125,7 +125,7 @@ const PricingTransparency = () => {
                 $25,000 - $60,000
               </div>
             <p className="text-sm text-muted-foreground mb-6">
-              Timeline: 45-60 days
+              Timeline: 60-90 days
             </p>
             
             <ul className="space-y-3 mb-6 min-h-[120px]">
@@ -183,7 +183,7 @@ const PricingTransparency = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>60 days of support</span>
+                    <span>90 days of support</span>
                   </li>
                 </ul>
               </AccordionContent>
@@ -204,7 +204,7 @@ const PricingTransparency = () => {
                 $60,000 - $160,000
               </div>
             <p className="text-sm text-muted-foreground mb-6">
-              Timeline: 60-90 days
+              Timeline: 90-120 days
             </p>
             
             <ul className="space-y-3 mb-6 min-h-[120px]">
@@ -266,7 +266,7 @@ const PricingTransparency = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>90 days of priority support</span>
+                    <span>120 days of priority support</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
