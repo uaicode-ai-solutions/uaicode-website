@@ -161,6 +161,15 @@ const ExecutionPlanSection = () => {
   const totalMaxWeeks = sectionInvestment?.delivery_weeks_uaicode_max ?? 13;
   const mvpTier = (sectionInvestment?.mvp_tier?.toLowerCase() as "starter" | "growth" | "enterprise") ?? "growth";
   
+  // Get traditional weeks for comparison
+  const traditionalMinWeeks = sectionInvestment?.delivery_weeks_traditional_min ?? 26;
+  const traditionalMaxWeeks = sectionInvestment?.delivery_weeks_traditional_max ?? 51;
+  
+  // Calculate "faster" percentage using average of min/max
+  const avgUaicodeWeeks = (totalMinWeeks + totalMaxWeeks) / 2;
+  const avgTraditionalWeeks = (traditionalMinWeeks + traditionalMaxWeeks) / 2;
+  const fasterPercent = Math.round(((avgTraditionalWeeks - avgUaicodeWeeks) / avgTraditionalWeeks) * 100);
+  
   // Total time display
   const totalTimeDisplay = totalMinWeeks === totalMaxWeeks 
     ? `${totalMinWeeks} weeks` 
@@ -344,7 +353,7 @@ const ExecutionPlanSection = () => {
               </div>
               <Badge variant="outline" className="border-green-500/30 text-green-400 gap-1.5">
                 <Zap className="h-3 w-3" />
-                54% faster than traditional agencies
+                {fasterPercent}% faster than traditional agencies
               </Badge>
             </div>
           </div>
