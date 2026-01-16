@@ -181,15 +181,25 @@ serve(async (req) => {
       console.error("⚠️ Failed to fetch tier data:", tierError);
     }
     
-    // Calculate dynamic price based on features
+    // Calculate dynamic price based on features using proportional interpolation
     const counts = countFeaturesByTier(selectedFeatures);
     let calculatedPrice = 0;
     
     if (tierData) {
-      calculatedPrice = 
-        (counts.starter * tierData.price_per_essential_cents) +
-        (counts.growth * tierData.price_per_advanced_cents) +
-        (counts.enterprise * tierData.price_per_enterprise_cents);
+      // Use proportional interpolation based on selected features (same as frontend)
+      const tierFeatures = FEATURE_TIERS[correctTier];
+      const totalFeaturesInTier = tierFeatures.length;
+      const selectedInTier = selectedFeatures.filter((f: string) => tierFeatures.includes(f)).length;
+      
+      if (selectedInTier <= 1) {
+        calculatedPrice = tierData.min_price_cents;
+      } else if (selectedInTier >= totalFeaturesInTier) {
+        calculatedPrice = tierData.max_price_cents;
+      } else {
+        const ratio = (selectedInTier - 1) / (totalFeaturesInTier - 1);
+        calculatedPrice = Math.round(tierData.min_price_cents + 
+          (tierData.max_price_cents - tierData.min_price_cents) * ratio);
+      }
     }
     
     console.log(`💰 Calculated price: ${calculatedPrice} cents (starter: ${counts.starter}, growth: ${counts.growth}, enterprise: ${counts.enterprise})`);
@@ -210,19 +220,24 @@ serve(async (req) => {
     // Calculate Price Comparison Fields
     // ==========================================
     
-    // Calculate TRADITIONAL price dynamically based on features (same logic as Uaicode)
-    // Uses 3.5x multiplier: Essential $4,200, Advanced $8,750, Enterprise $14,000
+    // Calculate TRADITIONAL price using proportional interpolation (same logic as Uaicode)
     let traditionalPrice = 0;
     
     if (tierData) {
-      const traditionalPricePerEssential = tierData.traditional_price_per_essential_cents ?? 420000;
-      const traditionalPricePerAdvanced = tierData.traditional_price_per_advanced_cents ?? 875000;
-      const traditionalPricePerEnterprise = tierData.traditional_price_per_enterprise_cents ?? 1400000;
+      // Use proportional interpolation for traditional price
+      const tierFeatures = FEATURE_TIERS[correctTier];
+      const totalFeaturesInTier = tierFeatures.length;
+      const selectedInTier = selectedFeatures.filter((f: string) => tierFeatures.includes(f)).length;
       
-      traditionalPrice = 
-        (counts.starter * traditionalPricePerEssential) +
-        (counts.growth * traditionalPricePerAdvanced) +
-        (counts.enterprise * traditionalPricePerEnterprise);
+      if (selectedInTier <= 1) {
+        traditionalPrice = tierData.traditional_min_cents;
+      } else if (selectedInTier >= totalFeaturesInTier) {
+        traditionalPrice = tierData.traditional_max_cents;
+      } else {
+        const ratio = (selectedInTier - 1) / (totalFeaturesInTier - 1);
+        traditionalPrice = Math.round(tierData.traditional_min_cents + 
+          (tierData.traditional_max_cents - tierData.traditional_min_cents) * ratio);
+      }
     }
     
     console.log(`💰 Traditional price calculated: $${(traditionalPrice / 100).toLocaleString()} (${counts.starter}E + ${counts.growth}A + ${counts.enterprise}Ent features)`);
