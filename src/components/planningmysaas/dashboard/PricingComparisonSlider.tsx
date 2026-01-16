@@ -4,21 +4,17 @@ import { useReportContext } from "@/contexts/ReportContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getSectionInvestment, getPricingComparison } from "@/lib/sectionInvestmentUtils";
 
-// Support days mapping by MVP tier (from tb_pms_mvp_tier)
-const SUPPORT_DAYS_BY_TIER: Record<string, { min: number; max: number }> = {
-  starter: { min: 45, max: 60 },
-  growth: { min: 60, max: 90 },
-  enterprise: { min: 90, max: 120 },
+// Post-launch support days by MVP tier (single values as per PricingTransparency)
+const SUPPORT_DAYS_BY_TIER: Record<string, number> = {
+  starter: 45,
+  growth: 90,
+  enterprise: 120,
 };
 
 const getPostLaunchSupport = (mvpTier: string | undefined): string => {
   const tier = mvpTier?.toLowerCase() || 'starter';
   const days = SUPPORT_DAYS_BY_TIER[tier] || SUPPORT_DAYS_BY_TIER.starter;
-  
-  if (days.min === days.max) {
-    return `${days.min} days included`;
-  }
-  return `${days.min}-${days.max} days included`;
+  return `${days} days included`;
 };
 
 const formatCurrency = (cents: number) => {
