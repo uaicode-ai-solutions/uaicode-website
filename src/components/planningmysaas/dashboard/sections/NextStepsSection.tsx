@@ -543,7 +543,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                     </span>
                   </div>
-                  Talk to Sales Consultant
+                  Doubts? Talk to Kyle.
                 </Button>
               </div>
             </CardContent>
