@@ -149,7 +149,7 @@ const PricingComparisonSlider = () => {
           </div>
           <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-accent/30">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent to-accent/70 rounded-lg flex items-center pl-3"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent to-accent/70 rounded-lg flex items-center justify-end pr-3"
               style={{ width: `${Math.max(uaicodeWidth, 15)}%` }}
             >
               <span className="text-xs font-medium text-accent-foreground">
