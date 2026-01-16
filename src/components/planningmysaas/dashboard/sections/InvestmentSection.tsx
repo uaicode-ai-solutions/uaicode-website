@@ -327,6 +327,7 @@ const InvestmentSection = () => {
               uaicodeTotal={marketingTotals.uaicodeTotal}
               traditionalMin={marketingTotals.traditionalMinTotal}
               traditionalMax={marketingTotals.traditionalMaxTotal}
+              paidMediaBudget={suggestedPaidMedia}
               savingsPercentMin={marketingTotals.savingsPercentMin}
               savingsPercentMax={marketingTotals.savingsPercentMax}
               annualSavingsMin={marketingTotals.annualSavingsMin}
