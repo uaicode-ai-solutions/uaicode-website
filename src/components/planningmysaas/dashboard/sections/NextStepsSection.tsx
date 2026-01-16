@@ -638,23 +638,48 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             <ul className="space-y-2 mb-4 flex-1">
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground/80">Complete MVP development</span>
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Complete MVP development
+                  <InfoTooltip term="MVP Development">
+                    Your fully functional SaaS product built from scratch, including all core features defined in your report. Ready to launch and acquire customers.
+                  </InfoTooltip>
+                </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground/80">25% OFF - Today only!</span>
+                <span className="text-foreground/80 flex items-center gap-1">
+                  25% OFF - Today only!
+                  <InfoTooltip term="Limited Discount">
+                    Exclusive 24-hour discount. After this window closes, standard pricing applies.
+                  </InfoTooltip>
+                </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground/80">12 months hosting included</span>
+                <span className="text-foreground/80 flex items-center gap-1">
+                  12 months hosting included
+                  <InfoTooltip term="Hosting">
+                    Professional cloud hosting with SSL, CDN, backups, and 99.9% uptime. After 12 months: $299/month or $2,990/year.
+                  </InfoTooltip>
+                </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground/80">Priority onboarding slot</span>
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Priority onboarding slot
+                  <InfoTooltip term="Priority Onboarding">
+                    Start your project within 7 days instead of the standard 14-day wait. Jump the queue and get to market faster.
+                  </InfoTooltip>
+                </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground/80">Full source code ownership</span>
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Full source code ownership
+                  <InfoTooltip term="Code Ownership">
+                    You own 100% of the code. No licensing fees, no vendor lock-in. Deploy anywhere you want.
+                  </InfoTooltip>
+                </span>
               </li>
             </ul>
 
@@ -665,14 +690,28 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 Exclusive 24H Bonuses:
               </p>
               <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="text-foreground/70">Priority support upgrade</span>
-                  <span className="text-yellow-400 font-semibold">$2,000 value</span>
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-foreground/70 flex items-center gap-1">
+                    Extended support (60 days)
+                    <InfoTooltip size="sm">
+                      60 days of priority email support with 24-hour response time instead of standard 30 days.
+                    </InfoTooltip>
+                  </span>
+                  <span className="text-yellow-400 font-semibold">$750 value</span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-foreground/70">Fast-track onboarding</span>
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-foreground/70 flex items-center gap-1">
+                    Fast-track onboarding (7 days)
+                    <InfoTooltip size="sm">
+                      Project kickoff within 7 days instead of 14. Includes expedited requirements review.
+                    </InfoTooltip>
+                  </span>
                   <span className="text-yellow-400 font-semibold">$1,500 value</span>
                 </div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-yellow-500/20 flex justify-between">
+                <span className="text-xs text-yellow-400 font-bold">Total Bonus Value:</span>
+                <span className="text-xs text-yellow-400 font-bold">$2,250</span>
               </div>
             </div>
 
@@ -794,23 +833,48 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             <ul className="space-y-2 mb-4 flex-1">
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground/80">30% OFF on MVP - Maximum discount!</span>
+                <span className="text-foreground/80 flex items-center gap-1">
+                  30% OFF on MVP - Maximum discount!
+                  <InfoTooltip term="Maximum Discount">
+                    Our highest discount tier. Only available when bundling MVP + Marketing together.
+                  </InfoTooltip>
+                </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground/80">Save {formatCurrency(discountStrategy.savings_bundle_cents / 100)} on development</span>
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Save {formatCurrency(discountStrategy.savings_bundle_cents / 100)} on development
+                  <InfoTooltip term="Development Savings">
+                    Direct savings compared to purchasing MVP at regular price. Calculated based on your project scope.
+                  </InfoTooltip>
+                </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground/80">Full marketing team included</span>
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Full marketing team included
+                  <InfoTooltip term="Marketing Team">
+                    Complete marketing execution: content creation, social media, email marketing, and paid ads. Billed monthly after MVP launch.
+                  </InfoTooltip>
+                </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground/80">Guaranteed launch in 90 days</span>
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Guaranteed launch in 90 days
+                  <InfoTooltip term="Launch Guarantee">
+                    Written commitment to launch within 90 days or your next month is free. Includes weekly progress reports.
+                  </InfoTooltip>
+                </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground/80">VIP priority support</span>
+                <span className="text-foreground/80 flex items-center gap-1">
+                  VIP priority support
+                  <InfoTooltip term="VIP Support">
+                    90 days of VIP support with 4-hour response time during business hours. Direct access to senior developers.
+                  </InfoTooltip>
+                </span>
               </li>
             </ul>
 
@@ -821,22 +885,37 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 Exclusive Bundle Bonuses:
               </p>
               <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="text-foreground/70">3 months extra hosting</span>
-                  <span className="text-yellow-400 font-semibold">$2,400 value</span>
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-foreground/70 flex items-center gap-1">
+                    3 months extra hosting
+                    <InfoTooltip size="sm">
+                      15 months total hosting instead of 12. Saves 3x $299/month market rate.
+                    </InfoTooltip>
+                  </span>
+                  <span className="text-yellow-400 font-semibold">$897 value</span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-foreground/70">60 days extended support</span>
-                  <span className="text-yellow-400 font-semibold">$5,000 value</span>
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-foreground/70 flex items-center gap-1">
+                    90 days VIP support
+                    <InfoTooltip size="sm">
+                      VIP support with 4-hour response time during business hours. Direct access to senior developers.
+                    </InfoTooltip>
+                  </span>
+                  <span className="text-yellow-400 font-semibold">$1,500 value</span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-foreground/70">Marketing strategy session</span>
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-foreground/70 flex items-center gap-1">
+                    Marketing strategy session (2h)
+                    <InfoTooltip size="sm">
+                      2-hour strategy session with marketing specialist. Includes competitive analysis and 90-day roadmap.
+                    </InfoTooltip>
+                  </span>
                   <span className="text-yellow-400 font-semibold">$1,500 value</span>
                 </div>
               </div>
               <div className="mt-2 pt-2 border-t border-yellow-500/20 flex justify-between">
                 <span className="text-xs text-yellow-400 font-bold">Total Bonus Value:</span>
-                <span className="text-xs text-yellow-400 font-bold">$8,900</span>
+                <span className="text-xs text-yellow-400 font-bold">$3,897</span>
               </div>
             </div>
 
