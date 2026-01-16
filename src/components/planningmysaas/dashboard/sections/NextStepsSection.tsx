@@ -73,6 +73,16 @@ const iconMap: Record<string, React.ElementType> = {
   Package,
 };
 
+// Post-launch support days by MVP tier (single values as per PricingTransparency)
+const SUPPORT_DAYS_BY_TIER: Record<string, number> = {
+  starter: 45,
+  growth: 90,
+  enterprise: 120,
+};
+
+// Bonus days added by Flash Deal offer
+const FLASH_DEAL_BONUS_DAYS = 15;
+
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -128,6 +138,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   
   // Get discount strategy from section_investment (with calculated fallbacks)
   const discountStrategy = getDiscountStrategy(sectionInvestment, mvpPriceCents);
+  
+  // Calculate dynamic support days based on MVP tier
+  const mvpTier = sectionInvestment?.mvp_tier?.toLowerCase() || 'starter';
+  const baseSupportDays = SUPPORT_DAYS_BY_TIER[mvpTier] || SUPPORT_DAYS_BY_TIER.starter;
+  const extendedSupportDays = baseSupportDays + FLASH_DEAL_BONUS_DAYS;
   
   // Marketing total from shared context (synced with InvestmentSection selections)
   const marketingMonthlyUaicode = marketingTotals.uaicodeTotal / 100; // cents to dollars
@@ -433,9 +448,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
               <div className="space-y-1">
                 <div className="flex justify-between text-xs items-center">
                   <span className="text-foreground/70 flex items-center gap-1">
-                    Extended support (60 days)
+                    Extended support ({extendedSupportDays} days)
                     <InfoTooltip size="sm">
-                      60 days of priority email support with 24-hour response time instead of standard 30 days.
+                      {extendedSupportDays} days of priority email support with 24-hour response time instead of standard {baseSupportDays} days.
                     </InfoTooltip>
                   </span>
                   <span className="text-yellow-400 font-semibold">$750 value</span>
