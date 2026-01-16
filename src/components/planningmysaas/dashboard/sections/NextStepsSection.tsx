@@ -186,7 +186,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         "Complete MVP development",
         `10% discount (save ${formatCurrency(mvpDevSavings)})`,
         "12 months hosting included",
-        "30 days post-launch premium support",
+        "Up to 120 days post-launch premium support",
         "Full documentation & training",
         "Source code ownership"
       ],
@@ -435,7 +435,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       <span className="text-amber-400 font-bold">Free</span>
                     </div>
                     <p className="text-xs text-muted-foreground leading-4 min-h-[32px]">
-                      Valid for 30 days post-launch
+                      Valid for up to 120 days post-launch
                     </p>
                   </div>
                 </div>

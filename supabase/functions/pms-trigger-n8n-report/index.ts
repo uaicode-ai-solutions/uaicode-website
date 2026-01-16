@@ -247,12 +247,12 @@ serve(async (req) => {
     // Traditional: traditional_min_days/traditional_max_days → weeks
     const deliveryTimeTraditional = tierData 
       ? formatDeliveryTimeInWeeks(tierData.traditional_min_days, tierData.traditional_max_days)
-      : "24-36 weeks";
+      : "13-34 weeks";
     
     // Uaicode: min_days/max_days → weeks
     const deliveryTimeUaicode = tierData
       ? formatDeliveryTimeInWeeks(tierData.min_days, tierData.max_days)
-      : "9-18 weeks";
+      : "6-17 weeks";
     
     console.log(`💰 Price comparison: Traditional ${traditionalPrice} vs Uaicode ${calculatedPrice} (${savingsPercentage}% savings)`);
     console.log(`📅 Delivery times: Traditional ${deliveryTimeTraditional}, Uaicode ${deliveryTimeUaicode}`);

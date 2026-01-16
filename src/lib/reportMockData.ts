@@ -171,7 +171,7 @@ The estimated $60,500 MVP investment has the potential to break even in 8 months
       "12 months of hosting and infrastructure",
       "Payment and delivery integrations",
       "Responsive web app (mobile-first)",
-      "Post-launch support (30 days)",
+      "Post-launch support (45-120 days)",
       "Complete technical documentation",
     ],
     notIncluded: [
