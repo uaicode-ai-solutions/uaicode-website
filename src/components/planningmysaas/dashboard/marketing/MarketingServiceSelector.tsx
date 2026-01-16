@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Check, Briefcase, Megaphone, Palette, Share2, Users, Sparkles } from "lucide-react";
+import { Check, Briefcase, Megaphone, Palette, Share2, Users, Sparkles, Lock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMarketingTiers, MarketingService, calculateMarketingTotals, MarketingTotals } from "@/hooks/useMarketingTiers";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // Icon mapping
 const iconMap: Record<string, React.ElementType> = {
@@ -16,6 +17,10 @@ const iconMap: Record<string, React.ElementType> = {
   users: Users,
   sparkles: Sparkles,
 };
+
+// Required service configuration
+const REQUIRED_SERVICE_ID = "project_manager";
+const MIN_ADDITIONAL_SERVICES = 1;
 
 interface MarketingServiceSelectorProps {
   onSelectionChange?: (selectedIds: string[], totals: MarketingTotals) => void;
@@ -42,10 +47,12 @@ const formatCurrencyK = (cents: number) => {
 const ServiceCard = ({
   service,
   isSelected,
+  isLocked,
   onToggle,
 }: {
   service: MarketingService;
   isSelected: boolean;
+  isLocked: boolean;
   onToggle: () => void;
 }) => {
   const IconComponent = iconMap[service.service_icon] || Briefcase;
@@ -57,51 +64,75 @@ const ServiceCard = ({
   return (
     <Card
       className={cn(
-        "relative cursor-pointer transition-colors duration-200",
-        isSelected
+        "relative transition-colors duration-200",
+        isLocked 
+          ? "cursor-not-allowed bg-accent/15 border-accent/50" 
+          : "cursor-pointer",
+        isSelected && !isLocked
           ? "bg-accent/10 border-accent/40"
-          : "bg-card/50 border-border/30 hover:border-accent/30"
+          : !isLocked && "bg-card/50 border-border/30 hover:border-accent/30"
       )}
-      onClick={onToggle}
+      onClick={isLocked ? undefined : onToggle}
     >
       <CardContent className="p-4">
         {/* Checkbox + Title Row */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
-            {/* Custom Checkbox */}
-            <div
-              className={cn(
-                "w-4 h-4 rounded-md border flex items-center justify-center transition-colors",
-                isSelected
-                  ? "bg-accent/20 border-accent/50"
-                  : "border-border/50 bg-transparent"
-              )}
-            >
-              {isSelected && <Check className="h-2.5 w-2.5 text-accent" />}
-            </div>
+            {/* Custom Checkbox or Lock Icon */}
+            {isLocked ? (
+              <div className="w-4 h-4 rounded-md bg-accent/30 border border-accent/50 flex items-center justify-center">
+                <Lock className="h-2.5 w-2.5 text-accent" />
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  "w-4 h-4 rounded-md border flex items-center justify-center transition-colors",
+                  isSelected
+                    ? "bg-accent/20 border-accent/50"
+                    : "border-border/50 bg-transparent"
+                )}
+              >
+                {isSelected && <Check className="h-2.5 w-2.5 text-accent" />}
+              </div>
+            )}
             
             <div className={cn(
               "p-1.5 rounded-md",
-              isSelected ? "bg-accent/15" : "bg-accent/10"
+              isSelected || isLocked ? "bg-accent/15" : "bg-accent/10"
             )}>
               <IconComponent className={cn(
                 "h-3.5 w-3.5",
-                isSelected ? "text-accent" : "text-muted-foreground"
+                isSelected || isLocked ? "text-accent" : "text-muted-foreground"
               )} />
             </div>
             <span className={cn(
               "font-medium text-sm",
-              isSelected ? "text-foreground" : "text-foreground/80"
+              isSelected || isLocked ? "text-foreground" : "text-foreground/80"
             )}>
               {service.service_name}
             </span>
           </div>
           
-          {service.is_recommended && (
+          {isLocked ? (
+            <InfoTooltip size="sm" side="top">
+              <div className="text-xs">
+                <p className="font-medium mb-1">Required Service</p>
+                <p className="text-muted-foreground">
+                  Project Manager is essential for coordinating all marketing services and ensuring your project runs smoothly.
+                </p>
+              </div>
+            </InfoTooltip>
+          ) : null}
+          
+          {isLocked ? (
+            <Badge className="text-[9px] bg-accent/20 text-accent border-accent/40 px-1.5 py-0.5 font-semibold">
+              REQUIRED
+            </Badge>
+          ) : service.is_recommended ? (
             <Badge className="text-[9px] bg-accent/10 text-accent border-accent/30 px-1.5 py-0.5">
               RECOMMENDED
             </Badge>
-          )}
+          ) : null}
         </div>
         
         {/* Description */}
@@ -156,18 +187,20 @@ const ServiceCard = ({
               Save {service.savings_percent_min}-{service.savings_percent_max}%
             </span>
           </div>
-          <InfoTooltip size="sm" side="top">
-            <div className="text-xs space-y-1">
-              <p className="font-medium">{service.service_name}</p>
-              {service.whats_included.length > 0 && (
-                <ul className="list-disc pl-3 text-muted-foreground">
-                  {service.whats_included.slice(0, 4).map((item, i) => (
-                    <li key={i}>{item}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </InfoTooltip>
+          {!isLocked && (
+            <InfoTooltip size="sm" side="top">
+              <div className="text-xs space-y-1">
+                <p className="font-medium">{service.service_name}</p>
+                {service.whats_included.length > 0 && (
+                  <ul className="list-disc pl-3 text-muted-foreground">
+                    {service.whats_included.slice(0, 4).map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </InfoTooltip>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -182,13 +215,39 @@ const MarketingServiceSelector = ({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [initialized, setInitialized] = useState(false);
 
-  // Initialize selection with recommended services
+  // Initialize selection with required service + recommended services
   useEffect(() => {
-    if (services.length > 0 && !initialized && defaultSelectRecommended) {
-      const recommendedIds = services
-        .filter((s) => s.is_recommended)
-        .map((s) => s.service_id);
-      setSelectedIds(recommendedIds);
+    if (services.length > 0 && !initialized) {
+      let initialIds: string[];
+      
+      if (defaultSelectRecommended) {
+        // Select all recommended services
+        initialIds = services
+          .filter((s) => s.is_recommended)
+          .map((s) => s.service_id);
+      } else {
+        // Minimum: Project Manager + first recommended additional service
+        const firstRecommended = services.find(
+          s => s.is_recommended && s.service_id !== REQUIRED_SERVICE_ID
+        );
+        initialIds = [REQUIRED_SERVICE_ID];
+        if (firstRecommended) {
+          initialIds.push(firstRecommended.service_id);
+        } else {
+          // Fallback: pick first non-required service
+          const firstOther = services.find(s => s.service_id !== REQUIRED_SERVICE_ID);
+          if (firstOther) {
+            initialIds.push(firstOther.service_id);
+          }
+        }
+      }
+      
+      // Ensure required service is always included
+      if (!initialIds.includes(REQUIRED_SERVICE_ID)) {
+        initialIds.unshift(REQUIRED_SERVICE_ID);
+      }
+      
+      setSelectedIds(initialIds);
       setInitialized(true);
     }
   }, [services, initialized, defaultSelectRecommended]);
@@ -202,6 +261,27 @@ const MarketingServiceSelector = ({
   }, [selectedIds, services, onSelectionChange]);
 
   const toggleService = (serviceId: string) => {
+    // Project Manager cannot be deselected
+    if (serviceId === REQUIRED_SERVICE_ID) {
+      toast.info("Project Manager is required", {
+        description: "This service is essential for coordinating all other services."
+      });
+      return;
+    }
+    
+    const isRemoving = selectedIds.includes(serviceId);
+    
+    if (isRemoving) {
+      // Check if we still have minimum additional services after removal
+      const additionalServices = selectedIds.filter(id => id !== REQUIRED_SERVICE_ID);
+      if (additionalServices.length <= MIN_ADDITIONAL_SERVICES) {
+        toast.info("Minimum 2 services required", {
+          description: "Project Manager + at least 1 other service"
+        });
+        return;
+      }
+    }
+    
     setSelectedIds((prev) =>
       prev.includes(serviceId)
         ? prev.filter((id) => id !== serviceId)
@@ -227,6 +307,7 @@ const MarketingServiceSelector = ({
       <div className="flex items-center gap-2">
         <span className="text-xs text-muted-foreground">
           Select the services you need ({selectedIds.length}/{services.length} selected)
+          <span className="text-accent/70 ml-1">• Min: 2 required</span>
         </span>
       </div>
 
@@ -237,6 +318,7 @@ const MarketingServiceSelector = ({
             key={service.service_id}
             service={service}
             isSelected={selectedIds.includes(service.service_id)}
+            isLocked={service.service_id === REQUIRED_SERVICE_ID}
             onToggle={() => toggleService(service.service_id)}
           />
         ))}
