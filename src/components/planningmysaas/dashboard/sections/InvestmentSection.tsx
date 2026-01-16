@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { DollarSign, Check, X, PieChart, AlertCircle, Sparkles, Megaphone, TrendingUp } from "lucide-react";
+import { DollarSign, Check, Minus, PieChart, AlertCircle, Sparkles, Megaphone, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -188,7 +188,7 @@ const InvestmentSection = () => {
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Main Investment Card with Chart */}
-        <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
+        <Card className="bg-muted/30 border-border/50 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
           <CardContent className="p-5">
             {/* Total Investment */}
             <div className="text-center mb-6">
@@ -260,7 +260,7 @@ const InvestmentSection = () => {
                 <ul className="space-y-1.5">
                   {includedItems.map((item, index) => (
                     <li key={index} className="flex items-start gap-2 text-xs">
-                      <Check className="h-3 w-3 text-green-400 mt-0.5 flex-shrink-0" />
+                      <Check className="h-3 w-3 text-accent mt-0.5 flex-shrink-0" />
                       <span className="text-foreground/90">{item}</span>
                     </li>
                   ))}
@@ -275,7 +275,7 @@ const InvestmentSection = () => {
                 <ul className="space-y-1.5">
                   {notIncludedItems.map((item, index) => (
                     <li key={index} className="flex items-start gap-2 text-xs">
-                      <X className="h-3 w-3 text-red-400 mt-0.5 flex-shrink-0" />
+                      <Minus className="h-3 w-3 text-muted-foreground/50 mt-0.5 flex-shrink-0" />
                       <span className="text-foreground/70">{item}</span>
                     </li>
                   ))}

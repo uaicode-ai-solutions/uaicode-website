@@ -1,4 +1,4 @@
-import { PieChart as PieChartIcon, Check, AlertCircle } from "lucide-react";
+import { PieChart as PieChartIcon, Check, AlertCircle, Minus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MarketingTotals, MarketingService } from "@/hooks/useMarketingTiers";
 import {
@@ -87,7 +87,7 @@ const MarketingInvestmentSummary = ({
   }
 
   return (
-    <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
+    <Card className="bg-muted/30 border-border/50 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
       <CardContent className="p-5">
         {/* Total Investment - Centralized */}
         <div className="text-center mb-6">
@@ -135,7 +135,7 @@ const MarketingInvestmentSummary = ({
             </div>
 
             {/* Uaicode Subscription */}
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-accent/5 border-l-4 border-accent/30">
+            <div className="flex items-center justify-between p-2.5 rounded-lg bg-accent/10 border-l-4 border-accent">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[0] }} />
                 <span className="text-xs text-foreground">Uaicode Subscription</span>
@@ -146,7 +146,7 @@ const MarketingInvestmentSummary = ({
             </div>
 
             {/* Paid Media Budget */}
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border-l-4 border-muted-foreground/30">
+            <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/20 border-l-4 border-accent/30">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[1] }} />
                 <span className="text-xs text-foreground">Paid Media Budget*</span>
@@ -161,17 +161,17 @@ const MarketingInvestmentSummary = ({
         {/* Services Included */}
         <div className="pt-5 border-t border-border/30">
           <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm">
-            <Check className="h-4 w-4 text-green-400" />
+            <Check className="h-4 w-4 text-accent" />
             Services Included
           </h3>
           <ul className="space-y-2">
             {selectedServices.map((service) => (
               <li 
                 key={service.service_id} 
-                className="flex items-center justify-between text-xs bg-accent/5 p-2 rounded-lg"
+                className="flex items-center justify-between text-xs bg-accent/10 p-2 rounded-lg border border-accent/10"
               >
                 <div className="flex items-center gap-2">
-                  <Check className="h-3 w-3 text-green-400 flex-shrink-0" />
+                  <Check className="h-3 w-3 text-accent flex-shrink-0" />
                   <span className="text-muted-foreground">{service.service_name}</span>
                 </div>
                 <span className="font-medium text-foreground">
