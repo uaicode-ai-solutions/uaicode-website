@@ -28,6 +28,7 @@ import { parseJsonField } from "@/lib/reportDataUtils";
 import { NextSteps, ExecutionPhase } from "@/types/report";
 import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
+import { getSectionInvestment, getDiscountStrategy } from "@/lib/sectionInvestmentUtils";
 
 
 // Countdown Timer Hook
@@ -117,9 +118,15 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
     return acc + (match ? parseInt(match[1]) : 0);
   }, 0);
 
-  // MVP Price from reportData (same source as InvestmentSection)
-  const mvpPriceCents = reportData?.investment_one_payment_cents ?? 0;
+  // Get section_investment data for pricing and discounts
+  const sectionInvestment = getSectionInvestment(reportData);
+  
+  // MVP Price from section_investment (with fallback to legacy field)
+  const mvpPriceCents = sectionInvestment?.investment_one_payment_cents ?? reportData?.investment_one_payment_cents ?? 0;
   const mvpPrice = mvpPriceCents > 0 ? mvpPriceCents / 100 : 0;
+  
+  // Get discount strategy from section_investment (with calculated fallbacks)
+  const discountStrategy = getDiscountStrategy(sectionInvestment, mvpPriceCents);
   
   // Marketing total from shared context (synced with InvestmentSection selections)
   const marketingMonthlyUaicode = marketingTotals.uaicodeTotal / 100; // cents to dollars
@@ -152,15 +159,25 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   const suggestedPaidMedia = calculateSuggestedPaidMedia(userBudget, marketingTotals.uaicodeTotal);
   const suggestedPaidMediaDollars = suggestedPaidMedia / 100;
   
-  // MVP Development - 10% discount
-  const MVP_DEV_DISCOUNT = 0.10;
-  const mvpDevDiscountedPrice = Math.round(mvpPrice * (1 - MVP_DEV_DISCOUNT));
-  const mvpDevSavings = Math.round(mvpPrice * MVP_DEV_DISCOUNT);
+  // MVP Development - use 30d discount from strategy (fallback 10%)
+  const MVP_DEV_DISCOUNT_PERCENT = discountStrategy.discount_30d_percent;
+  const mvpDevDiscountedPrice = discountStrategy.price_30d_cents > 0 
+    ? discountStrategy.price_30d_cents / 100 
+    : Math.round(mvpPrice * (1 - MVP_DEV_DISCOUNT_PERCENT / 100));
+  const mvpDevSavings = discountStrategy.savings_30d_cents > 0 
+    ? discountStrategy.savings_30d_cents / 100 
+    : Math.round(mvpPrice * MVP_DEV_DISCOUNT_PERCENT / 100);
   
-  // MVP + Marketing - 15% discount on MVP
-  const MVP_MARKETING_DISCOUNT = 0.15;
-  const mvpMarketingDiscountedPrice = Math.round(mvpPrice * (1 - MVP_MARKETING_DISCOUNT));
-  const mvpMarketingSavings = Math.round(mvpPrice * MVP_MARKETING_DISCOUNT);
+  // MVP + Marketing - use bundle discount from strategy (fallback 15%)
+  const MVP_MARKETING_DISCOUNT_PERCENT = discountStrategy.bundle_discount_percent > 0 
+    ? discountStrategy.bundle_discount_percent 
+    : 15;
+  const mvpMarketingDiscountedPrice = discountStrategy.bundle_price_cents > 0 
+    ? discountStrategy.bundle_price_cents / 100 
+    : Math.round(mvpPrice * (1 - MVP_MARKETING_DISCOUNT_PERCENT / 100));
+  const mvpMarketingSavings = discountStrategy.savings_bundle_cents > 0 
+    ? discountStrategy.savings_bundle_cents / 100 
+    : Math.round(mvpPrice * MVP_MARKETING_DISCOUNT_PERCENT / 100);
   
   // Annual marketing contract (12 months)
   const marketingAnnualUaicode = marketingMonthlyUaicode * 12;

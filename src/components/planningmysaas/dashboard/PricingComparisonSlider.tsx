@@ -2,6 +2,7 @@ import { Check, X, Clock, Shield, FileText, Code, Headphones, TrendingDown } fro
 import { Badge } from "@/components/ui/badge";
 import { useReportContext } from "@/contexts/ReportContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getSectionInvestment, getPricingComparison } from "@/lib/sectionInvestmentUtils";
 
 const formatCurrency = (cents: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -23,14 +24,18 @@ const formatCurrencyShort = (cents: number) => {
 const PricingComparisonSlider = () => {
   const { reportData } = useReportContext();
   
-  // Values from database
-  const traditionalPrice = reportData?.investment_one_payment_cents_traditional ?? 0;
-  const uaicodePrice = reportData?.investment_one_payment_cents ?? 0;
-  const savingsPercentage = reportData?.savings_percentage ?? 0;
-  const savingsAmount = reportData?.savings_amount_cents ?? 0;
-  const marketingMonths = reportData?.savings_marketing_months ?? 0;
-  const deliveryTraditional = reportData?.delivery_time_traditional ?? "13-34 weeks";
-  const deliveryUaicode = reportData?.delivery_time_uaicode ?? "6-17 weeks";
+  // Get section_investment data with fallback to legacy fields
+  const sectionInvestment = getSectionInvestment(reportData);
+  const pricingData = getPricingComparison(reportData, sectionInvestment);
+  
+  // Destructure for easier use
+  const traditionalPrice = pricingData.traditionalPrice;
+  const uaicodePrice = pricingData.uaicodePrice;
+  const savingsPercentage = pricingData.savingsPercentage;
+  const savingsAmount = pricingData.savingsAmount;
+  const marketingMonths = pricingData.marketingMonths;
+  const deliveryTraditional = pricingData.deliveryTraditional;
+  const deliveryUaicode = pricingData.deliveryUaicode;
 
   // Features comparison (FIXED texts as per reference image)
   const features = [
