@@ -46,7 +46,7 @@ const PricingTransparency = () => {
           <div className="glass-card p-6 md:p-8 rounded-2xl hover-lift flex flex-col h-full transition-all duration-500 ease-in-out">
             <h3 className="text-2xl font-bold mb-4">Starter MVP</h3>
               <div className="text-2xl md:text-3xl font-bold text-accent mb-2">
-                $8,000 - $12,000
+                $10,000 - $25,000
               </div>
             <p className="text-sm text-muted-foreground mb-6">
               Timeline: 30-45 days
@@ -122,7 +122,7 @@ const PricingTransparency = () => {
             
             <h3 className="text-2xl font-bold mb-4">Growth MVP</h3>
               <div className="text-2xl md:text-3xl font-bold text-accent mb-2">
-                $15,000 - $25,000
+                $25,000 - $60,000
               </div>
             <p className="text-sm text-muted-foreground mb-6">
               Timeline: 45-60 days
@@ -201,7 +201,7 @@ const PricingTransparency = () => {
           <div className="glass-card p-6 md:p-8 rounded-2xl hover-lift flex flex-col h-full transition-all duration-500 ease-in-out">
             <h3 className="text-2xl font-bold mb-4">Enterprise MVP</h3>
               <div className="text-2xl md:text-3xl font-bold text-accent mb-2">
-                $30,000+
+                $60,000 - $160,000
               </div>
             <p className="text-sm text-muted-foreground mb-6">
               Timeline: 60-90 days
