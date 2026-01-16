@@ -580,19 +580,20 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       {/* Aggressive Pricing Cards */}
       <div className="grid md:grid-cols-2 gap-4 pt-4">
         {/* Card 1: MVP Flash Deal (24h - 25% OFF) */}
-        <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/25 via-yellow-600/15 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
-          {/* Animated Glow Effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-yellow-500/10 to-accent/5 animate-pulse" />
-          
+        <div className="relative">
           {/* Badge */}
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
             <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-accent-foreground px-4 py-1 text-xs font-bold shadow-lg animate-pulse">
               <Clock className="h-3 w-3 mr-1" />
               24H FLASH DEAL
             </Badge>
           </div>
-          
-          <CardContent className="relative p-6 pt-8 flex flex-col h-full">
+
+          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/25 via-yellow-600/15 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
+            {/* Animated Glow Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-yellow-500/10 to-accent/5 animate-pulse" />
+
+            <CardContent className="relative p-6 pt-8 flex flex-col h-full">
             {/* Package Name */}
             <div className="flex items-center justify-center gap-2 mb-4">
               <Zap className="h-5 w-5 text-accent" />
@@ -711,22 +712,24 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
               CLAIM 25% DISCOUNT NOW
             </Button>
           </CardContent>
-        </Card>
+          </Card>
+        </div>
 
         {/* Card 2: Complete Launch Bundle (30% OFF) */}
-        <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
-          {/* Shimmer Effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
-          
+        <div className="relative">
           {/* Badge */}
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-            <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-black px-4 py-1 text-xs font-bold shadow-lg">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+            <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-accent-foreground px-4 py-1 text-xs font-bold shadow-lg">
               <Star className="h-3 w-3 mr-1 fill-current" />
               BEST VALUE - 30% OFF
             </Badge>
           </div>
-          
-          <CardContent className="relative p-6 pt-8 flex flex-col h-full">
+
+          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
+            {/* Shimmer Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+
+            <CardContent className="relative p-6 pt-8 flex flex-col h-full">
             {/* Package Name */}
             <div className="flex items-center justify-center gap-2 mb-4">
               <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
@@ -843,7 +846,8 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
               GET MAXIMUM SAVINGS
             </Button>
           </CardContent>
-        </Card>
+          </Card>
+        </div>
       </div>
 
       {/* Marketing Billing Notice */}
