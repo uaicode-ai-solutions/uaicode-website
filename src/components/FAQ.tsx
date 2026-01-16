@@ -44,12 +44,12 @@ const FAQ = () => {
         {
           icon: DollarSign,
           question: "How much does an MVP typically cost?",
-          answer: "Our MVP packages range from $8,000 to $30,000+, depending on complexity, features, and timeline. The Starter MVP ($8,000-$12,000) is perfect for basic concepts, the Growth MVP ($15,000-$25,000) includes advanced features and AI automation, and the Enterprise MVP ($30,000+) offers full-stack solutions with custom AI models. We provide transparent quotes after understanding your specific needs.",
+          answer: "Our MVP packages range from $10,000 to $160,000, depending on complexity, features, and timeline. The Starter MVP ($10,000-$25,000) is perfect for basic concepts, the Growth MVP ($25,000-$60,000) includes advanced features and AI automation, and the Enterprise MVP ($60,000-$160,000) offers full-stack solutions with custom AI models. We provide transparent quotes after understanding your specific needs.",
         },
         {
           icon: Clock,
           question: "How long does it take to build an MVP?",
-          answer: "Our typical MVP development timeline ranges from 4-12 weeks depending on complexity and package tier. Our AI-driven development process significantly accelerates traditional timelines while maintaining high quality.",
+          answer: "Our typical MVP development timeline ranges from 6-18 weeks depending on complexity and package tier. Our AI-driven development process significantly accelerates traditional timelines while maintaining high quality.",
         },
         {
           icon: GitBranch,
@@ -64,7 +64,7 @@ const FAQ = () => {
         {
           icon: Headphones,
           question: "Do you offer post-launch support?",
-          answer: "Yes! All our packages include post-launch support: 30 days for Starter, 60 days for Growth, and 90 days of priority support for Enterprise. This includes bug fixes, performance monitoring, feature enhancements, and technical guidance. We also offer extended maintenance packages and partnership models for ongoing development.",
+          answer: "Yes! All our packages include post-launch support: 45 days for Starter, 90 days for Growth, and 120 days of priority support for Enterprise. This includes bug fixes, performance monitoring, feature enhancements, and technical guidance. We also offer extended maintenance packages and partnership models for ongoing development.",
         },
         {
           icon: Code2,

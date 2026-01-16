@@ -15,7 +15,7 @@ const WhyUaicodeMarketing = () => {
   const differentials = [
     { icon: Megaphone, title: "Full-Stack Execution" },
     { icon: TrendingUp, title: "Data-Driven" },
-    { icon: Zap, title: "Fast Launch (2 weeks)" },
+    { icon: Zap, title: "Fast Launch (3 weeks)" },
     { icon: Award, title: "SaaS Expertise" },
   ];
 

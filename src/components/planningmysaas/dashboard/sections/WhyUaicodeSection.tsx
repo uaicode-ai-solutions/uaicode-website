@@ -32,7 +32,7 @@ const statsData = [
     highlight: false 
   },
   { 
-    value: "12", 
+    value: "10", 
     label: "Avg. Weeks", 
     sublabel: "Time to market", 
     icon: Clock, 
@@ -59,7 +59,7 @@ const differentials = [
   { 
     icon: HeadphonesIcon, 
     title: "Post-Launch Support", 
-    description: "30 days of support included after go-live" 
+    description: "45-120 days of support included after go-live" 
   },
 ];
 
@@ -83,7 +83,7 @@ const testimonials = [
 const guarantees = [
   "Weekly demos for progress tracking",
   "Fixed price for MVP scope",
-  "30 days post-launch support",
+  "45-120 days post-launch support",
   "100% ownership of source code",
   "Complete documentation",
 ];

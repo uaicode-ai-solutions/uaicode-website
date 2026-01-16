@@ -29,8 +29,8 @@ const PricingComparisonSlider = () => {
   const savingsPercentage = reportData?.savings_percentage ?? 0;
   const savingsAmount = reportData?.savings_amount_cents ?? 0;
   const marketingMonths = reportData?.savings_marketing_months ?? 0;
-  const deliveryTraditional = reportData?.delivery_time_traditional ?? "24-36 weeks";
-  const deliveryUaicode = reportData?.delivery_time_uaicode ?? "9-18 weeks";
+  const deliveryTraditional = reportData?.delivery_time_traditional ?? "13-34 weeks";
+  const deliveryUaicode = reportData?.delivery_time_uaicode ?? "6-17 weeks";
 
   // Features comparison (FIXED texts as per reference image)
   const features = [
@@ -49,7 +49,7 @@ const PricingComparisonSlider = () => {
     {
       label: "Post-Launch Support",
       icon: Headphones,
-      uaicode: "30 days included",
+      uaicode: "45-120 days included",
       traditional: "Paid hourly",
     },
     {

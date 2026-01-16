@@ -111,9 +111,9 @@ const ROICalculator = () => {
 
   // Tier pricing configuration
   const tierPricing: Record<string, { name: string; cost: string; min: number; max: number; timeline: string }> = {
-    starter: { name: "Starter MVP", cost: "$8,000 - $12,000", min: 8000, max: 12000, timeline: "30-45 days" },
-    growth: { name: "Growth MVP", cost: "$15,000 - $25,000", min: 15000, max: 25000, timeline: "45-60 days" },
-    enterprise: { name: "Enterprise MVP", cost: "$30,000 - $50,000", min: 30000, max: 50000, timeline: "60-90 days" }
+    starter: { name: "Starter MVP", cost: "$10,000 - $25,000", min: 10000, max: 25000, timeline: "45-60 days" },
+    growth: { name: "Growth MVP", cost: "$25,000 - $60,000", min: 25000, max: 60000, timeline: "60-90 days" },
+    enterprise: { name: "Enterprise MVP", cost: "$60,000 - $160,000", min: 60000, max: 160000, timeline: "90-120 days" }
   };
 
   // MVP Investment Calculations
