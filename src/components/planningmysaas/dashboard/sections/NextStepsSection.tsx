@@ -567,6 +567,285 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         ))}
       </div>
 
+      {/* ========== AGGRESSIVE PRICING SECTION (NEW) ========== */}
+      <div className="flex items-center gap-4 my-8">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
+        <span className="text-sm font-medium text-accent flex items-center gap-2">
+          <Zap className="h-4 w-4" />
+          Limited Time Offers
+        </span>
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
+      </div>
+
+      {/* Aggressive Pricing Cards */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {/* Card 1: MVP Flash Deal (24h - 25% OFF) */}
+        <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-red-500/20 via-orange-500/10 to-card border-red-500/40 hover:border-red-500/60 hover:shadow-lg hover:shadow-red-500/20">
+          {/* Animated Glow Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-orange-500/10 to-red-500/5 animate-pulse" />
+          
+          {/* Badge */}
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+            <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-1 text-xs font-bold shadow-lg animate-pulse">
+              <Clock className="h-3 w-3 mr-1" />
+              24H FLASH DEAL
+            </Badge>
+          </div>
+          
+          <CardContent className="relative p-6 pt-8 flex flex-col h-full">
+            {/* Package Name */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Zap className="h-5 w-5 text-orange-400" />
+              <h3 className="text-lg font-bold text-foreground">MVP Flash Deal</h3>
+            </div>
+            
+            {/* Price Section */}
+            <div className="text-center mb-4">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <p className="text-sm text-muted-foreground line-through">
+                  {formatCurrency(mvpPrice)}
+                </p>
+                <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-xs">
+                  -{discountStrategy.discount_24h_percent}%
+                </Badge>
+              </div>
+              <div className="text-4xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+                {formatCurrency(discountStrategy.price_24h_cents / 100)}
+              </div>
+              <p className="text-xs text-orange-400 mt-1 font-semibold">
+                Today Only - Maximum Discount!
+              </p>
+            </div>
+
+            {/* Savings Highlights */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
+                <p className="text-lg font-bold text-green-400">
+                  {formatCurrency(discountStrategy.savings_24h_cents / 100)}
+                </p>
+                <p className="text-[10px] text-green-400/80">You Save</p>
+              </div>
+              <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 text-center">
+                <p className="text-lg font-bold text-accent">
+                  {discountStrategy.savings_vs_traditional_24h_percent}%
+                </p>
+                <p className="text-[10px] text-accent/80">vs Traditional</p>
+              </div>
+            </div>
+
+            {/* Features */}
+            <ul className="space-y-2 mb-4 flex-1">
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80">Complete MVP development</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80">25% OFF - Today only!</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80">12 months hosting included</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80">Priority onboarding slot</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80">Full source code ownership</span>
+              </li>
+            </ul>
+
+            {/* Bonuses */}
+            <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20 mb-4">
+              <p className="text-xs font-semibold text-orange-400 mb-2 flex items-center gap-1">
+                <Sparkles className="h-3 w-3" />
+                Exclusive 24H Bonuses:
+              </p>
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-foreground/70">Priority support upgrade</span>
+                  <span className="text-orange-400 font-semibold">$2,000 value</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-foreground/70">Fast-track onboarding</span>
+                  <span className="text-orange-400 font-semibold">$1,500 value</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Prominent Timer */}
+            <div className="p-3 rounded-lg bg-red-500/20 border border-red-500/30 mb-4">
+              <div className="flex items-center justify-center gap-2 text-red-400 mb-2">
+                <Clock className="h-4 w-4 animate-pulse" />
+                <span className="text-sm font-bold">HURRY! Offer expires in:</span>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <div className="bg-red-500/30 px-3 py-2 rounded-lg">
+                  <span className="text-2xl font-bold text-red-400">{hours.toString().padStart(2, '0')}</span>
+                  <span className="text-[10px] text-red-400/70 block">HOURS</span>
+                </div>
+                <span className="text-2xl font-bold text-red-400">:</span>
+                <div className="bg-red-500/30 px-3 py-2 rounded-lg">
+                  <span className="text-2xl font-bold text-red-400">{minutes.toString().padStart(2, '0')}</span>
+                  <span className="text-[10px] text-red-400/70 block">MINS</span>
+                </div>
+                <span className="text-2xl font-bold text-red-400">:</span>
+                <div className="bg-red-500/30 px-3 py-2 rounded-lg">
+                  <span className="text-2xl font-bold text-red-400">{seconds.toString().padStart(2, '0')}</span>
+                  <span className="text-[10px] text-red-400/70 block">SECS</span>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <Button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onScheduleCall?.();
+              }}
+              className="w-full gap-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold text-base py-6 shadow-lg shadow-red-500/30 animate-pulse"
+            >
+              <Zap className="h-5 w-5" />
+              CLAIM 25% DISCOUNT NOW
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Card 2: Complete Launch Bundle (30% OFF) */}
+        <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
+          {/* Shimmer Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+          
+          {/* Badge */}
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+            <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-black px-4 py-1 text-xs font-bold shadow-lg">
+              <Star className="h-3 w-3 mr-1 fill-current" />
+              BEST VALUE - 30% OFF
+            </Badge>
+          </div>
+          
+          <CardContent className="relative p-6 pt-8 flex flex-col h-full">
+            {/* Package Name */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+              <h3 className="text-lg font-bold text-foreground">Complete Launch Bundle</h3>
+            </div>
+            
+            {/* Price Section */}
+            <div className="text-center mb-4">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <p className="text-sm text-muted-foreground line-through">
+                  {formatCurrency(mvpPrice + marketingAnnualUaicode)}
+                </p>
+                <Badge className="bg-accent/20 text-accent border-accent/30 text-xs">
+                  -{discountStrategy.bundle_discount_percent}% on MVP
+                </Badge>
+              </div>
+              <div className="text-4xl font-bold bg-gradient-to-r from-accent to-yellow-400 bg-clip-text text-transparent">
+                {formatCurrency((discountStrategy.bundle_price_cents / 100) + marketingAnnualUaicode)}
+              </div>
+              <p className="text-xs text-accent mt-1 font-semibold">
+                MVP + Full Marketing Team Included
+              </p>
+            </div>
+
+            {/* Savings Highlights */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
+                <p className="text-lg font-bold text-green-400">
+                  {formatCurrency(discountStrategy.savings_bundle_cents / 100)}
+                </p>
+                <p className="text-[10px] text-green-400/80">MVP Savings</p>
+              </div>
+              <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-center">
+                <p className="text-lg font-bold text-yellow-400">
+                  30%
+                </p>
+                <p className="text-[10px] text-yellow-400/80">Max Discount</p>
+              </div>
+            </div>
+
+            {/* Features */}
+            <ul className="space-y-2 mb-4 flex-1">
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80">30% OFF on MVP - Maximum discount!</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80">Save {formatCurrency(discountStrategy.savings_bundle_cents / 100)} on development</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80">Full marketing team included</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80">Guaranteed launch in 90 days</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80">VIP priority support</span>
+              </li>
+            </ul>
+
+            {/* Exclusive Bonuses */}
+            <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mb-4">
+              <p className="text-xs font-semibold text-yellow-400 mb-2 flex items-center gap-1">
+                <Sparkles className="h-3 w-3" />
+                Exclusive Bundle Bonuses:
+              </p>
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-foreground/70">3 months extra hosting</span>
+                  <span className="text-yellow-400 font-semibold">$2,400 value</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-foreground/70">60 days extended support</span>
+                  <span className="text-yellow-400 font-semibold">$5,000 value</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-foreground/70">Marketing strategy session</span>
+                  <span className="text-yellow-400 font-semibold">$1,500 value</span>
+                </div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-yellow-500/20 flex justify-between">
+                <span className="text-xs text-yellow-400 font-bold">Total Bonus Value:</span>
+                <span className="text-xs text-yellow-400 font-bold">$8,900</span>
+              </div>
+            </div>
+
+            {/* Social Proof */}
+            <div className="flex items-center justify-center gap-2 mb-4 p-2 rounded-lg bg-accent/5 border border-accent/10">
+              <div className="flex -space-x-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="w-6 h-6 rounded-full bg-accent/30 border-2 border-card flex items-center justify-center">
+                    <span className="text-[8px] text-accent">👤</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                <span className="text-accent font-semibold">127 founders</span> chose this bundle last month
+              </p>
+            </div>
+
+            {/* CTA */}
+            <Button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onScheduleCall?.();
+              }}
+              className="w-full gap-2 bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-600 text-black font-bold text-base py-6 shadow-lg shadow-accent/30"
+            >
+              <Star className="h-5 w-5 fill-current" />
+              GET MAXIMUM SAVINGS
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Marketing Billing Notice */}
       <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/30 border border-border/50">
         <div className="flex items-center gap-2">
