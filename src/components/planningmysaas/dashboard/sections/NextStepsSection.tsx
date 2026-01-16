@@ -28,7 +28,6 @@ import { parseJsonField } from "@/lib/reportDataUtils";
 import { NextSteps, ExecutionPhase } from "@/types/report";
 import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
-import KyleChatDialog from "../KyleChatDialog";
 import { getSectionInvestment, getDiscountStrategy } from "@/lib/sectionInvestmentUtils";
 
 
@@ -110,7 +109,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   
   const [selectedPackage, setSelectedPackage] = useState<'mvp-only' | 'mvp-marketing'>('mvp-marketing');
   const [kyleDialogOpen, setKyleDialogOpen] = useState(false);
-  const [kyleChatOpen, setKyleChatOpen] = useState(false);
   const [selectedConsultPackage, setSelectedConsultPackage] = useState<string>('');
   const { hours, minutes, seconds } = useCountdownTimer();
 
@@ -714,17 +712,24 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
               CLAIM 25% DISCOUNT NOW
             </Button>
             
-            {/* Chat with Kyle */}
+            {/* Talk to Kyle */}
             <Button 
-              variant="ghost"
+              variant="outline"
               onClick={(e) => {
                 e.stopPropagation();
-                setKyleChatOpen(true);
+                setSelectedConsultPackage('MVP Flash Deal');
+                setKyleDialogOpen(true);
               }}
-              className="w-full gap-2 text-muted-foreground hover:text-accent hover:bg-accent/10 text-sm py-2 mt-2"
+              className="w-full gap-2 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground mt-2"
             >
-              <MessageCircle className="h-4 w-4" />
-              Have questions? Chat with Kyle
+              <div className="relative">
+                <Phone className="h-4 w-4 text-accent" />
+                <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+              </div>
+              Doubts? Talk to Kyle
             </Button>
           </CardContent>
           </Card>
@@ -861,17 +866,24 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
               GET MAXIMUM SAVINGS
             </Button>
             
-            {/* Chat with Kyle */}
+            {/* Talk to Kyle */}
             <Button 
-              variant="ghost"
+              variant="outline"
               onClick={(e) => {
                 e.stopPropagation();
-                setKyleChatOpen(true);
+                setSelectedConsultPackage('Complete Launch Bundle');
+                setKyleDialogOpen(true);
               }}
-              className="w-full gap-2 text-muted-foreground hover:text-accent hover:bg-accent/10 text-sm py-2 mt-2"
+              className="w-full gap-2 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground mt-2"
             >
-              <MessageCircle className="h-4 w-4" />
-              Have questions? Chat with Kyle
+              <div className="relative">
+                <Phone className="h-4 w-4 text-accent" />
+                <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+              </div>
+              Doubts? Talk to Kyle
             </Button>
           </CardContent>
           </Card>
@@ -900,12 +912,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         open={kyleDialogOpen} 
         onOpenChange={setKyleDialogOpen}
         packageName={selectedConsultPackage}
-      />
-      
-      {/* Kyle Chat Dialog */}
-      <KyleChatDialog 
-        open={kyleChatOpen} 
-        onOpenChange={setKyleChatOpen}
       />
     </section>
   );
