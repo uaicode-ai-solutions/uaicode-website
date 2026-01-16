@@ -219,6 +219,7 @@ export type Database = {
           savings_amount_cents: number | null
           savings_marketing_months: number | null
           savings_percentage: number | null
+          section_investment: Json | null
           status: string
           total_market: string | null
           updated_at: string
@@ -247,6 +248,7 @@ export type Database = {
           savings_amount_cents?: number | null
           savings_marketing_months?: number | null
           savings_percentage?: number | null
+          section_investment?: Json | null
           status?: string
           total_market?: string | null
           updated_at?: string
@@ -275,6 +277,7 @@ export type Database = {
           savings_amount_cents?: number | null
           savings_marketing_months?: number | null
           savings_percentage?: number | null
+          section_investment?: Json | null
           status?: string
           total_market?: string | null
           updated_at?: string
