@@ -65,8 +65,8 @@ const ServiceCard = ({
     <Card
       className={cn(
         "group relative transition-all duration-300",
-        isLocked 
-          ? "cursor-not-allowed bg-muted/30 border-accent shadow-lg shadow-accent/20" 
+    isLocked 
+      ? "cursor-not-allowed bg-accent/10 border-accent shadow-lg shadow-accent/20"
           : "cursor-pointer hover:scale-[1.02]",
         isSelected && !isLocked
           ? "bg-accent/10 border-accent shadow-lg shadow-accent/20"
