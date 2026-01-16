@@ -99,6 +99,32 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Helper para parsear SSE response do n8n MCP
+  async function parseSSEResponse(response: Response): Promise<any> {
+    const text = await response.text();
+    console.log(`📜 Raw SSE response: ${text.substring(0, 500)}`);
+    
+    // SSE format: "event: message\ndata: {...}\n\n"
+    const lines = text.split('\n');
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const jsonStr = line.substring(6); // Remove "data: " prefix
+        try {
+          return JSON.parse(jsonStr);
+        } catch (e) {
+          console.log(`⚠️ Failed to parse line as JSON: ${jsonStr}`);
+        }
+      }
+    }
+    
+    // Se não encontrou data:, tenta parsear como JSON direto
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      throw new Error(`Could not parse SSE response: ${text.substring(0, 200)}`);
+    }
+  }
+
   try {
     // === TESTE MCP SERVER ===
     const MCP_URL = "https://uaicode-n8n.ax5vln.easypanel.host/mcp/pms_report";
@@ -126,7 +152,7 @@ serve(async (req) => {
         })
       });
       
-      const initData = await initResponse.json();
+      const initData = await parseSSEResponse(initResponse);
       console.log(`✅ Initialize response status: ${initResponse.status}`);
       console.log(`📋 Initialize data: ${JSON.stringify(initData, null, 2)}`);
 
@@ -161,7 +187,7 @@ serve(async (req) => {
         })
       });
       
-      const toolsData = await toolsResponse.json();
+      const toolsData = await parseSSEResponse(toolsResponse);
       console.log(`✅ Tools list status: ${toolsResponse.status}`);
       console.log(`📋 Available tools: ${JSON.stringify(toolsData, null, 2)}`);
       
