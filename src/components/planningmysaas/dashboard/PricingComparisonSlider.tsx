@@ -4,6 +4,23 @@ import { useReportContext } from "@/contexts/ReportContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getSectionInvestment, getPricingComparison } from "@/lib/sectionInvestmentUtils";
 
+// Support days mapping by MVP tier (from tb_pms_mvp_tier)
+const SUPPORT_DAYS_BY_TIER: Record<string, { min: number; max: number }> = {
+  starter: { min: 45, max: 60 },
+  growth: { min: 60, max: 90 },
+  enterprise: { min: 90, max: 120 },
+};
+
+const getPostLaunchSupport = (mvpTier: string | undefined): string => {
+  const tier = mvpTier?.toLowerCase() || 'starter';
+  const days = SUPPORT_DAYS_BY_TIER[tier] || SUPPORT_DAYS_BY_TIER.starter;
+  
+  if (days.min === days.max) {
+    return `${days.min} days included`;
+  }
+  return `${days.min}-${days.max} days included`;
+};
+
 const formatCurrency = (cents: number) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -37,7 +54,11 @@ const PricingComparisonSlider = () => {
   const deliveryTraditional = pricingData.deliveryTraditional;
   const deliveryUaicode = pricingData.deliveryUaicode;
 
-  // Features comparison (FIXED texts as per reference image)
+  // Get MVP tier for dynamic support days
+  const mvpTier = sectionInvestment?.mvp_tier;
+  const postLaunchSupport = getPostLaunchSupport(mvpTier);
+
+  // Features comparison
   const features = [
     {
       label: "Delivery Time",
@@ -54,7 +75,7 @@ const PricingComparisonSlider = () => {
     {
       label: "Post-Launch Support",
       icon: Headphones,
-      uaicode: "45-120 days included",
+      uaicode: postLaunchSupport,
       traditional: "Paid hourly",
     },
     {
