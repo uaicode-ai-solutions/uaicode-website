@@ -1,4 +1,4 @@
-import { Search, Code, Users, Rocket, CheckCircle2, Cpu, Zap, Clock, ArrowRight, Server, Cloud, Plug } from "lucide-react";
+import { Search, Code, Users, Rocket, CheckCircle2, Cpu, Zap, Clock, ArrowRight, Server, Brain, Plug } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -98,9 +98,9 @@ const TECH_STACK: TechStackConfig[] = [
     items: ["Node.js", "PostgreSQL", "Supabase"]
   },
   {
-    category: "Infra",
-    icon: Cloud,
-    items: ["Vercel", "AWS", "Docker"]
+    category: "AI",
+    icon: Brain,
+    items: ["GPT", "Claude", "Gemini"]
   },
   {
     category: "Integrations",
@@ -368,9 +368,9 @@ const ExecutionPlanSection = () => {
               <Cpu className="h-4 w-4 text-accent" />
             </div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-medium text-foreground">Technology Stack</h3>
+              <h3 className="text-sm font-medium text-foreground">Suggested Technology Stack</h3>
               <InfoTooltip side="right" size="sm">
-                Modern, scalable technologies selected specifically for your project's needs.
+                Recommended modern, scalable technologies tailored for your project's specific needs.
               </InfoTooltip>
             </div>
           </div>
