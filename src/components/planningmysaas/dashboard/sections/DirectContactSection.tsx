@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Phone, MessageCircle, MessageSquare } from "lucide-react";
+import { Mail, Phone, MessageCircle, MessageSquare, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import EmailContactDialog from "@/components/chat/EmailContactDialog";
 import KyleConsultantDialog from "@/components/planningmysaas/dashboard/KyleConsultantDialog";
@@ -28,18 +28,28 @@ const DirectContactSection = () => {
 
       {/* Contact Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Email Card */}
+        {/* Email Kyle Card */}
         <Card 
           onClick={() => setShowEmailDialog(true)}
-          className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg group"
+          className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg hover:shadow-accent/10 group border-accent/20 bg-gradient-to-br from-background to-accent/5"
         >
           <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors">
-              <Mail className="h-6 w-6 text-accent" />
+            <div className="relative">
+              <KyleAvatar size="sm" isActive={true} />
+              {/* Mail icon badge */}
+              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-accent shadow-lg border-2 border-background">
+                <Mail className="h-3 w-3 text-accent-foreground" />
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Email Us</p>
-              <p className="font-semibold text-foreground">sales@uaicode.ai</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-foreground">Email Kyle</p>
+                <span className="flex items-center gap-1 text-xs text-accent font-medium">
+                  <Clock className="h-3 w-3" />
+                  24h reply
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">Get a detailed response</p>
             </div>
           </CardContent>
         </Card>
