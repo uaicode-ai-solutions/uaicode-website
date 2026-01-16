@@ -578,7 +578,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       </div>
 
       {/* Aggressive Pricing Cards */}
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-4 pt-4">
         {/* Card 1: MVP Flash Deal (24h - 25% OFF) */}
         <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/25 via-yellow-600/15 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
           {/* Animated Glow Effect */}
