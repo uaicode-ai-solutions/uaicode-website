@@ -861,9 +861,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
-                  Guaranteed launch in 90 days
-                  <InfoTooltip term="Launch Guarantee">
-                    Written commitment to launch within 90 days or your next month is free. Includes weekly progress reports.
+                  90-day launch roadmap
+                  <InfoTooltip term="Launch Roadmap">
+                    Structured 90-day development plan with clear milestones. Weekly progress reports keep you informed every step of the way.
                   </InfoTooltip>
                 </span>
               </li>
