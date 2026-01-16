@@ -3,15 +3,115 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
-import { ExecutionPhase, TechStackCategory } from "@/types/report";
+import { getSectionInvestment } from "@/lib/sectionInvestmentUtils";
 
-const iconMap: Record<string, React.ElementType> = {
-  Search,
-  Code,
-  Users,
-  Rocket,
-};
+// ==========================================
+// Fixed Execution Phases Data
+// ==========================================
+
+interface ExecutionPhaseConfig {
+  phase: number;
+  name: string;
+  icon: React.ElementType;
+  description: string;
+  percentageOfProject: number;
+  showPlanBadge?: boolean;
+  deliverables: string[];
+}
+
+const EXECUTION_PHASES: ExecutionPhaseConfig[] = [
+  {
+    phase: 1,
+    name: "Discovery",
+    icon: Search,
+    description: "Research, planning and architecture",
+    percentageOfProject: 0.15,
+    deliverables: [
+      "Complete PRD",
+      "Wireframes",
+      "Architecture design",
+      "Project timeline"
+    ]
+  },
+  {
+    phase: 2,
+    name: "MVP Build",
+    icon: Code,
+    description: "AI-accelerated development",
+    percentageOfProject: 0.50,
+    showPlanBadge: true,
+    deliverables: [
+      "Authentication & users",
+      "Core features",
+      "Database & API",
+      "Integrations",
+      "Admin panel"
+    ]
+  },
+  {
+    phase: 3,
+    name: "Beta",
+    icon: Users,
+    description: "Testing and iteration",
+    percentageOfProject: 0.25,
+    deliverables: [
+      "Beta users onboarding",
+      "Feedback collection",
+      "Bug fixes",
+      "Performance optimization"
+    ]
+  },
+  {
+    phase: 4,
+    name: "Launch",
+    icon: Rocket,
+    description: "Go-to-market execution",
+    percentageOfProject: 0.10,
+    deliverables: [
+      "Production deploy",
+      "Marketing assets",
+      "Support setup",
+      "Monitoring & analytics"
+    ]
+  }
+];
+
+// ==========================================
+// Fixed Technology Stack Data
+// ==========================================
+
+interface TechStackConfig {
+  category: string;
+  icon: React.ElementType;
+  items: string[];
+}
+
+const TECH_STACK: TechStackConfig[] = [
+  {
+    category: "Frontend",
+    icon: Code,
+    items: ["React 18", "TypeScript", "TailwindCSS"]
+  },
+  {
+    category: "Backend",
+    icon: Server,
+    items: ["Node.js", "PostgreSQL", "Supabase"]
+  },
+  {
+    category: "Infra",
+    icon: Cloud,
+    items: ["Vercel", "AWS", "Docker"]
+  },
+  {
+    category: "Integrations",
+    icon: Plug,
+    items: ["Stripe", "Delivery API", "SendGrid"]
+  }
+];
+
+// ==========================================
+// Plan Labels & Colors
+// ==========================================
 
 const planLabels: Record<string, string> = {
   starter: "Starter Plan",
@@ -25,56 +125,46 @@ const planColors: Record<string, string> = {
   enterprise: "bg-purple-500/20 text-purple-400 border-purple-500/30",
 };
 
-// Tech stack category icons
-const categoryIcons: Record<string, React.ElementType> = {
-  Frontend: Code,
-  Backend: Server,
-  Infra: Cloud,
-  Integrations: Plug,
+// ==========================================
+// Helper Functions
+// ==========================================
+
+/**
+ * Calculate weeks for a phase based on total project weeks and phase percentage
+ */
+const calculatePhaseWeeks = (
+  totalMinWeeks: number,
+  totalMaxWeeks: number,
+  percentage: number
+): string => {
+  const minWeeks = Math.max(1, Math.round(totalMinWeeks * percentage));
+  const maxWeeks = Math.max(minWeeks, Math.round(totalMaxWeeks * percentage));
+  
+  if (minWeeks === maxWeeks) {
+    return `${minWeeks} week${minWeeks > 1 ? 's' : ''}`;
+  }
+  return `${minWeeks}-${maxWeeks} weeks`;
 };
 
-const ExecutionPlanSection = () => {
-  const { report } = useReportContext();
-  
-  // Parse execution data from report
-  const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
-  const techStack = parseJsonField<TechStackCategory[]>(report?.tech_stack, []);
-  const recommendedPlan = (report?.selected_tier as "starter" | "growth" | "enterprise") || "growth";
+// ==========================================
+// Component
+// ==========================================
 
-  // Calculate total time based on recommended plan
-  const getTotalTime = () => {
-    let minWeeks = 0;
-    let maxWeeks = 0;
-    
-    timeline.forEach(phase => {
-      const phaseData = phase as any;
-      const duration = phaseData.planDurations?.[recommendedPlan] || phase.duration || "0";
-      const match = duration.match(/(\d+)-?(\d+)?/);
-      if (match) {
-        minWeeks += parseInt(match[1]);
-        maxWeeks += parseInt(match[2] || match[1]);
-      }
-    });
-    
-    return minWeeks > 0 ? `${minWeeks}-${maxWeeks} weeks` : "TBD";
-  };
+const ExecutionPlanSection = () => {
+  const { reportData } = useReportContext();
   
-  // Early return if no data
-  if (timeline.length === 0 && techStack.length === 0) {
-    return (
-      <section id="execution-plan" className="space-y-6 animate-fade-in">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-accent/10">
-            <Rocket className="h-5 w-5 text-accent" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">The Plan</h2>
-            <p className="text-sm text-muted-foreground">Execution plan data not available</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  // Get section_investment data for delivery weeks
+  const sectionInvestment = getSectionInvestment(reportData);
+  
+  // Fallback delivery weeks based on typical Growth tier (9-13 weeks)
+  const totalMinWeeks = sectionInvestment?.delivery_weeks_uaicode_min ?? 9;
+  const totalMaxWeeks = sectionInvestment?.delivery_weeks_uaicode_max ?? 13;
+  const mvpTier = (sectionInvestment?.mvp_tier?.toLowerCase() as "starter" | "growth" | "enterprise") ?? "growth";
+  
+  // Total time display
+  const totalTimeDisplay = totalMinWeeks === totalMaxWeeks 
+    ? `${totalMinWeeks} weeks` 
+    : `${totalMinWeeks}-${totalMaxWeeks} weeks`;
 
   return (
     <section id="execution-plan" className="space-y-6 animate-fade-in">
@@ -116,14 +206,14 @@ const ExecutionPlanSection = () => {
 
           {/* Desktop Timeline - Horizontal Cards */}
           <div className="hidden lg:block relative">
-
-            {/* Phases Grid */}
             <div className="grid grid-cols-4 gap-4 relative z-10">
-              {timeline.map((phase, index) => {
-                const IconComponent = iconMap[phase.icon] || Code;
-                const phaseData = phase as any;
-                const duration = phaseData.planDurations?.[recommendedPlan] || phase.duration;
-                const isCurrentPlan = phaseData.planDurations && recommendedPlan;
+              {EXECUTION_PHASES.map((phase, index) => {
+                const IconComponent = phase.icon;
+                const phaseDuration = calculatePhaseWeeks(
+                  totalMinWeeks,
+                  totalMaxWeeks,
+                  phase.percentageOfProject
+                );
                 
                 return (
                   <div
@@ -147,26 +237,26 @@ const ExecutionPlanSection = () => {
                       <div className="space-y-2 mb-4">
                         <h4 className="text-sm font-medium text-foreground">{phase.name}</h4>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-semibold text-accent">{duration}</span>
-                          {isCurrentPlan && (
-                            <Badge className={`text-[10px] px-1.5 py-0 ${planColors[recommendedPlan]}`}>
-                              {planLabels[recommendedPlan]}
+                          <span className="text-sm font-semibold text-accent">{phaseDuration}</span>
+                          {phase.showPlanBadge && (
+                            <Badge className={`text-[10px] px-1.5 py-0 ${planColors[mvpTier]}`}>
+                              {planLabels[mvpTier]}
                             </Badge>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground">{phase.description}</p>
                       </div>
 
-                      {/* Deliverables - Show ALL */}
+                      {/* Deliverables */}
                       <div className="space-y-1.5 pt-3 border-t border-border/30">
-                        {(phase.deliverables || []).map((item, idx) => (
+                        {phase.deliverables.map((item, idx) => (
                           <div 
                             key={idx} 
                             className="flex items-center gap-2 text-xs group/item"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
                             <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
-                              {typeof item === 'string' ? item : String(item)}
+                              {item}
                             </span>
                           </div>
                         ))}
@@ -174,7 +264,7 @@ const ExecutionPlanSection = () => {
                     </div>
 
                     {/* Arrow between cards */}
-                    {index < timeline.length - 1 && (
+                    {index < EXECUTION_PHASES.length - 1 && (
                       <div className="hidden xl:flex absolute -right-2 top-14 z-20">
                         <ArrowRight className="h-4 w-4 text-accent/50" />
                       </div>
@@ -187,11 +277,13 @@ const ExecutionPlanSection = () => {
 
           {/* Mobile Timeline - Vertical */}
           <div className="lg:hidden space-y-4">
-            {timeline.map((phase, index) => {
-              const IconComponent = iconMap[phase.icon] || Code;
-              const phaseData = phase as any;
-              const duration = phaseData.planDurations?.[recommendedPlan] || phase.duration;
-              const isCurrentPlan = phaseData.planDurations && recommendedPlan;
+            {EXECUTION_PHASES.map((phase, index) => {
+              const IconComponent = phase.icon;
+              const phaseDuration = calculatePhaseWeeks(
+                totalMinWeeks,
+                totalMaxWeeks,
+                phase.percentageOfProject
+              );
               
               return (
                 <div
@@ -200,7 +292,7 @@ const ExecutionPlanSection = () => {
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Vertical Line */}
-                  {index < timeline.length - 1 && (
+                  {index < EXECUTION_PHASES.length - 1 && (
                     <div className="absolute left-[11px] top-10 bottom-0 w-0.5 bg-gradient-to-b from-accent/40 to-accent/10" />
                   )}
                   
@@ -217,24 +309,22 @@ const ExecutionPlanSection = () => {
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <span className="text-sm font-semibold text-accent">{duration}</span>
-                      {isCurrentPlan && (
-                        <Badge className={`text-[10px] px-1.5 py-0 ${planColors[recommendedPlan]}`}>
-                          {planLabels[recommendedPlan]}
+                      <span className="text-sm font-semibold text-accent">{phaseDuration}</span>
+                      {phase.showPlanBadge && (
+                        <Badge className={`text-[10px] px-1.5 py-0 ${planColors[mvpTier]}`}>
+                          {planLabels[mvpTier]}
                         </Badge>
                       )}
                     </div>
                     
                     <p className="text-xs text-muted-foreground mb-3">{phase.description}</p>
 
-                    {/* Deliverables - Show ALL */}
+                    {/* Deliverables */}
                     <div className="space-y-1 pt-2 border-t border-border/30">
-                      {(phase.deliverables || []).map((item, idx) => (
+                      {phase.deliverables.map((item, idx) => (
                         <div key={idx} className="flex items-center gap-1.5 text-xs">
                           <CheckCircle2 className="h-3 w-3 text-green-400 flex-shrink-0" />
-                          <span className="text-muted-foreground">
-                            {typeof item === 'string' ? item : String(item)}
-                          </span>
+                          <span className="text-muted-foreground">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -250,7 +340,7 @@ const ExecutionPlanSection = () => {
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-accent" />
                 <span className="text-muted-foreground">Total estimated time:</span>
-                <span className="font-bold text-foreground text-lg">{getTotalTime()}</span>
+                <span className="font-bold text-foreground text-lg">{totalTimeDisplay}</span>
               </div>
               <Badge variant="outline" className="border-green-500/30 text-green-400 gap-1.5">
                 <Zap className="h-3 w-3" />
@@ -277,39 +367,39 @@ const ExecutionPlanSection = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {techStack.map((stack, index) => (
-              <div 
-                key={index} 
-                className="group relative p-4 rounded-xl bg-gradient-to-b from-accent/10 to-accent/5 border border-accent/20 transition-all duration-300 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-0.5"
-              >
-                {/* Decorative corner accent */}
-                <div className="absolute top-0 right-0 w-6 h-6 bg-accent/15 rounded-bl-xl rounded-tr-xl" />
-                
-                {/* Category with icon */}
-                <div className="flex items-center gap-2 mb-3">
-                  {(() => {
-                    const IconComponent = categoryIcons[stack.category] || Code;
-                    return <IconComponent className="w-3.5 h-3.5 text-accent" />;
-                  })()}
-                  <h4 className="text-xs font-semibold text-accent uppercase tracking-wide">
-                    {stack.category}
-                  </h4>
+            {TECH_STACK.map((stack, index) => {
+              const IconComponent = stack.icon;
+              return (
+                <div 
+                  key={index} 
+                  className="group relative p-4 rounded-xl bg-gradient-to-b from-accent/10 to-accent/5 border border-accent/20 transition-all duration-300 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-0.5"
+                >
+                  {/* Decorative corner accent */}
+                  <div className="absolute top-0 right-0 w-6 h-6 bg-accent/15 rounded-bl-xl rounded-tr-xl" />
+                  
+                  {/* Category with icon */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <IconComponent className="w-3.5 h-3.5 text-accent" />
+                    <h4 className="text-xs font-semibold text-accent uppercase tracking-wide">
+                      {stack.category}
+                    </h4>
+                  </div>
+                  
+                  {/* Tech badges */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {stack.items.map((tech, idx) => (
+                      <Badge 
+                        key={idx} 
+                        variant="outline" 
+                        className="text-[10px] bg-background/80 border-border/50 text-foreground/80 px-2 py-0.5 hover:border-accent/40 hover:text-accent transition-colors"
+                      >
+                        {tech}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-                
-                {/* Tech badges */}
-                <div className="flex flex-wrap gap-1.5">
-                  {(stack.items || []).map((tech, idx) => (
-                    <Badge 
-                      key={idx} 
-                      variant="outline" 
-                      className="text-[10px] bg-background/80 border-border/50 text-foreground/80 px-2 py-0.5 hover:border-accent/40 hover:text-accent transition-colors"
-                    >
-                      {typeof tech === 'string' ? tech : String(tech)}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <p className="text-xs text-muted-foreground mt-4 italic">
