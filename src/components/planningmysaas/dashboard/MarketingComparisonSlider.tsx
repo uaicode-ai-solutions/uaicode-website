@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Check, X, DollarSign, Target, Palette, Sparkles, FileText, TrendingDown } from "lucide-react";
+import { Check, Minus, DollarSign, Target, Palette, Sparkles, FileText, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -147,10 +147,10 @@ const MarketingComparisonSlider = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <TrendingDown className="h-4 w-4 text-green-400" />
+          <TrendingDown className="h-4 w-4 text-accent" />
           <h4 className="font-medium text-foreground text-sm">Marketing Cost Comparison</h4>
         </div>
-        <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-400 text-xs">
+        <Badge variant="outline" className="bg-accent/10 border-accent/20 text-accent text-xs">
           Save {savingsPercentMin}-{savingsPercentMax}%
         </Badge>
       </div>
@@ -161,16 +161,16 @@ const MarketingComparisonSlider = ({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Traditional Agency</span>
-            <span className="font-medium text-red-400">
+            <span className="font-medium text-muted-foreground">
               {formatCurrencyK(traditionalMin)} - {formatCurrencyK(traditionalMax)}/mo
             </span>
           </div>
-          <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-border/30">
+          <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-accent/20">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500/40 to-red-400/30 rounded-lg transition-all duration-1000 ease-out flex items-center justify-end pr-3"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent/30 to-accent/15 rounded-lg transition-all duration-1000 ease-out flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? '100%' : '0%' }}
             >
-              <span className="text-xs font-medium text-red-300">~{formatCurrencyK(animatedTraditional)}</span>
+              <span className="text-xs font-medium text-muted-foreground">~{formatCurrencyK(animatedTraditional)}</span>
             </div>
           </div>
         </div>
@@ -183,7 +183,7 @@ const MarketingComparisonSlider = ({
           </div>
           <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-accent/30">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent/60 to-accent/40 rounded-lg transition-all duration-1000 ease-out delay-300 flex items-center justify-end pr-3"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent to-accent/70 rounded-lg transition-all duration-1000 ease-out delay-300 flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? `${Math.min(uaicodeWidth, 100)}%` : '0%' }}
             >
               <span className="text-xs font-medium text-accent-foreground">{formatCurrencyK(uaicodeTotal)}</span>
@@ -196,7 +196,7 @@ const MarketingComparisonSlider = ({
       <div className="space-y-2 animate-fade-in">
         <div className="grid grid-cols-3 gap-2 text-xs font-medium text-muted-foreground pb-2 border-b border-border/30">
           <span>Feature</span>
-          <span className="text-center text-red-400/70">Traditional</span>
+          <span className="text-center text-muted-foreground/70">Traditional</span>
           <span className="text-center text-accent">Uaicode</span>
         </div>
         
@@ -214,12 +214,12 @@ const MarketingComparisonSlider = ({
                 <span className="text-xs text-foreground">{feature.label}</span>
               </div>
               <div className="flex items-center justify-center gap-1">
-                <X className="h-3 w-3 text-red-400/70" />
-                <span className="text-xs text-red-400/70">{feature.traditional}</span>
+                <Minus className="h-3 w-3 text-muted-foreground/50" />
+                <span className="text-xs text-muted-foreground/70">{feature.traditional}</span>
               </div>
               <div className="flex items-center justify-center gap-1">
-                <Check className="h-3 w-3 text-green-400" />
-                <span className="text-xs text-green-400">{feature.uaicode}</span>
+                <Check className="h-3 w-3 text-accent" />
+                <span className="text-xs text-accent">{feature.uaicode}</span>
               </div>
             </div>
           );
@@ -227,12 +227,12 @@ const MarketingComparisonSlider = ({
       </div>
 
       {/* Savings Callout */}
-      <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 animate-fade-in">
+      <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 animate-fade-in">
         <div className="flex items-center gap-2 mb-1">
-          <div className="p-1 rounded-full bg-green-500/20">
-            <Check className="h-3.5 w-3.5 text-green-400" />
+          <div className="p-1 rounded-full bg-accent/20">
+            <Check className="h-3.5 w-3.5 text-accent" />
           </div>
-          <span className="font-bold text-green-400 text-sm md:text-lg">
+          <span className="font-bold text-accent text-sm md:text-lg">
             You Save: {formatCurrencyK(annualSavingsMin)} - {formatCurrencyK(annualSavingsMax)}/year
           </span>
         </div>
