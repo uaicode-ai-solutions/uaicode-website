@@ -96,18 +96,12 @@ export type Database = {
           max_price_cents: number
           min_days: number
           min_price_cents: number
-          price_per_advanced_cents: number
-          price_per_enterprise_cents: number
-          price_per_essential_cents: number
           tier_id: string
           tier_name: string
           traditional_max_cents: number
           traditional_max_days: number
           traditional_min_cents: number
           traditional_min_days: number
-          traditional_price_per_advanced_cents: number | null
-          traditional_price_per_enterprise_cents: number | null
-          traditional_price_per_essential_cents: number | null
         }
         Insert: {
           created_at?: string
@@ -118,18 +112,12 @@ export type Database = {
           max_price_cents: number
           min_days: number
           min_price_cents: number
-          price_per_advanced_cents?: number
-          price_per_enterprise_cents?: number
-          price_per_essential_cents?: number
           tier_id: string
           tier_name: string
           traditional_max_cents: number
           traditional_max_days: number
           traditional_min_cents: number
           traditional_min_days: number
-          traditional_price_per_advanced_cents?: number | null
-          traditional_price_per_enterprise_cents?: number | null
-          traditional_price_per_essential_cents?: number | null
         }
         Update: {
           created_at?: string
@@ -140,18 +128,12 @@ export type Database = {
           max_price_cents?: number
           min_days?: number
           min_price_cents?: number
-          price_per_advanced_cents?: number
-          price_per_enterprise_cents?: number
-          price_per_essential_cents?: number
           tier_id?: string
           tier_name?: string
           traditional_max_cents?: number
           traditional_max_days?: number
           traditional_min_cents?: number
           traditional_min_days?: number
-          traditional_price_per_advanced_cents?: number | null
-          traditional_price_per_enterprise_cents?: number | null
-          traditional_price_per_essential_cents?: number | null
         }
         Relationships: []
       }
