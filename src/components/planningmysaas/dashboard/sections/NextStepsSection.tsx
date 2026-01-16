@@ -28,6 +28,7 @@ import { parseJsonField } from "@/lib/reportDataUtils";
 import { NextSteps, ExecutionPhase } from "@/types/report";
 import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
+import KyleAvatar from "@/components/chat/KyleAvatar";
 import { getSectionInvestment, getDiscountStrategy } from "@/lib/sectionInvestmentUtils";
 
 
@@ -499,16 +500,27 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 setSelectedConsultPackage('MVP Flash Deal');
                 setKyleDialogOpen(true);
               }}
-              className="w-full gap-2 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground mt-2"
+              className="w-full gap-3 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground mt-2 py-4 h-auto"
             >
-              <div className="relative">
-                <Phone className="h-4 w-4 text-accent" />
-                <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
+              <div className="relative flex-shrink-0">
+                <KyleAvatar size="sm" isActive={true} />
+                <div className="absolute -bottom-0.5 -right-0.5 p-1 rounded-full bg-accent shadow-lg border-2 border-background">
+                  <Phone className="h-2.5 w-2.5 text-accent-foreground" />
+                </div>
               </div>
-              Doubts? Talk to Kyle
+              <div className="flex flex-col items-start">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-sm">Talk to Kyle</span>
+                  <span className="flex items-center gap-1 text-[10px] text-green-500 font-medium">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                    </span>
+                    Online
+                  </span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">Have questions? Get instant answers</span>
+              </div>
             </Button>
           </CardContent>
           </Card>
@@ -700,16 +712,27 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 setSelectedConsultPackage('Complete Launch Bundle');
                 setKyleDialogOpen(true);
               }}
-              className="w-full gap-2 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground mt-2"
+              className="w-full gap-3 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground mt-2 py-4 h-auto"
             >
-              <div className="relative">
-                <Phone className="h-4 w-4 text-accent" />
-                <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
+              <div className="relative flex-shrink-0">
+                <KyleAvatar size="sm" isActive={true} />
+                <div className="absolute -bottom-0.5 -right-0.5 p-1 rounded-full bg-accent shadow-lg border-2 border-background">
+                  <Phone className="h-2.5 w-2.5 text-accent-foreground" />
+                </div>
               </div>
-              Doubts? Talk to Kyle
+              <div className="flex flex-col items-start">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-sm">Talk to Kyle</span>
+                  <span className="flex items-center gap-1 text-[10px] text-green-500 font-medium">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                    </span>
+                    Online
+                  </span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">Have questions? Get instant answers</span>
+              </div>
             </Button>
           </CardContent>
           </Card>
