@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import EmailContactDialog from "@/components/chat/EmailContactDialog";
 import KyleConsultantDialog from "@/components/planningmysaas/dashboard/KyleConsultantDialog";
 import KyleChatDialog from "@/components/planningmysaas/dashboard/KyleChatDialog";
+import KyleAvatar from "@/components/chat/KyleAvatar";
 
 const DirectContactSection = () => {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -43,44 +44,60 @@ const DirectContactSection = () => {
           </CardContent>
         </Card>
 
-        {/* Chat Card */}
+        {/* Chat with Kyle Card */}
         <Card 
           onClick={() => setShowChatDialog(true)}
-          className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg group"
+          className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg hover:shadow-accent/10 group border-accent/20 bg-gradient-to-br from-background to-accent/5"
         >
           <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors relative">
-              <MessageSquare className="h-6 w-6 text-accent" />
-              {/* Online indicator */}
-              <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-              </span>
+            <div className="relative">
+              <KyleAvatar size="sm" isActive={true} />
+              {/* Chat icon badge */}
+              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-accent shadow-lg border-2 border-background">
+                <MessageSquare className="h-3 w-3 text-accent-foreground" />
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Chat Now</p>
-              <p className="font-semibold text-foreground">Talk to Kyle</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-foreground">Chat with Kyle</p>
+                <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  Online
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">AI Sales Consultant</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Phone Card */}
+        {/* Call Kyle Card */}
         <Card 
           onClick={() => setShowKyleDialog(true)}
-          className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg group"
+          className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg hover:shadow-accent/10 group border-accent/20 bg-gradient-to-br from-background to-accent/5"
         >
           <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors relative">
-              <Phone className="h-6 w-6 text-accent" />
-              {/* Online indicator */}
-              <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-              </span>
+            <div className="relative">
+              <KyleAvatar size="sm" isActive={true} />
+              {/* Phone icon badge */}
+              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-accent shadow-lg border-2 border-background">
+                <Phone className="h-3 w-3 text-accent-foreground" />
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Call Kyle</p>
-              <p className="font-semibold text-foreground">+1 (321) 392 8515</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-foreground">Call Kyle</p>
+                <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  Available
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">24/7 Voice Support</p>
             </div>
           </CardContent>
         </Card>
