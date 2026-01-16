@@ -101,12 +101,14 @@ serve(async (req) => {
 
   try {
     // === TESTE MCP SERVER ===
-    const MCP_URL = "https://uaicode-n8n.ax5vln.easypanel.host/mcp/3ef36ebb-33f6-462c-acdb-c40f6a7d4345";
+    const MCP_URL = "https://uaicode-n8n.ax5vln.easypanel.host/mcp/pms_report";
     
-    console.log("🔌 Testing MCP connection...");
+    console.log("🔌 Testing MCP connection with full handshake...");
     
     try {
-      const mcpResponse = await fetch(MCP_URL, {
+      // Passo 1: Initialize
+      console.log("📤 Step 1: Sending initialize request...");
+      const initResponse = await fetch(MCP_URL, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -115,14 +117,54 @@ serve(async (req) => {
         body: JSON.stringify({
           jsonrpc: "2.0",
           id: 1,
+          method: "initialize",
+          params: {
+            protocolVersion: "2024-11-05",
+            capabilities: { tools: {} },
+            clientInfo: { name: "Lovable-PMS", version: "1.0.0" }
+          }
+        })
+      });
+      
+      const initData = await initResponse.json();
+      console.log(`✅ Initialize response status: ${initResponse.status}`);
+      console.log(`📋 Initialize data: ${JSON.stringify(initData, null, 2)}`);
+
+      // Passo 2: Notification initialized
+      console.log("📤 Step 2: Sending initialized notification...");
+      await fetch(MCP_URL, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json, text/event-stream"
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          method: "notifications/initialized"
+        })
+      });
+      console.log("✅ Initialized notification sent");
+
+      // Passo 3: List tools
+      console.log("📤 Step 3: Requesting tools list...");
+      const toolsResponse = await fetch(MCP_URL, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json, text/event-stream"
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 2,
           method: "tools/list",
           params: {}
         })
       });
       
-      const mcpData = await mcpResponse.json();
-      console.log(`✅ MCP Response status: ${mcpResponse.status}`);
-      console.log(`📋 MCP Response: ${JSON.stringify(mcpData, null, 2)}`);
+      const toolsData = await toolsResponse.json();
+      console.log(`✅ Tools list status: ${toolsResponse.status}`);
+      console.log(`📋 Available tools: ${JSON.stringify(toolsData, null, 2)}`);
+      
     } catch (mcpError) {
       console.error("❌ MCP Connection failed:", mcpError);
     }
