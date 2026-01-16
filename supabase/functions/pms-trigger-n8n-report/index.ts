@@ -169,40 +169,63 @@ serve(async (req) => {
       }
     }
     
-    // Fetch tier pricing data
-    const { data: tierData, error: tierError } = await supabase
+    // Fetch ALL tier pricing data
+    const { data: allTiers, error: tiersError } = await supabase
       .from("tb_pms_mvp_tier")
       .select("*")
-      .eq("tier_id", correctTier)
-      .eq("is_active", true)
-      .single();
+      .eq("is_active", true);
     
-    if (tierError) {
-      console.error("⚠️ Failed to fetch tier data:", tierError);
+    if (tiersError) {
+      console.error("⚠️ Failed to fetch tier data:", tiersError);
     }
     
-    // Calculate dynamic price based on features using proportional interpolation
-    const counts = countFeaturesByTier(selectedFeatures);
-    let calculatedPrice = 0;
-    
-    if (tierData) {
-      // Use proportional interpolation based on selected features (same as frontend)
-      const tierFeatures = FEATURE_TIERS[correctTier];
-      const totalFeaturesInTier = tierFeatures.length;
-      const selectedInTier = selectedFeatures.filter((f: string) => tierFeatures.includes(f)).length;
-      
-      if (selectedInTier <= 1) {
-        calculatedPrice = tierData.min_price_cents;
-      } else if (selectedInTier >= totalFeaturesInTier) {
-        calculatedPrice = tierData.max_price_cents;
-      } else {
-        const ratio = (selectedInTier - 1) / (totalFeaturesInTier - 1);
-        calculatedPrice = Math.round(tierData.min_price_cents + 
-          (tierData.max_price_cents - tierData.min_price_cents) * ratio);
+    // Create a map for quick tier lookup
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tierMap: Record<string, any> = {};
+    if (allTiers) {
+      for (const tier of allTiers) {
+        tierMap[tier.tier_id] = tier;
       }
     }
     
-    console.log(`💰 Calculated price: ${calculatedPrice} cents (starter: ${counts.starter}, growth: ${counts.growth}, enterprise: ${counts.enterprise})`);
+    // Count features per tier
+    const counts = countFeaturesByTier(selectedFeatures);
+    
+    console.log(`📊 Feature counts: starter=${counts.starter}, growth=${counts.growth}, enterprise=${counts.enterprise}`);
+    
+    // Calculate price by summing proportional prices from each tier
+    // For each tier: (selected_features_count / total_features_in_tier) * average_price_of_tier
+    let calculatedPrice = 0;
+    let traditionalPrice = 0;
+    
+    const tierKeys: Array<'starter' | 'growth' | 'enterprise'> = ['starter', 'growth', 'enterprise'];
+    
+    for (const tierKey of tierKeys) {
+      const tier = tierMap[tierKey];
+      const selectedCount = counts[tierKey];
+      const totalInTier = FEATURE_TIERS[tierKey].length;
+      
+      if (tier && selectedCount > 0) {
+        // Calculate proportional price for this tier
+        // Use average of min/max as base, then multiply by proportion of features selected
+        const avgUaicode = (tier.min_price_cents + tier.max_price_cents) / 2;
+        const avgTraditional = (tier.traditional_min_cents + tier.traditional_max_cents) / 2;
+        
+        const proportion = selectedCount / totalInTier;
+        
+        const uaicodeContribution = Math.round(avgUaicode * proportion);
+        const traditionalContribution = Math.round(avgTraditional * proportion);
+        
+        calculatedPrice += uaicodeContribution;
+        traditionalPrice += traditionalContribution;
+        
+        console.log(`  📦 ${tierKey}: ${selectedCount}/${totalInTier} features = ${proportion.toFixed(2)} ratio`);
+        console.log(`     Uaicode: $${(uaicodeContribution / 100).toLocaleString()}, Traditional: $${(traditionalContribution / 100).toLocaleString()}`);
+      }
+    }
+    
+    console.log(`💰 TOTAL Uaicode price: $${(calculatedPrice / 100).toLocaleString()} (${calculatedPrice} cents)`);
+    console.log(`💰 TOTAL Traditional price: $${(traditionalPrice / 100).toLocaleString()} (${traditionalPrice} cents)`);
     
     // Calculate investment breakdown
     const investmentBreakdown = {
@@ -215,32 +238,6 @@ serve(async (req) => {
     };
     
     console.log(`📦 Investment breakdown:`, investmentBreakdown);
-
-    // ==========================================
-    // Calculate Price Comparison Fields
-    // ==========================================
-    
-    // Calculate TRADITIONAL price using proportional interpolation (same logic as Uaicode)
-    let traditionalPrice = 0;
-    
-    if (tierData) {
-      // Use proportional interpolation for traditional price
-      const tierFeatures = FEATURE_TIERS[correctTier];
-      const totalFeaturesInTier = tierFeatures.length;
-      const selectedInTier = selectedFeatures.filter((f: string) => tierFeatures.includes(f)).length;
-      
-      if (selectedInTier <= 1) {
-        traditionalPrice = tierData.traditional_min_cents;
-      } else if (selectedInTier >= totalFeaturesInTier) {
-        traditionalPrice = tierData.traditional_max_cents;
-      } else {
-        const ratio = (selectedInTier - 1) / (totalFeaturesInTier - 1);
-        traditionalPrice = Math.round(tierData.traditional_min_cents + 
-          (tierData.traditional_max_cents - tierData.traditional_min_cents) * ratio);
-      }
-    }
-    
-    console.log(`💰 Traditional price calculated: $${(traditionalPrice / 100).toLocaleString()} (${counts.starter}E + ${counts.growth}A + ${counts.enterprise}Ent features)`);
     
     // Calculate savings
     const savingsAmountCents = traditionalPrice - calculatedPrice;
@@ -251,6 +248,9 @@ serve(async (req) => {
     // Calculate marketing months ($5,000/month = 500000 cents)
     const MARKETING_MONTHLY_BUDGET_CENTS = 500000;
     const savingsMarketingMonths = Math.floor(savingsAmountCents / MARKETING_MONTHLY_BUDGET_CENTS);
+    
+    // Get tier data for the determined tier (for delivery times)
+    const tierData = tierMap[correctTier];
     
     // Convert days to WEEKS for delivery times
     function formatDeliveryTimeInWeeks(minDays: number, maxDays: number): string {
@@ -269,7 +269,7 @@ serve(async (req) => {
       ? formatDeliveryTimeInWeeks(tierData.min_days, tierData.max_days)
       : "6-17 weeks";
     
-    console.log(`💰 Price comparison: Traditional ${traditionalPrice} vs Uaicode ${calculatedPrice} (${savingsPercentage}% savings)`);
+    console.log(`💰 Savings: $${(savingsAmountCents / 100).toLocaleString()} (${savingsPercentage}%)`);
     console.log(`📅 Delivery times: Traditional ${deliveryTimeTraditional}, Uaicode ${deliveryTimeUaicode}`);
 
     // Create new report entry in tb_pms_reports with status 'pending' and all calculated values
