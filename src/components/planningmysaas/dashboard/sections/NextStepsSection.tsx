@@ -578,9 +578,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       </div>
 
       {/* Aggressive Pricing Cards */}
-      <div className="grid md:grid-cols-2 gap-4 pt-4 items-stretch">
+      <div className="grid md:grid-cols-2 gap-4 pt-4">
         {/* Card 1: MVP Flash Deal (24h - 25% OFF) */}
-        <div className="relative h-full flex flex-col">
+        <div className="relative">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
             <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-accent-foreground px-4 py-1 text-xs font-bold shadow-lg">
@@ -589,7 +589,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </Badge>
           </div>
 
-          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20 h-full">
+          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
             {/* Shimmer Effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
 
@@ -775,7 +775,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         </div>
 
         {/* Card 2: Complete Launch Bundle (30% OFF) */}
-        <div className="relative h-full flex flex-col">
+        <div className="relative">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
             <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-accent-foreground px-4 py-1 text-xs font-bold shadow-lg">
@@ -784,7 +784,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </Badge>
           </div>
 
-          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20 h-full">
+          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20">
             {/* Shimmer Effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
 
@@ -920,17 +920,24 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </div>
 
             {/* Social Proof */}
-            <div className="flex items-center justify-center gap-2 mb-4 p-2 rounded-lg bg-accent/5 border border-accent/10">
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-6 h-6 rounded-full bg-accent/30 border-2 border-card flex items-center justify-center">
-                    <span className="text-[8px] text-accent">👤</span>
-                  </div>
-                ))}
+            <div className="mb-4 p-4 rounded-lg bg-gradient-to-r from-accent/10 to-yellow-500/10 border border-accent/20">
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex -space-x-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="w-8 h-8 rounded-full bg-accent/30 border-2 border-card flex items-center justify-center">
+                      <span className="text-xs text-accent">👤</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-foreground">
+                    <span className="text-accent">127 founders</span> chose this bundle
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Last month • Average rating: ⭐ 4.9/5
+                  </p>
+                </div>
               </div>
-              <p className="text-[10px] text-muted-foreground">
-                <span className="text-accent font-semibold">127 founders</span> chose this bundle last month
-              </p>
             </div>
 
             {/* CTA */}
