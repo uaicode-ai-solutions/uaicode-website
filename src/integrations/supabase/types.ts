@@ -249,6 +249,7 @@ export type Database = {
           investment_one_payment_cents_traditional: number | null
           investment_testing_cents: number | null
           opportunity_sam: string | null
+          opportunity_section: Json | null
           opportunity_som: string | null
           opportunity_tam: string | null
           opportunity_year_rate: string | null
@@ -279,6 +280,7 @@ export type Database = {
           investment_one_payment_cents_traditional?: number | null
           investment_testing_cents?: number | null
           opportunity_sam?: string | null
+          opportunity_section?: Json | null
           opportunity_som?: string | null
           opportunity_tam?: string | null
           opportunity_year_rate?: string | null
@@ -309,6 +311,7 @@ export type Database = {
           investment_one_payment_cents_traditional?: number | null
           investment_testing_cents?: number | null
           opportunity_sam?: string | null
+          opportunity_section?: Json | null
           opportunity_som?: string | null
           opportunity_tam?: string | null
           opportunity_year_rate?: string | null
