@@ -66,14 +66,54 @@ const MarketTimingSection = () => {
   // Calculate window score based on optimal_window presence
   const windowScore = opportunityData?.optimal_window ? 85 : 60;
 
-  // Data for radar chart
+  // Data for radar chart with descriptions for tooltips
   const radarData = [
-    { axis: "Trends", value: trendsScore, fullMark: 100 },
-    { axis: "Trajectory", value: trajectoryScore, fullMark: 100 },
-    { axis: "Maturity", value: maturityScore, fullMark: 100 },
-    { axis: "Window", value: windowScore, fullMark: 100 },
-    { axis: "Saturation", value: saturationScore, fullMark: 100 },
+    { 
+      axis: "Trends", 
+      value: trendsScore, 
+      fullMark: 100,
+      description: "Measures current market search trends and interest growth. Higher scores indicate rising demand and growing audience interest."
+    },
+    { 
+      axis: "Trajectory", 
+      value: trajectoryScore, 
+      fullMark: 100,
+      description: "Indicates the speed and direction of market growth. Accelerating markets score higher, suggesting strong momentum."
+    },
+    { 
+      axis: "Maturity", 
+      value: maturityScore, 
+      fullMark: 100,
+      description: "Reflects the market lifecycle stage. Emerging markets score higher as they offer more growth potential."
+    },
+    { 
+      axis: "Window", 
+      value: windowScore, 
+      fullMark: 100,
+      description: "Evaluates the optimal entry timing window. Higher scores suggest favorable conditions for market entry."
+    },
+    { 
+      axis: "Saturation", 
+      value: saturationScore, 
+      fullMark: 100,
+      description: "Measures competitive density (inverted). Lower saturation means more opportunity and less competition."
+    },
   ];
+
+  // Custom Tooltip for Radar Chart
+  const CustomRadarTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-card border border-border/50 rounded-lg p-3 shadow-lg max-w-[240px]">
+          <p className="font-semibold text-accent text-sm mb-1">{data.axis}</p>
+          <p className="text-xl font-bold text-foreground mb-2">{data.value}/100</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">{data.description}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   // Calculate overall timing score
   const overallScore = Math.round(
@@ -128,21 +168,36 @@ const MarketTimingSection = () => {
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-foreground">Timing Analysis</h3>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-accent">{overallScore}</span>
-                <span className="text-sm text-muted-foreground">/100</span>
+                <h3 className="text-sm font-medium text-foreground">Timing Analysis</h3>
+                <InfoTooltip side="top" size="sm">
+                  This radar chart visualizes 5 key market timing factors. Each axis represents a 
+                  different indicator that helps determine the optimal moment to enter the market. 
+                  Higher values toward the outer edges indicate more favorable conditions.
+                </InfoTooltip>
+              </div>
+              <div className="text-right">
+                <div className="flex items-center gap-1">
+                  <span className="text-2xl font-bold text-accent">{overallScore}</span>
+                  <span className="text-sm text-muted-foreground">/100</span>
+                  <InfoTooltip side="left" size="sm">
+                    Overall Timing Score is the average of all 5 timing metrics: Trends, Trajectory, 
+                    Maturity, Window, and Saturation. Scores above 75 indicate excellent timing for 
+                    market entry.
+                  </InfoTooltip>
+                </div>
+                <span className="text-xs text-muted-foreground">Overall Score</span>
               </div>
             </div>
 
             {/* Radar Chart */}
-            <div className="h-64">
+            <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                   <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.5} />
                   <PolarAngleAxis
                     dataKey="axis"
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
                   />
                   <PolarRadiusAxis
                     angle={90}
@@ -158,15 +213,7 @@ const MarketTimingSection = () => {
                     fillOpacity={0.25}
                     strokeWidth={2}
                   />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      color: "hsl(var(--foreground))",
-                    }}
-                    formatter={(value: number) => [`${value}/100`, "Score"]}
-                  />
+                  <Tooltip content={<CustomRadarTooltip />} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
