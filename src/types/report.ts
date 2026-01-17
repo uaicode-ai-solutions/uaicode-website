@@ -115,13 +115,50 @@ export interface OpportunityRisk {
 }
 
 export interface OpportunitySection {
-  tam: string;
-  sam: string;
-  som: string;
-  year_rate: string;
+  // Market size values (from n8n)
+  tam_value: string;
+  sam_value: string;
+  som_value: string;
+  tam_description?: string;
+  sam_description?: string;
+  som_description?: string;
+  
+  // Growth metrics
+  market_growth_rate: string;
+  projected_growth?: string;
   market_maturity?: string;
-  growth_period?: string;
-  conclusion?: string;
+  current_trajectory?: string;
+  
+  // Timing and opportunity
+  opportunity_timeframe?: string;
+  optimal_window?: string;
+  launch_reasoning?: string;
+  opportunity_justification?: string;
+  
+  // Risk and saturation
+  saturation_level?: string;
+  saturation_risk?: string;
+  risk_factors?: string[];
+  
+  // Trends
+  trends_score?: string;
+  search_trend?: string;
+  monthly_searches?: string;
+  macro_trends?: Array<{
+    trend: string;
+    impact: string;
+    strength: string;
+    evidence: string;
+  }>;
+  
+  // Pain points
+  customer_pain_points?: Array<{
+    pain_point: string;
+    intensity_score: string;
+    market_evidence: string;
+  }>;
+  
+  // Legacy compatibility
   highlights?: OpportunityHighlight[];
   risks?: OpportunityRisk[];
 }
