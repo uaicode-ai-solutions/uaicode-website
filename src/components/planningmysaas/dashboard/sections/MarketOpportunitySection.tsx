@@ -2,7 +2,7 @@ import { Target, TrendingUp, CheckCircle2, Globe, Crosshair } from "lucide-react
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { safeValue } from "@/types/report";
+import { safeValue, OpportunitySection } from "@/types/report";
 
 // Industry ID to label mapping
 const industryLabels: Record<string, string> = {
@@ -19,21 +19,28 @@ const industryLabels: Record<string, string> = {
 const MarketOpportunitySection = () => {
   const { report, reportData } = useReportContext();
 
-  // Get values from reportData (tb_pms_reports) with fallback
-  const tam = safeValue(reportData?.opportunity_tam);
-  const sam = safeValue(reportData?.opportunity_sam);
-  const som = safeValue(reportData?.opportunity_som);
-  const growthRate = reportData?.opportunity_year_rate
-    ? `${reportData.opportunity_year_rate}%`
-    : "...";
+  // Parse opportunity_section JSONB with safe casting
+  const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
 
-  // Build headline from wizard industry field
+  // Use opportunity_section data with fallback to legacy fields
+  const tam = opportunityData?.tam || safeValue(reportData?.opportunity_tam);
+  const sam = opportunityData?.sam || safeValue(reportData?.opportunity_sam);
+  const som = opportunityData?.som || safeValue(reportData?.opportunity_som);
+  const growthRate = opportunityData?.year_rate
+    ? `${opportunityData.year_rate}%`
+    : reportData?.opportunity_year_rate
+      ? `${reportData.opportunity_year_rate}%`
+      : "...";
+
+  // Build fallback headline from wizard industry field
   const industryLabel =
     report?.industry === "other"
       ? report?.industry_other || "..."
       : industryLabels[report?.industry || ""] || "...";
 
-  const headline = `There is clear room for a new player focused on ${industryLabel} businesses.`;
+  // Use conclusion from opportunity_section or fallback to industry-based headline
+  const headline = opportunityData?.conclusion || 
+    `There is clear room for a new player focused on ${industryLabel} businesses.`;
 
   const marketLevels = [
     {

@@ -98,6 +98,34 @@ export interface KeyMetrics {
   paybackLabel: string;
 }
 
+// ==========================================
+// Opportunity Section (JSONB from n8n)
+// ==========================================
+
+export interface OpportunityHighlight {
+  icon: string;
+  text: string;
+  detail: string;
+}
+
+export interface OpportunityRisk {
+  risk: string;
+  priority: "high" | "medium" | "low";
+  mitigation: string;
+}
+
+export interface OpportunitySection {
+  tam: string;
+  sam: string;
+  som: string;
+  year_rate: string;
+  market_maturity?: string;
+  growth_period?: string;
+  conclusion?: string;
+  highlights?: OpportunityHighlight[];
+  risks?: OpportunityRisk[];
+}
+
 // Report data from tb_pms_reports table
 export interface ReportData {
   id: string;
@@ -110,11 +138,13 @@ export interface ReportData {
   verdict_headline: string | null;
   created_at: string;
   updated_at: string;
-  // Opportunity fields
+  // Opportunity fields (legacy - kept for backwards compatibility)
   opportunity_tam: string | null;
   opportunity_sam: string | null;
   opportunity_som: string | null;
   opportunity_year_rate: string | null;
+  // NEW: JSONB field containing opportunity data from n8n
+  opportunity_section: unknown | null;
   // Legacy investment fields (kept for backwards compatibility)
   investment_one_payment_cents: number | null;
   investment_front_cents: number | null;
