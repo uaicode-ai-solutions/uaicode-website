@@ -1,10 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { usePriceModels, getPriceModel } from "@/hooks/usePriceModels";
 import { icons } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,6 +7,7 @@ import { cn } from "@/lib/utils";
 interface PricingBadgeProps {
   modelId: string;
   showIcon?: boolean;
+  showInfo?: boolean;
   size?: "sm" | "default";
   className?: string;
 }
@@ -19,6 +15,7 @@ interface PricingBadgeProps {
 export const PricingBadge = ({
   modelId,
   showIcon = true,
+  showInfo = true,
   size = "sm",
   className,
 }: PricingBadgeProps) => {
@@ -31,25 +28,24 @@ export const PricingBadge = ({
   const description = model?.description || "Pricing model type";
 
   return (
-    <TooltipProvider delayDuration={100}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Badge
-            variant="outline"
-            className={cn(
-              "cursor-help bg-yellow-500/10 border-yellow-500/30 text-yellow-400",
-              size === "sm" ? "text-[10px] px-2 py-0.5" : "text-xs px-2.5 py-0.5",
-              className
-            )}
-          >
-            {showIcon && Icon && <Icon className="w-3 h-3 mr-1" />}
-            {displayName}
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs">
-          <p className="text-xs">{description}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <div className="inline-flex items-center gap-1">
+      <Badge
+        variant="outline"
+        className={cn(
+          "bg-yellow-500/10 border-yellow-500/30 text-yellow-400",
+          size === "sm" ? "text-[10px] px-2 py-0.5" : "text-xs px-2.5 py-0.5",
+          className
+        )}
+      >
+        {showIcon && Icon && <Icon className="w-3 h-3 mr-1" />}
+        {displayName}
+      </Badge>
+      
+      {showInfo && (
+        <InfoTooltip term={displayName} size="sm">
+          {description}
+        </InfoTooltip>
+      )}
+    </div>
   );
 };
