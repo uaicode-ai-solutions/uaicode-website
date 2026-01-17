@@ -22,15 +22,14 @@ const MarketOpportunitySection = () => {
   // Parse opportunity_section JSONB with safe casting
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
 
-  // Use opportunity_section data with fallback to legacy fields
-  const tam = opportunityData?.tam || safeValue(reportData?.opportunity_tam);
-  const sam = opportunityData?.sam || safeValue(reportData?.opportunity_sam);
-  const som = opportunityData?.som || safeValue(reportData?.opportunity_som);
-  const growthRate = opportunityData?.year_rate
-    ? `${opportunityData.year_rate}%`
-    : reportData?.opportunity_year_rate
-      ? `${reportData.opportunity_year_rate}%`
-      : "...";
+  // Use opportunity_section data with correct n8n field names, fallback to legacy fields
+  const tam = opportunityData?.tam_value || safeValue(reportData?.opportunity_tam);
+  const sam = opportunityData?.sam_value || safeValue(reportData?.opportunity_sam);
+  const som = opportunityData?.som_value || safeValue(reportData?.opportunity_som);
+  
+  // Growth rate from market_growth_rate (n8n format: "19.8% annually (2026-2035)")
+  const growthRate = opportunityData?.market_growth_rate 
+    || (reportData?.opportunity_year_rate ? `${reportData.opportunity_year_rate}%` : "...");
 
   // Build fallback headline from wizard industry field
   const industryLabel =
@@ -38,8 +37,9 @@ const MarketOpportunitySection = () => {
       ? report?.industry_other || "..."
       : industryLabels[report?.industry || ""] || "...";
 
-  // Use conclusion from opportunity_section or fallback to industry-based headline
-  const headline = opportunityData?.conclusion || 
+  // Use launch_reasoning or opportunity_justification from n8n, or fallback
+  const headline = opportunityData?.launch_reasoning || 
+    opportunityData?.opportunity_justification ||
     `There is clear room for a new player focused on ${industryLabel} businesses.`;
 
   const marketLevels = [
