@@ -1,6 +1,7 @@
 import { Clock, TrendingUp, CalendarClock, Activity, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { Tooltip as ShadTooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
 import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
@@ -120,27 +121,31 @@ const MarketTimingSection = () => {
     (trendsScore + trajectoryScore + maturityScore + windowScore + saturationScore) / 5
   );
 
-  // Metrics for display
+  // Metrics for display with descriptions
   const metrics = [
     {
       label: "Phase",
       value: opportunityData?.market_maturity || "Growth",
       icon: Clock,
+      description: "Current lifecycle stage of the market. Early phases offer more growth potential but higher risk.",
     },
     {
       label: "Trajectory",
       value: opportunityData?.current_trajectory || "Accelerating",
       icon: TrendingUp,
+      description: "Direction and speed of market growth. Accelerating markets indicate increasing demand.",
     },
     {
       label: "Window",
       value: opportunityData?.optimal_window || "Q1-Q2 2026",
       icon: CalendarClock,
+      description: "Recommended timeframe for market entry to maximize competitive advantage.",
     },
     {
       label: "Trend Score",
       value: opportunityData?.trends_score || "85/100",
       icon: Activity,
+      description: "Composite score based on search trends, social mentions, and market interest indicators.",
     },
   ];
 
@@ -223,7 +228,13 @@ const MarketTimingSection = () => {
         {/* Card 2: Metrics Grid with Mini ScoreCircles */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-foreground mb-5">Key Indicators</h3>
+            <div className="flex items-center gap-2 mb-5">
+              <h3 className="text-sm font-medium text-foreground">Key Indicators</h3>
+              <InfoTooltip side="top" size="sm">
+                Summary of key market timing indicators. These metrics help assess when is the 
+                optimal moment to enter the market based on current conditions.
+              </InfoTooltip>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               {metrics.map((metric, index) => {
@@ -238,6 +249,9 @@ const MarketTimingSection = () => {
                         <IconComponent className="h-3.5 w-3.5 text-accent" />
                       </div>
                       <span className="text-xs text-muted-foreground">{metric.label}</span>
+                      <InfoTooltip side="top" size="sm">
+                        {metric.description}
+                      </InfoTooltip>
                     </div>
                     <p className="font-semibold text-foreground text-sm leading-tight">
                       {metric.value}
@@ -248,10 +262,33 @@ const MarketTimingSection = () => {
             </div>
 
             {/* Score Circles Row */}
-            <div className="mt-6 flex justify-center gap-6">
-              <ScoreCircle score={trendsScore} label="Trends" size="sm" />
-              <ScoreCircle score={trajectoryScore} label="Trajectory" size="sm" />
-              <ScoreCircle score={maturityScore} label="Maturity" size="sm" />
+            <div className="mt-6 flex justify-center gap-8">
+              <ShadTooltip>
+                <TooltipTrigger>
+                  <ScoreCircle score={trendsScore} label="Trends" size="lg" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[200px]">
+                  <p className="text-xs">Search and interest trends score. Higher values indicate growing market demand.</p>
+                </TooltipContent>
+              </ShadTooltip>
+              
+              <ShadTooltip>
+                <TooltipTrigger>
+                  <ScoreCircle score={trajectoryScore} label="Trajectory" size="lg" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[200px]">
+                  <p className="text-xs">Market growth momentum. Accelerating markets score above 80.</p>
+                </TooltipContent>
+              </ShadTooltip>
+              
+              <ShadTooltip>
+                <TooltipTrigger>
+                  <ScoreCircle score={maturityScore} label="Maturity" size="lg" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[200px]">
+                  <p className="text-xs">Market lifecycle stage score. Emerging markets score higher (more opportunity).</p>
+                </TooltipContent>
+              </ShadTooltip>
             </div>
           </CardContent>
         </Card>
