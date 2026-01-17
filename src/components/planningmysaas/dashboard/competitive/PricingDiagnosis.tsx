@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { competitorAnalysisData } from "@/lib/competitorAnalysisMockData";
+import { PricingBadge } from "@/components/planningmysaas/dashboard/ui/PricingBadge";
 
 const positionColors = {
   Premium: "bg-purple-500/20 text-purple-600 border-purple-500/30",
@@ -48,7 +49,7 @@ const PricingDiagnosis = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold text-accent">{competitor.price}</p>
-                    <p className="text-xs text-muted-foreground">{competitor.model}</p>
+                    <PricingBadge modelId={competitor.model} showIcon={false} />
                     <p className="text-xs text-muted-foreground mt-1">Target: {competitor.targetMarket}</p>
                   </div>
                 </div>

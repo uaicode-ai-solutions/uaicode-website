@@ -1,19 +1,16 @@
 import { Swords, ExternalLink, Tag, Trophy, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
 import { 
   CompetitiveAnalysisSectionData, 
   getCompetitorsForUI,
 } from "@/lib/competitiveAnalysisUtils";
-import { usePriceModels, getPriceModelDescription } from "@/hooks/usePriceModels";
+import { PricingBadge } from "@/components/planningmysaas/dashboard/ui/PricingBadge";
 
 const CompetitorsDifferentiationSection = () => {
   const { report, reportData } = useReportContext();
-  const { data: priceModels } = usePriceModels();
   
   // Parse competitive analysis section from report data
   const competitiveData = parseJsonField<CompetitiveAnalysisSectionData>(
@@ -128,23 +125,7 @@ const CompetitorsDifferentiationSection = () => {
                   </span>
                   <span className="text-xs text-muted-foreground">/month</span>
                 </div>
-                <TooltipProvider delayDuration={100}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge 
-                        variant="outline" 
-                        className="text-[10px] px-2 py-0.5 bg-yellow-500/10 border-yellow-500/30 text-yellow-400 cursor-help"
-                      >
-                        {competitor.priceModel}
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      <p className="text-xs">
-                        {getPriceModelDescription(priceModels, competitor.priceModel)}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <PricingBadge modelId={competitor.priceModel} />
               </div>
             </CardContent>
           </Card>
