@@ -1,4 +1,4 @@
-import { Swords, ExternalLink, Tag, Trophy, Zap } from "lucide-react";
+import { Swords, Globe, Tag, Trophy, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
@@ -111,7 +111,7 @@ const CompetitorsDifferentiationSection = () => {
                     target="_blank" 
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-accent cursor-pointer transition-colors" />
+                    <Globe className="w-4 h-4 text-yellow-400 hover:text-yellow-300 cursor-pointer transition-colors" />
                   </a>
                 )}
               </div>
