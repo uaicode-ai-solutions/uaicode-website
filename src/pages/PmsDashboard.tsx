@@ -36,6 +36,10 @@ import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHer
 import ExecutiveVerdict from "@/components/planningmysaas/dashboard/sections/ExecutiveVerdict";
 import BusinessModelSection from "@/components/planningmysaas/dashboard/sections/BusinessModelSection";
 import MarketOpportunitySection from "@/components/planningmysaas/dashboard/sections/MarketOpportunitySection";
+import MarketTimingSection from "@/components/planningmysaas/dashboard/sections/MarketTimingSection";
+import CustomerPainPointsSection from "@/components/planningmysaas/dashboard/sections/CustomerPainPointsSection";
+import MacroTrendsSection from "@/components/planningmysaas/dashboard/sections/MacroTrendsSection";
+import RiskFactorsSection from "@/components/planningmysaas/dashboard/sections/RiskFactorsSection";
 import DemandValidationSection from "@/components/planningmysaas/dashboard/sections/DemandValidationSection";
 import TimingAnalysisSection from "@/components/planningmysaas/dashboard/sections/TimingAnalysisSection";
 import MarketBenchmarksSection from "@/components/planningmysaas/dashboard/sections/MarketBenchmarksSection";
@@ -489,6 +493,10 @@ const PmsDashboardContent = () => {
                   <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
                 <ExecutiveVerdict />
                 <MarketOpportunitySection />
+                <MarketTimingSection />
+                <CustomerPainPointsSection />
+                <MacroTrendsSection />
+                <RiskFactorsSection />
                 <BusinessModelSection />
                 <DemandValidationSection />
                 <TimingAnalysisSection />
