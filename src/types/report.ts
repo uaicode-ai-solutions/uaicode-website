@@ -131,6 +131,8 @@ export interface ReportData {
   delivery_time_uaicode: string | null;
   // NEW: JSONB field containing all investment data
   section_investment: unknown | null;
+  // NEW: Competitive analysis data from n8n
+  competitive_analysis_section: unknown | null;
 }
 
 // Helper function to safely get value with fallback
@@ -201,7 +203,6 @@ export interface Competitor {
   description: string;
   price: number;
   priceModel: string;
-  targetMarket: string;
   weakness: string;
   yourAdvantage: string;
 }

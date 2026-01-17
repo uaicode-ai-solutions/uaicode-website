@@ -3,27 +3,66 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
-import { Competitor, CompetitiveAdvantage } from "@/types/report";
-
-// Flexible type to handle both string[] and object[] from AI
-type AdvantageItem = string | { name?: string; advantage?: string; description?: string; competitor_gap?: string; competitorGap?: string };
+import { parseJsonField } from "@/lib/reportDataUtils";
+import { 
+  CompetitiveAnalysisSectionData, 
+  getCompetitorsForUI,
+  CompetitorUI 
+} from "@/lib/competitiveAnalysisUtils";
 
 const CompetitorsDifferentiationSection = () => {
-  const { report } = useReportContext();
+  const { report, reportData } = useReportContext();
   
-  // Parse competitors and advantages from report
-  const competitors = parseJsonField<Competitor[]>(report?.competitors, []);
-  const rawAdvantages = parseJsonField<AdvantageItem[]>(report?.competitive_advantages, []);
+  // Parse competitive analysis section from report data
+  const competitiveData = parseJsonField<CompetitiveAnalysisSectionData>(
+    reportData?.competitive_analysis_section,
+    null
+  );
   
-  // Normalize advantages to always get the display text
-  const getAdvantageText = (item: AdvantageItem): string => {
-    if (typeof item === 'string') return item;
-    return item.name || item.advantage || item.description || 'Unknown advantage';
+  // Get competitors transformed for UI
+  const competitors = getCompetitorsForUI(competitiveData);
+  
+  // Get selected features as competitive advantages (from wizard data)
+  const selectedFeatures = parseJsonField<string[]>(report?.selected_features, []);
+  
+  // Feature labels for display
+  const featureLabels: Record<string, string> = {
+    'auth': 'User Authentication & Authorization',
+    'profiles': 'User Profile Management',
+    'crud': 'Simple Database CRUD Operations',
+    'reporting': 'Basic Reporting & Analytics',
+    'notifications': 'Email Notifications & Alerts',
+    'admin': 'Admin Dashboard',
+    'responsive': 'Mobile-first Design',
+    'security': 'Security Best Practices',
+    'advancedAnalytics': 'Advanced Analytics Dashboard',
+    'apiIntegrations': 'API Integrations',
+    'payments': 'Payment Processing & Billing',
+    'roles': 'Role-based Access Control',
+    'search': 'Advanced Search & Filtering',
+    'fileUpload': 'File Upload & Management',
+    'realtime': 'Real-time Updates',
+    'workflows': 'Workflow Automation',
+    'advancedReporting': 'Advanced Reporting',
+    'emailMarketing': 'Email Marketing Integration',
+    'ai': 'AI-powered Features',
+    'dataAnalytics': 'Data Analytics & Insights',
+    'multiTenant': 'Multi-tenant Architecture',
+    'sso': 'Single Sign-On (SSO)',
+    'customIntegrations': 'Custom Integrations',
+    'apiManagement': 'API Management',
+    'collaboration': 'Team Collaboration Tools',
+    'automation': 'Process Automation',
+    'customReporting': 'Custom Report Builder',
+    'support': 'Priority Support System',
+    'inventory': 'Inventory Management System',
+    'multiLocation': 'Multi-location Support',
   };
   
   // Calculate max price for chart scaling
-  const maxPrice = competitors.length > 0 ? Math.max(...competitors.map(c => c.price || 0)) : 100;
+  const maxPrice = competitors.length > 0 
+    ? Math.max(...competitors.map(c => c.price || 0), 1) 
+    : 100;
   
   // Early return if no data
   if (competitors.length === 0) {
@@ -62,35 +101,37 @@ const CompetitorsDifferentiationSection = () => {
 
       {/* Competitors Grid - 3x2 */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {competitors.map((competitor, index) => (
+        {competitors.slice(0, 6).map((competitor, index) => (
           <Card key={index} className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors flex flex-col h-full">
             <CardContent className="p-4 flex flex-col flex-1">
               <div className="flex justify-between items-start mb-2">
                 <span className="font-semibold text-foreground text-sm">{competitor.name}</span>
-                <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-accent cursor-pointer transition-colors" />
+                {competitor.website && (
+                  <a 
+                    href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-accent cursor-pointer transition-colors" />
+                  </a>
+                )}
               </div>
-              <p className="text-xs text-muted-foreground mb-4 flex-1">
+              <p className="text-xs text-muted-foreground mb-4 flex-1 line-clamp-3">
                 {competitor.description}
               </p>
               <div className="flex justify-between items-end mt-auto">
                 <div>
-                  <span className="text-2xl font-bold text-foreground">${competitor.price}</span>
+                  <span className="text-2xl font-bold text-foreground">
+                    ${competitor.price}
+                  </span>
                   <span className="text-xs text-muted-foreground">/month</span>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <Badge 
-                    variant="outline" 
-                    className="text-[10px] px-2 py-0.5 bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
-                  >
-                    {competitor.priceModel}
-                  </Badge>
-                  <Badge 
-                    variant="outline" 
-                    className="text-[10px] px-2 py-0.5 bg-accent/10 border-accent/30 text-accent"
-                  >
-                    {competitor.targetMarket}
-                  </Badge>
-                </div>
+                <Badge 
+                  variant="outline" 
+                  className="text-[10px] px-2 py-0.5 bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
+                >
+                  {competitor.priceModel}
+                </Badge>
               </div>
             </CardContent>
           </Card>
@@ -110,7 +151,7 @@ const CompetitorsDifferentiationSection = () => {
               </InfoTooltip>
             </div>
             <div className="space-y-3">
-              {competitors.map((competitor, index) => (
+              {competitors.slice(0, 6).map((competitor, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <span className="w-28 text-xs text-muted-foreground truncate">{competitor.name}</span>
                   <div className="flex-1 h-3 bg-background/50 rounded-full overflow-hidden">
@@ -139,12 +180,14 @@ const CompetitorsDifferentiationSection = () => {
               </InfoTooltip>
             </div>
             <div className="grid md:grid-cols-2 gap-x-6 gap-y-2">
-              {(rawAdvantages || []).map((advantage, index) => (
+              {selectedFeatures.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <div className="p-1 rounded bg-accent/10">
                     <Zap className="w-3 h-3 text-accent" />
                   </div>
-                  <span className="text-xs text-foreground">{getAdvantageText(advantage)}</span>
+                  <span className="text-xs text-foreground">
+                    {featureLabels[feature] || feature}
+                  </span>
                 </div>
               ))}
             </div>
