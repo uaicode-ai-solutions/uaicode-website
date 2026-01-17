@@ -167,7 +167,7 @@ const MarketTimingSection = () => {
         {/* Card 1: Radar Chart */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-medium text-foreground">Timing Analysis</h3>
                 <InfoTooltip side="top" size="sm">
