@@ -197,6 +197,42 @@ export type Database = {
           },
         ]
       }
+      tb_pms_price_model: {
+        Row: {
+          created_at: string | null
+          description: string
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          model_id: string
+          model_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          model_id: string
+          model_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          model_id?: string
+          model_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       tb_pms_reports: {
         Row: {
           competitive_analysis_section: Json | null

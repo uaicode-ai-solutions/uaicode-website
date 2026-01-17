@@ -8,25 +8,12 @@ import { parseJsonField } from "@/lib/reportDataUtils";
 import { 
   CompetitiveAnalysisSectionData, 
   getCompetitorsForUI,
-  CompetitorUI 
 } from "@/lib/competitiveAnalysisUtils";
-
-// Pricing model explanations for tooltips
-const PRICING_MODEL_EXPLANATIONS: Record<string, string> = {
-  'flat': 'Fixed monthly price regardless of usage',
-  'tiered': 'Price varies based on features or usage tiers',
-  'usage': 'Pay based on how much you use the service',
-  'freemium': 'Free basic plan with paid premium features',
-  'subscription': 'Recurring payment for continued access',
-  'per-seat': 'Price per user or team member',
-  'per-user': 'Price per user or team member',
-  'one-time': 'Single payment for lifetime access',
-  'custom': 'Custom pricing based on specific needs',
-  'enterprise': 'Custom enterprise-level pricing',
-};
+import { usePriceModels, getPriceModelDescription } from "@/hooks/usePriceModels";
 
 const CompetitorsDifferentiationSection = () => {
   const { report, reportData } = useReportContext();
+  const { data: priceModels } = usePriceModels();
   
   // Parse competitive analysis section from report data
   const competitiveData = parseJsonField<CompetitiveAnalysisSectionData>(
@@ -153,7 +140,7 @@ const CompetitorsDifferentiationSection = () => {
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-xs">
                       <p className="text-xs">
-                        {PRICING_MODEL_EXPLANATIONS[competitor.priceModel.toLowerCase()] || 'Pricing model type'}
+                        {getPriceModelDescription(priceModels, competitor.priceModel)}
                       </p>
                     </TooltipContent>
                   </Tooltip>
