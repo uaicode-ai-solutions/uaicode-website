@@ -2,6 +2,7 @@ import { Swords, ExternalLink, Tag, Trophy, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
 import { 
@@ -9,6 +10,20 @@ import {
   getCompetitorsForUI,
   CompetitorUI 
 } from "@/lib/competitiveAnalysisUtils";
+
+// Pricing model explanations for tooltips
+const PRICING_MODEL_EXPLANATIONS: Record<string, string> = {
+  'flat': 'Fixed monthly price regardless of usage',
+  'tiered': 'Price varies based on features or usage tiers',
+  'usage': 'Pay based on how much you use the service',
+  'freemium': 'Free basic plan with paid premium features',
+  'subscription': 'Recurring payment for continued access',
+  'per-seat': 'Price per user or team member',
+  'per-user': 'Price per user or team member',
+  'one-time': 'Single payment for lifetime access',
+  'custom': 'Custom pricing based on specific needs',
+  'enterprise': 'Custom enterprise-level pricing',
+};
 
 const CompetitorsDifferentiationSection = () => {
   const { report, reportData } = useReportContext();
@@ -126,12 +141,23 @@ const CompetitorsDifferentiationSection = () => {
                   </span>
                   <span className="text-xs text-muted-foreground">/month</span>
                 </div>
-                <Badge 
-                  variant="outline" 
-                  className="text-[10px] px-2 py-0.5 bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
-                >
-                  {competitor.priceModel}
-                </Badge>
+                <TooltipProvider delayDuration={100}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge 
+                        variant="outline" 
+                        className="text-[10px] px-2 py-0.5 bg-yellow-500/10 border-yellow-500/30 text-yellow-400 cursor-help"
+                      >
+                        {competitor.priceModel}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <p className="text-xs">
+                        {PRICING_MODEL_EXPLANATIONS[competitor.priceModel.toLowerCase()] || 'Pricing model type'}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardContent>
           </Card>
