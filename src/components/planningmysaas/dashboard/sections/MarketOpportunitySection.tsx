@@ -16,15 +16,25 @@ const industryLabels: Record<string, string> = {
   other: "",
 };
 
-// Format market values: "$713.36 billion" → "$713.36B"
+// Format market values: "$713.36 billion" → "$713.4B" (1 decimal place)
 const formatMarketValue = (value: string): string => {
   if (!value || value === "...") return value;
-  return value
+  
+  // First, replace text suffixes
+  let formatted = value
     .replace(/\s*billion/gi, "B")
     .replace(/\s*million/gi, "M")
     .replace(/\s*trillion/gi, "T")
     .replace(/\s*thousand/gi, "K")
     .trim();
+  
+  // Round numeric values to 1 decimal place
+  formatted = formatted.replace(/(\$?)([\d,]+)\.(\d{2,})/g, (match, dollar, integer, decimals) => {
+    const num = parseFloat(`${integer.replace(/,/g, '')}.${decimals}`);
+    return `${dollar}${num.toFixed(1)}`;
+  });
+  
+  return formatted;
 };
 
 // Format growth rate: "19.8% annually (2026-2035)" → "19.8% 2026-2035"
