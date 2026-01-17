@@ -183,8 +183,8 @@ const MarketOpportunitySection = () => {
 
             {/* Growth Legend */}
             <div className="mt-4 flex items-center justify-center gap-2 text-sm">
-              <TrendingUp className="h-4 w-4 text-green-400" />
-              <span className="font-semibold text-green-400">{growthRate}</span>
+              <TrendingUp className="h-4 w-4 text-accent" />
+              <span className="font-semibold text-accent">{growthRate}</span>
               <span className="text-muted-foreground">Year-over-Year market growth rate</span>
             </div>
           </CardContent>
@@ -234,10 +234,10 @@ const MarketOpportunitySection = () => {
       </div>
 
       {/* Conclusion - Full Width */}
-      <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+      <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
         <div className="flex items-start gap-3">
-          <div className="p-1.5 rounded-lg bg-green-500/20 flex-shrink-0">
-            <CheckCircle2 className="h-4 w-4 text-green-400" />
+          <div className="p-1.5 rounded-lg bg-accent/20 flex-shrink-0">
+            <CheckCircle2 className="h-4 w-4 text-accent" />
           </div>
           <p className="text-sm text-foreground/90 leading-relaxed">{headline}</p>
         </div>
