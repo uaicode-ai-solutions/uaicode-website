@@ -16,20 +16,59 @@ const industryLabels: Record<string, string> = {
   other: "",
 };
 
+// Format market values: "$713.36 billion" → "$713.36B"
+const formatMarketValue = (value: string): string => {
+  if (!value || value === "...") return value;
+  return value
+    .replace(/\s*billion/gi, "B")
+    .replace(/\s*million/gi, "M")
+    .replace(/\s*trillion/gi, "T")
+    .replace(/\s*thousand/gi, "K")
+    .trim();
+};
+
+// Format growth rate: "19.8% annually (2026-2035)" → "19.8% 2026-2035"
+const formatGrowthRate = (value: string): string => {
+  if (!value || value === "...") return value;
+  const percentMatch = value.match(/([\d.]+)%/);
+  const yearRangeMatch = value.match(/(\d{4}[-–]\d{4})/);
+  if (percentMatch) {
+    const percent = percentMatch[1];
+    const yearRange = yearRangeMatch ? ` ${yearRangeMatch[1]}` : "";
+    return `${percent}%${yearRange}`;
+  }
+  return value;
+};
+
+// Remove citation references and format values in text
+const cleanHeadline = (text: string): string => {
+  if (!text) return text;
+  return text
+    .replace(/\[\d+\]/g, "")
+    .replace(/\s*billion/gi, "B")
+    .replace(/\s*million/gi, "M")
+    .replace(/\s*trillion/gi, "T")
+    .replace(/\s*thousand/gi, "K")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 const MarketOpportunitySection = () => {
   const { report, reportData } = useReportContext();
 
   // Parse opportunity_section JSONB with safe casting
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
 
-  // Use opportunity_section data with correct n8n field names, fallback to legacy fields
-  const tam = opportunityData?.tam_value || safeValue(reportData?.opportunity_tam);
-  const sam = opportunityData?.sam_value || safeValue(reportData?.opportunity_sam);
-  const som = opportunityData?.som_value || safeValue(reportData?.opportunity_som);
+  // Use opportunity_section data with formatting applied
+  const tam = formatMarketValue(opportunityData?.tam_value || safeValue(reportData?.opportunity_tam));
+  const sam = formatMarketValue(opportunityData?.sam_value || safeValue(reportData?.opportunity_sam));
+  const som = formatMarketValue(opportunityData?.som_value || safeValue(reportData?.opportunity_som));
   
-  // Growth rate from market_growth_rate (n8n format: "19.8% annually (2026-2035)")
-  const growthRate = opportunityData?.market_growth_rate 
-    || (reportData?.opportunity_year_rate ? `${reportData.opportunity_year_rate}%` : "...");
+  // Growth rate formatted: "19.8% 2026-2035"
+  const growthRate = formatGrowthRate(
+    opportunityData?.market_growth_rate 
+      || (reportData?.opportunity_year_rate ? `${reportData.opportunity_year_rate}%` : "...")
+  );
 
   // Build fallback headline from wizard industry field
   const industryLabel =
@@ -37,10 +76,12 @@ const MarketOpportunitySection = () => {
       ? report?.industry_other || "..."
       : industryLabels[report?.industry || ""] || "...";
 
-  // Use launch_reasoning or opportunity_justification from n8n, or fallback
-  const headline = opportunityData?.launch_reasoning || 
+  // Use launch_reasoning with citations removed and values formatted
+  const headline = cleanHeadline(
+    opportunityData?.launch_reasoning || 
     opportunityData?.opportunity_justification ||
-    `There is clear room for a new player focused on ${industryLabel} businesses.`;
+    `There is clear room for a new player focused on ${industryLabel} businesses.`
+  );
 
   const marketLevels = [
     {
