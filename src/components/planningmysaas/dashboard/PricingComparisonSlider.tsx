@@ -130,9 +130,9 @@ const PricingComparisonSlider = () => {
             <span className="text-muted-foreground">Traditional Agency</span>
             <span className="font-medium text-muted-foreground">{formatCurrency(traditionalPrice)}</span>
           </div>
-          <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-accent/20">
+          <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-border/30">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent/30 to-accent/15 rounded-lg w-full flex items-center justify-end pr-3"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-muted-foreground/30 via-muted-foreground/20 to-muted-foreground/10 rounded-lg w-full flex items-center justify-end pr-3"
             >
               <span className="text-xs font-medium text-muted-foreground">
                 {formatCurrencyShort(traditionalPrice)}
@@ -147,9 +147,9 @@ const PricingComparisonSlider = () => {
             <span className="text-accent font-medium">Uaicode</span>
             <span className="font-bold text-accent">{formatCurrency(uaicodePrice)}</span>
           </div>
-          <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-accent/30">
+          <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-amber-500/30">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent to-accent/70 rounded-lg flex items-center justify-end pr-3"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-lg flex items-center justify-end pr-3"
               style={{ width: `${Math.max(uaicodeWidth, 15)}%` }}
             >
               <span className="text-xs font-medium text-accent-foreground">
