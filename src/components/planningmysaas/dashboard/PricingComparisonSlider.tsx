@@ -134,7 +134,7 @@ const PricingComparisonSlider = () => {
             <div 
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-lg w-full flex items-center justify-end pr-3"
             >
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-xs font-medium text-accent-foreground">
                 {formatCurrencyShort(traditionalPrice)}
               </span>
             </div>
