@@ -97,13 +97,16 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
       {/* Header with Urgency */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex items-center gap-3 flex-1">
-          <div className="p-2 rounded-lg bg-accent/10">
-            <Calendar className="h-5 w-5 text-accent" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border border-amber-500/20">
+            <Calendar className="h-5 w-5 text-amber-400" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-2xl font-bold text-foreground">Lock In Your Discount</h2>
-              <Badge variant="outline" className="border-accent/50 text-accent text-xs">
+              <Badge 
+                className="text-xs font-semibold border-0 text-black"
+                style={{ background: 'linear-gradient(135deg, #FFD700, #FFA500)' }}
+              >
                 Limited Time Offer
               </Badge>
             </div>
@@ -114,19 +117,19 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
         </div>
         
         {/* Social Proof */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/5 px-3 py-1.5 rounded-full border border-accent/20">
-          <Users className="h-4 w-4 text-accent" />
-          <span><strong className="text-foreground">47</strong> founders booked this month</span>
+        <div className="flex items-center gap-2 text-sm glass-card px-4 py-2 rounded-full border border-amber-500/20">
+          <Users className="h-4 w-4 text-amber-400" />
+          <span className="text-foreground/80"><strong className="text-foreground">47</strong> founders booked this month</span>
         </div>
       </div>
 
       {/* What to Expect Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {features.map((feature, index) => (
-          <Card key={index} className="bg-gradient-to-br from-background to-accent/5 border-accent/20">
+          <Card key={index} className="glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift">
             <CardContent className="p-4 flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-accent/10 shrink-0">
-                <feature.icon className="h-4 w-4 text-accent" />
+              <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border border-amber-500/20 shrink-0">
+                <feature.icon className="h-4 w-4 text-amber-400" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground text-sm">{feature.title}</h3>
@@ -138,24 +141,25 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
       </div>
 
       {/* Countdown Timer */}
-      <Card className="bg-gradient-to-r from-accent/10 via-accent/5 to-accent/10 border-accent/30">
-        <CardContent className="py-4 px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
+      <Card className="glass-card border-amber-500/30 overflow-hidden">
+        <CardContent className="py-4 px-6 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-transparent to-amber-500/5" />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 relative">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-accent" />
+              <Clock className="h-5 w-5 text-amber-400" />
               <span className="text-sm font-medium text-foreground">Offer expires in:</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
-                <span className="bg-background/80 text-accent font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-accent/30 shadow-lg shadow-accent/10">
+                <span className="bg-black/40 text-amber-400 font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-amber-500/40 shadow-lg shadow-amber-500/10">
                   {formatTime(timeLeft.hours)}
                 </span>
-                <span className="text-accent font-bold">:</span>
-                <span className="bg-background/80 text-accent font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-accent/30 shadow-lg shadow-accent/10">
+                <span className="text-amber-400 font-bold">:</span>
+                <span className="bg-black/40 text-amber-400 font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-amber-500/40 shadow-lg shadow-amber-500/10">
                   {formatTime(timeLeft.minutes)}
                 </span>
-                <span className="text-accent font-bold">:</span>
-                <span className="bg-background/80 text-accent font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-accent/30 shadow-lg shadow-accent/10">
+                <span className="text-amber-400 font-bold">:</span>
+                <span className="bg-black/40 text-amber-400 font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-amber-500/40 shadow-lg shadow-amber-500/10">
                   {formatTime(timeLeft.seconds)}
                 </span>
               </div>
@@ -167,15 +171,15 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
       {/* Guarantees */}
       <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
         {guarantees.map((guarantee, index) => (
-          <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Shield className="h-4 w-4 text-green-500" />
+          <div key={index} className="flex items-center gap-2 text-sm text-foreground/80">
+            <Shield className="h-4 w-4 text-emerald-500" />
             <span>{guarantee}</span>
           </div>
         ))}
       </div>
 
       {/* Cal.com Embed */}
-      <Card className="bg-card/50 border-accent/20 overflow-hidden">
+      <Card className="glass-card border-border/30 overflow-hidden">
         <CardContent className="p-0">
           <div className="w-full h-[500px] md:h-[650px] overflow-auto">
             <Cal
@@ -191,7 +195,7 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
               href="https://cal.com/uaicode-ai/diagnostic-45min" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-accent hover:underline"
+              className="text-amber-400 hover:underline"
             >
               Click here to open it in a new tab
             </a>
