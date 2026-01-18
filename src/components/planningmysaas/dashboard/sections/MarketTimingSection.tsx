@@ -294,28 +294,36 @@ const MarketTimingSection = () => {
         </Card>
       </div>
 
-      {/* Card 2: Key Indicators - Full Width Single Row */}
-      <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <h3 className="text-sm font-medium text-foreground">Key Indicators</h3>
-            <InfoTooltip side="top" size="sm">
-              These 5 metrics represent the key timing factors for market entry. 
-              Each score ranges from 0-100, with higher values indicating more 
-              favorable conditions.
-            </InfoTooltip>
-          </div>
+      {/* Key Indicators - Individual Cards Grid */}
+      <div className="space-y-4">
+        {/* Section Header */}
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium text-foreground">Key Indicators</h3>
+          <InfoTooltip side="top" size="sm">
+            These 5 metrics represent the key timing factors for market entry. 
+            Each score ranges from 0-100, with higher values indicating more 
+            favorable conditions.
+          </InfoTooltip>
+        </div>
 
-          {/* 5 Indicators in Single Horizontal Line - Full Width */}
-          <div className="flex justify-between items-start px-8">
-            {indicatorData.map((indicator) => {
-              const Icon = indicator.icon;
-              return (
-                <div key={indicator.name} className="flex flex-col items-center gap-2">
-                  {/* Icon + Name + InfoTooltip */}
-                  <div className="flex items-center gap-1">
-                    <Icon className="w-3 h-3 text-accent" />
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        {/* Grid of Individual Cards (5 columns on desktop) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {indicatorData.map((indicator) => {
+            const Icon = indicator.icon;
+            return (
+              <Card
+                key={indicator.name}
+                className="group relative bg-muted/30 border-border/50 
+                           hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 
+                           hover:scale-[1.02] transition-all duration-300"
+              >
+                <CardContent className="p-4 flex flex-col items-center gap-3">
+                  {/* Header: Icon + Name + Tooltip */}
+                  <div className="flex items-center gap-1.5 w-full justify-center">
+                    <div className="p-1.5 rounded-lg bg-accent/10">
+                      <Icon className="w-3.5 h-3.5 text-accent" />
+                    </div>
+                    <span className="text-xs font-medium text-foreground">
                       {indicator.name}
                     </span>
                     <InfoTooltip side="top" size="sm">
@@ -325,20 +333,25 @@ const MarketTimingSection = () => {
                     </InfoTooltip>
                   </div>
                   
-                  {/* ScoreCircle - Larger with full width */}
+                  {/* ScoreCircle - Larger with gradient glow effect */}
                   <ScoreCircle 
                     score={indicator.score} 
                     label="" 
-                    size="xl"
+                    size="2xl"
                     showLabelInside={false}
                     showGlow={true}
                   />
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                  
+                  {/* Description (short) */}
+                  <p className="text-[10px] text-muted-foreground text-center line-clamp-2">
+                    {indicator.description}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Saturation Risk Alert */}
       {opportunityData?.saturation_risk && (
