@@ -242,18 +242,12 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   cx="40"
                   cy="40"
                   r="34"
-                  stroke="url(#nextStepsGradient)"
+                  stroke="hsl(var(--accent))"
                   strokeWidth="5"
                   fill="transparent"
                   strokeLinecap="round"
                   strokeDasharray={`${(viabilityScore / 100) * 214} 214`}
                 />
-                <defs>
-                  <linearGradient id="nextStepsGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="hsl(var(--accent))" />
-                    <stop offset="100%" stopColor="hsl(45, 100%, 45%)" />
-                  </linearGradient>
-                </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-xl font-bold text-accent">{viabilityScore}</span>
@@ -269,9 +263,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       </Card>
 
       {/* What happens when you hire us - Premium Cards */}
-      <div className="space-y-6">
-            <div className="flex items-center justify-center gap-2">
-              <h3 className="font-semibold text-foreground text-xl">
+      <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-medium text-foreground">
                 What happens when you choose Uaicode
               </h3>
               <InfoTooltip size="sm">
@@ -333,20 +327,18 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-            <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-accent-foreground px-4 py-1 text-xs font-bold shadow-lg">
+            <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 text-xs font-bold">
               <Clock className="h-3 w-3 mr-1" />
               24H FLASH DEAL
             </Badge>
           </div>
 
-          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20 h-full">
-            {/* Shimmer Effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+          <Card className="bg-card/50 border-border/30 transition-colors hover:border-accent/30 h-full">
 
-            <CardContent className="relative p-6 pt-8 flex flex-col h-full">
+            <CardContent className="p-6 pt-8 flex flex-col h-full">
             {/* Package Name */}
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+              <Star className="h-5 w-5 text-accent" />
               <h3 className="text-lg font-bold text-foreground">MVP Flash Deal</h3>
             </div>
             
@@ -356,14 +348,14 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 <p className="text-sm text-muted-foreground line-through">
                   {formatCurrency(mvpPrice)}
                 </p>
-                <Badge className="bg-accent/20 text-accent border-accent/30 text-xs">
+                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">
                   -{discountStrategy.discount_24h_percent}%
                 </Badge>
               </div>
-              <div className="text-4xl font-bold bg-gradient-to-r from-accent to-yellow-400 bg-clip-text text-transparent">
+              <div className="text-4xl font-bold text-accent">
                 {formatCurrency(discountStrategy.price_24h_cents / 100)}
               </div>
-              <p className="text-xs text-accent mt-1 font-semibold">
+              <p className="text-xs text-muted-foreground mt-1 font-medium">
                 Today Only - Maximum Discount!
               </p>
             </div>
@@ -434,57 +426,57 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </ul>
 
             {/* Bonuses */}
-            <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mb-4">
-              <p className="text-xs font-semibold text-yellow-400 mb-2 flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
+            <div className="p-3 rounded-lg bg-muted/10 border border-border/30 mb-4">
+              <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-accent" />
                 Exclusive 24H Bonuses:
               </p>
               <div className="space-y-1">
                 <div className="flex justify-between text-xs items-center">
-                  <span className="text-foreground/70 flex items-center gap-1">
+                  <span className="text-muted-foreground flex items-center gap-1">
                     Extended support ({extendedSupportDays} days)
                     <InfoTooltip size="sm">
                       {extendedSupportDays} days of priority email support with 24-hour response time instead of standard {baseSupportDays} days.
                     </InfoTooltip>
                   </span>
-                  <span className="text-yellow-400 font-semibold">$750 value</span>
+                  <span className="text-accent font-semibold">$750 value</span>
                 </div>
                 <div className="flex justify-between text-xs items-center">
-                  <span className="text-foreground/70 flex items-center gap-1">
+                  <span className="text-muted-foreground flex items-center gap-1">
                     Fast-track onboarding (7 days)
                     <InfoTooltip size="sm">
                       Project kickoff within 7 days instead of 14. Includes expedited requirements review.
                     </InfoTooltip>
                   </span>
-                  <span className="text-yellow-400 font-semibold">$1,500 value</span>
+                  <span className="text-accent font-semibold">$1,500 value</span>
                 </div>
               </div>
-              <div className="mt-2 pt-2 border-t border-yellow-500/20 flex justify-between">
-                <span className="text-xs text-yellow-400 font-bold">Total Bonus Value:</span>
-                <span className="text-xs text-yellow-400 font-bold">$2,250</span>
+              <div className="mt-2 pt-2 border-t border-border/30 flex justify-between">
+                <span className="text-xs text-foreground font-bold">Total Bonus Value:</span>
+                <span className="text-xs text-accent font-bold">$2,250</span>
               </div>
             </div>
 
             {/* Prominent Timer */}
-            <div className="p-3 rounded-lg bg-accent/20 border border-accent/30 mb-4">
-              <div className="flex items-center justify-center gap-2 text-accent mb-2">
-                <Clock className="h-4 w-4 animate-pulse" />
-                <span className="text-sm font-bold">HURRY! Offer expires in:</span>
+            <div className="p-3 rounded-lg bg-accent/5 border border-accent/10 mb-4">
+              <div className="flex items-center justify-center gap-2 text-foreground mb-2">
+                <Clock className="h-4 w-4 text-accent" />
+                <span className="text-sm font-medium">Offer expires in:</span>
               </div>
               <div className="flex items-center justify-center gap-2">
-                <div className="bg-accent/30 px-3 py-2 rounded-lg">
+                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
                   <span className="text-2xl font-bold text-accent">{hours.toString().padStart(2, '0')}</span>
-                  <span className="text-[10px] text-accent/70 block">HOURS</span>
+                  <span className="text-[10px] text-muted-foreground block">HOURS</span>
                 </div>
-                <span className="text-2xl font-bold text-accent">:</span>
-                <div className="bg-accent/30 px-3 py-2 rounded-lg">
+                <span className="text-2xl font-bold text-muted-foreground">:</span>
+                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
                   <span className="text-2xl font-bold text-accent">{minutes.toString().padStart(2, '0')}</span>
-                  <span className="text-[10px] text-accent/70 block">MINS</span>
+                  <span className="text-[10px] text-muted-foreground block">MINS</span>
                 </div>
-                <span className="text-2xl font-bold text-accent">:</span>
-                <div className="bg-accent/30 px-3 py-2 rounded-lg">
+                <span className="text-2xl font-bold text-muted-foreground">:</span>
+                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
                   <span className="text-2xl font-bold text-accent">{seconds.toString().padStart(2, '0')}</span>
-                  <span className="text-[10px] text-accent/70 block">SECS</span>
+                  <span className="text-[10px] text-muted-foreground block">SECS</span>
                 </div>
               </div>
             </div>
@@ -495,9 +487,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 e.stopPropagation();
                 onScheduleCall?.();
               }}
-              className="w-full gap-2 bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-600 text-black font-bold text-base py-6 shadow-lg shadow-accent/30"
+              className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-base py-6"
             >
-              <Star className="h-5 w-5 fill-current" />
+              <Star className="h-5 w-5" />
               CLAIM 25% DISCOUNT NOW
             </Button>
             
@@ -539,20 +531,18 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-            <Badge className="bg-gradient-to-r from-accent to-yellow-500 text-accent-foreground px-4 py-1 text-xs font-bold shadow-lg">
-              <Star className="h-3 w-3 mr-1 fill-current" />
+            <Badge className="bg-accent/10 text-accent border border-accent/20 px-3 py-1 text-xs font-bold">
+              <Star className="h-3 w-3 mr-1" />
               BEST VALUE - 30% OFF
             </Badge>
           </div>
 
-          <Card className="relative overflow-hidden cursor-pointer transition-all duration-300 bg-gradient-to-br from-accent/20 via-yellow-500/10 to-card border-accent/40 hover:border-accent/60 hover:shadow-lg hover:shadow-accent/20 h-full">
-            {/* Shimmer Effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+          <Card className="bg-card/50 border-border/30 transition-colors hover:border-accent/30 h-full">
 
-            <CardContent className="relative p-6 pt-8 flex flex-col h-full">
+            <CardContent className="p-6 pt-8 flex flex-col h-full">
             {/* Package Name */}
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+              <Star className="h-5 w-5 text-accent" />
               <h3 className="text-lg font-bold text-foreground">Complete Launch Bundle</h3>
             </div>
             
@@ -562,14 +552,14 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 <p className="text-sm text-muted-foreground line-through">
                   {formatCurrency(mvpPrice + marketingAnnualUaicode)}
                 </p>
-                <Badge className="bg-accent/20 text-accent border-accent/30 text-xs">
+                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">
                   -{discountStrategy.bundle_discount_percent}% on MVP
                 </Badge>
               </div>
-              <div className="text-4xl font-bold bg-gradient-to-r from-accent to-yellow-400 bg-clip-text text-transparent">
+              <div className="text-4xl font-bold text-accent">
                 {formatCurrency((discountStrategy.bundle_price_cents / 100) + marketingAnnualUaicode)}
               </div>
-              <p className="text-xs text-accent mt-1 font-semibold">
+              <p className="text-xs text-muted-foreground mt-1 font-medium">
                 MVP + Full Marketing Team Included
               </p>
             </div>
@@ -640,53 +630,53 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </ul>
 
             {/* Exclusive Bonuses */}
-            <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mb-4">
-              <p className="text-xs font-semibold text-yellow-400 mb-2 flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
+            <div className="p-3 rounded-lg bg-muted/10 border border-border/30 mb-4">
+              <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-accent" />
                 Exclusive Bundle Bonuses:
               </p>
               <div className="space-y-1">
                 <div className="flex justify-between text-xs items-center">
-                  <span className="text-foreground/70 flex items-center gap-1">
+                  <span className="text-muted-foreground flex items-center gap-1">
                     3 months extra hosting
                     <InfoTooltip size="sm">
                       15 months total hosting instead of 12. Saves 3x $299/month market rate.
                     </InfoTooltip>
                   </span>
-                  <span className="text-yellow-400 font-semibold">$897 value</span>
+                  <span className="text-accent font-semibold">$897 value</span>
                 </div>
                 <div className="flex justify-between text-xs items-center">
-                  <span className="text-foreground/70 flex items-center gap-1">
+                  <span className="text-muted-foreground flex items-center gap-1">
                     90 days VIP support
                     <InfoTooltip size="sm">
                       VIP support with 4-hour response time during business hours. Direct access to senior developers.
                     </InfoTooltip>
                   </span>
-                  <span className="text-yellow-400 font-semibold">$1,500 value</span>
+                  <span className="text-accent font-semibold">$1,500 value</span>
                 </div>
                 <div className="flex justify-between text-xs items-center">
-                  <span className="text-foreground/70 flex items-center gap-1">
+                  <span className="text-muted-foreground flex items-center gap-1">
                     Marketing strategy session (2h)
                     <InfoTooltip size="sm">
                       2-hour strategy session with marketing specialist. Includes competitive analysis and 90-day roadmap.
                     </InfoTooltip>
                   </span>
-                  <span className="text-yellow-400 font-semibold">$1,500 value</span>
+                  <span className="text-accent font-semibold">$1,500 value</span>
                 </div>
               </div>
-              <div className="mt-2 pt-2 border-t border-yellow-500/20 flex justify-between">
-                <span className="text-xs text-yellow-400 font-bold">Total Bonus Value:</span>
-                <span className="text-xs text-yellow-400 font-bold">$3,897</span>
+              <div className="mt-2 pt-2 border-t border-border/30 flex justify-between">
+                <span className="text-xs text-foreground font-bold">Total Bonus Value:</span>
+                <span className="text-xs text-accent font-bold">$3,897</span>
               </div>
             </div>
 
             {/* Social Proof */}
-            <div className="mb-4 p-4 rounded-lg bg-gradient-to-r from-accent/10 to-yellow-500/10 border border-accent/20">
+            <div className="mb-4 p-4 rounded-lg bg-muted/10 border border-border/30">
               <div className="flex flex-col items-center gap-3">
                 <div className="flex -space-x-3">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-accent/30 border-2 border-card flex items-center justify-center">
-                      <span className="text-xs text-accent">👤</span>
+                    <div key={i} className="w-8 h-8 rounded-full bg-accent/10 border-2 border-card flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground">👤</span>
                     </div>
                   ))}
                 </div>
@@ -707,9 +697,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 e.stopPropagation();
                 onScheduleCall?.();
               }}
-              className="w-full gap-2 bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-600 text-black font-bold text-base py-6 shadow-lg shadow-accent/30"
+              className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-base py-6"
             >
-              <Star className="h-5 w-5 fill-current" />
+              <Star className="h-5 w-5" />
               GET MAXIMUM SAVINGS
             </Button>
             
@@ -749,7 +739,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       </div>
 
       {/* Marketing Billing Notice */}
-      <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/30 border border-border/50">
+      <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-card/50 border border-border/30">
         <div className="flex items-center gap-2">
           <AlertCircle className="h-4 w-4 text-accent flex-shrink-0" />
           <p className="text-sm text-foreground">
@@ -757,7 +747,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             <span className="text-accent font-semibold"> only charged after your MVP is launched</span>
           </p>
         </div>
-        <p className="text-xs text-foreground/60 text-center">
+        <p className="text-xs text-muted-foreground text-center">
           The {formatCurrency(marketingMonthlyUaicode)}/month contract is an annual commitment. 
           The {formatCurrency(suggestedPaidMediaDollars)}/month ad spend is a recommendation and can be adjusted based on your budget.
         </p>
