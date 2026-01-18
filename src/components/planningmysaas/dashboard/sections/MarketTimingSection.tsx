@@ -248,15 +248,15 @@ const MarketTimingSection = () => {
   const { reportData } = useReportContext();
   
   const opportunityData = reportData?.opportunity_section as Record<string, any> | null;
-  const timingData = opportunityData?.market_timing;
   
-  if (!timingData) return null;
+  // Data is directly in opportunityData, not nested under market_timing
+  if (!opportunityData?.optimal_window) return null;
   
-  const trendsScore = parseScore(timingData.trends_score);
-  const trajectoryScore = trajectoryToScore(timingData.trajectory);
-  const maturityScore = maturityToScore(timingData.market_maturity);
-  const optimalWindowScore = parseScore(timingData.optimal_window_score || 75);
-  const saturationScore = saturationToScore(timingData.saturation_risk);
+  const trendsScore = parseScore(opportunityData.trends_score);
+  const trajectoryScore = trajectoryToScore(opportunityData.current_trajectory);
+  const maturityScore = maturityToScore(opportunityData.market_maturity);
+  const optimalWindowScore = parseScore(opportunityData.trends_score || 75);
+  const saturationScore = saturationToScore(opportunityData.saturation_level);
   
   const radarData = [
     { metric: "Trends", score: trendsScore, fullMark: 100 },
@@ -266,7 +266,7 @@ const MarketTimingSection = () => {
     { metric: "Saturation", score: saturationScore, fullMark: 100 },
   ];
   
-  const parsedWindow = parseOptimalWindow(timingData.optimal_window);
+  const parsedWindow = parseOptimalWindow(opportunityData.optimal_window);
   const quarters = generateQuarterTimeline(parsedWindow);
   const urgencyConfig = getUrgencyConfig(parsedWindow.urgency);
   const UrgencyIcon = urgencyConfig.icon;
@@ -401,12 +401,12 @@ const MarketTimingSection = () => {
               </div>
 
               {/* Saturation Warning */}
-              {timingData.saturation_risk && (
+              {opportunityData.saturation_level && (
                 <div className="flex items-start gap-2 text-xs text-muted-foreground">
                   <AlertTriangle className="h-3.5 w-3.5 text-yellow-400 mt-0.5 flex-shrink-0" />
                   <span>
-                    <span className="font-medium text-yellow-400">Saturation Risk:</span>{" "}
-                    {timingData.saturation_risk}
+                    <span className="font-medium text-yellow-400">Saturation Level:</span>{" "}
+                    {opportunityData.saturation_level}
                   </span>
                 </div>
               )}
