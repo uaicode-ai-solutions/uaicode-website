@@ -123,6 +123,21 @@ const CustomerPainPointsSection = () => {
                   data={chartData.slice(0, 5)} // Top 5 pain points
                   margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
                 >
+                  {/* Gradient and Glow Definitions - matching ScoreCircle style */}
+                  <defs>
+                    <linearGradient id="painBarGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#F59E0B" />
+                      <stop offset="50%" stopColor="#FBBF24" />
+                      <stop offset="100%" stopColor="#FCD34D" />
+                    </linearGradient>
+                    <filter id="barGlow" x="-20%" y="-50%" width="140%" height="200%">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
                   <XAxis
                     type="number"
                     domain={[0, 10]}
@@ -144,11 +159,12 @@ const CustomerPainPointsSection = () => {
                     dataKey="intensity"
                     radius={[0, 4, 4, 0]}
                     maxBarSize={28}
+                    filter="url(#barGlow)"
                   >
                     {chartData.slice(0, 5).map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={`hsl(var(--accent))`}
+                        fill="url(#painBarGradient)"
                         fillOpacity={getBarOpacity(entry.intensity)}
                       />
                     ))}
