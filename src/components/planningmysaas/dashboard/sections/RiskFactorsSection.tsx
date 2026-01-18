@@ -114,15 +114,17 @@ const RiskFactorsSection = () => {
                 </RadialBarChart>
               </ResponsiveContainer>
 
-              {/* Center content */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
+              {/* Center content - number only */}
+              <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-5xl font-bold text-amber-500">{riskScore}</span>
-                <span className="text-xs text-muted-foreground">Safety Score</span>
               </div>
             </div>
 
+            {/* Label outside chart */}
+            <p className="text-center text-sm text-muted-foreground mt-2">Safety Score</p>
+
             {/* Risk level badge */}
-            <div className="mt-4 text-center">
+            <div className="mt-3 text-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20">
                 <Shield className="h-4 w-4 text-accent" />
                 <span className="text-sm font-medium text-foreground">
