@@ -1,9 +1,8 @@
-import { AlertTriangle, Shield, ChevronRight } from "lucide-react";
+import { AlertTriangle, Shield } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
-import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
 import {
   RadialBarChart,
   RadialBar,
@@ -25,7 +24,7 @@ const RiskFactorsSection = () => {
     {
       name: "Risk Level",
       value: 100 - riskScore, // Show risk level (higher = more risk)
-      fill: "hsl(var(--accent))",
+      fill: "url(#riskBarGradient)",
     },
   ];
 
@@ -64,7 +63,12 @@ const RiskFactorsSection = () => {
         {/* Card 1: Radial Chart + Score */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-foreground mb-4">Risk Assessment</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-sm font-medium text-foreground">Risk Assessment</h3>
+              <InfoTooltip side="top" size="sm">
+                Safety score based on the number of identified risks. Higher is better.
+              </InfoTooltip>
+            </div>
 
             {/* Radial Bar Chart */}
             <div className="relative h-48 flex items-center justify-center">
@@ -78,6 +82,22 @@ const RiskFactorsSection = () => {
                   startAngle={90}
                   endAngle={-270}
                 >
+                  <defs>
+                    {/* Amber gradient for radial bar */}
+                    <linearGradient id="riskBarGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#F59E0B" />
+                      <stop offset="50%" stopColor="#FBBF24" />
+                      <stop offset="100%" stopColor="#FCD34D" />
+                    </linearGradient>
+                    {/* Glow filter */}
+                    <filter id="riskGlow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
                   <PolarAngleAxis
                     type="number"
                     domain={[0, 100]}
@@ -88,15 +108,15 @@ const RiskFactorsSection = () => {
                     background={{ fill: "hsl(var(--muted) / 0.3)" }}
                     dataKey="value"
                     cornerRadius={10}
-                    fill="hsl(var(--accent))"
-                    fillOpacity={0.8}
+                    fill="url(#riskBarGradient)"
+                    filter="url(#riskGlow)"
                   />
                 </RadialBarChart>
               </ResponsiveContainer>
 
               {/* Center content */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold text-accent">{riskScore}</span>
+                <span className="text-5xl font-bold text-amber-500">{riskScore}</span>
                 <span className="text-xs text-muted-foreground">Safety Score</span>
               </div>
             </div>
@@ -111,54 +131,66 @@ const RiskFactorsSection = () => {
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="mt-4 flex justify-center gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-accent">{riskCount}</div>
-                <div className="text-xs text-muted-foreground">Risks</div>
+            {/* Stats in individual cards */}
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Risks Identified
+                  <InfoTooltip side="top" size="sm">
+                    Total number of potential challenges identified in market analysis.
+                  </InfoTooltip>
+                </span>
+                <span className="font-bold text-amber-500">{riskCount}</span>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-foreground">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Status
+                  <InfoTooltip side="top" size="sm">
+                    Overall risk status based on the number of identified challenges.
+                  </InfoTooltip>
+                </span>
+                <span className="font-bold text-foreground">
                   {riskCount <= 3 ? "Manageable" : riskCount <= 5 ? "Monitor" : "Critical"}
-                </div>
-                <div className="text-xs text-muted-foreground">Status</div>
+                </span>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Card 2: Risk List (2 cols) */}
-        <Card className="bg-card/50 border-border/30 lg:col-span-2">
-          <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-foreground mb-5">Identified Risks</h3>
+        <Card className="bg-card/50 border-border/30 lg:col-span-2 flex flex-col">
+          <CardContent className="p-6 flex-1 flex flex-col">
+            <div className="flex items-center gap-2 mb-5">
+              <h3 className="text-sm font-medium text-foreground">Identified Risks</h3>
+              <InfoTooltip side="top" size="sm">
+                List of potential challenges to consider before launching your product.
+              </InfoTooltip>
+            </div>
 
-            <div className="space-y-3">
+            <div className="flex-1 space-y-3">
               {riskFactors.map((risk, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-accent/5 border border-accent/10 transition-all duration-300 hover:border-accent/30"
+                  className="flex items-start gap-3 p-3 rounded-xl bg-accent/5 border border-accent/10 hover:border-accent/30 transition-colors"
                 >
-                  {/* Index badge */}
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center">
-                    <span className="text-xs font-medium text-accent">{index + 1}</span>
+                  {/* Index badge with gradient */}
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center border border-amber-500/20">
+                    <span className="text-sm font-bold text-amber-500">{index + 1}</span>
                   </div>
 
                   {/* Risk text */}
                   <p className="text-sm text-foreground flex-1 leading-relaxed">
                     {risk}
                   </p>
-
-                  {/* Arrow icon */}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                 </div>
               ))}
             </div>
 
             {/* Risk awareness note */}
-            <div className="mt-5 p-3 rounded-lg bg-muted/10 border border-border/30">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-muted-foreground">
+            <div className="mt-5 p-4 rounded-lg bg-accent/5 border border-accent/10">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   These risks are derived from market analysis and competitor landscape. 
                   Having awareness of potential challenges helps in building mitigation strategies.
                 </p>
