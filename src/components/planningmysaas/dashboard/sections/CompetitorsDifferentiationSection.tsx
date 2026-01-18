@@ -150,9 +150,12 @@ const CompetitorsDifferentiationSection = () => {
               </InfoTooltip>
             </div>
             <div className="space-y-3">
+              {/* Price bars with numbers */}
               {competitors.slice(0, 6).map((competitor, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <span className="w-28 text-xs text-muted-foreground truncate">{competitor.name}</span>
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-amber-500">{index + 1}</span>
+                  </div>
                   <div className="flex-1 h-3 bg-background/50 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-full transition-all duration-500"
@@ -164,6 +167,18 @@ const CompetitorsDifferentiationSection = () => {
                   </span>
                 </div>
               ))}
+              
+              {/* Legend below chart */}
+              <div className="pt-3 mt-3 border-t border-border/30">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                  {competitors.slice(0, 6).map((competitor, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-amber-500 w-4">{index + 1}.</span>
+                      <span className="text-xs text-muted-foreground truncate">{competitor.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
