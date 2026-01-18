@@ -325,8 +325,8 @@ const DemandSignalsSection = () => {
     <section id="demand-signals" className="space-y-6 animate-fade-in">
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
-          <Activity className="h-5 w-5 text-amber-500" />
+        <div className="p-2 rounded-lg bg-accent/10">
+          <Activity className="h-5 w-5 text-accent" />
         </div>
         <div>
           <div className="flex items-center gap-2">

@@ -204,7 +204,7 @@ const ExecutionPlanSection = () => {
                   </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-medium text-foreground">Execution Timeline</h3>
+                  <h3 className="text-sm font-medium text-gradient-gold">Execution Timeline</h3>
                   <InfoTooltip side="top" size="sm">
                     Detailed breakdown of development phases, from discovery to launch.
                   </InfoTooltip>
@@ -373,7 +373,7 @@ const ExecutionPlanSection = () => {
               <Cpu className="h-4 w-4 text-accent" />
             </div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-medium text-foreground">Suggested Technology Stack</h3>
+              <h3 className="text-sm font-medium text-gradient-gold">Suggested Technology Stack</h3>
               <InfoTooltip side="right" size="sm">
                 Recommended modern, scalable technologies tailored for your project's specific needs.
               </InfoTooltip>
