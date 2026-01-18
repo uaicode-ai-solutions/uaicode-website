@@ -237,8 +237,8 @@ export type Database = {
         Row: {
           competitive_analysis_section: Json | null
           created_at: string
+          icp_intelligence_section: Json | null
           id: string
-          marketing_intelligence_section: Json | null
           opportunity_section: Json | null
           section_investment: Json | null
           status: string
@@ -248,8 +248,8 @@ export type Database = {
         Insert: {
           competitive_analysis_section?: Json | null
           created_at?: string
+          icp_intelligence_section?: Json | null
           id?: string
-          marketing_intelligence_section?: Json | null
           opportunity_section?: Json | null
           section_investment?: Json | null
           status?: string
@@ -259,8 +259,8 @@ export type Database = {
         Update: {
           competitive_analysis_section?: Json | null
           created_at?: string
+          icp_intelligence_section?: Json | null
           id?: string
-          marketing_intelligence_section?: Json | null
           opportunity_section?: Json | null
           section_investment?: Json | null
           status?: string
