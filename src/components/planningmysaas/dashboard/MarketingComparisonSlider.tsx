@@ -176,12 +176,12 @@ const MarketingComparisonSlider = ({
               {formatCurrencyK(traditionalMin)} - {formatCurrencyK(traditionalMax)}/mo
             </span>
           </div>
-          <div className="relative h-10 bg-muted/20 rounded-lg overflow-hidden border border-border/30">
+          <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-border/30">
             <div 
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-lg transition-all duration-1000 ease-out flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? '100%' : '0%' }}
             >
-              <span className="text-xs font-medium text-muted-foreground">~{formatCurrencyK(animatedTraditional)}</span>
+              <span className="text-xs font-medium text-accent-foreground">~{formatCurrencyK(animatedTraditional)}</span>
             </div>
           </div>
         </div>
@@ -192,12 +192,12 @@ const MarketingComparisonSlider = ({
             <span className="text-accent/70">Uaicode Marketing</span>
             <span className="font-medium text-accent/70">{formatCurrency(animatedUaicode)}/mo</span>
           </div>
-          <div className="relative h-6 bg-muted/20 rounded-lg overflow-hidden border border-amber-400/30">
+          <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-amber-400/30">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-lg transition-all duration-1000 ease-out delay-200 flex items-center justify-end pr-2"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-lg transition-all duration-1000 ease-out delay-200 flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? `${Math.min(uaicodeWidth, 100)}%` : '0%' }}
             >
-              <span className="text-[10px] font-medium text-accent-foreground/80">{formatCurrencyK(uaicodeTotal)}</span>
+              <span className="text-xs font-medium text-accent-foreground">{formatCurrencyK(uaicodeTotal)}</span>
             </div>
           </div>
         </div>
