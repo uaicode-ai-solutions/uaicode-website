@@ -88,8 +88,10 @@ const CompetitorsDifferentiationSection = () => {
           
           return (
             <Card key={index} className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors flex flex-col">
-              <CardContent className="p-4 flex flex-col flex-1 space-y-3">
-                {/* Header: Name + Badges */}
+              <CardContent className="p-4 flex flex-col flex-1">
+                {/* Main Content - grows to fill space */}
+                <div className="flex-1 space-y-3">
+                  {/* Header: Name + Badges */}
                 <div className="flex justify-between items-start gap-2">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center flex-shrink-0">
@@ -175,10 +177,11 @@ const CompetitorsDifferentiationSection = () => {
                       </p>
                     ))}
                   </div>
+                  </div>
                 </div>
                 
-                {/* Footer: Price + Model */}
-                <div className="flex justify-between items-end pt-2 border-t border-border/30 mt-auto">
+                {/* Footer: Price + Model - always at bottom */}
+                <div className="flex justify-between items-end pt-2 border-t border-border/30 mt-3">
                   <div className="flex flex-col">
                     <div>
                       <span className="text-xl font-bold text-gradient-gold">
