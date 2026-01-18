@@ -196,17 +196,32 @@ const CustomerPainPointsSection = () => {
             {/* Stats */}
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <span className="text-sm text-muted-foreground">Highest Intensity</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Highest Intensity
+                  <InfoTooltip side="top" size="sm">
+                    The most severe pain point identified, indicating the strongest customer need.
+                  </InfoTooltip>
+                </span>
                 <span className="font-bold text-accent">
                   {chartData.length > 0 ? `${chartData[0].intensity}/10` : "-"}
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <span className="text-sm text-muted-foreground">Average Intensity</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Average Intensity
+                  <InfoTooltip side="top" size="sm">
+                    Mean severity across all pain points. Higher averages suggest strong market demand.
+                  </InfoTooltip>
+                </span>
                 <span className="font-bold text-foreground">{avgIntensity}/10</span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <span className="text-sm text-muted-foreground">Critical (8+)</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Critical (8+)
+                  <InfoTooltip side="top" size="sm">
+                    Number of pain points with intensity 8 or higher, representing urgent customer needs.
+                  </InfoTooltip>
+                </span>
                 <span className="font-bold text-foreground">
                   {chartData.filter(p => p.intensity >= 8).length}
                 </span>
