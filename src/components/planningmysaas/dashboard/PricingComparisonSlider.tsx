@@ -132,7 +132,7 @@ const PricingComparisonSlider = () => {
           </div>
           <div className="relative h-8 bg-muted/20 rounded-lg overflow-hidden border border-border/30">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-muted-foreground/30 via-muted-foreground/20 to-muted-foreground/10 rounded-lg w-full flex items-center justify-end pr-3"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-lg w-full flex items-center justify-end pr-3"
             >
               <span className="text-xs font-medium text-muted-foreground">
                 {formatCurrencyShort(traditionalPrice)}
