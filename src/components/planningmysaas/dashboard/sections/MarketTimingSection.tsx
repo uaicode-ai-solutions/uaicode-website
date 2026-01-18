@@ -1,10 +1,8 @@
-import { Clock, TrendingUp, CalendarClock, Activity, AlertTriangle } from "lucide-react";
+import { Clock, TrendingUp, CalendarClock, Activity, AlertTriangle, CheckCircle, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { Tooltip as ShadTooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
-import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
 import {
   RadarChart,
   PolarGrid,
@@ -121,31 +119,114 @@ const MarketTimingSection = () => {
     (trendsScore + trajectoryScore + maturityScore + windowScore + saturationScore) / 5
   );
 
-  // Metrics for display with descriptions
-  const metrics = [
+  // Entry Verdict based on overall score
+  const getEntryVerdict = () => {
+    if (overallScore >= 75) {
+      return {
+        status: "FAVORABLE CONDITIONS",
+        color: "bg-green-500/10 border-green-500/30",
+        textColor: "text-green-400",
+        description: opportunityData?.launch_reasoning || "Strong momentum with low entry barriers",
+        icon: CheckCircle
+      };
+    } else if (overallScore >= 50) {
+      return {
+        status: "PROCEED WITH CAUTION",
+        color: "bg-yellow-500/10 border-yellow-500/30",
+        textColor: "text-yellow-400",
+        description: opportunityData?.launch_reasoning || "Moderate opportunity with some risks",
+        icon: AlertTriangle
+      };
+    }
+    return {
+      status: "HIGH RISK ENTRY",
+      color: "bg-red-500/10 border-red-500/30",
+      textColor: "text-red-400",
+      description: opportunityData?.launch_reasoning || "Challenging conditions, careful strategy required",
+      icon: AlertTriangle
+    };
+  };
+
+  // Risk Level based on saturation_level from database
+  const getRiskLevel = () => {
+    const saturationLevel = opportunityData?.saturation_level;
+    if (!saturationLevel) return { level: "Unknown", color: "text-muted-foreground" };
+    const lower = saturationLevel.toLowerCase();
+    if (lower.includes("low") || lower.includes("minimal")) {
+      return { level: "Low", color: "text-green-400" };
+    }
+    if (lower.includes("moderate") || lower.includes("medium")) {
+      return { level: "Moderate", color: "text-yellow-400" };
+    }
+    if (lower.includes("high") || lower.includes("saturated")) {
+      return { level: "High", color: "text-red-400" };
+    }
+    return { level: saturationLevel, color: "text-muted-foreground" };
+  };
+
+  // Key Considerations from database
+  const getKeyConsiderations = (): string[] => {
+    const considerations: string[] = [];
+    
+    // First, use risk_factors from database
+    if (opportunityData?.risk_factors && Array.isArray(opportunityData.risk_factors) && opportunityData.risk_factors.length > 0) {
+      considerations.push(...opportunityData.risk_factors.slice(0, 3));
+    }
+    
+    // If not enough, add from opportunity_justification
+    if (considerations.length < 2 && opportunityData?.opportunity_justification) {
+      considerations.push(opportunityData.opportunity_justification);
+    }
+    
+    // Fallback based on calculated scores if no database data
+    if (considerations.length === 0) {
+      if (overallScore >= 75) {
+        considerations.push("Strong market momentum indicates favorable entry conditions");
+      }
+      if (saturationScore >= 70) {
+        considerations.push("Low competition density offers first-mover advantage");
+      }
+      if (trajectoryScore >= 75) {
+        considerations.push("Accelerating demand supports rapid customer acquisition");
+      }
+      if (considerations.length === 0) {
+        considerations.push("Market conditions require careful strategic planning");
+      }
+    }
+    
+    return considerations.slice(0, 3);
+  };
+
+  const entryVerdict = getEntryVerdict();
+  const riskLevel = getRiskLevel();
+  const keyConsiderations = getKeyConsiderations();
+
+  // Strategy metrics (non-redundant, from database)
+  const strategyMetrics = [
     {
-      label: "Phase",
-      value: opportunityData?.market_maturity || "Growth",
-      icon: Clock,
-      description: "Current lifecycle stage of the market. Early phases offer more growth potential but higher risk.",
-    },
-    {
-      label: "Trajectory",
-      value: opportunityData?.current_trajectory || "Accelerating",
-      icon: TrendingUp,
-      description: "Direction and speed of market growth. Accelerating markets indicate increasing demand.",
-    },
-    {
-      label: "Window",
-      value: opportunityData?.optimal_window || "Q1-Q2 2026",
+      label: "Entry Window",
+      value: opportunityData?.optimal_window || "Not specified",
       icon: CalendarClock,
-      description: "Recommended timeframe for market entry to maximize competitive advantage.",
+      description: "Recommended timeframe for market entry based on market conditions."
     },
     {
-      label: "Trend Score",
-      value: opportunityData?.trends_score || "85/100",
+      label: "Saturation",
+      value: opportunityData?.saturation_level || "Unknown",
       icon: Activity,
-      description: "Composite score based on search trends, social mentions, and market interest indicators.",
+      description: "Current market saturation level affecting competitive intensity."
+    },
+    {
+      label: "Timeframe",
+      value: opportunityData?.opportunity_timeframe || "6-12 months",
+      icon: Target,
+      description: "Expected window of opportunity based on market trajectory."
+    },
+    {
+      label: "Risk Level",
+      value: riskLevel.level,
+      icon: AlertTriangle,
+      description: "Overall entry risk based on saturation and market conditions.",
+      valueColor: riskLevel.color
     },
   ];
 
@@ -225,35 +306,52 @@ const MarketTimingSection = () => {
           </CardContent>
         </Card>
 
-        {/* Card 2: Metrics Grid with Mini ScoreCircles */}
+        {/* Card 2: Entry Strategy */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-5">
-              <h3 className="text-sm font-medium text-foreground">Key Indicators</h3>
+              <h3 className="text-sm font-medium text-foreground">Entry Strategy</h3>
               <InfoTooltip side="top" size="sm">
-                Summary of key market timing indicators. These metrics help assess when is the 
-                optimal moment to enter the market based on current conditions.
+                Actionable insights and recommendations for market entry timing based on current conditions.
               </InfoTooltip>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {metrics.map((metric, index) => {
+            {/* Entry Verdict Banner */}
+            <div className={`p-4 rounded-xl border ${entryVerdict.color} mb-5`}>
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${entryVerdict.color}`}>
+                  <entryVerdict.icon className={`h-5 w-5 ${entryVerdict.textColor}`} />
+                </div>
+                <div>
+                  <p className={`font-bold text-sm ${entryVerdict.textColor}`}>
+                    {entryVerdict.status}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                    {entryVerdict.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Strategy Metrics Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {strategyMetrics.map((metric, index) => {
                 const IconComponent = metric.icon;
                 return (
                   <div
                     key={index}
-                    className="p-4 rounded-xl bg-accent/5 border border-accent/10 transition-all duration-300 hover:border-accent/30"
+                    className="p-3 rounded-xl bg-accent/5 border border-accent/10 transition-all duration-300 hover:border-accent/30"
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="p-1.5 rounded-lg bg-accent/10">
-                        <IconComponent className="h-3.5 w-3.5 text-accent" />
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="p-1 rounded-md bg-accent/10">
+                        <IconComponent className="h-3 w-3 text-accent" />
                       </div>
                       <span className="text-xs text-muted-foreground">{metric.label}</span>
                       <InfoTooltip side="top" size="sm">
                         {metric.description}
                       </InfoTooltip>
                     </div>
-                    <p className="font-semibold text-foreground text-sm leading-tight">
+                    <p className={`font-semibold text-sm leading-tight ${metric.valueColor || 'text-foreground'}`}>
                       {metric.value}
                     </p>
                   </div>
@@ -261,35 +359,26 @@ const MarketTimingSection = () => {
               })}
             </div>
 
-            {/* Score Circles Row */}
-            <div className="mt-6 flex justify-center gap-8">
-              <ShadTooltip>
-                <TooltipTrigger>
-                  <ScoreCircle score={trendsScore} label="Trends" size="lg" />
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[200px]">
-                  <p className="text-xs">Search and interest trends score. Higher values indicate growing market demand.</p>
-                </TooltipContent>
-              </ShadTooltip>
-              
-              <ShadTooltip>
-                <TooltipTrigger>
-                  <ScoreCircle score={trajectoryScore} label="Trajectory" size="lg" />
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[200px]">
-                  <p className="text-xs">Market growth momentum. Accelerating markets score above 80.</p>
-                </TooltipContent>
-              </ShadTooltip>
-              
-              <ShadTooltip>
-                <TooltipTrigger>
-                  <ScoreCircle score={maturityScore} label="Maturity" size="lg" />
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[200px]">
-                  <p className="text-xs">Market lifecycle stage score. Emerging markets score higher (more opportunity).</p>
-                </TooltipContent>
-              </ShadTooltip>
-            </div>
+            {/* Key Considerations */}
+            {keyConsiderations.length > 0 && (
+              <div className="pt-4 border-t border-border/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Key Considerations
+                  </span>
+                </div>
+                <ul className="space-y-2">
+                  {keyConsiderations.map((consideration, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-accent flex-shrink-0" />
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {consideration}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
