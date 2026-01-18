@@ -320,17 +320,17 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </Badge>
           </div>
 
-          <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card/50 border-yellow-500/30 hover:border-yellow-500/40 hover:shadow-yellow-500/10 h-full">
+          <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card/50 border-accent/30 hover:border-accent/40 hover:shadow-accent/10 h-full">
             {/* Hover overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             
             {/* Corner decoration */}
-            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-yellow-500/15 to-yellow-400/5 rounded-bl-[40px] -mr-4 -mt-4"></div>
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-accent/15 to-accent/5 rounded-bl-[40px] -mr-4 -mt-4"></div>
 
             <CardContent className="relative p-6 pt-8 flex flex-col h-full">
             {/* Package Name */}
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+            <Star className="h-5 w-5 text-accent fill-accent" />
               <h3 className="text-lg font-bold text-foreground">MVP Flash Deal</h3>
             </div>
             
@@ -340,11 +340,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 <p className="text-sm text-muted-foreground line-through">
                   {formatCurrency(mvpPrice)}
                 </p>
-                <Badge variant="outline" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
+                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">
                   -{discountStrategy.discount_24h_percent}%
                 </Badge>
               </div>
-              <div className="text-4xl font-bold text-yellow-400">
+              <div className="text-4xl font-bold text-gradient-gold">
                 {formatCurrency(discountStrategy.price_24h_cents / 100)}
               </div>
               <p className="text-xs text-muted-foreground mt-1 font-medium">
@@ -360,11 +360,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </p>
                 <p className="text-[10px] text-green-400/80">You Save</p>
               </div>
-              <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-center">
-                <p className="text-lg font-bold text-yellow-400">
+              <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 text-center">
+                <p className="text-lg font-bold text-gradient-gold">
                   {discountStrategy.savings_vs_traditional_24h_percent}%
                 </p>
-                <p className="text-[10px] text-yellow-400/80">vs Traditional</p>
+                <p className="text-[10px] text-muted-foreground">vs Traditional</p>
               </div>
             </div>
 
@@ -450,24 +450,24 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </div>
 
             {/* Prominent Timer */}
-            <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mb-4">
+            <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 mb-4">
               <div className="flex items-center justify-center gap-2 text-foreground mb-2">
-                <Clock className="h-4 w-4 text-yellow-400 animate-pulse" />
+                <Clock className="h-4 w-4 text-accent animate-pulse" />
                 <span className="text-sm font-medium">Offer expires in:</span>
               </div>
               <div className="flex items-center justify-center gap-2">
-                <div className="bg-yellow-500/20 border border-yellow-500/30 px-3 py-2 rounded-lg">
-                  <span className="text-2xl font-bold text-yellow-400">{hours.toString().padStart(2, '0')}</span>
+                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
+                  <span className="text-2xl font-bold text-gradient-gold">{hours.toString().padStart(2, '0')}</span>
                   <span className="text-[10px] text-muted-foreground block">HOURS</span>
                 </div>
                 <span className="text-2xl font-bold text-muted-foreground">:</span>
-                <div className="bg-yellow-500/20 border border-yellow-500/30 px-3 py-2 rounded-lg">
-                  <span className="text-2xl font-bold text-yellow-400">{minutes.toString().padStart(2, '0')}</span>
+                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
+                  <span className="text-2xl font-bold text-gradient-gold">{minutes.toString().padStart(2, '0')}</span>
                   <span className="text-[10px] text-muted-foreground block">MINS</span>
                 </div>
                 <span className="text-2xl font-bold text-muted-foreground">:</span>
-                <div className="bg-yellow-500/20 border border-yellow-500/30 px-3 py-2 rounded-lg">
-                  <span className="text-2xl font-bold text-yellow-400">{seconds.toString().padStart(2, '0')}</span>
+                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
+                  <span className="text-2xl font-bold text-gradient-gold">{seconds.toString().padStart(2, '0')}</span>
                   <span className="text-[10px] text-muted-foreground block">SECS</span>
                 </div>
               </div>
@@ -523,23 +523,23 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-            <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 text-xs font-bold">
+            <Badge className="bg-accent/10 text-accent border border-accent/20 px-3 py-1 text-xs font-bold">
               <Star className="h-3 w-3 mr-1" />
               BEST VALUE - 30% OFF
             </Badge>
           </div>
 
-          <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card/50 border-yellow-500/30 hover:border-yellow-500/40 hover:shadow-yellow-500/10 h-full">
+          <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card/50 border-accent/30 hover:border-accent/40 hover:shadow-accent/10 h-full">
             {/* Hover overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             
             {/* Corner decoration */}
-            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-yellow-500/15 to-yellow-400/5 rounded-bl-[40px] -mr-4 -mt-4"></div>
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-accent/15 to-accent/5 rounded-bl-[40px] -mr-4 -mt-4"></div>
 
             <CardContent className="relative p-6 pt-8 flex flex-col h-full">
             {/* Package Name */}
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+              <Star className="h-5 w-5 text-accent fill-accent" />
               <h3 className="text-lg font-bold text-foreground">Complete Launch Bundle</h3>
             </div>
             
@@ -549,11 +549,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 <p className="text-sm text-muted-foreground line-through">
                   {formatCurrency(mvpPrice + marketingAnnualUaicode)}
                 </p>
-                <Badge variant="outline" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
+                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">
                   -{discountStrategy.bundle_discount_percent}% on MVP
                 </Badge>
               </div>
-              <div className="text-4xl font-bold text-yellow-400">
+              <div className="text-4xl font-bold text-gradient-gold">
                 {formatCurrency((discountStrategy.bundle_price_cents / 100) + marketingAnnualUaicode)}
               </div>
               <p className="text-xs text-muted-foreground mt-1 font-medium">
@@ -569,11 +569,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </p>
                 <p className="text-[10px] text-green-400/80">MVP Savings</p>
               </div>
-              <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-center">
-                <p className="text-lg font-bold text-yellow-400">
+              <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 text-center">
+                <p className="text-lg font-bold text-gradient-gold">
                   30%
                 </p>
-                <p className="text-[10px] text-yellow-400/80">Max Discount</p>
+                <p className="text-[10px] text-muted-foreground">Max Discount</p>
               </div>
             </div>
 
