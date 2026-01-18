@@ -55,7 +55,6 @@ import SuccessMetricsSection from "@/components/planningmysaas/dashboard/section
 import WhyUaicodeSection from "@/components/planningmysaas/dashboard/sections/WhyUaicodeSection";
 import NextStepsSection from "@/components/planningmysaas/dashboard/sections/NextStepsSection";
 import ScheduleCallSection from "@/components/planningmysaas/dashboard/sections/ScheduleCallSection";
-import DirectContactSection from "@/components/planningmysaas/dashboard/sections/DirectContactSection";
 import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/BrandAssetsTab";
 import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
 import ShareReportDialog from "@/components/planningmysaas/dashboard/ShareReportDialog";
@@ -513,7 +512,6 @@ const PmsDashboardContent = () => {
                 <WhyUaicodeSection />
                 <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
                 <ScheduleCallSection projectName={projectName} />
-                <DirectContactSection />
                 </div>
             )}
 
