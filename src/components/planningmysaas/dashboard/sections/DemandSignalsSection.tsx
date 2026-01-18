@@ -33,6 +33,36 @@ const extractValue = (data: unknown): string => {
   return "...";
 };
 
+// Format search volume to B/M/K /month
+const formatSearchVolume = (value: string): string => {
+  if (!value || value === "..." || value === "N/A") return "...";
+  
+  // Extract first number from text (e.g., "2.1-3.2 million" -> 2.1)
+  const numMatch = value.match(/[\d.]+/);
+  if (!numMatch) return "...";
+  
+  const num = parseFloat(numMatch[0]);
+  const lowerValue = value.toLowerCase();
+  
+  // Detect suffix based on text
+  if (lowerValue.includes("billion")) {
+    return `${num}B /month`;
+  }
+  if (lowerValue.includes("million")) {
+    return `${num}M /month`;
+  }
+  if (lowerValue.includes("thousand") || lowerValue.includes("k")) {
+    return `${num}K /month`;
+  }
+  
+  // Auto-format large numbers
+  if (num >= 1000000000) return `${(num / 1000000000).toFixed(1)}B /month`;
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M /month`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}K /month`;
+  
+  return `${num} /month`;
+};
+
 // Count available signals
 const countAvailableSignals = (signals: { value: string }[]): number => {
   return signals.filter(s => s.value !== "...").length;
@@ -56,7 +86,7 @@ const DemandSignalsSection = () => {
     {
       key: "searches",
       label: "Monthly Searches",
-      value: monthlySearches,
+      value: formatSearchVolume(monthlySearches),
       icon: Search,
       description: "Estimated monthly search volume for related keywords",
     },
@@ -66,8 +96,6 @@ const DemandSignalsSection = () => {
       value: searchTrend !== "..." ? trendConfig.label : "...",
       icon: TrendingUp,
       description: "Direction of search interest over time",
-      badgeColor: searchTrend !== "..." ? trendConfig.bgColor : undefined,
-      textColor: searchTrend !== "..." ? trendConfig.color : undefined,
     },
     {
       key: "forums",
@@ -93,7 +121,7 @@ const DemandSignalsSection = () => {
   ];
 
   const availableSignals = countAvailableSignals(demandSignals);
-  const primarySignal = monthlySearches !== "..." ? monthlySearches : "N/A";
+  const primarySignal = monthlySearches !== "..." ? formatSearchVolume(monthlySearches) : "N/A";
   const trendDirection = searchTrend !== "..." ? trendConfig.label : "N/A";
 
   return (
@@ -169,14 +197,14 @@ const DemandSignalsSection = () => {
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={`p-2 rounded-lg ${signal.badgeColor || "bg-gradient-to-br from-amber-500/20 to-amber-400/10"}`}>
-                      <IconComponent className={`h-4 w-4 ${signal.textColor || "text-amber-500"}`} />
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
+                      <IconComponent className="h-4 w-4 text-amber-500" />
                     </div>
                     <InfoTooltip size="sm">{signal.description}</InfoTooltip>
                   </div>
                   
                   <p className="text-xs text-muted-foreground mb-1">{signal.label}</p>
-                  <p className={`text-2xl font-bold ${signal.textColor || "text-foreground"}`}>
+                  <p className="text-2xl font-bold text-foreground">
                     {signal.value}
                   </p>
                   
