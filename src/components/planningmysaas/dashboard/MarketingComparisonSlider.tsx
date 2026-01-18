@@ -178,7 +178,7 @@ const MarketingComparisonSlider = ({
           </div>
           <div className="relative h-10 bg-muted/20 rounded-lg overflow-hidden border border-border/30">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-muted-foreground/30 via-muted-foreground/20 to-muted-foreground/10 rounded-lg transition-all duration-1000 ease-out flex items-center justify-end pr-3"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-lg transition-all duration-1000 ease-out flex items-center justify-end pr-3"
               style={{ width: hasAnimated ? '100%' : '0%' }}
             >
               <span className="text-xs font-medium text-muted-foreground">~{formatCurrencyK(animatedTraditional)}</span>
@@ -194,7 +194,7 @@ const MarketingComparisonSlider = ({
           </div>
           <div className="relative h-6 bg-muted/20 rounded-lg overflow-hidden border border-amber-400/30">
             <div 
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-400/70 via-amber-300/50 to-amber-200/30 rounded-lg transition-all duration-1000 ease-out delay-200 flex items-center justify-end pr-2"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-lg transition-all duration-1000 ease-out delay-200 flex items-center justify-end pr-2"
               style={{ width: hasAnimated ? `${Math.min(uaicodeWidth, 100)}%` : '0%' }}
             >
               <span className="text-[10px] font-medium text-accent-foreground/80">{formatCurrencyK(uaicodeTotal)}</span>

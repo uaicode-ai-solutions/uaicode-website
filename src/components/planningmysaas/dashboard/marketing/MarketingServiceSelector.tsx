@@ -150,7 +150,7 @@ const ServiceCard = ({
             </div>
             <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
               <div 
-                className="absolute inset-y-0 left-0 bg-accent/80 rounded-full transition-all duration-300"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-full transition-all duration-300"
                 style={{ width: `${uaicodeWidth}%` }}
               />
             </div>
@@ -167,12 +167,12 @@ const ServiceCard = ({
             <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
               {/* Min range indicator */}
               <div 
-                className="absolute inset-y-0 left-0 bg-accent/20 rounded-full"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-amber-300/10 rounded-full"
                 style={{ width: `${traditionalMinWidth}%` }}
               />
               {/* Max range indicator */}
               <div 
-                className="absolute inset-y-0 left-0 bg-accent/30 rounded-full transition-all duration-300"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500/30 via-amber-400/25 to-amber-300/20 rounded-full transition-all duration-300"
                 style={{ width: '100%' }}
               />
             </div>
