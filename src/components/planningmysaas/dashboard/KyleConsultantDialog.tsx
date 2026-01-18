@@ -102,14 +102,14 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-gradient-to-b from-card via-card to-accent/5 border-accent/20">
+      <DialogContent className="sm:max-w-md glass-card border-amber-500/20">
         <DialogTitle className="sr-only">Talk to Kyle - AI Sales Consultant</DialogTitle>
         
         {/* Header */}
         <div className="flex items-center justify-center gap-2 mb-2">
-          <Sparkles className="h-4 w-4 text-accent" />
-          <span className="text-sm font-medium text-accent">AI Sales Consultant</span>
-          <Sparkles className="h-4 w-4 text-accent" />
+          <Sparkles className="h-4 w-4 text-amber-400" />
+          <span className="text-sm font-medium text-amber-400">AI Sales Consultant</span>
+          <Sparkles className="h-4 w-4 text-amber-400" />
         </div>
 
         {/* Avatar Section */}
@@ -128,7 +128,7 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
             <div className={`w-2 h-2 rounded-full ${
               isCallActive 
                 ? isSpeaking 
-                  ? 'bg-accent animate-pulse' 
+                  ? 'bg-amber-400 animate-pulse' 
                   : 'bg-green-500'
                 : 'bg-muted-foreground/50'
             }`} />
@@ -137,7 +137,7 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
           
           {/* Timer */}
           {isCallActive && (
-            <div className="mt-2 text-lg font-mono text-accent">
+            <div className="mt-2 text-lg font-mono text-amber-400">
               {formatTime(callDuration)}
             </div>
           )}
@@ -151,8 +151,8 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
               className={`w-2 rounded-full transition-all duration-100 ${
                 isCallActive 
                   ? isSpeaking 
-                    ? 'bg-gradient-to-t from-accent to-accent/60' 
-                    : 'bg-accent/50'
+                    ? 'bg-gradient-to-t from-amber-500 to-yellow-500/60' 
+                    : 'bg-amber-500/50'
                   : 'bg-muted-foreground/20'
               }`}
               style={{
@@ -165,9 +165,9 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
 
         {/* Package Info */}
         {packageName && (
-          <div className="text-center py-2 px-4 rounded-lg bg-accent/10 border border-accent/20 mx-4">
+          <div className="text-center py-2 px-4 rounded-lg bg-amber-500/10 border border-amber-500/20 mx-4">
             <p className="text-xs text-muted-foreground">Interested in:</p>
-            <p className="text-sm font-medium text-accent">{packageName}</p>
+            <p className="text-sm font-medium text-amber-400">{packageName}</p>
           </div>
         )}
 
@@ -181,8 +181,8 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
               isCallActive
                 ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30'
                 : isConnecting
-                  ? 'bg-accent/50'
-                  : 'bg-accent hover:bg-accent/90 shadow-lg shadow-accent/30'
+                  ? 'bg-amber-500/50'
+                  : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-lg shadow-amber-500/30'
             }`}
           >
             {isConnecting ? (
