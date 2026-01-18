@@ -188,7 +188,7 @@ const InvestmentSection = () => {
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Main Investment Card with Chart */}
-        <Card className="bg-muted/30 border-border/50 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+        <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
           <CardContent className="p-5">
             {/* Total Investment */}
             <div className="text-center mb-6">
@@ -347,15 +347,15 @@ const InvestmentSection = () => {
         </InfoTooltip>
       </div>
 
-      <Card className="bg-card/50 border-border/30">
+      <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
         <CardContent className="p-5">
           {/* Main Grid - 4 columns on desktop */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* MVP Development */}
-            <Card className="bg-accent/5 border-border/30 hover:border-accent/30 transition-colors">
+            <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
               <CardContent className="p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <Sparkles className="h-5 w-5 text-accent" />
+                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center">
+                  <Sparkles className="h-5 w-5 text-amber-500" />
                 </div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">MVP Development</p>
                 <p className="text-base md:text-lg font-bold text-foreground">
@@ -366,10 +366,10 @@ const InvestmentSection = () => {
             </Card>
             
             {/* Marketing Services */}
-            <Card className="bg-accent/5 border-border/30 hover:border-accent/30 transition-colors">
+            <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
               <CardContent className="p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <Megaphone className="h-5 w-5 text-accent" />
+                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center">
+                  <Megaphone className="h-5 w-5 text-amber-500" />
                 </div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Marketing Services</p>
                 <p className="text-base md:text-lg font-bold text-foreground">
@@ -380,10 +380,10 @@ const InvestmentSection = () => {
             </Card>
             
             {/* Paid Media */}
-            <Card className="bg-accent/5 border-border/30 hover:border-accent/30 transition-colors">
+            <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
               <CardContent className="p-4 text-center">
-                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-accent" />
+                <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-amber-500" />
                 </div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Paid Media*</p>
                 <p className="text-base md:text-lg font-bold text-foreground">
@@ -410,9 +410,9 @@ const InvestmentSection = () => {
           </div>
           
           {/* After Year 1 - Subtle footer */}
-          <div className="mt-4 pt-4 border-t border-accent/20 flex items-center justify-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-accent/20 flex items-center justify-center">
-              <TrendingUp className="w-3.5 h-3.5 text-accent" />
+          <div className="mt-4 pt-4 border-t border-border/30 flex items-center justify-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center">
+              <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
             </div>
             <span className="text-sm text-muted-foreground">After Year 1:</span>
             <span className="text-sm font-semibold text-accent">
