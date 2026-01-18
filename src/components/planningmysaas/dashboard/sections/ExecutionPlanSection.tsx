@@ -204,7 +204,7 @@ const ExecutionPlanSection = () => {
                   </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-medium text-gradient-gold">Execution Timeline</h3>
+                  <h3 className="text-sm font-medium text-foreground">Execution Timeline</h3>
                   <InfoTooltip side="top" size="sm">
                     Detailed breakdown of development phases, from discovery to launch.
                   </InfoTooltip>
@@ -249,7 +249,7 @@ const ExecutionPlanSection = () => {
 
                       {/* Phase Info */}
                       <div className="space-y-2 mb-4">
-                        <h4 className="text-sm font-medium text-foreground">{phase.name}</h4>
+                        <h4 className="text-sm font-medium text-gradient-gold">{phase.name}</h4>
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-sm font-semibold text-accent">{phaseDuration}</span>
                           {phase.showPlanBadge && (
@@ -318,7 +318,7 @@ const ExecutionPlanSection = () => {
                   {/* Card */}
                   <div className="bg-card/50 border border-border/30 rounded-lg p-4 hover:border-accent/30 transition-colors">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-medium text-foreground">{phase.name}</h4>
+                      <h4 className="text-sm font-medium text-gradient-gold">{phase.name}</h4>
                       <span className="text-xs text-muted-foreground">Phase {phase.phase}</span>
                     </div>
                     
@@ -373,7 +373,7 @@ const ExecutionPlanSection = () => {
               <Cpu className="h-4 w-4 text-accent" />
             </div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-medium text-gradient-gold">Suggested Technology Stack</h3>
+              <h3 className="text-sm font-medium text-foreground">Suggested Technology Stack</h3>
               <InfoTooltip side="right" size="sm">
                 Recommended modern, scalable technologies tailored for your project's specific needs.
               </InfoTooltip>
@@ -394,7 +394,7 @@ const ExecutionPlanSection = () => {
                   {/* Category with icon */}
                   <div className="flex items-center gap-2 mb-3">
                     <IconComponent className="w-3.5 h-3.5 text-accent" />
-                    <h4 className="text-xs font-semibold text-accent uppercase tracking-wide">
+                    <h4 className="text-xs font-semibold text-gradient-gold uppercase tracking-wide">
                       {stack.category}
                     </h4>
                   </div>

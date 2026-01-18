@@ -187,7 +187,7 @@ const CustomerPainPointsSection = () => {
 
             {/* Big number */}
             <div className="text-center mb-6">
-              <div className="text-5xl font-bold text-accent mb-1">
+              <div className="text-5xl font-bold text-gradient-gold mb-1">
                 {painPoints.length}
               </div>
               <div className="text-sm text-muted-foreground">Pain Points Identified</div>
