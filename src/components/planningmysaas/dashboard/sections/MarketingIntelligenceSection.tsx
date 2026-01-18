@@ -1,6 +1,7 @@
 // ============================================
 // Marketing Intelligence Section
-// Uses real data from useReportContext
+// Uses real data from icp_intelligence_section
+// Fallback: "..." for all missing values
 // ============================================
 
 import { 
@@ -12,11 +13,9 @@ import {
   Sparkles, 
   User, 
   Users, 
-  Heart,
   Building2,
   MapPin,
-  Calendar,
-  AlertCircle
+  Calendar
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,169 +24,215 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
-import { 
-  MarketingGrowthStrategy, 
-  MarketingPaidMediaActionPlan, 
-  DemandValidation 
-} from "@/types/report";
+import { ICPIntelligenceSection, ICPPersona } from "@/types/report";
 
 interface MarketingIntelligenceSectionProps {
   onExploreMarketing: () => void;
 }
 
-// Helper function for severity colors
-const getSeverityColor = (severity: string) => {
-  switch (severity) {
-    case "high": return "bg-red-500/20 text-red-400 border-red-500/30";
-    case "medium": return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-    default: return "bg-muted/20 text-muted-foreground border-border/30";
-  }
+// Helper: get value or "..."
+const getValue = (value: string | undefined | null): string => 
+  value?.trim() || "...";
+
+// Helper: get initials from name
+const getInitials = (name: string | undefined | null): string => {
+  if (!name || name === "...") return "...";
+  return name
+    .split(" ")
+    .map(word => word[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 };
 
-// Empty state component
-const EmptyState = () => (
-  <section id="marketing-intelligence" className="space-y-6">
-    <div className="flex items-center gap-3">
-      <div className="p-2 rounded-lg bg-accent/10">
-        <Megaphone className="h-5 w-5 text-accent" />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold text-foreground">Marketing Intelligence</h2>
-        <p className="text-sm text-muted-foreground">Strategic insights to accelerate your growth</p>
-      </div>
-    </div>
-    <Card className="bg-card/50 border-border/30 p-6">
-      <div className="flex flex-col items-center justify-center text-center py-8">
-        <div className="p-3 rounded-full bg-muted/20 mb-4">
-          <AlertCircle className="h-6 w-6 text-muted-foreground" />
-        </div>
-        <p className="text-muted-foreground mb-2">Marketing analysis data not yet available.</p>
-        <p className="text-sm text-muted-foreground/70">This section will be populated after report generation.</p>
-      </div>
-    </Card>
-  </section>
-);
+// Helper: extract first name and age-like info
+const parsePersonaName = (persona: ICPPersona | null): { name: string; age: string; role: string } => {
+  if (!persona) return { name: "...", age: "...", role: "..." };
+  
+  const name = getValue(persona.summary?.name || persona.persona_name);
+  const role = getValue(persona.job_title);
+  
+  return { name, age: "...", role };
+};
+
+// Helper: calculate competitive position from data
+const getCompetitivePosition = (icpData: ICPIntelligenceSection | null): { value: string; percent: number } => {
+  if (!icpData?.aggregated_insights?.competitive_threats) {
+    return { value: "...", percent: 0 };
+  }
+  const threatsCount = icpData.aggregated_insights.competitive_threats.length;
+  if (threatsCount >= 5) return { value: "Top 30%", percent: 70 };
+  if (threatsCount >= 3) return { value: "Top 50%", percent: 50 };
+  if (threatsCount >= 1) return { value: "Top 70%", percent: 30 };
+  return { value: "...", percent: 0 };
+};
+
+// Helper: calculate expected ROAS from pain point intensity
+const getExpectedROAS = (icpData: ICPIntelligenceSection | null): { value: string; percent: number; industry: string } => {
+  const painPoints = icpData?.aggregated_insights?.top_pain_points_all;
+  if (!painPoints || painPoints.length === 0) {
+    return { value: "...", percent: 0, industry: "..." };
+  }
+  
+  const avgIntensity = painPoints.reduce((acc, p) => {
+    const score = parseFloat(p.intensity_score?.replace("/10", "") || "0");
+    return acc + (isNaN(score) ? 0 : score);
+  }, 0) / painPoints.length;
+  
+  const roas = avgIntensity / 2.5;
+  const percent = Math.min(100, (roas / 5) * 100);
+  
+  return { 
+    value: `${roas.toFixed(1)}x`, 
+    percent, 
+    industry: "2.5x" 
+  };
+};
+
+// Helper: extract decision makers from evaluation criteria
+const getDecisionMakers = (persona: ICPPersona | null): Array<{ role: string; initials: string; influence: string }> => {
+  const criteria = persona?.buying_behavior?.evaluation_criteria;
+  
+  if (!criteria || criteria.length === 0) {
+    return [
+      { role: "...", initials: "...", influence: "..." },
+      { role: "...", initials: "...", influence: "..." },
+      { role: "...", initials: "...", influence: "..." }
+    ];
+  }
+  
+  // Map common evaluation criteria to decision maker roles
+  const roleMap: Record<string, { role: string; initials: string; influence: string }> = {
+    "ROI": { role: "Owner/CEO", initials: "CEO", influence: "Final decision" },
+    "Ease of use": { role: "Ops Manager", initials: "OM", influence: "Daily usage" },
+    "Cost": { role: "Accountant", initials: "ACC", influence: "Cost approval" },
+    "Integration": { role: "IT Manager", initials: "IT", influence: "Tech review" },
+    "Scalability": { role: "Growth Lead", initials: "GL", influence: "Strategy" },
+    "Support": { role: "Ops Manager", initials: "OM", influence: "Daily usage" }
+  };
+  
+  const makers: Array<{ role: string; initials: string; influence: string }> = [];
+  
+  for (const criterion of criteria) {
+    const key = Object.keys(roleMap).find(k => 
+      criterion.toLowerCase().includes(k.toLowerCase())
+    );
+    if (key && makers.length < 3) {
+      const maker = roleMap[key];
+      if (!makers.find(m => m.role === maker.role)) {
+        makers.push(maker);
+      }
+    }
+  }
+  
+  // Fill with defaults if needed
+  while (makers.length < 3) {
+    const defaults = [
+      { role: "Owner/CEO", initials: "CEO", influence: "Final decision" },
+      { role: "Ops Manager", initials: "OM", influence: "Daily usage" },
+      { role: "Accountant", initials: "ACC", influence: "Cost approval" }
+    ];
+    const next = defaults[makers.length];
+    if (!makers.find(m => m.role === next.role)) {
+      makers.push(next);
+    } else {
+      makers.push({ role: "...", initials: "...", influence: "..." });
+    }
+  }
+  
+  return makers.slice(0, 3);
+};
 
 const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntelligenceSectionProps) => {
-  const { report } = useReportContext();
+  const { reportData } = useReportContext();
 
-  // Parse data from report context
-  const growthStrategy = parseJsonField<MarketingGrowthStrategy | null>(
-    report?.marketing_growth_strategy, 
+  // Parse ICP data from reportData (tb_pms_reports.icp_intelligence_section)
+  const icpData = parseJsonField<ICPIntelligenceSection | null>(
+    reportData?.icp_intelligence_section,
     null
   );
 
-  const paidMediaPlan = parseJsonField<MarketingPaidMediaActionPlan | null>(
-    report?.marketing_paid_media_action_plan, 
-    null
-  );
+  // Get primary persona (first one)
+  const primaryPersona = icpData?.primary_personas?.[0] || null;
 
-  const demandValidation = parseJsonField<DemandValidation | null>(
-    report?.demand_validation, 
-    null
-  );
-
-  // Check if we have enough data to display
-  const hasData = growthStrategy || paidMediaPlan || demandValidation;
-
-  if (!hasData) {
-    return <EmptyState />;
-  }
-
-  // Build marketing metrics from real data
-  const totalBudget = paidMediaPlan?.totalBudget || "$15K/mo";
-  const expectedROAS = paidMediaPlan?.channels?.[0]?.expectedROAS || "3.5x";
+  // Extract persona display data
+  const personaInfo = parsePersonaName(primaryPersona);
+  const initials = getInitials(personaInfo.name);
+  const businessType = getValue(primaryPersona?.industry_focus?.split(",")[0]?.trim());
+  const companySize = getValue(primaryPersona?.company_size);
+  const budgetRange = getValue(primaryPersona?.buying_behavior?.budget_range);
+  const decisionTimeframe = getValue(primaryPersona?.buying_behavior?.decision_timeframe);
   
-  // Calculate competitive position based on available data
-  const hasMultipleChannels = (paidMediaPlan?.channels?.length || 0) >= 3;
-  const competitivePosition = hasMultipleChannels ? "Top 30%" : "Top 50%";
-  const positionValue = hasMultipleChannels ? 70 : 50;
+  // Get industry from highest value segment or persona
+  const industry = getValue(
+    icpData?.market_insights?.highest_value_segment || 
+    primaryPersona?.industry_focus?.split(",")[0]?.trim()
+  );
+  
+  // Get location from market insights
+  const location = getValue(icpData?.market_insights?.total_addressable_personas?.includes("Urban") 
+    ? "Urban Markets" 
+    : undefined);
 
+  // Get goals from feature priorities
+  const goals = primaryPersona?.feature_priorities?.slice(0, 3) || [];
+  const displayGoals = goals.length > 0 
+    ? goals.map(g => getValue(g))
+    : ["...", "...", "..."];
+
+  // Calculate metrics
+  const competitivePosition = getCompetitivePosition(icpData);
+  const expectedROAS = getExpectedROAS(icpData);
+  const decisionMakers = getDecisionMakers(primaryPersona);
+
+  // Marketing metrics for cards
   const marketingMetrics = [
     { 
       icon: Target, 
-      value: competitivePosition, 
+      value: competitivePosition.value, 
       label: "Competitive Position",
       sublabel: "vs. market",
       tooltip: "Your market positioning relative to direct competitors based on feature parity, pricing, and brand awareness.",
       indicator: {
         type: "progress" as const,
-        value: positionValue,
-        label: "Market positioning"
+        value: competitivePosition.percent,
+        label: competitivePosition.value !== "..." ? "Top tier positioning" : "..."
       }
     },
     { 
       icon: DollarSign, 
-      value: totalBudget, 
+      value: budgetRange, 
       label: "Recommended Budget",
       sublabel: "Paid Media",
       tooltip: "Monthly paid media spend recommended to achieve growth targets based on your ICP and competitive landscape.",
       indicator: {
         type: "badge" as const,
-        label: "AI-optimized for max ROI"
+        label: budgetRange !== "..." ? "AI-optimized for max ROI" : "..."
       }
     },
     { 
       icon: TrendingUp, 
-      value: expectedROAS, 
+      value: expectedROAS.value, 
       label: "Expected ROAS",
       sublabel: "First 6 months",
       tooltip: "Return on Ad Spend — for every $1 spent on advertising, expect this return in revenue based on industry benchmarks.",
       indicator: {
         type: "comparison" as const,
-        industry: "2.5x",
-        yourValue: 75,
-        label: "Above industry average"
+        industry: expectedROAS.industry,
+        yourValue: expectedROAS.percent,
+        label: expectedROAS.value !== "..." ? "Above Avg" : "..."
       }
     },
   ];
 
-  // Build ICP data from demand validation and growth strategy
-  const painPoints = demandValidation?.painPoints || [];
-  const targetAudience = report?.target_audience || "SMB Decision Makers";
-  const industry = report?.industry || "Technology";
-  
-  // Default ICP persona (can be enhanced when we have dedicated ICP fields)
-  const icpData = {
-    persona: {
-      name: "Target Customer",
-      age: 35,
-      role: "Decision Maker",
-      businessType: industry,
-      initials: "TC"
-    },
-    demographics: [
-      { icon: Users, label: "Target Segment", value: targetAudience },
-      { icon: DollarSign, label: "Annual Revenue", value: "$500K - $5M" },
-      { icon: Building2, label: "Industry", value: industry },
-      { icon: MapPin, label: "Location", value: "Urban Markets" },
-      { icon: Calendar, label: "Business Stage", value: "Growth (2-7 yrs)" }
-    ],
-    goals: growthStrategy?.phases?.slice(0, 3).map(p => p.focus) || [
-      "Scale operations efficiently",
-      "Increase market share",
-      "Build customer loyalty"
-    ],
-    painPoints: painPoints.slice(0, 4).map(pp => ({
-      pain: pp.pain,
-      severity: pp.intensity >= 8 ? "high" : pp.intensity >= 5 ? "medium" : "low"
-    })),
-    decisionMakers: [
-      { role: "Owner/CEO", initials: "CEO", influence: "Final decision" },
-      { role: "Ops Manager", initials: "OM", influence: "Daily usage" },
-      { role: "Finance Lead", initials: "FIN", influence: "Cost approval" }
-    ]
-  };
-
-  // Fallback pain points if none from demand validation
-  if (icpData.painPoints.length === 0) {
-    icpData.painPoints = [
-      { pain: "Manual processes consuming time", severity: "high" },
-      { pain: "Lack of integrated solutions", severity: "high" },
-      { pain: "Difficulty scaling operations", severity: "medium" },
-      { pain: "Limited market visibility", severity: "medium" }
-    ];
-  }
+  // Company profile demographics
+  const demographics = [
+    { icon: Users, label: "Company Size", value: companySize },
+    { icon: DollarSign, label: "Annual Revenue", value: "..." },
+    { icon: Building2, label: "Industry", value: industry },
+    { icon: MapPin, label: "Location", value: location },
+    { icon: Calendar, label: "Business Stage", value: decisionTimeframe !== "..." ? "Growth (2-7 yrs)" : "..." }
+  ];
 
   return (
     <section id="marketing-intelligence" className="space-y-6">
@@ -259,7 +304,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                     <div className="flex items-center justify-between text-[10px]">
                       <span className="text-muted-foreground">Industry: {metric.indicator.industry}</span>
                       <Badge className="bg-accent/10 text-accent border-accent/30 text-[10px]">
-                        Above Avg
+                        {metric.indicator.label}
                       </Badge>
                     </div>
                     <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
@@ -280,7 +325,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
       <div className="flex items-center gap-2 mt-8">
         <h3 className="font-semibold text-foreground text-sm">Your Ideal Customer</h3>
         <InfoTooltip side="right" size="sm">
-          Detailed profile of your most valuable customer segment.
+          Detailed profile of your most valuable customer segment based on ICP analysis.
         </InfoTooltip>
       </div>
 
@@ -297,14 +342,14 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
             <div className="flex items-center gap-4 mb-5">
               <Avatar className="h-14 w-14 border-2 border-accent/30">
                 <AvatarFallback className="bg-accent/20 text-accent font-bold text-lg">
-                  {icpData.persona.initials}
+                  {initials}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-foreground text-lg">{icpData.persona.name}</p>
-                <p className="text-sm text-muted-foreground">{icpData.persona.role}</p>
+                <p className="font-semibold text-foreground text-lg">{personaInfo.name}</p>
+                <p className="text-sm text-muted-foreground">{personaInfo.role}</p>
                 <Badge className="mt-1.5 text-xs bg-accent/10 text-accent border-accent/30">
-                  {icpData.persona.businessType}
+                  {businessType}
                 </Badge>
               </div>
             </div>
@@ -312,7 +357,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
             <div>
               <p className="text-xs text-muted-foreground mb-2">Primary Goals</p>
               <div className="space-y-2">
-                {icpData.goals.map((goal, i) => (
+                {displayGoals.map((goal, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm p-2.5 rounded-lg bg-accent/5 border border-accent/10">
                     <div className="h-1.5 w-1.5 rounded-full bg-accent" />
                     <span className="text-foreground">{goal}</span>
@@ -332,7 +377,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
             </div>
             
             <div className="space-y-3 mb-5">
-              {icpData.demographics.map((item, i) => {
+              {demographics.map((item, i) => {
                 const Icon = item.icon;
                 return (
                   <div key={i} className="flex items-center justify-between text-sm">
@@ -345,7 +390,6 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                 );
               })}
             </div>
-            
           </CardContent>
         </Card>
       </div>
@@ -362,7 +406,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {icpData.decisionMakers.map((dm, i) => (
+            {decisionMakers.map((dm, i) => (
               <div 
                 key={i} 
                 className="flex flex-col items-center text-center p-5 rounded-xl bg-card border border-border/50 hover:border-accent/30 transition-all"

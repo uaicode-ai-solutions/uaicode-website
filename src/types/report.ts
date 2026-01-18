@@ -163,6 +163,74 @@ export interface OpportunitySection {
   risks?: OpportunityRisk[];
 }
 
+// ==========================================
+// ICP Intelligence Section (from tb_pms_reports.icp_intelligence_section)
+// ==========================================
+
+export interface ICPPainPoint {
+  pain_point: string;
+  intensity_score: string;
+  urgency_level: "high" | "medium" | "low";
+}
+
+export interface ICPBuyingBehavior {
+  budget_range: string;
+  decision_timeframe: string;
+  evaluation_criteria: string[];
+  preferred_pricing_model: string;
+}
+
+export interface ICPPersonaSummary {
+  name: string;
+  job_title: string;
+  company_size: string;
+  industry_focus?: string;
+  budget_range: string;
+  decision_timeframe: string;
+  top_pain_points: ICPPainPoint[];
+  main_competitors: string[];
+  key_features?: string[];
+  top_evaluation_criteria?: string[];
+}
+
+export interface ICPPersona {
+  persona_name: string;
+  job_title: string;
+  company_size: string;
+  industry_focus: string;
+  pain_points_priority: ICPPainPoint[];
+  buying_behavior: ICPBuyingBehavior;
+  competitive_alternatives: string[];
+  feature_priorities: string[];
+  summary: ICPPersonaSummary;
+}
+
+export interface ICPAggregatedInsights {
+  top_pain_points_all: Array<{
+    pain_point: string;
+    intensity_score: string;
+    intensity_numeric?: number;
+    urgency_level: string;
+  }>;
+  budget_ranges: string[];
+  decision_timeframes: string[];
+  competitive_threats: string[];
+  total_personas_identified?: number;
+}
+
+export interface ICPMarketInsights {
+  highest_value_segment: string;
+  total_addressable_personas: string;
+  market_size_per_persona?: Record<string, string>;
+}
+
+export interface ICPIntelligenceSection {
+  primary_personas: ICPPersona[];
+  aggregated_insights: ICPAggregatedInsights;
+  market_insights: ICPMarketInsights;
+  citations?: string[];
+}
+
 // Report data from tb_pms_reports table (simplified - legacy columns removed)
 export interface ReportData {
   id: string;
