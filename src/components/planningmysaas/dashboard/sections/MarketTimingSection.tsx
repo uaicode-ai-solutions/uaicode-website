@@ -205,20 +205,7 @@ const MarketTimingSection = () => {
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                  <defs>
-                    <radialGradient id="radarGridGradient" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity="0.35" />
-                      <stop offset="25%" stopColor="hsl(var(--accent))" stopOpacity="0.25" />
-                      <stop offset="50%" stopColor="hsl(var(--accent))" stopOpacity="0.15" />
-                      <stop offset="75%" stopColor="hsl(var(--accent))" stopOpacity="0.10" />
-                      <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0.05" />
-                    </radialGradient>
-                  </defs>
-                  <PolarGrid 
-                    stroke="hsl(var(--border))" 
-                    strokeOpacity={0.5}
-                    fill="url(#radarGridGradient)"
-                  />
+                  <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.5} />
                   <PolarAngleAxis
                     dataKey="axis"
                     tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
