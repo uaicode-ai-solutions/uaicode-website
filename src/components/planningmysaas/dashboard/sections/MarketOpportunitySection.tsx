@@ -1,4 +1,4 @@
-import { Target, TrendingUp, CheckCircle2, Globe, Crosshair } from "lucide-react";
+import { Target, TrendingUp, CheckCircle2, Globe, Crosshair, Lightbulb } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
@@ -89,8 +89,12 @@ const MarketOpportunitySection = () => {
   // Use launch_reasoning with citations removed and values formatted
   const headline = cleanHeadline(
     opportunityData?.launch_reasoning || 
-    opportunityData?.opportunity_justification ||
     `There is clear room for a new player focused on ${industryLabel} businesses.`
+  );
+
+  // Extract opportunity_justification separately
+  const opportunityJustification = cleanHeadline(
+    opportunityData?.opportunity_justification || ""
   );
 
   const marketLevels = [
@@ -233,15 +237,45 @@ const MarketOpportunitySection = () => {
         </Card>
       </div>
 
-      {/* Conclusion - Full Width */}
+      {/* Launch Reasoning - Full Width */}
       <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
         <div className="flex items-start gap-3">
           <div className="p-1.5 rounded-lg bg-accent/20 flex-shrink-0">
             <CheckCircle2 className="h-4 w-4 text-accent" />
           </div>
-          <p className="text-sm text-foreground/90 leading-relaxed">{headline}</p>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <h4 className="text-sm font-semibold text-foreground">Launch Reasoning</h4>
+              <InfoTooltip side="top" size="sm">
+                The strategic rationale for launching this product in the current market.
+              </InfoTooltip>
+            </div>
+            <p className="text-sm text-foreground/90 leading-relaxed">{headline}</p>
+          </div>
         </div>
       </div>
+
+      {/* Opportunity Justification Banner */}
+      {opportunityJustification && (
+        <div className="p-5 rounded-xl bg-gradient-to-r from-card/80 via-card/60 to-card/80 border border-border/50 hover:border-accent/30 transition-all duration-300">
+          <div className="flex items-start gap-4">
+            <div className="p-2 rounded-xl bg-accent/15 flex-shrink-0">
+              <Lightbulb className="h-5 w-5 text-accent" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <h4 className="text-sm font-semibold text-foreground">Why This Opportunity?</h4>
+                <InfoTooltip side="top" size="sm">
+                  The strategic justification for pursuing this market opportunity.
+                </InfoTooltip>
+              </div>
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                {opportunityJustification}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
