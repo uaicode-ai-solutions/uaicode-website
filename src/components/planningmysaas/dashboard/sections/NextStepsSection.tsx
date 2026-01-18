@@ -321,7 +321,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-            <Badge className="bg-amber-500 text-amber-950 border border-amber-400 px-3 py-1 text-xs font-bold">
+            <Badge className="px-3 py-1 text-xs font-bold text-amber-950 border-0 hover:bg-none" style={{ background: 'linear-gradient(135deg, hsl(45, 100%, 55%), hsl(38, 100%, 50%))' }}>
               <Clock className="h-3 w-3 mr-1" />
               24H FLASH DEAL
             </Badge>
@@ -530,7 +530,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-            <Badge className="bg-accent text-accent-foreground border border-accent px-3 py-1 text-xs font-bold">
+            <Badge className="px-3 py-1 text-xs font-bold text-amber-950 border-0 hover:bg-none" style={{ background: 'linear-gradient(135deg, hsl(45, 100%, 55%), hsl(38, 100%, 50%))' }}>
               <Star className="h-3 w-3 mr-1" />
               BEST VALUE - 30% OFF
             </Badge>
