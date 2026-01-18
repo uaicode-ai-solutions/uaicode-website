@@ -243,14 +243,15 @@ const MarketTimingSection = () => {
               </InfoTooltip>
             </div>
 
-            {/* 5 Score Circles */}
-            <TooltipProvider>
-              <div className="flex justify-between items-start gap-4">
-                {indicatorData.map((indicator) => (
-                  <div key={indicator.name} className="flex flex-col items-center gap-2">
+            {/* 5 Score Circles - Layout 2+2+1 */}
+            <TooltipProvider delayDuration={100}>
+              {/* Row 1: Trends + Trajectory */}
+              <div className="flex justify-center gap-12 mb-6">
+                {indicatorData.slice(0, 2).map((indicator) => (
+                  <div key={indicator.name} className="flex flex-col items-center gap-3">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="cursor-pointer">
+                        <div className="cursor-pointer transition-transform hover:scale-105">
                           <ScoreCircle 
                             score={indicator.score} 
                             label="" 
@@ -259,16 +260,71 @@ const MarketTimingSection = () => {
                           />
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent className="max-w-[200px]">
-                        <p className="font-semibold mb-1">{indicator.name}</p>
-                        <p className="text-xs">{indicator.description}</p>
+                      <TooltipContent side="top" className="max-w-[220px] p-3">
+                        <p className="font-semibold text-sm mb-1">{indicator.name}</p>
+                        <p className="text-lg font-bold text-accent mb-1">{indicator.score}/100</p>
+                        <p className="text-xs text-muted-foreground">{indicator.description}</p>
                       </TooltipContent>
                     </Tooltip>
-                    <span className="text-xs text-muted-foreground text-center">
+                    <span className="text-xs font-medium text-muted-foreground">
                       {indicator.name}
                     </span>
                   </div>
                 ))}
+              </div>
+
+              {/* Row 2: Maturity + Window */}
+              <div className="flex justify-center gap-12 mb-6">
+                {indicatorData.slice(2, 4).map((indicator) => (
+                  <div key={indicator.name} className="flex flex-col items-center gap-3">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="cursor-pointer transition-transform hover:scale-105">
+                          <ScoreCircle 
+                            score={indicator.score} 
+                            label="" 
+                            size="xl" 
+                            showLabelInside={false}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[220px] p-3">
+                        <p className="font-semibold text-sm mb-1">{indicator.name}</p>
+                        <p className="text-lg font-bold text-accent mb-1">{indicator.score}/100</p>
+                        <p className="text-xs text-muted-foreground">{indicator.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {indicator.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Row 3: Saturation (centered) */}
+              <div className="flex justify-center">
+                <div className="flex flex-col items-center gap-3">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="cursor-pointer transition-transform hover:scale-105">
+                        <ScoreCircle 
+                          score={indicatorData[4].score} 
+                          label="" 
+                          size="xl" 
+                          showLabelInside={false}
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[220px] p-3">
+                      <p className="font-semibold text-sm mb-1">{indicatorData[4].name}</p>
+                      <p className="text-lg font-bold text-accent mb-1">{indicatorData[4].score}/100</p>
+                      <p className="text-xs text-muted-foreground">{indicatorData[4].description}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {indicatorData[4].name}
+                  </span>
+                </div>
               </div>
             </TooltipProvider>
           </CardContent>
