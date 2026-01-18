@@ -3,13 +3,33 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { safeValue, safeNumber } from "@/types/report";
+import { safeValue, safeNumber, OpportunitySection } from "@/types/report";
 
 interface ReportHeroProps {
   projectName?: string;
   onScheduleCall?: () => void;
   onExploreReport?: () => void;
 }
+
+// Format market values: "$713.36 billion" → "$713.4B"
+const formatMarketValue = (value: string): string => {
+  if (!value || value === "...") return value;
+  
+  let formatted = value
+    .replace(/\s*billion/gi, "B")
+    .replace(/\s*million/gi, "M")
+    .replace(/\s*trillion/gi, "T")
+    .replace(/\s*thousand/gi, "K")
+    .trim();
+  
+  // Round to 1 decimal place
+  formatted = formatted.replace(/(\$?)([\d,]+)\.(\d{2,})/g, (_, dollar, integer, decimals) => {
+    const num = parseFloat(`${integer.replace(/,/g, '')}.${decimals}`);
+    return `${dollar}${num.toFixed(1)}`;
+  });
+  
+  return formatted;
+};
 
 const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHeroProps) => {
   const { report, reportData } = useReportContext();
@@ -20,7 +40,12 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   // Get metrics from tb_pms_reports with fallback
   const viabilityScore = safeNumber(reportData?.viability_score, 0);
   const verdictHeadline = safeValue(reportData?.verdict_headline);
-  const totalMarket = safeValue(reportData?.total_market);
+  
+  // Parse opportunity_section for TAM fallback
+  const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
+  const rawTotalMarket = reportData?.total_market || opportunityData?.tam_value || null;
+  const totalMarket = rawTotalMarket ? formatMarketValue(String(rawTotalMarket)) : "...";
+  
   const expectedROI = safeValue(reportData?.expected_roi);
   const paybackPeriod = safeValue(reportData?.payback_period);
 
