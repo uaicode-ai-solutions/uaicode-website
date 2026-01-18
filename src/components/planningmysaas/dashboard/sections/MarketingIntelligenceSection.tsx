@@ -1,148 +1,134 @@
 // ============================================
 // Marketing Intelligence Section
+// Redesigned to show most convincing data points
 // Uses real data from icp_intelligence_section
-// Fallback: "..." for all missing values
 // ============================================
 
 import { 
   Megaphone, 
   Target, 
-  DollarSign, 
   TrendingUp, 
   ArrowRight, 
   Sparkles, 
-  User, 
   Users, 
-  Building2,
-  MapPin,
-  Calendar,
   Crown,
-  Shield
+  AlertTriangle,
+  Clock,
+  Zap,
+  BarChart3
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
-import { ICPIntelligenceSection, ICPPersona } from "@/types/report";
+import { ICPIntelligenceSection } from "@/types/report";
 
 interface MarketingIntelligenceSectionProps {
   onExploreMarketing: () => void;
 }
 
 // Helper: get value or "..."
-const getValue = (value: string | undefined | null): string => 
-  value?.trim() || "...";
-
-// Helper: get initials from name
-const getInitials = (name: string | undefined | null): string => {
-  if (!name || name === "...") return "?";
-  return name
-    .split(" ")
-    .map(word => word[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+const getValue = (value: string | number | undefined | null): string => {
+  if (value === undefined || value === null) return "...";
+  return String(value).trim() || "...";
 };
 
-// Helper: extract first name and age-like info
-const parsePersonaName = (persona: ICPPersona | null): { name: string; age: string; role: string } => {
-  if (!persona) return { name: "...", age: "...", role: "..." };
-  
-  const name = getValue(persona.summary?.name || persona.persona_name);
-  const role = getValue(persona.job_title);
-  
-  return { name, age: "...", role };
-};
-
-// Helper: calculate competitive position from data
-const getCompetitivePosition = (icpData: ICPIntelligenceSection | null): { value: string; percent: number } => {
-  if (!icpData?.aggregated_insights?.competitive_threats) {
-    return { value: "...", percent: 0 };
-  }
-  const threatsCount = icpData.aggregated_insights.competitive_threats.length;
-  if (threatsCount >= 5) return { value: "Top 30%", percent: 70 };
-  if (threatsCount >= 3) return { value: "Top 50%", percent: 50 };
-  if (threatsCount >= 1) return { value: "Top 70%", percent: 30 };
-  return { value: "...", percent: 0 };
-};
-
-// Helper: calculate expected ROAS from pain point intensity
-const getExpectedROAS = (icpData: ICPIntelligenceSection | null): { value: string; percent: number; industry: string } => {
+// Helper: extract unique pain points (top 3)
+const getTopPainPoints = (icpData: ICPIntelligenceSection | null): Array<{
+  name: string;
+  intensity: number;
+  urgency: string;
+}> => {
   const painPoints = icpData?.aggregated_insights?.top_pain_points_all;
   if (!painPoints || painPoints.length === 0) {
-    return { value: "...", percent: 0, industry: "..." };
-  }
-  
-  const avgIntensity = painPoints.reduce((acc, p) => {
-    const score = parseFloat(p.intensity_score?.replace("/10", "") || "0");
-    return acc + (isNaN(score) ? 0 : score);
-  }, 0) / painPoints.length;
-  
-  const roas = avgIntensity / 2.5;
-  const percent = Math.min(100, (roas / 5) * 100);
-  
-  return { 
-    value: `${roas.toFixed(1)}x`, 
-    percent, 
-    industry: "2.5x" 
-  };
-};
-
-// Helper: extract decision makers from evaluation criteria
-const getDecisionMakers = (persona: ICPPersona | null): Array<{ role: string; initials: string; influence: string; percent: number }> => {
-  const criteria = persona?.buying_behavior?.evaluation_criteria;
-  
-  if (!criteria || criteria.length === 0) {
     return [
-      { role: "...", initials: "?", influence: "...", percent: 0 },
-      { role: "...", initials: "?", influence: "...", percent: 0 },
-      { role: "...", initials: "?", influence: "...", percent: 0 }
+      { name: "...", intensity: 0, urgency: "..." },
+      { name: "...", intensity: 0, urgency: "..." },
+      { name: "...", intensity: 0, urgency: "..." }
     ];
   }
+
+  // Deduplicate by name and get top 3
+  const seen = new Set<string>();
+  const unique: Array<{ name: string; intensity: number; urgency: string }> = [];
   
-  // Map common evaluation criteria to decision maker roles
-  const roleMap: Record<string, { role: string; initials: string; influence: string; percent: number }> = {
-    "ROI": { role: "Owner/CEO", initials: "CEO", influence: "Final decision", percent: 85 },
-    "Ease of use": { role: "Ops Manager", initials: "OM", influence: "Daily usage", percent: 65 },
-    "Cost": { role: "Accountant", initials: "ACC", influence: "Cost approval", percent: 55 },
-    "Integration": { role: "IT Manager", initials: "IT", influence: "Tech review", percent: 60 },
-    "Scalability": { role: "Growth Lead", initials: "GL", influence: "Strategy", percent: 50 },
-    "Support": { role: "Ops Manager", initials: "OM", influence: "Daily usage", percent: 65 }
-  };
-  
-  const makers: Array<{ role: string; initials: string; influence: string; percent: number }> = [];
-  
-  for (const criterion of criteria) {
-    const key = Object.keys(roleMap).find(k => 
-      criterion.toLowerCase().includes(k.toLowerCase())
-    );
-    if (key && makers.length < 3) {
-      const maker = roleMap[key];
-      if (!makers.find(m => m.role === maker.role)) {
-        makers.push(maker);
+  for (const p of painPoints) {
+    const name = p.pain_point || "Unknown";
+    if (!seen.has(name.toLowerCase()) && unique.length < 3) {
+      seen.add(name.toLowerCase());
+      const intensityScore = parseFloat(p.intensity_score?.replace("/10", "") || "0");
+      unique.push({
+        name,
+        intensity: isNaN(intensityScore) ? 0 : intensityScore,
+        urgency: p.urgency_level || "MEDIUM"
+      });
+    }
+  }
+
+  // Fill with placeholders if needed
+  while (unique.length < 3) {
+    unique.push({ name: "...", intensity: 0, urgency: "..." });
+  }
+
+  return unique;
+};
+
+// Helper: extract competitors info
+// Note: competitive_threats can be string[] or array of objects depending on data
+const getCompetitorInfo = (icpData: ICPIntelligenceSection | null): {
+  count: number;
+  priceRange: string;
+  names: string[];
+} => {
+  const threats = icpData?.aggregated_insights?.competitive_threats;
+  if (!threats || threats.length === 0) {
+    return { count: 0, priceRange: "...", names: [] };
+  }
+
+  const prices: number[] = [];
+  const names: string[] = [];
+
+  for (const t of threats) {
+    // Handle both string and object formats
+    if (typeof t === 'string') {
+      names.push(t);
+    } else if (typeof t === 'object' && t !== null) {
+      const threatObj = t as { name?: string; pricing?: string };
+      if (threatObj.name) names.push(threatObj.name);
+      if (threatObj.pricing) {
+        const match = threatObj.pricing.match(/\$?(\d+)/);
+        if (match) prices.push(parseInt(match[1], 10));
       }
     }
   }
-  
-  // Fill with defaults if needed
-  while (makers.length < 3) {
-    const defaults = [
-      { role: "Owner/CEO", initials: "CEO", influence: "Final decision", percent: 85 },
-      { role: "Ops Manager", initials: "OM", influence: "Daily usage", percent: 65 },
-      { role: "Accountant", initials: "ACC", influence: "Cost approval", percent: 55 }
-    ];
-    const next = defaults[makers.length];
-    if (!makers.find(m => m.role === next.role)) {
-      makers.push(next);
-    } else {
-      makers.push({ role: "...", initials: "?", influence: "...", percent: 0 });
-    }
+
+  let priceRange = "...";
+  if (prices.length >= 2) {
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    priceRange = `$${min} - $${max}/month`;
+  } else if (prices.length === 1) {
+    priceRange = `$${prices[0]}/month`;
   }
-  
-  return makers.slice(0, 3);
+
+  return { count: threats.length, priceRange, names: names.slice(0, 6) };
+};
+
+// Helper: calculate average pain intensity
+const getAvgPainIntensity = (icpData: ICPIntelligenceSection | null): number => {
+  const painPoints = icpData?.aggregated_insights?.top_pain_points_all;
+  if (!painPoints || painPoints.length === 0) return 0;
+
+  const scores = painPoints.map(p => {
+    const score = parseFloat(p.intensity_score?.replace("/10", "") || "0");
+    return isNaN(score) ? 0 : score;
+  });
+
+  return scores.length > 0 
+    ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10
+    : 0;
 };
 
 const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntelligenceSectionProps) => {
@@ -154,78 +140,35 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     null
   );
 
-  // Get primary persona (first one)
-  const primaryPersona = icpData?.primary_personas?.[0] || null;
-
-  // Extract persona display data
-  const personaInfo = parsePersonaName(primaryPersona);
-  const initials = getInitials(personaInfo.name);
-  const businessType = getValue(primaryPersona?.industry_focus?.split(",")[0]?.trim());
-  const companySize = getValue(primaryPersona?.company_size);
-  const budgetRange = getValue(primaryPersona?.buying_behavior?.budget_range);
-  const decisionTimeframe = getValue(primaryPersona?.buying_behavior?.decision_timeframe);
+  // Extract data points
+  const aggregatedInsights = icpData?.aggregated_insights;
+  const marketInsights = icpData?.market_insights;
   
-  // Get industry from highest value segment or persona
-  const industry = getValue(
-    icpData?.market_insights?.highest_value_segment || 
-    primaryPersona?.industry_focus?.split(",")[0]?.trim()
-  );
+  // Cast to access extended properties that may exist in actual data
+  const extendedInsights = aggregatedInsights as typeof aggregatedInsights & {
+    starter_personas?: number;
+    growth_personas?: number;
+    enterprise_personas?: number;
+  };
   
-  // Get location from market insights
-  const location = getValue(icpData?.market_insights?.total_addressable_personas?.includes("Urban") 
-    ? "Urban Markets" 
-    : undefined);
+  const totalPersonas = aggregatedInsights?.total_personas_identified || 0;
+  const starterPersonas = extendedInsights?.starter_personas || 0;
+  const growthPersonas = extendedInsights?.growth_personas || 0;
+  const enterprisePersonas = extendedInsights?.enterprise_personas || 0;
+  
+  const highestValueSegment = marketInsights?.highest_value_segment;
+  const topPainPoints = getTopPainPoints(icpData);
+  const competitors = getCompetitorInfo(icpData);
+  const avgPainIntensity = getAvgPainIntensity(icpData);
+  const decisionTimeframe = aggregatedInsights?.decision_timeframes?.[0] || "...";
 
-  // Get goals from feature priorities
-  const goals = primaryPersona?.feature_priorities?.slice(0, 3) || [];
-  const displayGoals = goals.length > 0 
-    ? goals.map(g => getValue(g))
-    : ["...", "...", "..."];
-
-  // Calculate metrics
-  const competitivePosition = getCompetitivePosition(icpData);
-  const expectedROAS = getExpectedROAS(icpData);
-  const decisionMakers = getDecisionMakers(primaryPersona);
-
-  // Marketing metrics for cards
-  const marketingMetrics = [
-    { 
-      icon: Target, 
-      value: competitivePosition.value, 
-      label: "Competitive Position",
-      sublabel: "vs. market",
-      tooltip: "Your market positioning relative to direct competitors based on feature parity, pricing, and brand awareness.",
-      percent: competitivePosition.percent
-    },
-    { 
-      icon: DollarSign, 
-      value: budgetRange, 
-      label: "Recommended Budget",
-      sublabel: "Paid Media",
-      tooltip: "Monthly paid media spend recommended to achieve growth targets based on your ICP and competitive landscape.",
-      percent: budgetRange !== "..." ? 75 : 0
-    },
-    { 
-      icon: TrendingUp, 
-      value: expectedROAS.value, 
-      label: "Expected ROAS",
-      sublabel: `Industry: ${expectedROAS.industry}`,
-      tooltip: "Return on Ad Spend — for every $1 spent on advertising, expect this return in revenue based on industry benchmarks.",
-      percent: expectedROAS.percent
-    },
+  // Persona distribution for mini chart
+  const personaDistribution = [
+    { label: "Starter", count: starterPersonas, color: "from-emerald-500 to-emerald-400" },
+    { label: "Growth", count: growthPersonas, color: "from-blue-500 to-blue-400" },
+    { label: "Enterprise", count: enterprisePersonas, color: "from-purple-500 to-purple-400" }
   ];
-
-  // Company profile demographics
-  const demographics = [
-    { icon: Users, label: "Company Size", value: companySize },
-    { icon: DollarSign, label: "Annual Revenue", value: "..." },
-    { icon: Building2, label: "Industry", value: industry },
-    { icon: MapPin, label: "Location", value: location },
-    { icon: Calendar, label: "Business Stage", value: decisionTimeframe !== "..." ? "Growth (2-7 yrs)" : "..." }
-  ];
-
-  // Decision maker icons
-  const decisionMakerIcons = [Crown, User, Shield];
+  const maxPersonaCount = Math.max(starterPersonas, growthPersonas, enterprisePersonas, 1);
 
   return (
     <section id="marketing-intelligence" className="space-y-6 animate-fade-in">
@@ -242,185 +185,207 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
         </div>
       </div>
 
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {marketingMetrics.map((metric, index) => {
-          const Icon = metric.icon;
-          return (
-            <Card 
-              key={index} 
-              className="group relative bg-card/50 border-border/30 overflow-hidden hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.02] transition-all duration-300"
-            >
-              {/* Gradient corner decoration */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-bl-full" />
-              
-              <CardContent className="p-5 relative">
-                {/* Icon and Badge */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
-                    <Icon className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <Badge 
-                    variant="outline" 
-                    className="bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs"
-                  >
-                    {metric.label}
-                  </Badge>
-                </div>
-
-                {/* Value */}
-                <p className="text-4xl font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent mb-1">
-                  {metric.value}
-                </p>
-
-                {/* Sublabel */}
-                <p className="text-sm text-muted-foreground mb-4">{metric.sublabel}</p>
-
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-full transition-all duration-500"
-                      style={{ width: `${metric.percent}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-end">
-                    <InfoTooltip size="sm">{metric.tooltip}</InfoTooltip>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Your Ideal Customer Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Customer Avatar Card */}
-        <Card className="bg-card/50 border-border/30 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-amber-500" />
-              <CardTitle className="text-lg">Your Ideal Customer</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {/* Avatar and Name */}
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16 ring-2 ring-amber-500/30 ring-offset-2 ring-offset-background">
-                <AvatarFallback className="bg-gradient-to-br from-amber-500 to-amber-600 text-white text-xl font-semibold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="text-xl font-semibold text-foreground">{personaInfo.name}</h3>
-                <p className="text-sm text-muted-foreground">{personaInfo.role}</p>
-                <Badge variant="outline" className="mt-1 bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs">
-                  {businessType}
-                </Badge>
+      {/* Hero Card: Personas Identified */}
+      <Card className="group relative bg-card/50 border-border/30 overflow-hidden hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-bl-full" />
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Big Number */}
+            <div className="flex flex-col justify-center">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-5 w-5 text-amber-500" />
+                <span className="text-sm font-medium text-muted-foreground">Customer Personas</span>
               </div>
+              <p className="text-6xl font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent">
+                {totalPersonas || "..."}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">identified through research</p>
             </div>
 
-            {/* Primary Goals */}
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-3">Primary Goals</p>
-              <div className="space-y-2">
-                {displayGoals.map((goal, i) => (
-                  <div 
-                    key={i} 
-                    className="flex items-center gap-2 text-sm p-3 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10 hover:border-accent/30 transition-colors"
-                  >
-                    <div className="h-2 w-2 rounded-full bg-gradient-to-r from-amber-500 to-amber-400" />
-                    <span className="text-foreground">{goal}</span>
+            {/* Persona Distribution Chart */}
+            <div className="md:col-span-2">
+              <p className="text-sm font-medium text-muted-foreground mb-4">Distribution by Segment</p>
+              <div className="space-y-3">
+                {personaDistribution.map((segment, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground w-20">{segment.label}</span>
+                    <div className="flex-1 h-6 bg-muted/30 rounded-lg overflow-hidden">
+                      <div 
+                        className={`h-full bg-gradient-to-r ${segment.color} rounded-lg transition-all duration-500 flex items-center justify-end pr-2`}
+                        style={{ width: `${(segment.count / maxPersonaCount) * 100}%`, minWidth: segment.count > 0 ? '40px' : '0' }}
+                      >
+                        {segment.count > 0 && (
+                          <span className="text-xs font-semibold text-white">{segment.count}</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Company Profile Card */}
-        <Card className="bg-card/50 border-border/30 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-amber-500" />
-              <CardTitle className="text-lg">Company Profile</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {demographics.map((item, i) => {
-                const Icon = item.icon;
-                return (
-                  <div 
-                    key={i} 
-                    className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/50 hover:border-accent/20 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500/15 to-amber-400/5">
-                        <Icon className="h-3.5 w-3.5 text-amber-500" />
-                      </div>
-                      <span className="text-sm text-muted-foreground">{item.label}</span>
-                    </div>
-                    <span className="text-sm font-medium text-foreground">{item.value}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Decision Makers Row */}
-      <Card className="bg-card/50 border-border/30 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-2">
-            <Crown className="h-5 w-5 text-amber-500" />
-            <CardTitle className="text-lg">Decision Makers</CardTitle>
-            <InfoTooltip side="right" size="sm">
-              Key stakeholders involved in the purchasing decision.
-            </InfoTooltip>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {decisionMakers.map((dm, i) => {
-              const IconComponent = decisionMakerIcons[i];
-              return (
-                <div 
-                  key={i} 
-                  className="group flex flex-col items-center text-center p-5 rounded-xl bg-muted/30 border border-border/50 hover:border-accent/30 hover:shadow-md transition-all duration-300"
-                >
-                  <Avatar className="h-14 w-14 mb-3 ring-2 ring-amber-500/20 group-hover:ring-amber-500/40 transition-all">
-                    <AvatarFallback className="bg-gradient-to-br from-amber-500/80 to-amber-600/80 text-white">
-                      <IconComponent className="h-6 w-6" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <p className="font-medium text-foreground text-sm mb-2">{dm.role}</p>
-                  <Badge 
-                    variant="outline" 
-                    className="mb-3 bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs"
-                  >
-                    {dm.influence}
-                  </Badge>
-                  <div className="w-full">
-                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                      <span>Influence</span>
-                      <span>{dm.percent > 0 ? `${dm.percent}%` : "..."}</span>
-                    </div>
-                    <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-full transition-all duration-500"
-                        style={{ width: `${dm.percent}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </CardContent>
       </Card>
+
+      {/* Best Opportunity Card */}
+      {highestValueSegment && (
+        <Card className="group relative bg-gradient-to-br from-amber-500/5 via-card/50 to-card/50 border-amber-500/30 overflow-hidden hover:border-amber-500/40 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-500/15 to-transparent rounded-bl-full" />
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-400/10 shrink-0">
+                <Crown className="h-6 w-6 text-amber-500" />
+              </div>
+              <div className="flex-1">
+                <Badge className="mb-2 bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs">
+                  Best Opportunity
+                </Badge>
+                <h3 className="text-xl font-bold text-foreground mb-2">{highestValueSegment}</h3>
+                <p className="text-sm text-muted-foreground">
+                  This segment shows the highest potential for your product based on pain intensity, budget capacity, and market growth.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Top 3 Pain Points */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <h3 className="text-lg font-semibold text-foreground">Top Market Pain Points</h3>
+          <InfoTooltip size="sm">Key problems your target customers are actively trying to solve.</InfoTooltip>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {topPainPoints.map((pain, index) => (
+            <Card 
+              key={index} 
+              className="group relative bg-card/50 border-border/30 overflow-hidden hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.02] transition-all duration-300"
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-red-500/10 to-transparent rounded-bl-full" />
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <Badge variant="outline" className="bg-red-500/10 border-red-500/20 text-red-500 text-xs">
+                    #{index + 1}
+                  </Badge>
+                  {pain.urgency !== "..." && (
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs ${
+                        pain.urgency === "HIGH" 
+                          ? "bg-red-500/10 border-red-500/20 text-red-500"
+                          : pain.urgency === "MEDIUM"
+                          ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                          : "bg-muted/30 border-border/50 text-muted-foreground"
+                      }`}
+                    >
+                      {pain.urgency}
+                    </Badge>
+                  )}
+                </div>
+                <h4 className="font-semibold text-foreground mb-3 line-clamp-2">{pain.name}</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Intensity</span>
+                    <span className="font-medium text-foreground">{pain.intensity > 0 ? `${pain.intensity}/10` : "..."}</span>
+                  </div>
+                  <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-red-500 via-amber-500 to-amber-300 rounded-full transition-all duration-500"
+                      style={{ width: `${(pain.intensity / 10) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Competitive Landscape */}
+      <Card className="bg-card/50 border-border/30 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-amber-500" />
+            <CardTitle className="text-lg">Competitive Landscape</CardTitle>
+            <InfoTooltip side="right" size="sm">
+              Direct competitors identified in your market space.
+            </InfoTooltip>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
+              <div className="flex items-center gap-2 mb-1">
+                <Users className="h-4 w-4 text-amber-500" />
+                <span className="text-sm text-muted-foreground">Competitors Identified</span>
+              </div>
+              <p className="text-3xl font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent">
+                {competitors.count || "..."}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="h-4 w-4 text-amber-500" />
+                <span className="text-sm text-muted-foreground">Price Range</span>
+              </div>
+              <p className="text-2xl font-bold text-foreground">
+                {competitors.priceRange}
+              </p>
+            </div>
+          </div>
+          
+          {competitors.names.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {competitors.names.map((name, i) => (
+                <Badge 
+                  key={i} 
+                  variant="outline" 
+                  className="bg-muted/30 border-border/50 text-foreground text-xs px-3 py-1"
+                >
+                  {name}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Market Validation Mini Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-xl bg-accent/5 border border-accent/10 hover:border-accent/20 transition-colors">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500/15 to-amber-400/5">
+              <Users className="h-3.5 w-3.5 text-amber-500" />
+            </div>
+            <span className="text-xs text-muted-foreground">Customer Types</span>
+          </div>
+          <p className="text-2xl font-bold text-foreground">{totalPersonas || "..."} Personas</p>
+        </div>
+        
+        <div className="p-4 rounded-xl bg-accent/5 border border-accent/10 hover:border-accent/20 transition-colors">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500/15 to-amber-400/5">
+              <Zap className="h-3.5 w-3.5 text-amber-500" />
+            </div>
+            <span className="text-xs text-muted-foreground">Avg Pain Intensity</span>
+          </div>
+          <p className="text-2xl font-bold text-foreground">
+            {avgPainIntensity > 0 ? `${avgPainIntensity}/10` : "..."}
+          </p>
+        </div>
+        
+        <div className="p-4 rounded-xl bg-accent/5 border border-accent/10 hover:border-accent/20 transition-colors">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500/15 to-amber-400/5">
+              <Clock className="h-3.5 w-3.5 text-amber-500" />
+            </div>
+            <span className="text-xs text-muted-foreground">Decision Time</span>
+          </div>
+          <p className="text-2xl font-bold text-foreground">{getValue(decisionTimeframe)}</p>
+        </div>
+      </div>
 
       {/* CTA Banner */}
       <Card className="bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border-amber-500/30 hover:border-amber-500/40 transition-all">
