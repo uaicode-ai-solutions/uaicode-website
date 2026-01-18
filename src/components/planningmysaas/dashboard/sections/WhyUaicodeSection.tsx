@@ -93,8 +93,8 @@ const WhyUaicodeSection = () => {
     <section id="why-uaicode" className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
-          <Award className="h-5 w-5 text-amber-500" />
+        <div className="p-2 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10">
+          <Award className="h-5 w-5 text-accent" />
         </div>
         <div>
           <div className="flex items-center gap-2">
@@ -254,9 +254,9 @@ const WhyUaicodeSection = () => {
             {guarantees.map((guarantee, index) => (
               <div 
                 key={index} 
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 hover:bg-green-500/15 transition-colors cursor-default"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/15 transition-colors cursor-default"
               >
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-amber-400" />
                 <span className="text-xs text-foreground">{guarantee}</span>
               </div>
             ))}
