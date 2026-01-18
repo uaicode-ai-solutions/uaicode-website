@@ -117,17 +117,17 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg bg-gradient-to-b from-card via-card to-background border-accent/20 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg glass-card border-amber-500/20 shadow-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="text-center pb-2">
           {/* Icon with glow effect */}
           <div className="flex justify-center mb-4">
             <div className="relative">
-              <div className="absolute inset-0 bg-accent/30 blur-xl rounded-full" />
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/30 flex items-center justify-center">
-                <Mail className="w-10 h-10 text-accent" />
+              <div className="absolute inset-0 bg-amber-500/30 blur-xl rounded-full" />
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border border-amber-500/30 flex items-center justify-center">
+                <Mail className="w-10 h-10 text-amber-400" />
               </div>
-              <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-accent animate-pulse" />
-              <Sparkles className="absolute -bottom-1 -left-1 w-4 h-4 text-accent/70 animate-pulse" style={{ animationDelay: '0.5s' }} />
+              <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-amber-400 animate-pulse" />
+              <Sparkles className="absolute -bottom-1 -left-1 w-4 h-4 text-yellow-400 animate-pulse" style={{ animationDelay: '0.5s' }} />
             </div>
           </div>
 
@@ -144,7 +144,7 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
 
         {/* Decorative divider */}
         <div className="flex items-center gap-4 py-2">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -159,7 +159,7 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
               placeholder="John Doe"
               {...register("name")}
               disabled={isSubmitting}
-              className="bg-background/50 border-border/50 focus:border-accent/50"
+              className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20"
               maxLength={100}
             />
             {errors.name && (
@@ -178,7 +178,7 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
               placeholder="john@company.com"
               {...register("email")}
               disabled={isSubmitting}
-              className="bg-background/50 border-border/50 focus:border-accent/50"
+              className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20"
               maxLength={255}
             />
             {errors.email && (
@@ -213,7 +213,7 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
               placeholder="Tell us about your project or how we can help..."
               {...register("message")}
               disabled={isSubmitting}
-              className="bg-background/50 border-border/50 focus:border-accent/50 min-h-[100px] max-h-[150px] resize-y"
+              className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20 min-h-[100px] max-h-[150px] resize-y"
               maxLength={1000}
             />
             <div className="flex justify-between items-center mt-1">
@@ -233,7 +233,7 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold py-5 shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
+            className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-600 hover:to-yellow-600 font-semibold py-5 shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transition-all duration-300"
           >
             {isSubmitting ? (
               <span className="flex items-center gap-2">
@@ -251,9 +251,9 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
           {/* Privacy note */}
           <p className="text-xs text-muted-foreground text-center">
             By submitting, you agree to our{" "}
-            <a href="/privacy" className="text-accent hover:underline">Privacy Policy</a>
+            <a href="/privacy" className="text-amber-400 hover:underline">Privacy Policy</a>
             {" "}and{" "}
-            <a href="/terms" className="text-accent hover:underline">Terms of Service</a>.
+            <a href="/terms" className="text-amber-400 hover:underline">Terms of Service</a>.
           </p>
         </form>
       </DialogContent>

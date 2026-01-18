@@ -100,14 +100,14 @@ const KyleChatDialog = ({ open, onOpenChange }: KyleChatDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-gradient-to-b from-background to-background/95 border-accent/20">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20">
         <DialogTitle className="sr-only">Chat with Kyle - AI Sales Consultant</DialogTitle>
         
         {/* Header */}
-        <div className="p-4 border-b border-border/50 bg-gradient-to-r from-accent/5 to-transparent">
+        <div className="p-4 border-b border-border/50 bg-gradient-to-r from-amber-500/10 to-transparent">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Sparkles className="h-5 w-5 text-accent" />
+              <Sparkles className="h-5 w-5 text-amber-400" />
               <span className="font-semibold text-foreground">AI Sales Consultant</span>
             </div>
             <Button
@@ -142,7 +142,7 @@ const KyleChatDialog = ({ open, onOpenChange }: KyleChatDialogProps) => {
               <div
                 className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
                   message.role === "user"
-                    ? "bg-accent text-accent-foreground rounded-br-md"
+                    ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-black rounded-br-md"
                     : "bg-muted text-foreground rounded-bl-md"
                 }`}
               >
@@ -177,7 +177,7 @@ const KyleChatDialog = ({ open, onOpenChange }: KyleChatDialogProps) => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleQuickReply(reply)}
-                  className="text-xs h-7 hover:bg-accent/10 hover:border-accent/50"
+                  className="text-xs h-7 hover:bg-amber-500/10 hover:border-amber-500/50"
                 >
                   {reply}
                 </Button>
@@ -195,14 +195,14 @@ const KyleChatDialog = ({ open, onOpenChange }: KyleChatDialogProps) => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Type your message..."
-              className="flex-1 bg-background border border-border/50 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50"
+              className="flex-1 bg-background border border-border/50 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
               disabled={isTyping}
             />
             <Button
               type="submit"
               size="icon"
               disabled={!inputValue.trim() || isTyping}
-              className="rounded-full bg-accent hover:bg-accent/90 text-accent-foreground h-10 w-10"
+              className="rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black h-10 w-10"
             >
               <Send className="h-4 w-4" />
             </Button>
