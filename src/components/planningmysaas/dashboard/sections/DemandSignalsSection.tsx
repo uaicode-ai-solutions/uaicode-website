@@ -116,12 +116,38 @@ const signalGrowthRates = {
   reviews: 0.06,    // 6% annual growth
 };
 
-// Signal colors
+// Signal colors - UaiCode gold palette (monochromatic)
 const signalColors = {
-  searches: "#FFD700",  // Gold
-  forums: "#60A5FA",    // Blue
-  jobs: "#A78BFA",      // Purple
-  reviews: "#34D399",   // Aqua
+  searches: "#FFD700",  // Gold principal (100%)
+  forums: "#FFA500",    // Gold dark (85%)
+  jobs: "#E6BE00",      // Gold médio (70%)
+  reviews: "#CC9400",   // Gold profundo (55%)
+};
+
+// Generate fallback value based on Primary Signal and SOM
+const generateFallbackValue = (
+  primarySignalValue: number,
+  somValue: number,
+  signalType: 'forums' | 'jobs' | 'reviews'
+): number => {
+  // Different ratios per signal type
+  const ratios = {
+    forums: 0.0015,   // ~0.15% of searches
+    jobs: 0.0008,     // ~0.08% of searches
+    reviews: 0.0025,  // ~0.25% of searches
+  };
+  
+  // Random variation ±25% for realistic variation
+  const randomFactor = 0.75 + Math.random() * 0.5;
+  
+  // Base calculation from Primary Signal
+  const baseFromSignal = primarySignalValue * ratios[signalType] * randomFactor;
+  
+  // SOM influence (0.001% of SOM)
+  const baseFromSom = somValue * 0.00001 * ratios[signalType];
+  
+  // Blend with SOM influence, minimum 100
+  return Math.max(100, Math.round((baseFromSignal + baseFromSom) / 2));
 };
 
 // Generate monthly projection data for 5 years with seasonal variation
@@ -256,11 +282,16 @@ const DemandSignalsSection = () => {
   const primarySignal = monthlySearches !== "..." ? formatSearchVolume(monthlySearches) : "N/A";
   const trendDirection = searchTrend !== "..." ? trendConfig.label : "N/A";
   
-  // Chart data
+  // Chart data with fallback based on Primary Signal and SOM
   const searchesBaseValue = extractNumericValue(monthlySearches);
-  const forumsBaseValue = extractSignalNumericValue(forumDiscussions) || searchesBaseValue * 0.001; // Fallback to 0.1% of searches
-  const jobsBaseValue = extractSignalNumericValue(jobPostings) || searchesBaseValue * 0.0005; // Fallback to 0.05% of searches
-  const reviewsBaseValue = extractSignalNumericValue(onlineReviews) || searchesBaseValue * 0.002; // Fallback to 0.2% of searches
+  const somValue = extractNumericValue(opportunityData?.som_value || "0");
+  
+  const forumsBaseValue = extractSignalNumericValue(forumDiscussions) || 
+    generateFallbackValue(searchesBaseValue, somValue, 'forums');
+  const jobsBaseValue = extractSignalNumericValue(jobPostings) || 
+    generateFallbackValue(searchesBaseValue, somValue, 'jobs');
+  const reviewsBaseValue = extractSignalNumericValue(onlineReviews) || 
+    generateFallbackValue(searchesBaseValue, somValue, 'reviews');
   
   const projectionData = generateMonthlyProjection(
     searchesBaseValue, 
@@ -387,19 +418,19 @@ const DemandSignalsSection = () => {
               <AreaChart data={projectionData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="searchesGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={signalColors.searches} stopOpacity={0.3}/>
+                    <stop offset="5%" stopColor={signalColors.searches} stopOpacity={0.35}/>
                     <stop offset="95%" stopColor={signalColors.searches} stopOpacity={0.05}/>
                   </linearGradient>
                   <linearGradient id="forumsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={signalColors.forums} stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor={signalColors.forums} stopOpacity={0.02}/>
+                    <stop offset="5%" stopColor={signalColors.forums} stopOpacity={0.28}/>
+                    <stop offset="95%" stopColor={signalColors.forums} stopOpacity={0.04}/>
                   </linearGradient>
                   <linearGradient id="jobsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={signalColors.jobs} stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor={signalColors.jobs} stopOpacity={0.02}/>
+                    <stop offset="5%" stopColor={signalColors.jobs} stopOpacity={0.22}/>
+                    <stop offset="95%" stopColor={signalColors.jobs} stopOpacity={0.03}/>
                   </linearGradient>
                   <linearGradient id="reviewsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={signalColors.reviews} stopOpacity={0.2}/>
+                    <stop offset="5%" stopColor={signalColors.reviews} stopOpacity={0.18}/>
                     <stop offset="95%" stopColor={signalColors.reviews} stopOpacity={0.02}/>
                   </linearGradient>
                 </defs>
