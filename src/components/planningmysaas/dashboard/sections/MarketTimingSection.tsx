@@ -173,110 +173,107 @@ const MarketTimingSection = () => {
         </div>
       </div>
 
-      {/* Two Cards Grid */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Card 1: Radar Chart */}
-        <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-medium text-foreground">Timing Analysis</h3>
-                <InfoTooltip side="top" size="sm">
-                  This radar chart visualizes 5 key market timing factors. Each axis represents a 
-                  different indicator that helps determine the optimal moment to enter the market. 
-                  Higher values toward the outer edges indicate more favorable conditions.
-                </InfoTooltip>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-1">
-                  <span className="text-2xl font-bold text-accent">{overallScore}</span>
-                  <span className="text-sm text-muted-foreground">/100</span>
-                  <InfoTooltip side="left" size="sm">
-                    Overall Timing Score is the average of all 5 timing metrics: Trends, Trajectory, 
-                    Maturity, Window, and Saturation. Scores above 75 indicate excellent timing for 
-                    market entry.
-                  </InfoTooltip>
-                </div>
-                <span className="text-xs text-muted-foreground">Overall Score</span>
-              </div>
-            </div>
-
-            {/* Radar Chart */}
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                  <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.5} />
-                  <PolarAngleAxis
-                    dataKey="axis"
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                  />
-                  <PolarRadiusAxis
-                    angle={90}
-                    domain={[0, 100]}
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
-                    tickCount={5}
-                  />
-                  <Radar
-                    name="Score"
-                    dataKey="value"
-                    stroke="hsl(var(--accent))"
-                    fill="hsl(var(--accent))"
-                    fillOpacity={0.25}
-                    strokeWidth={2}
-                  />
-                  <RechartsTooltip content={<CustomRadarTooltip />} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 2: Key Indicators - Single Row */}
-        <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <h3 className="text-sm font-medium text-foreground">Key Indicators</h3>
+      {/* Card 1: Timing Analysis Radar */}
+      <Card className="bg-card/50 border-border/30">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-medium text-foreground">Timing Analysis</h3>
               <InfoTooltip side="top" size="sm">
-                These 5 metrics represent the key timing factors for market entry. 
-                Each score ranges from 0-100, with higher values indicating more 
-                favorable conditions.
+                This radar chart visualizes 5 key market timing factors. Each axis represents a 
+                different indicator that helps determine the optimal moment to enter the market. 
+                Higher values toward the outer edges indicate more favorable conditions.
               </InfoTooltip>
             </div>
-
-            {/* 5 Indicators in Single Horizontal Line */}
-            <div className="flex justify-between items-start gap-3">
-              {indicatorData.map((indicator) => {
-                const Icon = indicator.icon;
-                return (
-                  <div key={indicator.name} className="flex flex-col items-center gap-2 flex-1">
-                    {/* Icon + Name + InfoTooltip */}
-                    <div className="flex items-center gap-1">
-                      <Icon className="w-3 h-3 text-accent" />
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                        {indicator.name}
-                      </span>
-                      <InfoTooltip side="top" size="sm">
-                        <p className="font-semibold text-accent mb-1">{indicator.name}</p>
-                        <p className="text-foreground mb-1">{indicator.score}/100</p>
-                        <p className="text-muted-foreground text-xs">{indicator.description}</p>
-                      </InfoTooltip>
-                    </div>
-                    
-                    {/* Compact ScoreCircle */}
-                    <ScoreCircle 
-                      score={indicator.score} 
-                      label="" 
-                      size="lg"
-                      showLabelInside={false}
-                      showGlow={true}
-                    />
-                  </div>
-                );
-              })}
+            <div className="text-right">
+              <div className="flex items-center gap-1">
+                <span className="text-2xl font-bold text-accent">{overallScore}</span>
+                <span className="text-sm text-muted-foreground">/100</span>
+                <InfoTooltip side="left" size="sm">
+                  Overall Timing Score is the average of all 5 timing metrics: Trends, Trajectory, 
+                  Maturity, Window, and Saturation. Scores above 75 indicate excellent timing for 
+                  market entry.
+                </InfoTooltip>
+              </div>
+              <span className="text-xs text-muted-foreground">Overall Score</span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+
+          {/* Radar Chart */}
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                <PolarAngleAxis
+                  dataKey="axis"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                />
+                <PolarRadiusAxis
+                  angle={90}
+                  domain={[0, 100]}
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
+                  tickCount={5}
+                />
+                <Radar
+                  name="Score"
+                  dataKey="value"
+                  stroke="hsl(var(--accent))"
+                  fill="hsl(var(--accent))"
+                  fillOpacity={0.25}
+                  strokeWidth={2}
+                />
+                <RechartsTooltip content={<CustomRadarTooltip />} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Card 2: Key Indicators - Full Width Single Row */}
+      <Card className="bg-card/50 border-border/30">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <h3 className="text-sm font-medium text-foreground">Key Indicators</h3>
+            <InfoTooltip side="top" size="sm">
+              These 5 metrics represent the key timing factors for market entry. 
+              Each score ranges from 0-100, with higher values indicating more 
+              favorable conditions.
+            </InfoTooltip>
+          </div>
+
+          {/* 5 Indicators in Single Horizontal Line - Full Width */}
+          <div className="flex justify-between items-start px-8">
+            {indicatorData.map((indicator) => {
+              const Icon = indicator.icon;
+              return (
+                <div key={indicator.name} className="flex flex-col items-center gap-2">
+                  {/* Icon + Name + InfoTooltip */}
+                  <div className="flex items-center gap-1">
+                    <Icon className="w-3 h-3 text-accent" />
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {indicator.name}
+                    </span>
+                    <InfoTooltip side="top" size="sm">
+                      <p className="font-semibold text-accent mb-1">{indicator.name}</p>
+                      <p className="text-foreground mb-1">{indicator.score}/100</p>
+                      <p className="text-muted-foreground text-xs">{indicator.description}</p>
+                    </InfoTooltip>
+                  </div>
+                  
+                  {/* ScoreCircle - Larger with full width */}
+                  <ScoreCircle 
+                    score={indicator.score} 
+                    label="" 
+                    size="xl"
+                    showLabelInside={false}
+                    showGlow={true}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Saturation Risk Alert */}
       {opportunityData?.saturation_risk && (
