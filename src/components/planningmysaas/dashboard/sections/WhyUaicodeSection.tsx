@@ -93,8 +93,8 @@ const WhyUaicodeSection = () => {
     <section id="why-uaicode" className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
-          <Award className="h-5 w-5 text-accent" />
+        <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
+          <Award className="h-5 w-5 text-amber-500" />
         </div>
         <div>
           <div className="flex items-center gap-2">
@@ -116,26 +116,26 @@ const WhyUaicodeSection = () => {
               key={index} 
               className={`group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
                 stat.highlight 
-                  ? 'bg-gradient-to-br from-accent/20 via-accent/10 to-accent/5 border-accent/40 ring-2 ring-accent/20 hover:ring-accent/40 hover:shadow-accent/20' 
-                  : 'bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/20 hover:border-accent/30 hover:shadow-accent/10'
+                  ? 'bg-card/50 border-amber-500/30 ring-2 ring-amber-500/20 hover:ring-amber-500/30 hover:shadow-amber-500/20' 
+                  : 'bg-card/50 border-border/30 hover:border-accent/30 hover:shadow-accent/10'
               }`}
             >
               {/* Hover overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               
               {/* Corner decoration */}
-              <div className="absolute top-0 right-0 w-16 h-16 bg-accent/10 rounded-bl-[40px] -mr-4 -mt-4"></div>
+              <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-amber-500/15 to-amber-400/5 rounded-bl-[40px] -mr-4 -mt-4"></div>
               
               <div className="relative p-5 text-center">
                 {/* Centered icon */}
                 <div className={`mx-auto mb-3 w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${
-                  stat.highlight ? 'bg-accent/30 ring-2 ring-accent/40' : 'bg-accent/20'
+                  stat.highlight ? 'bg-gradient-to-br from-amber-500/30 to-amber-400/20 ring-2 ring-amber-500/30' : 'bg-gradient-to-br from-amber-500/20 to-amber-400/10'
                 }`}>
-                  <IconComponent className={`h-6 w-6 ${stat.highlight ? 'text-accent' : 'text-accent/80'}`} />
+                  <IconComponent className={`h-6 w-6 ${stat.highlight ? 'text-amber-500' : 'text-amber-500/80'}`} />
                 </div>
                 
                 {/* Value */}
-                <div className={`text-3xl md:text-4xl font-bold mb-1 transition-transform duration-300 group-hover:scale-105 ${stat.highlight ? 'text-accent' : 'text-foreground'}`}>
+                <div className={`text-3xl md:text-4xl font-bold mb-1 transition-transform duration-300 group-hover:scale-105 ${stat.highlight ? 'text-amber-500' : 'text-foreground'}`}>
                   {stat.value}
                 </div>
                 
@@ -146,9 +146,9 @@ const WhyUaicodeSection = () => {
                 {/* TOP RATED Badge */}
                 {stat.highlight && (
                   <div className="absolute top-3 left-3">
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-accent/20 border border-accent/30">
-                      <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
-                      <span className="text-[10px] font-semibold text-accent uppercase">Top Rated</span>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/20 border border-amber-500/30">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                      <span className="text-[10px] font-semibold text-amber-500 uppercase">Top Rated</span>
                     </div>
                   </div>
                 )}
@@ -177,8 +177,8 @@ const WhyUaicodeSection = () => {
                     key={index} 
                     className="flex gap-3 p-3 rounded-lg bg-muted/20 border border-border/30 hover:border-accent/30 transition-all duration-300 hover:shadow-md"
                   >
-                    <div className="p-2 rounded-lg bg-accent/10 h-fit">
-                      <IconComponent className="h-4 w-4 text-accent" />
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10 h-fit">
+                      <IconComponent className="h-4 w-4 text-amber-500" />
                     </div>
                     <div>
                       <h4 className="font-medium text-foreground text-sm">{item.title}</h4>
@@ -208,7 +208,7 @@ const WhyUaicodeSection = () => {
                 >
                   {/* Quote icon + Stars */}
                   <div className="flex items-start justify-between mb-2">
-                    <Quote className="h-5 w-5 text-accent/50" />
+                    <Quote className="h-5 w-5 text-amber-500/50" />
                     <div className="flex gap-0.5">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className="h-3 w-3 text-yellow-400 fill-yellow-400" />
@@ -225,7 +225,7 @@ const WhyUaicodeSection = () => {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                      <AvatarFallback className="bg-accent/20 text-accent">
+                      <AvatarFallback className="bg-amber-500/20 text-amber-500">
                         {testimonial.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
