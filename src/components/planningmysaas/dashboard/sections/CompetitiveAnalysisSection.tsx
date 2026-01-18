@@ -1,6 +1,7 @@
 import { Target, Users, DollarSign, TrendingUp, Megaphone, PieChart } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import FourPsAnalysis from "../competitive/FourPsAnalysis";
 import PaidMediaDiagnosis from "../competitive/PaidMediaDiagnosis";
 import PaidMediaActionPlan from "../competitive/PaidMediaActionPlan";
@@ -10,26 +11,31 @@ import GrowthStrategyAEMR from "../competitive/GrowthStrategyAEMR";
 
 const CompetitiveAnalysisSection = () => {
   return (
-    <section className="space-y-8">
+    <section id="competitive-analysis" className="space-y-6 animate-fade-in">
       {/* Section Header */}
-      <div className="flex items-center gap-4">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20">
-          <Target className="h-6 w-6 text-accent" />
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-accent/10">
+          <Target className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Competitive Intelligence</h2>
-          <p className="text-muted-foreground">Deep dive into your competitive landscape with actionable insights</p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">Competitive Intelligence</h2>
+            <InfoTooltip side="right" size="sm">
+              Deep dive into your competitive landscape with actionable insights for 4Ps, paid media, pricing strategy, and growth tactics.
+            </InfoTooltip>
+          </div>
+          <p className="text-sm text-muted-foreground">Know your competition</p>
         </div>
       </div>
 
       {/* Main Tabs */}
-      <Card className="border-border/50 bg-card/30 backdrop-blur-sm">
-        <CardContent className="pt-6">
+      <Card className="bg-card/50 border-border/30">
+        <CardContent className="p-6">
           <Tabs defaultValue="fourps" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 h-auto gap-2 bg-muted/30 p-2">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 h-auto gap-2 bg-accent/5 border border-accent/10 p-2 rounded-xl">
               <TabsTrigger 
                 value="fourps" 
-                className="flex items-center gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground px-3 py-2"
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md px-3 py-2.5 rounded-lg transition-all hover:bg-accent/10"
               >
                 <PieChart className="h-4 w-4" />
                 <span className="hidden sm:inline">4Ps Analysis</span>
@@ -37,7 +43,7 @@ const CompetitiveAnalysisSection = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="paid-media-diagnosis" 
-                className="flex items-center gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground px-3 py-2"
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md px-3 py-2.5 rounded-lg transition-all hover:bg-accent/10"
               >
                 <Megaphone className="h-4 w-4" />
                 <span className="hidden sm:inline">Paid Media</span>
@@ -45,7 +51,7 @@ const CompetitiveAnalysisSection = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="paid-media-plan" 
-                className="flex items-center gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground px-3 py-2"
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md px-3 py-2.5 rounded-lg transition-all hover:bg-accent/10"
               >
                 <TrendingUp className="h-4 w-4" />
                 <span className="hidden sm:inline">Media Plan</span>
@@ -53,7 +59,7 @@ const CompetitiveAnalysisSection = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="pricing-diagnosis" 
-                className="flex items-center gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground px-3 py-2"
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md px-3 py-2.5 rounded-lg transition-all hover:bg-accent/10"
               >
                 <DollarSign className="h-4 w-4" />
                 <span className="hidden sm:inline">Pricing</span>
@@ -61,7 +67,7 @@ const CompetitiveAnalysisSection = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="pricing-plan" 
-                className="flex items-center gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground px-3 py-2"
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md px-3 py-2.5 rounded-lg transition-all hover:bg-accent/10"
               >
                 <DollarSign className="h-4 w-4" />
                 <span className="hidden sm:inline">Price Plan</span>
@@ -69,7 +75,7 @@ const CompetitiveAnalysisSection = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="growth" 
-                className="flex items-center gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground px-3 py-2"
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md px-3 py-2.5 rounded-lg transition-all hover:bg-accent/10"
               >
                 <Users className="h-4 w-4" />
                 <span className="hidden sm:inline">Growth</span>
