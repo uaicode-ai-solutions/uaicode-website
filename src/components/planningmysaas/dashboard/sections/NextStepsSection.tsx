@@ -19,6 +19,13 @@ import {
   CreditCard,
   HandCoins
 } from "lucide-react";
+
+// Founder avatars
+import sarahJohnsonImg from "@/assets/testimonial-sarah-johnson.webp";
+import marcusChenImg from "@/assets/author-marcus.webp";
+import emmaThompsonImg from "@/assets/testimonial-emma-thompson.webp";
+import johnSmithImg from "@/assets/testimonial-john-smith.webp";
+import mariaSantosImg from "@/assets/testimonial-maria-santos.webp";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -380,7 +387,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
                   25% OFF - Today only!
                   <InfoTooltip term="Limited Discount">
@@ -389,7 +396,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
                   12 months hosting included
                   <InfoTooltip term="Hosting">
@@ -398,7 +405,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
                   Priority onboarding slot
                   <InfoTooltip term="Priority Onboarding">
@@ -407,7 +414,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
                   Full source code ownership
                   <InfoTooltip term="Code Ownership">
@@ -580,7 +587,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             {/* Features */}
             <ul className="space-y-2 mb-4 flex-1">
               <li className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
                   30% OFF on MVP - Maximum discount!
                   <InfoTooltip term="Maximum Discount">
@@ -589,7 +596,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
                   Save {formatCurrency(discountStrategy.savings_bundle_cents / 100)} on development
                   <InfoTooltip term="Development Savings">
@@ -598,7 +605,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
                   Full marketing team included
                   <InfoTooltip term="Marketing Team">
@@ -607,7 +614,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
                   90-day launch roadmap
                   <InfoTooltip term="Launch Roadmap">
@@ -616,7 +623,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 </span>
               </li>
               <li className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
                   VIP priority support
                   <InfoTooltip term="VIP Support">
@@ -671,10 +678,13 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             <div className="mb-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
               <div className="flex flex-col items-center gap-3">
                 <div className="flex -space-x-3">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-yellow-500/20 border-2 border-card flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground">👤</span>
-                    </div>
+                  {[sarahJohnsonImg, marcusChenImg, emmaThompsonImg, johnSmithImg, mariaSantosImg].map((img, i) => (
+                    <img 
+                      key={i} 
+                      src={img} 
+                      alt="Founder" 
+                      className="w-8 h-8 rounded-full border-2 border-card object-cover"
+                    />
                   ))}
                 </div>
                 <div className="text-center">
