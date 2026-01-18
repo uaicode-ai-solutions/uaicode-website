@@ -1,4 +1,4 @@
-import { Clock, AlertTriangle, TrendingUp, ArrowUpRight, Target, Timer, Users } from "lucide-react";
+import { Clock, AlertTriangle, TrendingUp, ArrowUpRight, Target, Timer, Users, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
@@ -287,6 +287,22 @@ const MarketTimingSection = () => {
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
                   {opportunityData?.market_maturity || "Analyzing market maturity..."}
+                </p>
+              </div>
+
+              {/* Mini Card 4: Opportunity Timeframe */}
+              <div className="p-4 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="w-4 h-4 text-accent" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Opportunity Timeframe
+                  </span>
+                  <InfoTooltip side="top" size="sm">
+                    The estimated time window for this market opportunity to remain viable.
+                  </InfoTooltip>
+                </div>
+                <p className="text-sm text-foreground leading-relaxed">
+                  {opportunityData?.opportunity_timeframe || "Analyzing opportunity timeframe..."}
                 </p>
               </div>
             </div>
