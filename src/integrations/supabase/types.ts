@@ -238,6 +238,7 @@ export type Database = {
           competitive_analysis_section: Json | null
           created_at: string
           id: string
+          marketing_intelligence_section: Json | null
           opportunity_section: Json | null
           section_investment: Json | null
           status: string
@@ -248,6 +249,7 @@ export type Database = {
           competitive_analysis_section?: Json | null
           created_at?: string
           id?: string
+          marketing_intelligence_section?: Json | null
           opportunity_section?: Json | null
           section_investment?: Json | null
           status?: string
@@ -258,6 +260,7 @@ export type Database = {
           competitive_analysis_section?: Json | null
           created_at?: string
           id?: string
+          marketing_intelligence_section?: Json | null
           opportunity_section?: Json | null
           section_investment?: Json | null
           status?: string
