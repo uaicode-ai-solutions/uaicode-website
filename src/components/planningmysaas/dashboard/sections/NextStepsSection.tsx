@@ -321,7 +321,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-            <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 text-xs font-bold">
+            <Badge className="bg-amber-500 text-amber-950 border border-amber-400 px-3 py-1 text-xs font-bold">
               <Clock className="h-3 w-3 mr-1" />
               24H FLASH DEAL
             </Badge>
@@ -378,7 +378,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             {/* Features */}
             <ul className="space-y-2 mb-4 flex-1">
               <li className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
                   Complete MVP development
                   <InfoTooltip term="MVP Development">
@@ -530,7 +530,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-            <Badge className="bg-accent/10 text-accent border border-accent/20 px-3 py-1 text-xs font-bold">
+            <Badge className="bg-accent text-accent-foreground border border-accent px-3 py-1 text-xs font-bold">
               <Star className="h-3 w-3 mr-1" />
               BEST VALUE - 30% OFF
             </Badge>
