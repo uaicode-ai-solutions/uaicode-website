@@ -13,12 +13,6 @@ import {
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
 } from "recharts";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { LucideIcon } from "lucide-react";
 
 // Parse score value like "92/100" or "85" to number
@@ -237,7 +231,7 @@ const MarketTimingSection = () => {
           </CardContent>
         </Card>
 
-        {/* Card 2: Key Indicators with 5 Score Circles */}
+        {/* Card 2: Key Indicators - Single Row */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-6">
@@ -249,122 +243,37 @@ const MarketTimingSection = () => {
               </InfoTooltip>
             </div>
 
-            {/* 5 Score Circles - Layout 2+2+1 with enhanced visuals */}
-            <TooltipProvider delayDuration={100}>
-              {/* Row 1: Trends + Trajectory */}
-              <div className="flex justify-center gap-6 mb-6">
-                {indicatorData.slice(0, 2).map((indicator) => {
-                  const Icon = indicator.icon;
-                  return (
-                    <div 
-                      key={indicator.name} 
-                      className="flex flex-col items-center p-5 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10 hover:border-accent/30 hover:shadow-[0_0_20px_hsl(var(--accent)/0.15)] transition-all duration-300"
-                    >
-                      <div className="flex items-center gap-1.5 mb-3">
-                        <Icon className="w-3.5 h-3.5 text-accent" />
-                        <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">
-                          {indicator.name}
-                        </span>
-                      </div>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="cursor-pointer transition-transform hover:scale-105">
-                            <ScoreCircle 
-                              score={indicator.score} 
-                              label="" 
-                              size="2xl" 
-                              showLabelInside={false}
-                              showGlow={true}
-                            />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[220px] p-3 bg-card border-accent/20">
-                          <p className="font-semibold text-sm text-accent mb-1">{indicator.name}</p>
-                          <p className="text-lg font-bold text-foreground mb-1">{indicator.score}/100</p>
-                          <p className="text-xs text-muted-foreground">{indicator.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
+            {/* 5 Indicators in Single Horizontal Line */}
+            <div className="flex justify-between items-start gap-3">
+              {indicatorData.map((indicator) => {
+                const Icon = indicator.icon;
+                return (
+                  <div key={indicator.name} className="flex flex-col items-center gap-2 flex-1">
+                    {/* Icon + Name + InfoTooltip */}
+                    <div className="flex items-center gap-1">
+                      <Icon className="w-3 h-3 text-accent" />
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        {indicator.name}
+                      </span>
+                      <InfoTooltip side="top" size="sm">
+                        <p className="font-semibold text-accent mb-1">{indicator.name}</p>
+                        <p className="text-foreground mb-1">{indicator.score}/100</p>
+                        <p className="text-muted-foreground text-xs">{indicator.description}</p>
+                      </InfoTooltip>
                     </div>
-                  );
-                })}
-              </div>
-
-              {/* Row 2: Maturity + Window */}
-              <div className="flex justify-center gap-6 mb-6">
-                {indicatorData.slice(2, 4).map((indicator) => {
-                  const Icon = indicator.icon;
-                  return (
-                    <div 
-                      key={indicator.name} 
-                      className="flex flex-col items-center p-5 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10 hover:border-accent/30 hover:shadow-[0_0_20px_hsl(var(--accent)/0.15)] transition-all duration-300"
-                    >
-                      <div className="flex items-center gap-1.5 mb-3">
-                        <Icon className="w-3.5 h-3.5 text-accent" />
-                        <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">
-                          {indicator.name}
-                        </span>
-                      </div>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="cursor-pointer transition-transform hover:scale-105">
-                            <ScoreCircle 
-                              score={indicator.score} 
-                              label="" 
-                              size="2xl" 
-                              showLabelInside={false}
-                              showGlow={true}
-                            />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[220px] p-3 bg-card border-accent/20">
-                          <p className="font-semibold text-sm text-accent mb-1">{indicator.name}</p>
-                          <p className="text-lg font-bold text-foreground mb-1">{indicator.score}/100</p>
-                          <p className="text-xs text-muted-foreground">{indicator.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Row 3: Saturation (centered) */}
-              <div className="flex justify-center">
-                {(() => {
-                  const indicator = indicatorData[4];
-                  const Icon = indicator.icon;
-                  return (
-                    <div 
-                      className="flex flex-col items-center p-5 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10 hover:border-accent/30 hover:shadow-[0_0_20px_hsl(var(--accent)/0.15)] transition-all duration-300"
-                    >
-                      <div className="flex items-center gap-1.5 mb-3">
-                        <Icon className="w-3.5 h-3.5 text-accent" />
-                        <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">
-                          {indicator.name}
-                        </span>
-                      </div>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="cursor-pointer transition-transform hover:scale-105">
-                            <ScoreCircle 
-                              score={indicator.score} 
-                              label="" 
-                              size="2xl" 
-                              showLabelInside={false}
-                              showGlow={true}
-                            />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[220px] p-3 bg-card border-accent/20">
-                          <p className="font-semibold text-sm text-accent mb-1">{indicator.name}</p>
-                          <p className="text-lg font-bold text-foreground mb-1">{indicator.score}/100</p>
-                          <p className="text-xs text-muted-foreground">{indicator.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  );
-                })()}
-              </div>
-            </TooltipProvider>
+                    
+                    {/* Compact ScoreCircle */}
+                    <ScoreCircle 
+                      score={indicator.score} 
+                      label="" 
+                      size="lg"
+                      showLabelInside={false}
+                      showGlow={true}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
       </div>
