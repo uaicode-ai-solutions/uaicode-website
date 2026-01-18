@@ -307,12 +307,12 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
 
       {/* ========== LOCK IN YOUR DISCOUNT SECTION ========== */}
       <div className="flex items-center gap-3 mt-8 mb-6">
-        <div className="p-2 rounded-lg bg-accent/10">
+        <div className="p-2 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10">
           <Zap className="h-5 w-5 text-accent" />
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-xl font-bold text-foreground">Lock In Your Discount</h3>
+            <h2 className="text-2xl font-bold text-foreground">Lock In Your Discount</h2>
             <InfoTooltip side="right" size="sm">
               Limited-time offers to help you save on your MVP development.
             </InfoTooltip>
