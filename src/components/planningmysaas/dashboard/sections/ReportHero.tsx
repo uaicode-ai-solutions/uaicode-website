@@ -41,25 +41,25 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   const sectionInvestment = reportData?.section_investment as Record<string, unknown> | null;
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   
-  // Viability score from section_investment
+  // Viability score from section_investment JSONB only
   const viabilityScore = safeNumber(
-    sectionInvestment?.viability_score as number | null ?? reportData?.viability_score, 
+    sectionInvestment?.viability_score as number | null, 
     0
   );
   const verdictHeadline = safeValue(
-    sectionInvestment?.verdict_headline as string | null ?? reportData?.verdict_headline
+    sectionInvestment?.verdict_headline as string | null
   );
   
   // Total market from opportunity_section
   const rawTotalMarket = opportunityData?.tam_value || null;
   const totalMarket = rawTotalMarket ? formatMarketValue(String(rawTotalMarket)) : "...";
   
-  // ROI and Payback from section_investment
+  // ROI and Payback from section_investment JSONB only
   const expectedROI = safeValue(
-    sectionInvestment?.expected_roi as string | null ?? reportData?.expected_roi
+    sectionInvestment?.expected_roi as string | null
   );
   const paybackPeriod = safeValue(
-    sectionInvestment?.payback_period as string | null ?? reportData?.payback_period
+    sectionInvestment?.payback_period as string | null
   );
 
   const getScoreColor = (score: number) => {
