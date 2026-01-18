@@ -237,9 +237,12 @@ export type Database = {
         Row: {
           competitive_analysis_section: Json | null
           created_at: string
+          growth_intelligence_section: Json | null
           icp_intelligence_section: Json | null
           id: string
           opportunity_section: Json | null
+          paid_media_intelligence_section: Json | null
+          price_intelligence_section: Json | null
           section_investment: Json | null
           status: string
           updated_at: string
@@ -248,9 +251,12 @@ export type Database = {
         Insert: {
           competitive_analysis_section?: Json | null
           created_at?: string
+          growth_intelligence_section?: Json | null
           icp_intelligence_section?: Json | null
           id?: string
           opportunity_section?: Json | null
+          paid_media_intelligence_section?: Json | null
+          price_intelligence_section?: Json | null
           section_investment?: Json | null
           status?: string
           updated_at?: string
@@ -259,9 +265,12 @@ export type Database = {
         Update: {
           competitive_analysis_section?: Json | null
           created_at?: string
+          growth_intelligence_section?: Json | null
           icp_intelligence_section?: Json | null
           id?: string
           opportunity_section?: Json | null
+          paid_media_intelligence_section?: Json | null
+          price_intelligence_section?: Json | null
           section_investment?: Json | null
           status?: string
           updated_at?: string
