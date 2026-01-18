@@ -17,7 +17,8 @@ import {
   Star,
   Zap,
   CreditCard,
-  HandCoins
+  HandCoins,
+  MessageSquare
 } from "lucide-react";
 
 // Founder avatars
@@ -35,7 +36,9 @@ import { parseJsonField } from "@/lib/reportDataUtils";
 import { NextSteps, ExecutionPhase } from "@/types/report";
 import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
+import KyleChatDialog from "../KyleChatDialog";
 import KyleAvatar from "@/components/chat/KyleAvatar";
+import EmailContactDialog from "@/components/chat/EmailContactDialog";
 import { getSectionInvestment, getDiscountStrategy } from "@/lib/sectionInvestmentUtils";
 import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
 
@@ -128,6 +131,8 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   
   
   const [kyleDialogOpen, setKyleDialogOpen] = useState(false);
+  const [kyleChatDialogOpen, setKyleChatDialogOpen] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [selectedConsultPackage, setSelectedConsultPackage] = useState<string>('');
   const { hours, minutes, seconds } = useCountdownTimer();
 
@@ -498,36 +503,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
               CLAIM 25% DISCOUNT NOW
             </Button>
             
-            {/* Talk to Kyle */}
-            <Button 
-              variant="outline"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedConsultPackage('MVP Flash Deal');
-                setKyleDialogOpen(true);
-              }}
-              className="w-full gap-3 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground mt-2 py-4 h-auto"
-            >
-              <div className="relative flex-shrink-0">
-                <KyleAvatar size="sm" isActive={true} />
-                <div className="absolute -bottom-0.5 -right-0.5 p-1 rounded-full bg-accent shadow-lg border-2 border-background">
-                  <Phone className="h-2.5 w-2.5 text-accent-foreground" />
-                </div>
-              </div>
-              <div className="flex flex-col items-start">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-sm">Talk to Kyle</span>
-                  <span className="flex items-center gap-1 text-[10px] text-green-500 font-medium">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
-                    </span>
-                    Online
-                  </span>
-                </div>
-                <span className="text-[10px] text-muted-foreground">Have questions? Get instant answers</span>
-              </div>
-            </Button>
           </CardContent>
           </Card>
         </div>
@@ -716,36 +691,6 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
               GET MAXIMUM SAVINGS
             </Button>
             
-            {/* Talk to Kyle */}
-            <Button 
-              variant="outline"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedConsultPackage('Complete Launch Bundle');
-                setKyleDialogOpen(true);
-              }}
-              className="w-full gap-3 border-accent/30 hover:border-accent/50 hover:bg-accent/10 text-foreground mt-2 py-4 h-auto"
-            >
-              <div className="relative flex-shrink-0">
-                <KyleAvatar size="sm" isActive={true} />
-                <div className="absolute -bottom-0.5 -right-0.5 p-1 rounded-full bg-accent shadow-lg border-2 border-background">
-                  <Phone className="h-2.5 w-2.5 text-accent-foreground" />
-                </div>
-              </div>
-              <div className="flex flex-col items-start">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-sm">Talk to Kyle</span>
-                  <span className="flex items-center gap-1 text-[10px] text-green-500 font-medium">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
-                    </span>
-                    Online
-                  </span>
-                </div>
-                <span className="text-[10px] text-muted-foreground">Have questions? Get instant answers</span>
-              </div>
-            </Button>
           </CardContent>
           </Card>
         </div>
@@ -766,13 +711,114 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         </p>
       </div>
 
+      {/* Have a Question? Kyle Contact Row */}
+      <div className="mt-6 space-y-4">
+        {/* CTA Header */}
+        <div className="text-center">
+          <p className="text-sm font-medium text-foreground">
+            Have a question? Get instant answers with Kyle
+          </p>
+        </div>
+        
+        {/* Kyle Contact Buttons - 3 cards grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Email Kyle Card */}
+          <Card 
+            onClick={() => setEmailDialogOpen(true)}
+            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
+          >
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="relative">
+                <KyleAvatar size="sm" isActive={true} />
+                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
+                  <Mail className="h-3 w-3 text-black" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-foreground">Email Kyle</p>
+                  <span className="flex items-center gap-1 text-xs text-amber-400 font-medium">
+                    <Clock className="h-3 w-3" />
+                    24h reply
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">Get a detailed response</p>
+              </div>
+            </CardContent>
+          </Card>
 
+          {/* Chat with Kyle Card */}
+          <Card 
+            onClick={() => setKyleChatDialogOpen(true)}
+            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
+          >
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="relative">
+                <KyleAvatar size="sm" isActive={true} />
+                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
+                  <MessageSquare className="h-3 w-3 text-black" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-foreground">Chat with Kyle</p>
+                  <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    Online
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">AI Sales Consultant</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Call Kyle Card */}
+          <Card 
+            onClick={() => setKyleDialogOpen(true)}
+            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
+          >
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="relative">
+                <KyleAvatar size="sm" isActive={true} />
+                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
+                  <Phone className="h-3 w-3 text-black" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-foreground">Call Kyle</p>
+                  <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    Available
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">24/7 Voice Support</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Kyle Consultant Dialog */}
       <KyleConsultantDialog 
         open={kyleDialogOpen} 
         onOpenChange={setKyleDialogOpen}
         packageName={selectedConsultPackage}
+      />
+      <KyleChatDialog 
+        open={kyleChatDialogOpen} 
+        onOpenChange={setKyleChatDialogOpen}
+      />
+      <EmailContactDialog 
+        open={emailDialogOpen} 
+        onOpenChange={setEmailDialogOpen}
+        source="pms_next_steps"
       />
     </section>
   );
