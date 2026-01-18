@@ -132,8 +132,8 @@ const MacroTrendsSection = () => {
         </Card>
 
         {/* Area Chart */}
-        <Card className="bg-card/50 border-border/30 lg:col-span-2">
-          <CardContent className="p-6">
+        <Card className="bg-card/50 border-border/30 lg:col-span-2 flex flex-col">
+          <CardContent className="p-6 flex-1 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <h3 className="text-sm font-medium text-foreground">Trend Strength</h3>
               <InfoTooltip side="top" size="sm">
@@ -141,7 +141,7 @@ const MacroTrendsSection = () => {
               </InfoTooltip>
             </div>
 
-            <div className="h-48">
+            <div className="flex-1 min-h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
