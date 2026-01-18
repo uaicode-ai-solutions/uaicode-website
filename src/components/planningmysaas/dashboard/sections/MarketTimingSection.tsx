@@ -1,4 +1,4 @@
-import { Clock, TrendingUp, CalendarClock, Activity, AlertTriangle } from "lucide-react";
+import { Clock, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
@@ -11,8 +11,14 @@ import {
   PolarRadiusAxis,
   Radar,
   ResponsiveContainer,
-  Tooltip,
+  Tooltip as RechartsTooltip,
 } from "recharts";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Parse score value like "92/100" or "85" to number
 const parseScore = (value: string | undefined): number => {
@@ -120,27 +126,32 @@ const MarketTimingSection = () => {
     (trendsScore + trajectoryScore + maturityScore + windowScore + saturationScore) / 5
   );
 
-  // Metrics for display
-  const metrics = [
-    {
-      label: "Phase",
-      value: opportunityData?.market_maturity || "Growth",
-      icon: Clock,
+  // Indicator data for the 5 score circles
+  const indicatorData = [
+    { 
+      name: "Trends", 
+      score: trendsScore,
+      description: "Measures current market search trends and interest growth."
     },
-    {
-      label: "Trajectory",
-      value: opportunityData?.current_trajectory || "Accelerating",
-      icon: TrendingUp,
+    { 
+      name: "Trajectory", 
+      score: trajectoryScore,
+      description: "Indicates the speed and direction of market growth."
     },
-    {
-      label: "Window",
-      value: opportunityData?.optimal_window || "Q1-Q2 2026",
-      icon: CalendarClock,
+    { 
+      name: "Maturity", 
+      score: maturityScore,
+      description: "Reflects the market lifecycle stage. Emerging markets score higher."
     },
-    {
-      label: "Trend Score",
-      value: opportunityData?.trends_score || "85/100",
-      icon: Activity,
+    { 
+      name: "Window", 
+      score: windowScore,
+      description: "Evaluates the optimal entry timing window."
+    },
+    { 
+      name: "Saturation", 
+      score: saturationScore,
+      description: "Measures competitive density (inverted). Lower saturation = higher score."
     },
   ];
 
@@ -213,46 +224,53 @@ const MarketTimingSection = () => {
                     fillOpacity={0.25}
                     strokeWidth={2}
                   />
-                  <Tooltip content={<CustomRadarTooltip />} />
+                  <RechartsTooltip content={<CustomRadarTooltip />} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        {/* Card 2: Metrics Grid with Mini ScoreCircles */}
+        {/* Card 2: Key Indicators with 5 Score Circles */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-foreground mb-5">Key Indicators</h3>
+            <div className="flex items-center gap-2 mb-6">
+              <h3 className="text-sm font-medium text-foreground">Key Indicators</h3>
+              <InfoTooltip side="top" size="sm">
+                These 5 metrics represent the key timing factors for market entry. 
+                Each score ranges from 0-100, with higher values indicating more 
+                favorable conditions.
+              </InfoTooltip>
+            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {metrics.map((metric, index) => {
-                const IconComponent = metric.icon;
-                return (
-                  <div
-                    key={index}
-                    className="p-4 rounded-xl bg-accent/5 border border-accent/10 transition-all duration-300 hover:border-accent/30"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="p-1.5 rounded-lg bg-accent/10">
-                        <IconComponent className="h-3.5 w-3.5 text-accent" />
-                      </div>
-                      <span className="text-xs text-muted-foreground">{metric.label}</span>
-                    </div>
-                    <p className="font-semibold text-foreground text-sm leading-tight">
-                      {metric.value}
-                    </p>
+            {/* 5 Score Circles */}
+            <TooltipProvider>
+              <div className="flex justify-between items-start gap-4">
+                {indicatorData.map((indicator) => (
+                  <div key={indicator.name} className="flex flex-col items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="cursor-pointer">
+                          <ScoreCircle 
+                            score={indicator.score} 
+                            label="" 
+                            size="xl" 
+                            showLabelInside={false}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[200px]">
+                        <p className="font-semibold mb-1">{indicator.name}</p>
+                        <p className="text-xs">{indicator.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <span className="text-xs text-muted-foreground text-center">
+                      {indicator.name}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Score Circles Row */}
-            <div className="mt-6 flex justify-center gap-6">
-              <ScoreCircle score={trendsScore} label="Trends" size="sm" />
-              <ScoreCircle score={trajectoryScore} label="Trajectory" size="sm" />
-              <ScoreCircle score={maturityScore} label="Maturity" size="sm" />
-            </div>
+                ))}
+              </div>
+            </TooltipProvider>
           </CardContent>
         </Card>
       </div>

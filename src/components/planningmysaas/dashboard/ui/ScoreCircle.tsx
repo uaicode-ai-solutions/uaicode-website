@@ -4,10 +4,17 @@ interface ScoreCircleProps {
   score: number;
   label: string;
   color?: "accent" | "muted";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
+  showLabelInside?: boolean;
 }
 
-const ScoreCircle = ({ score, label, color = "accent", size = "md" }: ScoreCircleProps) => {
+const ScoreCircle = ({ 
+  score, 
+  label, 
+  color = "accent", 
+  size = "md",
+  showLabelInside = true 
+}: ScoreCircleProps) => {
   const circumference = 2 * Math.PI * 40;
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
@@ -20,6 +27,7 @@ const ScoreCircle = ({ score, label, color = "accent", size = "md" }: ScoreCircl
     sm: { container: "w-12 h-12", text: "text-sm", label: "text-[9px]" },
     md: { container: "w-14 h-14", text: "text-base", label: "text-[10px]" },
     lg: { container: "w-16 h-16", text: "text-lg", label: "text-[10px]" },
+    xl: { container: "w-20 h-20", text: "text-xl", label: "text-xs" },
   };
 
   return (
@@ -53,9 +61,11 @@ const ScoreCircle = ({ score, label, color = "accent", size = "md" }: ScoreCircl
         <span className={cn("font-bold", sizeMap[size].text, colorMap[color].text)}>
           {score}
         </span>
-        <span className={cn("text-muted-foreground", sizeMap[size].label)}>
-          {label}
-        </span>
+        {showLabelInside && label && (
+          <span className={cn("text-muted-foreground", sizeMap[size].label)}>
+            {label}
+          </span>
+        )}
       </div>
     </div>
   );
