@@ -6,11 +6,29 @@ import { OpportunitySection } from "@/types/report";
 import { Badge } from "@/components/ui/badge";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
+// Seasonal variation percentages by month (based on holidays and business cycles)
+const seasonalVariation: Record<string, number> = {
+  Jan: -0.015,  // New Year, vacations
+  Feb: -0.010,  // Carnival in some countries
+  Mar: +0.015,  // Back to normal
+  Apr: -0.005,  // Easter
+  May: +0.010,  // No major holidays
+  Jun: +0.005,  // Start of summer (Northern Hemisphere)
+  Jul: -0.010,  // Summer vacations
+  Aug: +0.005,  // Gradual return
+  Sep: +0.020,  // Peak - back to school
+  Oct: +0.015,  // High activity
+  Nov: +0.010,  // Black Friday
+  Dec: -0.020   // Christmas, end of year
+};
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 // Helper to get trend icon and color
 const getTrendConfig = (trend: string) => {
   const normalizedTrend = (trend || "").toLowerCase();
   if (normalizedTrend.includes("increas") || normalizedTrend.includes("grow") || normalizedTrend.includes("up")) {
-    return { color: "text-green-500", bgColor: "bg-green-500/20", label: "Increasing", growthRate: 0.18 };
+    return { color: "text-gradient-gold", bgColor: "bg-amber-500/20", label: "Increasing", growthRate: 0.18 };
   }
   if (normalizedTrend.includes("decreas") || normalizedTrend.includes("declin") || normalizedTrend.includes("down")) {
     return { color: "text-red-500", bgColor: "bg-red-500/20", label: "Decreasing", growthRate: -0.10 };
@@ -90,15 +108,91 @@ const formatChartNumber = (num: number): string => {
   return num.toString();
 };
 
-// Generate projection data for 5 years
-const generateProjectionData = (baseValue: number, growthRate: number) => {
-  return [
-    { year: "Year 1", demand: baseValue, label: formatChartNumber(baseValue) },
-    { year: "Year 2", demand: Math.round(baseValue * (1 + growthRate)), label: formatChartNumber(Math.round(baseValue * (1 + growthRate))) },
-    { year: "Year 3", demand: Math.round(baseValue * Math.pow(1 + growthRate, 2)), label: formatChartNumber(Math.round(baseValue * Math.pow(1 + growthRate, 2))) },
-    { year: "Year 4", demand: Math.round(baseValue * Math.pow(1 + growthRate, 3)), label: formatChartNumber(Math.round(baseValue * Math.pow(1 + growthRate, 3))) },
-    { year: "Year 5", demand: Math.round(baseValue * Math.pow(1 + growthRate, 4)), label: formatChartNumber(Math.round(baseValue * Math.pow(1 + growthRate, 4))) },
-  ];
+// Signal growth rates for multi-line chart
+const signalGrowthRates = {
+  searches: 1.0,    // Uses main trend growth rate
+  forums: 0.12,     // 12% annual growth
+  jobs: 0.08,       // 8% annual growth
+  reviews: 0.06,    // 6% annual growth
+};
+
+// Signal colors
+const signalColors = {
+  searches: "#FFD700",  // Gold
+  forums: "#60A5FA",    // Blue
+  jobs: "#A78BFA",      // Purple
+  reviews: "#34D399",   // Aqua
+};
+
+// Generate monthly projection data for 5 years with seasonal variation
+const generateMonthlyProjection = (
+  searchesBase: number, 
+  growthRate: number,
+  forumsValue: number,
+  jobsValue: number,
+  reviewsValue: number
+) => {
+  const data: Array<{
+    month: string;
+    searches: number;
+    forums: number;
+    jobs: number;
+    reviews: number;
+  }> = [];
+  
+  for (let year = 0; year < 5; year++) {
+    for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+      const monthName = months[monthIndex];
+      const seasonal = seasonalVariation[monthName];
+      
+      // Calculate base growth for this point in time
+      const yearProgress = year + monthIndex / 12;
+      
+      // Searches: uses main trend growth rate with seasonality
+      const searchesGrowth = Math.pow(1 + growthRate, yearProgress);
+      const searchesWithSeasonal = searchesBase * searchesGrowth * (1 + seasonal);
+      
+      // Forums: 12% annual growth with seasonality
+      const forumsGrowth = Math.pow(1 + signalGrowthRates.forums, yearProgress);
+      const forumsWithSeasonal = forumsValue * forumsGrowth * (1 + seasonal * 0.8);
+      
+      // Jobs: 8% annual growth with seasonality
+      const jobsGrowth = Math.pow(1 + signalGrowthRates.jobs, yearProgress);
+      const jobsWithSeasonal = jobsValue * jobsGrowth * (1 + seasonal * 0.6);
+      
+      // Reviews: 6% annual growth with seasonality
+      const reviewsGrowth = Math.pow(1 + signalGrowthRates.reviews, yearProgress);
+      const reviewsWithSeasonal = reviewsValue * reviewsGrowth * (1 + seasonal * 0.4);
+      
+      data.push({
+        month: `${monthName} Y${year + 1}`,
+        searches: Math.round(searchesWithSeasonal),
+        forums: Math.round(forumsWithSeasonal),
+        jobs: Math.round(jobsWithSeasonal),
+        reviews: Math.round(reviewsWithSeasonal),
+      });
+    }
+  }
+  
+  return data;
+};
+
+// Extract numeric value from signal strings (e.g., "1,234" -> 1234, "2.5K" -> 2500)
+const extractSignalNumericValue = (value: string): number => {
+  if (!value || value === "..." || value === "N/A") return 0;
+  
+  const cleanValue = value.replace(/,/g, "");
+  const numMatch = cleanValue.match(/[\d.]+/);
+  if (!numMatch) return 0;
+  
+  const num = parseFloat(numMatch[0]);
+  const lowerValue = cleanValue.toLowerCase();
+  
+  if (lowerValue.includes("k")) return num * 1000;
+  if (lowerValue.includes("m")) return num * 1000000;
+  if (lowerValue.includes("b")) return num * 1000000000;
+  
+  return num;
 };
 
 // Count available signals
@@ -163,8 +257,18 @@ const DemandSignalsSection = () => {
   const trendDirection = searchTrend !== "..." ? trendConfig.label : "N/A";
   
   // Chart data
-  const baseValue = extractNumericValue(monthlySearches);
-  const projectionData = generateProjectionData(baseValue, trendConfig.growthRate);
+  const searchesBaseValue = extractNumericValue(monthlySearches);
+  const forumsBaseValue = extractSignalNumericValue(forumDiscussions) || searchesBaseValue * 0.001; // Fallback to 0.1% of searches
+  const jobsBaseValue = extractSignalNumericValue(jobPostings) || searchesBaseValue * 0.0005; // Fallback to 0.05% of searches
+  const reviewsBaseValue = extractSignalNumericValue(onlineReviews) || searchesBaseValue * 0.002; // Fallback to 0.2% of searches
+  
+  const projectionData = generateMonthlyProjection(
+    searchesBaseValue, 
+    trendConfig.growthRate,
+    forumsBaseValue,
+    jobsBaseValue,
+    reviewsBaseValue
+  );
 
   return (
     <section id="demand-signals" className="space-y-6 animate-fade-in">
@@ -265,68 +369,150 @@ const DemandSignalsSection = () => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-medium text-foreground">Demand Growth Projection</h3>
-              <InfoTooltip size="sm">5-year demand forecast based on current search trends</InfoTooltip>
+              <h3 className="text-sm font-medium text-foreground">Demand Growth Projection (5 Years)</h3>
+              <InfoTooltip size="sm">Monthly demand forecast with seasonal variation based on market signals</InfoTooltip>
             </div>
             <div className="flex gap-2">
               <Badge variant="outline" className="text-xs border-border/50">
                 Base: <span className="text-gradient-gold ml-1">{primarySignal}</span>
               </Badge>
-              <Badge variant="outline" className={`text-xs border-border/50 ${trendConfig.color}`}>
-                Trend: {trendDirection}
+              <Badge variant="outline" className={`text-xs border-border/50`}>
+                <span className={trendConfig.color}>Trend: {trendDirection}</span>
               </Badge>
             </div>
           </div>
           
-          <div className="h-56">
+          <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={projectionData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="demandGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FFD700" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#FFD700" stopOpacity={0.05}/>
+                  <linearGradient id="searchesGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={signalColors.searches} stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor={signalColors.searches} stopOpacity={0.05}/>
+                  </linearGradient>
+                  <linearGradient id="forumsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={signalColors.forums} stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor={signalColors.forums} stopOpacity={0.02}/>
+                  </linearGradient>
+                  <linearGradient id="jobsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={signalColors.jobs} stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor={signalColors.jobs} stopOpacity={0.02}/>
+                  </linearGradient>
+                  <linearGradient id="reviewsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={signalColors.reviews} stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor={signalColors.reviews} stopOpacity={0.02}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                 <XAxis 
-                  dataKey="year" 
+                  dataKey="month" 
                   stroke="hsl(var(--muted-foreground))" 
-                  fontSize={12}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
+                  interval={11} // Show only one tick per year
                 />
                 <YAxis 
+                  yAxisId="searches"
                   stroke="hsl(var(--muted-foreground))" 
-                  fontSize={12}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(value) => formatChartNumber(value)}
+                  orientation="left"
+                />
+                <YAxis 
+                  yAxisId="secondary"
+                  stroke="hsl(var(--muted-foreground))" 
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => formatChartNumber(value)}
+                  orientation="right"
+                  hide
                 />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'hsl(var(--card))', 
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
-                    fontSize: '12px'
+                    fontSize: '11px'
                   }}
-                  labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  formatter={(value: number) => [formatChartNumber(value) + " /month", "Projected Demand"]}
+                  labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+                  formatter={(value: number, name: string) => {
+                    const labels: Record<string, string> = {
+                      searches: "Monthly Searches",
+                      forums: "Forum Discussions",
+                      jobs: "Job Postings",
+                      reviews: "Online Reviews"
+                    };
+                    return [formatChartNumber(value), labels[name] || name];
+                  }}
                 />
                 <Area 
+                  yAxisId="searches"
                   type="monotone" 
-                  dataKey="demand" 
-                  stroke="#FFD700"
+                  dataKey="searches" 
+                  stroke={signalColors.searches}
                   strokeWidth={2}
-                  fill="url(#demandGradient)"
+                  fill="url(#searchesGradient)"
+                  name="searches"
+                />
+                <Area 
+                  yAxisId="secondary"
+                  type="monotone" 
+                  dataKey="forums" 
+                  stroke={signalColors.forums}
+                  strokeWidth={1.5}
+                  fill="url(#forumsGradient)"
+                  name="forums"
+                />
+                <Area 
+                  yAxisId="secondary"
+                  type="monotone" 
+                  dataKey="jobs" 
+                  stroke={signalColors.jobs}
+                  strokeWidth={1.5}
+                  fill="url(#jobsGradient)"
+                  name="jobs"
+                />
+                <Area 
+                  yAxisId="secondary"
+                  type="monotone" 
+                  dataKey="reviews" 
+                  stroke={signalColors.reviews}
+                  strokeWidth={1.5}
+                  fill="url(#reviewsGradient)"
+                  name="reviews"
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="flex justify-center gap-4 mt-4 text-xs text-muted-foreground">
+          {/* Legend */}
+          <div className="flex flex-wrap justify-center gap-4 mt-4 text-xs">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-0.5 rounded" style={{ backgroundColor: signalColors.searches }}></div>
+              <span className="text-muted-foreground">Monthly Searches</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-0.5 rounded" style={{ backgroundColor: signalColors.forums }}></div>
+              <span className="text-muted-foreground">Forum Discussions</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-0.5 rounded" style={{ backgroundColor: signalColors.jobs }}></div>
+              <span className="text-muted-foreground">Job Postings</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-0.5 rounded" style={{ backgroundColor: signalColors.reviews }}></div>
+              <span className="text-muted-foreground">Online Reviews</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground border-t border-border/30 pt-3">
             <span>Growth Rate: <span className={`font-medium ${trendConfig.color}`}>{trendConfig.growthRate > 0 ? '+' : ''}{(trendConfig.growthRate * 100).toFixed(0)}% annually</span></span>
             <span>•</span>
-            <span>Year 5 Projection: <span className="font-medium text-gradient-gold">{projectionData[4].label} /month</span></span>
+            <span>Year 5 Projection: <span className="font-medium text-gradient-gold">{formatChartNumber(projectionData[projectionData.length - 1]?.searches || 0)} /month</span></span>
           </div>
         </CardContent>
       </Card>
