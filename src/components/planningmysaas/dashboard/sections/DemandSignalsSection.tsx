@@ -234,11 +234,37 @@ const DemandSignalsSection = () => {
   
   const monthlySearches = opportunityData?.monthly_searches || "...";
   const searchTrend = opportunityData?.search_trend || "...";
-  const forumDiscussions = extractValue(rawData?.forum_discussions);
-  const jobPostings = extractValue(rawData?.job_postings);
-  const onlineReviews = extractValue(rawData?.online_reviews);
+  const forumDiscussionsRaw = extractValue(rawData?.forum_discussions);
+  const jobPostingsRaw = extractValue(rawData?.job_postings);
+  const onlineReviewsRaw = extractValue(rawData?.online_reviews);
 
   const trendConfig = getTrendConfig(searchTrend);
+
+  // Calculate base values and fallbacks BEFORE defining demandSignals
+  const searchesBaseValue = extractNumericValue(monthlySearches);
+  const somValue = extractNumericValue(opportunityData?.som_value || "0");
+  
+  // Extract raw numeric values
+  const forumsRawValue = extractSignalNumericValue(forumDiscussionsRaw);
+  const jobsRawValue = extractSignalNumericValue(jobPostingsRaw);
+  const reviewsRawValue = extractSignalNumericValue(onlineReviewsRaw);
+  
+  // Generate fallback values when data is missing
+  const forumsValue = forumsRawValue || generateFallbackValue(searchesBaseValue, somValue, 'forums');
+  const jobsValue = jobsRawValue || generateFallbackValue(searchesBaseValue, somValue, 'jobs');
+  const reviewsValue = reviewsRawValue || generateFallbackValue(searchesBaseValue, somValue, 'reviews');
+  
+  // Track which values are estimated
+  const isForumsEstimated = !forumsRawValue;
+  const isJobsEstimated = !jobsRawValue;
+  const isReviewsEstimated = !reviewsRawValue;
+
+  // Format signal values for display
+  const formatSignalValue = (value: number): string => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+    return value.toLocaleString();
+  };
 
   const demandSignals = [
     {
@@ -247,6 +273,7 @@ const DemandSignalsSection = () => {
       value: formatSearchVolume(monthlySearches),
       icon: Search,
       description: "Estimated monthly search volume for related keywords",
+      isEstimated: false,
     },
     {
       key: "trend",
@@ -254,27 +281,31 @@ const DemandSignalsSection = () => {
       value: searchTrend !== "..." ? trendConfig.label : "...",
       icon: TrendingUp,
       description: "Direction of search interest over time",
+      isEstimated: false,
     },
     {
       key: "forums",
       label: "Forum Discussions",
-      value: forumDiscussions,
+      value: formatSignalValue(forumsValue),
       icon: MessageSquare,
       description: "Active discussions in relevant online communities",
+      isEstimated: isForumsEstimated,
     },
     {
       key: "jobs",
       label: "Job Postings",
-      value: jobPostings,
+      value: formatSignalValue(jobsValue),
       icon: Briefcase,
       description: "Related job listings indicating market activity",
+      isEstimated: isJobsEstimated,
     },
     {
       key: "reviews",
       label: "Online Reviews",
-      value: onlineReviews,
+      value: formatSignalValue(reviewsValue),
       icon: Star,
       description: "Customer reviews for competing products",
+      isEstimated: isReviewsEstimated,
     },
   ];
 
@@ -282,23 +313,12 @@ const DemandSignalsSection = () => {
   const primarySignal = monthlySearches !== "..." ? formatSearchVolume(monthlySearches) : "N/A";
   const trendDirection = searchTrend !== "..." ? trendConfig.label : "N/A";
   
-  // Chart data with fallback based on Primary Signal and SOM
-  const searchesBaseValue = extractNumericValue(monthlySearches);
-  const somValue = extractNumericValue(opportunityData?.som_value || "0");
-  
-  const forumsBaseValue = extractSignalNumericValue(forumDiscussions) || 
-    generateFallbackValue(searchesBaseValue, somValue, 'forums');
-  const jobsBaseValue = extractSignalNumericValue(jobPostings) || 
-    generateFallbackValue(searchesBaseValue, somValue, 'jobs');
-  const reviewsBaseValue = extractSignalNumericValue(onlineReviews) || 
-    generateFallbackValue(searchesBaseValue, somValue, 'reviews');
-  
   const projectionData = generateMonthlyProjection(
     searchesBaseValue, 
     trendConfig.growthRate,
-    forumsBaseValue,
-    jobsBaseValue,
-    reviewsBaseValue
+    forumsValue,
+    jobsValue,
+    reviewsValue
   );
 
   return (
@@ -383,11 +403,20 @@ const DemandSignalsSection = () => {
                   <p className="text-xs text-muted-foreground mb-1">{signal.label}</p>
                   <p className="text-2xl font-bold text-foreground">
                     {signal.value}
+                    {signal.isEstimated && (
+                      <span className="text-xs text-muted-foreground ml-1">*</span>
+                    )}
                   </p>
                   
-                  <p className="text-[10px] text-muted-foreground mt-2 line-clamp-2">
-                    {signal.description}
-                  </p>
+                  {signal.isEstimated ? (
+                    <p className="text-[9px] text-amber-500/70 mt-2">
+                      Estimated based on market data
+                    </p>
+                  ) : (
+                    <p className="text-[10px] text-muted-foreground mt-2 line-clamp-2">
+                      {signal.description}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             );
