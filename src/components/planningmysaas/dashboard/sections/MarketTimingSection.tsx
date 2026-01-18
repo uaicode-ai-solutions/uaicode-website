@@ -157,37 +157,25 @@ const getUrgencyConfig = (urgency: string) => {
   };
 };
 
-// Quarter Block Component
+// Quarter Block Component - Premium Design
 interface QuarterBlockProps {
   quarter: number;
   year: number;
   status: "optimal" | "late" | "risky";
 }
 
-const QuarterBlock = ({ quarter, year, status }: QuarterBlockProps) => {
+const QuarterBlockPremium = ({ quarter, year, status }: QuarterBlockProps) => {
+  const isOptimal = status === "optimal";
+  const isLate = status === "late";
+  
   const statusConfig = {
     optimal: {
-      bg: "bg-green-500",
-      border: "border-green-400",
-      text: "text-green-400",
-      glow: "shadow-lg shadow-green-500/30 ring-2 ring-green-400/50",
-      label: "OPTIMAL",
       tooltip: "Recommended entry period - Best market conditions and lowest competition"
     },
     late: {
-      bg: "bg-yellow-500/60",
-      border: "border-yellow-500/40",
-      text: "text-yellow-400",
-      glow: "",
-      label: "LATE",
       tooltip: "Still viable but competition increasing - Act quickly if entering"
     },
     risky: {
-      bg: "bg-muted/40",
-      border: "border-border",
-      text: "text-muted-foreground",
-      glow: "",
-      label: "RISKY",
       tooltip: "High risk period - Market may be saturated or conditions unfavorable"
     }
   };
@@ -197,31 +185,77 @@ const QuarterBlock = ({ quarter, year, status }: QuarterBlockProps) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex flex-col items-center gap-2 cursor-help group">
+        <div className="relative flex flex-col items-center gap-2 cursor-help group">
+          {/* Quarter Block Container */}
           <div className={cn(
-            "w-14 h-14 rounded-xl border-2 flex items-center justify-center transition-all duration-300",
-            config.border, config.glow,
+            "relative w-16 h-16 rounded-xl flex items-center justify-center transition-all duration-300",
+            isOptimal 
+              ? "bg-gradient-to-br from-green-500/20 to-green-600/10 border-2 border-green-500/50 shadow-[0_0_25px_rgba(34,197,94,0.3)]" 
+              : isLate
+                ? "bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border border-yellow-500/30"
+                : "bg-muted/20 border border-border/30",
             "group-hover:scale-105"
           )}>
-            <div className={cn("w-5 h-5 rounded-full transition-all", config.bg)} />
+            {/* SVG Ring for Optimal */}
+            {isOptimal && (
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 64 64">
+                <defs>
+                  <linearGradient id={`optimalGradient-${quarter}-${year}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="rgb(34, 197, 94)" />
+                    <stop offset="100%" stopColor="rgb(74, 222, 128)" />
+                  </linearGradient>
+                </defs>
+                <circle 
+                  cx="32" cy="32" r="28" 
+                  stroke="rgba(34, 197, 94, 0.2)" 
+                  strokeWidth="2" 
+                  fill="transparent" 
+                />
+                <circle 
+                  cx="32" cy="32" r="28" 
+                  stroke={`url(#optimalGradient-${quarter}-${year})`}
+                  strokeWidth="2" 
+                  fill="transparent" 
+                  strokeLinecap="round"
+                  strokeDasharray="176"
+                  strokeDashoffset="0"
+                  className="animate-pulse"
+                  style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}
+                />
+              </svg>
+            )}
+            
+            {/* Center Dot */}
+            <div className={cn(
+              "w-3 h-3 rounded-full transition-all z-10",
+              isOptimal 
+                ? "bg-green-400 shadow-[0_0_12px_rgba(34,197,94,0.6)]" 
+                : isLate 
+                  ? "bg-yellow-400/60" 
+                  : "bg-muted-foreground/30"
+            )} />
           </div>
+          
+          {/* Quarter Label */}
           <div className="text-center">
-            <span className={cn("text-sm font-semibold block", config.text)}>
+            <span className={cn(
+              "text-sm font-bold block transition-colors",
+              isOptimal 
+                ? "text-green-400" 
+                : isLate 
+                  ? "text-yellow-400" 
+                  : "text-muted-foreground"
+            )}>
               Q{quarter}
             </span>
-            <span className="text-xs text-muted-foreground">
-              {year}
-            </span>
+            <span className="text-[11px] text-muted-foreground/80">{year}</span>
           </div>
-          <span className={cn(
-            "text-[10px] font-medium uppercase tracking-wider",
-            config.text
-          )}>
-            {config.label}
-          </span>
         </div>
       </TooltipTrigger>
-      <TooltipContent side="bottom" className="max-w-[200px]">
+      <TooltipContent 
+        side="bottom" 
+        className="bg-card/95 backdrop-blur-sm border-border/50 max-w-[220px] p-3"
+      >
         <p className="text-xs">{config.tooltip}</p>
       </TooltipContent>
     </Tooltip>
@@ -379,12 +413,18 @@ const MarketTimingSection = () => {
         <div className="hidden lg:block" />
       </div>
 
-      {/* Optimal Window Card - Full Width */}
-      <Card className="bg-card/50 backdrop-blur border-border/50">
-        <CardHeader className="pb-3">
+      {/* Optimal Window Card - Full Width Premium Design */}
+      <Card className={cn(
+        "col-span-full overflow-hidden",
+        "bg-gradient-to-br from-card/80 via-card/60 to-card/40",
+        "border-border/30 hover:border-accent/30 transition-colors duration-300"
+      )}>
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <CalendarClock className="h-5 w-5 text-primary" />
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <CalendarClock className="h-5 w-5 text-accent" />
+              </div>
               Optimal Window
             </CardTitle>
             <InfoTooltip>
@@ -392,55 +432,119 @@ const MarketTimingSection = () => {
             </InfoTooltip>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Urgency Badge with Tooltip */}
+        <CardContent className="space-y-8 pb-8">
+          {/* Premium Urgency Banner */}
           <div className="flex justify-center">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge className={cn(
-                  "px-4 py-2 text-sm font-semibold border cursor-help",
-                  urgencyConfig.color,
-                  urgencyConfig.pulse && "animate-pulse"
+                <div className={cn(
+                  "relative px-6 py-4 rounded-xl cursor-help transition-all duration-300",
+                  urgencyConfig.pulse 
+                    ? "bg-gradient-to-br from-green-500/20 via-green-500/10 to-transparent border border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.2)]"
+                    : urgencyConfig.color.includes("yellow")
+                      ? "bg-gradient-to-br from-yellow-500/20 via-yellow-500/10 to-transparent border border-yellow-500/30"
+                      : "bg-gradient-to-br from-blue-500/20 via-blue-500/10 to-transparent border border-blue-500/30"
                 )}>
-                  <UrgencyIcon className="h-4 w-4 mr-2" />
-                  {parsedWindow.urgency}
-                </Badge>
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "p-2 rounded-full",
+                      urgencyConfig.pulse 
+                        ? "bg-green-500/20 animate-pulse" 
+                        : urgencyConfig.color.includes("yellow")
+                          ? "bg-yellow-500/20"
+                          : "bg-blue-500/20"
+                    )}>
+                      <UrgencyIcon className={cn(
+                        "h-5 w-5",
+                        urgencyConfig.pulse 
+                          ? "text-green-400" 
+                          : urgencyConfig.color.includes("yellow")
+                            ? "text-yellow-400"
+                            : "text-blue-400"
+                      )} />
+                    </div>
+                    <div>
+                      <span className={cn(
+                        "text-lg font-bold block",
+                        urgencyConfig.pulse 
+                          ? "text-green-400" 
+                          : urgencyConfig.color.includes("yellow")
+                            ? "text-yellow-400"
+                            : "text-blue-400"
+                      )}>
+                        {parsedWindow.urgency}
+                      </span>
+                      <p className={cn(
+                        "text-xs",
+                        urgencyConfig.pulse 
+                          ? "text-green-400/70" 
+                          : urgencyConfig.color.includes("yellow")
+                            ? "text-yellow-400/70"
+                            : "text-blue-400/70"
+                      )}>
+                        Market conditions favor {urgencyConfig.pulse ? "immediate" : "timely"} entry
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </TooltipTrigger>
-              <TooltipContent className="max-w-[250px]">
+              <TooltipContent className="bg-card/95 backdrop-blur-sm max-w-[280px] p-3">
                 <p className="text-xs">{urgencyConfig.tooltip}</p>
               </TooltipContent>
             </Tooltip>
           </div>
           
-          {/* Quarter Timeline - Horizontal */}
-          <div className="flex justify-center items-start gap-4 md:gap-6 py-4 overflow-x-auto">
-            {quarters.map((q) => (
-              <QuarterBlock
-                key={`${q.quarter}-${q.year}`}
-                quarter={q.quarter}
-                year={q.year}
-                status={getQuarterStatus(q.quarter, q.year, parsedWindow)}
-              />
-            ))}
+          {/* Premium Timeline Container */}
+          <div className="relative p-6 rounded-2xl bg-gradient-to-br from-card/80 to-card/40 border border-border/30">
+            {/* Connecting Line Behind Quarters */}
+            <div className="absolute top-[4.5rem] left-12 right-12 h-[2px] bg-gradient-to-r from-green-500/50 via-yellow-500/30 to-muted/20 rounded-full" />
+            
+            {/* Quarters Grid */}
+            <div className="relative flex justify-between items-start gap-2 md:gap-4 overflow-x-auto py-2">
+              {quarters.map((q) => (
+                <QuarterBlockPremium
+                  key={`${q.quarter}-${q.year}`}
+                  quarter={q.quarter}
+                  year={q.year}
+                  status={getQuarterStatus(q.quarter, q.year, parsedWindow)}
+                />
+              ))}
+            </div>
           </div>
           
-          {/* Progress Bar */}
-          <div className="relative h-2 bg-muted/30 rounded-full mx-4">
+          {/* Premium Progress Bar */}
+          <div className="relative h-3 bg-muted/20 rounded-full overflow-hidden mx-4">
+            {/* Background track with subtle pattern */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,_rgba(255,255,255,0.05)_1px,_transparent_0)] bg-[length:8px_8px]" />
+            
+            {/* Active progress with gradient and glow */}
             <div 
-              className="absolute h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full transition-all"
+              className={cn(
+                "absolute h-full rounded-full transition-all duration-500",
+                "bg-gradient-to-r from-green-500 via-green-400 to-green-500",
+                "shadow-[0_0_20px_rgba(34,197,94,0.4)]"
+              )}
               style={{ 
                 left: `${progressStart}%`,
                 width: `${progressWidth}%`
               }}
-            />
+            >
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+            </div>
           </div>
           
-          {/* Summary */}
-          <p className="text-center text-sm text-muted-foreground">
-            Best time to enter: <span className="text-primary font-medium">
+          {/* Premium Summary */}
+          <div className="flex items-center justify-center gap-3 text-sm">
+            <span className="text-muted-foreground">Best time to enter:</span>
+            <span className="font-bold text-green-400">
               Q{parsedWindow.startQuarter}-Q{parsedWindow.endQuarter} {parsedWindow.year}
             </span>
-          </p>
+            <span className="text-muted-foreground/50">•</span>
+            <span className="text-muted-foreground">
+              {(parsedWindow.endQuarter - parsedWindow.startQuarter + 1) * 3} month window
+            </span>
+          </div>
         </CardContent>
       </Card>
 
