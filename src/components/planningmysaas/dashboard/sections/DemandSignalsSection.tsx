@@ -1,4 +1,4 @@
-import { Search, TrendingUp, MessageSquare, Briefcase, Star } from "lucide-react";
+import { Search, TrendingUp, MessageSquare, Briefcase, Star, Activity } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
@@ -23,28 +23,27 @@ const extractValue = (data: unknown): string => {
   if (typeof data === "number") return data.toString();
   if (typeof data === "object") {
     const obj = data as Record<string, unknown>;
-    // Try common keys
     if (obj.count !== undefined) return String(obj.count);
     if (obj.value !== undefined) return String(obj.value);
     if (obj.total !== undefined) return String(obj.total);
-    // If object is empty
     if (Object.keys(obj).length === 0) return "...";
-    // Return first value if available
     const firstValue = Object.values(obj)[0];
     if (firstValue !== undefined) return String(firstValue);
   }
   return "...";
 };
 
+// Count available signals
+const countAvailableSignals = (signals: { value: string }[]): number => {
+  return signals.filter(s => s.value !== "...").length;
+};
+
 const DemandSignalsSection = () => {
   const { reportData } = useReportContext();
 
-  // Parse opportunity_section JSONB
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
-
-  // Extract demand signals with fallbacks
-  // Cast to unknown first to avoid TypeScript overlap error
   const rawData = opportunityData as unknown as Record<string, unknown> | null;
+  
   const monthlySearches = opportunityData?.monthly_searches || "...";
   const searchTrend = opportunityData?.search_trend || "...";
   const forumDiscussions = extractValue(rawData?.forum_discussions);
@@ -93,12 +92,16 @@ const DemandSignalsSection = () => {
     },
   ];
 
+  const availableSignals = countAvailableSignals(demandSignals);
+  const primarySignal = monthlySearches !== "..." ? monthlySearches : "N/A";
+  const trendDirection = searchTrend !== "..." ? trendConfig.label : "N/A";
+
   return (
     <section id="demand-signals" className="space-y-6 animate-fade-in">
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
-          <Search className="h-5 w-5 text-accent" />
+        <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
+          <Activity className="h-5 w-5 text-amber-500" />
         </div>
         <div>
           <div className="flex items-center gap-2">
@@ -111,29 +114,80 @@ const DemandSignalsSection = () => {
         </div>
       </div>
 
-      {/* Demand Signals Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {demandSignals.map((signal) => {
-          const IconComponent = signal.icon;
-          return (
-            <Card 
-              key={signal.key} 
-              className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors"
-            >
-              <CardContent className="p-4 text-center">
-                <div className="flex justify-center mb-3">
-                  <div className={`p-2.5 rounded-lg ${signal.badgeColor || "bg-accent/10"}`}>
-                    <IconComponent className={`h-5 w-5 ${signal.textColor || "text-accent"}`} />
+      {/* Main Grid Layout */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Summary Card - Left Column */}
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-medium text-foreground mb-5">Demand Overview</h3>
+            
+            {/* Big Number */}
+            <div className="text-center mb-6">
+              <div className="text-5xl font-bold text-accent mb-1">{availableSignals}</div>
+              <div className="text-sm text-muted-foreground">Signals Available</div>
+            </div>
+
+            {/* Stats Rows */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Primary Signal
+                  <InfoTooltip size="sm">Monthly search volume for your target keywords</InfoTooltip>
+                </span>
+                <span className="font-bold text-accent">{primarySignal}</span>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Trend Direction
+                  <InfoTooltip size="sm">Whether interest is growing, stable, or declining</InfoTooltip>
+                </span>
+                <span className={`font-bold ${searchTrend !== "..." ? trendConfig.color : "text-muted-foreground"}`}>
+                  {trendDirection}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Data Quality
+                  <InfoTooltip size="sm">Percentage of signals with available data</InfoTooltip>
+                </span>
+                <span className="font-bold text-accent">{Math.round((availableSignals / 5) * 100)}%</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Demand Signals Cards - Right Two Columns */}
+        <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+          {demandSignals.map((signal) => {
+            const IconComponent = signal.icon;
+            return (
+              <Card 
+                key={signal.key} 
+                className="group relative bg-muted/30 border-border/50 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.02] transition-all duration-300"
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`p-2 rounded-lg ${signal.badgeColor || "bg-gradient-to-br from-amber-500/20 to-amber-400/10"}`}>
+                      <IconComponent className={`h-4 w-4 ${signal.textColor || "text-amber-500"}`} />
+                    </div>
+                    <InfoTooltip size="sm">{signal.description}</InfoTooltip>
                   </div>
-                </div>
-                <p className="text-xs text-muted-foreground mb-1">{signal.label}</p>
-                <p className={`text-lg font-bold ${signal.textColor || "text-foreground"}`}>
-                  {signal.value}
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
+                  
+                  <p className="text-xs text-muted-foreground mb-1">{signal.label}</p>
+                  <p className={`text-2xl font-bold ${signal.textColor || "text-foreground"}`}>
+                    {signal.value}
+                  </p>
+                  
+                  <p className="text-[10px] text-muted-foreground mt-2 line-clamp-2">
+                    {signal.description}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
