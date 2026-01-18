@@ -201,34 +201,40 @@ const CustomerPainPointsSection = () => {
       </div>
 
       {/* Pain Points Cards (Top 5 with evidence) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {chartData.slice(0, 5).map((point, index) => {
           const intensityPercent = (point.intensity / 10) * 100;
           return (
-            <Card key={index} className="bg-card/50 border-border/30">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-accent/10">
-                      <span className="text-xs font-bold text-accent">#{point.index}</span>
-                    </div>
+            <Card 
+              key={index} 
+              className="bg-accent/5 border-border/30 hover:border-accent/30 transition-colors"
+            >
+              <CardContent className="p-5">
+                {/* Header: Number badge + Score */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <span className="text-sm font-bold text-accent">#{point.index}</span>
                   </div>
-                  <div className="text-lg font-bold text-accent">{point.intensity}/10</div>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-accent">{point.intensity}</span>
+                    <span className="text-sm text-muted-foreground">/10</span>
+                  </div>
                 </div>
                 
-                <h4 className="font-medium text-foreground text-sm mb-2 line-clamp-2">
+                {/* Pain Point Title - sem truncamento */}
+                <h4 className="font-semibold text-foreground text-sm leading-relaxed mb-3">
                   {point.fullName}
                 </h4>
 
-                {/* Evidence text */}
+                {/* Evidence - sem truncamento */}
                 {point.evidence && (
-                  <p className="text-xs text-muted-foreground line-clamp-3 mb-3">
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-4">
                     {point.evidence}
                   </p>
                 )}
 
                 {/* Progress bar */}
-                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-accent transition-all duration-500"
                     style={{ 
