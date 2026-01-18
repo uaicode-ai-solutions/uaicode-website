@@ -173,61 +173,126 @@ const MarketTimingSection = () => {
         </div>
       </div>
 
-      {/* Card 1: Timing Analysis Radar */}
-      <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-medium text-foreground">Timing Analysis</h3>
-              <InfoTooltip side="top" size="sm">
-                This radar chart visualizes 5 key market timing factors. Each axis represents a 
-                different indicator that helps determine the optimal moment to enter the market. 
-                Higher values toward the outer edges indicate more favorable conditions.
-              </InfoTooltip>
-            </div>
-            <div className="text-right">
-              <div className="flex items-center gap-1">
-                <span className="text-2xl font-bold text-accent">{overallScore}</span>
-                <span className="text-sm text-muted-foreground">/100</span>
-                <InfoTooltip side="left" size="sm">
-                  Overall Timing Score is the average of all 5 timing metrics: Trends, Trajectory, 
-                  Maturity, Window, and Saturation. Scores above 75 indicate excellent timing for 
-                  market entry.
+      {/* Row 1: Radar + Market Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Card 1: Timing Analysis Radar */}
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-medium text-foreground">Timing Analysis</h3>
+                <InfoTooltip side="top" size="sm">
+                  This radar chart visualizes 5 key market timing factors. Each axis represents a 
+                  different indicator that helps determine the optimal moment to enter the market. 
+                  Higher values toward the outer edges indicate more favorable conditions.
                 </InfoTooltip>
               </div>
-              <span className="text-xs text-muted-foreground">Overall Score</span>
+              <div className="text-right">
+                <div className="flex items-center gap-1">
+                  <span className="text-2xl font-bold text-accent">{overallScore}</span>
+                  <span className="text-sm text-muted-foreground">/100</span>
+                  <InfoTooltip side="left" size="sm">
+                    Overall Timing Score is the average of all 5 timing metrics: Trends, Trajectory, 
+                    Maturity, Window, and Saturation. Scores above 75 indicate excellent timing for 
+                    market entry.
+                  </InfoTooltip>
+                </div>
+                <span className="text-xs text-muted-foreground">Overall Score</span>
+              </div>
             </div>
-          </div>
 
-          {/* Radar Chart */}
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.5} />
-                <PolarAngleAxis
-                  dataKey="axis"
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                />
-                <PolarRadiusAxis
-                  angle={90}
-                  domain={[0, 100]}
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
-                  tickCount={5}
-                />
-                <Radar
-                  name="Score"
-                  dataKey="value"
-                  stroke="hsl(var(--accent))"
-                  fill="hsl(var(--accent))"
-                  fillOpacity={0.25}
-                  strokeWidth={2}
-                />
-                <RechartsTooltip content={<CustomRadarTooltip />} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+            {/* Radar Chart */}
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                  <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                  <PolarAngleAxis
+                    dataKey="axis"
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                  />
+                  <PolarRadiusAxis
+                    angle={90}
+                    domain={[0, 100]}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
+                    tickCount={5}
+                  />
+                  <Radar
+                    name="Score"
+                    dataKey="value"
+                    stroke="hsl(var(--accent))"
+                    fill="hsl(var(--accent))"
+                    fillOpacity={0.25}
+                    strokeWidth={2}
+                  />
+                  <RechartsTooltip content={<CustomRadarTooltip />} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 2: Market Insights - 3 Mini Cards */}
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-6 h-full">
+            <div className="flex items-center gap-2 mb-6">
+              <h3 className="text-sm font-medium text-foreground">Market Insights</h3>
+              <InfoTooltip side="top" size="sm">
+                Key qualitative insights about market timing conditions and entry strategy.
+              </InfoTooltip>
+            </div>
+            
+            <div className="flex flex-col gap-4">
+              {/* Mini Card 1: Optimal Window */}
+              <div className="p-4 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Timer className="w-4 h-4 text-accent" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Optimal Window
+                  </span>
+                  <InfoTooltip side="top" size="sm">
+                    The ideal time frame to enter the market based on current conditions and trends.
+                  </InfoTooltip>
+                </div>
+                <p className="text-sm text-foreground leading-relaxed">
+                  {opportunityData?.optimal_window || "To be determined based on market analysis"}
+                </p>
+              </div>
+              
+              {/* Mini Card 2: Current Trajectory */}
+              <div className="p-4 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <ArrowUpRight className="w-4 h-4 text-accent" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Current Trajectory
+                  </span>
+                  <InfoTooltip side="top" size="sm">
+                    The current direction and speed of market growth, indicating momentum.
+                  </InfoTooltip>
+                </div>
+                <p className="text-sm text-foreground leading-relaxed">
+                  {opportunityData?.current_trajectory || "Analyzing market trajectory..."}
+                </p>
+              </div>
+              
+              {/* Mini Card 3: Market Maturity */}
+              <div className="p-4 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-4 h-4 text-accent" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Market Maturity
+                  </span>
+                  <InfoTooltip side="top" size="sm">
+                    The current lifecycle stage of the market, from emerging to mature.
+                  </InfoTooltip>
+                </div>
+                <p className="text-sm text-foreground leading-relaxed">
+                  {opportunityData?.market_maturity || "Analyzing market maturity..."}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Card 2: Key Indicators - Full Width Single Row */}
       <Card className="bg-card/50 border-border/30">
