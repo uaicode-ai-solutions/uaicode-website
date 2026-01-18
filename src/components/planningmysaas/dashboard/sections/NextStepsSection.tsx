@@ -305,14 +305,20 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       </div>
 
 
-      {/* ========== AGGRESSIVE PRICING SECTION (NEW) ========== */}
-      <div className="flex items-center gap-3 my-6">
-        <div className="flex-1 h-px bg-border/50" />
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-          <Zap className="h-3.5 w-3.5 text-yellow-400" />
-          Limited Time Offers
-        </span>
-        <div className="flex-1 h-px bg-border/50" />
+      {/* ========== LOCK IN YOUR DISCOUNT SECTION ========== */}
+      <div className="flex items-center gap-3 mt-8 mb-6">
+        <div className="p-2 rounded-lg bg-accent/10">
+          <Zap className="h-5 w-5 text-accent" />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-bold text-foreground">Lock In Your Discount</h3>
+            <InfoTooltip side="right" size="sm">
+              Limited-time offers to help you save on your MVP development.
+            </InfoTooltip>
+          </div>
+          <p className="text-sm text-muted-foreground">Limited time offers available</p>
+        </div>
       </div>
 
       {/* Aggressive Pricing Cards */}
