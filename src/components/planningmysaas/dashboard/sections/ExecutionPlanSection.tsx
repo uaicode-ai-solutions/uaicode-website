@@ -199,8 +199,8 @@ const ExecutionPlanSection = () => {
           {/* Timeline Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-accent" />
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-amber-500" />
               </div>
               <div>
                 <h3 className="text-sm font-medium text-foreground">Execution Timeline</h3>
@@ -231,11 +231,11 @@ const ExecutionPlanSection = () => {
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     {/* Card */}
-                    <div className="bg-gradient-to-b from-accent/5 to-transparent border border-accent/20 rounded-xl p-4 transition-all duration-300 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-1 h-full">
+                    <div className="bg-card/50 border border-border/30 rounded-xl p-4 transition-all duration-300 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-1 h-full">
                       {/* Phase Number & Icon */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 border-2 border-accent/30 flex items-center justify-center group-hover:border-accent/50 group-hover:shadow-[0_0_20px_rgba(249,115,22,0.2)] transition-all duration-300">
-                          <IconComponent className="h-6 w-6 text-accent" />
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-400/10 border-2 border-amber-500/20 flex items-center justify-center group-hover:border-amber-500/30 group-hover:shadow-[0_0_20px_rgba(249,115,22,0.2)] transition-all duration-300">
+                          <IconComponent className="h-6 w-6 text-amber-500" />
                         </div>
                         <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
                           Phase {phase.phase}
@@ -246,7 +246,7 @@ const ExecutionPlanSection = () => {
                       <div className="space-y-2 mb-4">
                         <h4 className="text-sm font-medium text-foreground">{phase.name}</h4>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-semibold text-accent">{phaseDuration}</span>
+                          <span className="text-sm font-semibold text-amber-500">{phaseDuration}</span>
                           {phase.showPlanBadge && (
                             <Badge className={`text-[10px] px-1.5 py-0 ${planColors[mvpTier]}`}>
                               {planLabels[mvpTier]}
@@ -302,23 +302,23 @@ const ExecutionPlanSection = () => {
                 >
                   {/* Vertical Line */}
                   {index < EXECUTION_PHASES.length - 1 && (
-                    <div className="absolute left-[11px] top-10 bottom-0 w-0.5 bg-gradient-to-b from-accent/40 to-accent/10" />
+                    <div className="absolute left-[11px] top-10 bottom-0 w-0.5 bg-gradient-to-b from-amber-500/40 to-amber-400/10" />
                   )}
                   
                   {/* Icon Circle */}
-                  <div className="absolute left-0 top-0 w-6 h-6 rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center">
-                    <IconComponent className="h-3 w-3 text-accent" />
+                  <div className="absolute left-0 top-0 w-6 h-6 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-400/10 border border-amber-500/30 flex items-center justify-center">
+                    <IconComponent className="h-3 w-3 text-amber-500" />
                   </div>
 
                   {/* Card */}
-                  <div className="bg-gradient-to-b from-accent/5 to-transparent border border-accent/20 rounded-lg p-4">
+                  <div className="bg-card/50 border border-border/30 rounded-lg p-4 hover:border-accent/30 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-sm font-medium text-foreground">{phase.name}</h4>
                       <span className="text-xs text-muted-foreground">Phase {phase.phase}</span>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <span className="text-sm font-semibold text-accent">{phaseDuration}</span>
+                      <span className="text-sm font-semibold text-amber-500">{phaseDuration}</span>
                       {phase.showPlanBadge && (
                         <Badge className={`text-[10px] px-1.5 py-0 ${planColors[mvpTier]}`}>
                           {planLabels[mvpTier]}
@@ -347,7 +347,7 @@ const ExecutionPlanSection = () => {
           <div className="mt-8 pt-6 border-t border-border/30">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-accent" />
+                <Clock className="h-4 w-4 text-amber-500" />
                 <span className="text-muted-foreground">Total estimated time:</span>
                 <span className="font-bold text-foreground text-lg">{totalTimeDisplay}</span>
               </div>
@@ -364,8 +364,8 @@ const ExecutionPlanSection = () => {
       <Card className="bg-card/50 border-border/30">
         <CardContent className="p-5">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-              <Cpu className="h-4 w-4 text-accent" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center">
+              <Cpu className="h-4 w-4 text-amber-500" />
             </div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-medium text-foreground">Suggested Technology Stack</h3>
@@ -381,15 +381,15 @@ const ExecutionPlanSection = () => {
               return (
                 <div 
                   key={index} 
-                  className="group relative p-4 rounded-xl bg-gradient-to-b from-accent/10 to-accent/5 border border-accent/20 transition-all duration-300 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-0.5"
+                  className="group relative p-4 rounded-xl bg-card/50 border border-border/30 transition-all duration-300 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-0.5"
                 >
                   {/* Decorative corner accent */}
-                  <div className="absolute top-0 right-0 w-6 h-6 bg-accent/15 rounded-bl-xl rounded-tr-xl" />
+                  <div className="absolute top-0 right-0 w-6 h-6 bg-gradient-to-br from-amber-500/20 to-amber-400/10 rounded-bl-xl rounded-tr-xl" />
                   
                   {/* Category with icon */}
                   <div className="flex items-center gap-2 mb-3">
-                    <IconComponent className="w-3.5 h-3.5 text-accent" />
-                    <h4 className="text-xs font-semibold text-accent uppercase tracking-wide">
+                    <IconComponent className="w-3.5 h-3.5 text-amber-500" />
+                    <h4 className="text-xs font-semibold text-amber-500 uppercase tracking-wide">
                       {stack.category}
                     </h4>
                   </div>
