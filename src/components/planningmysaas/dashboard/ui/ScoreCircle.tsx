@@ -4,8 +4,9 @@ interface ScoreCircleProps {
   score: number;
   label: string;
   color?: "accent" | "muted";
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl";
   showLabelInside?: boolean;
+  showGlow?: boolean;
 }
 
 const ScoreCircle = ({ 
@@ -13,7 +14,8 @@ const ScoreCircle = ({
   label, 
   color = "accent", 
   size = "md",
-  showLabelInside = true 
+  showLabelInside = true,
+  showGlow = false
 }: ScoreCircleProps) => {
   const circumference = 2 * Math.PI * 40;
   const strokeDashoffset = circumference - (score / 100) * circumference;
@@ -28,10 +30,13 @@ const ScoreCircle = ({
     md: { container: "w-14 h-14", text: "text-base", label: "text-[10px]" },
     lg: { container: "w-16 h-16", text: "text-lg", label: "text-[10px]" },
     xl: { container: "w-20 h-20", text: "text-xl", label: "text-xs" },
+    "2xl": { container: "w-24 h-24", text: "text-2xl", label: "text-xs" },
   };
 
+  const glowClass = showGlow ? "drop-shadow-[0_0_10px_hsl(var(--accent)/0.4)]" : "";
+
   return (
-    <div className={cn("relative flex-shrink-0", sizeMap[size].container)}>
+    <div className={cn("relative flex-shrink-0", sizeMap[size].container, glowClass)}>
       <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
         {/* Background circle */}
         <circle
