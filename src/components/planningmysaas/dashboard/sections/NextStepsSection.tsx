@@ -30,6 +30,7 @@ import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
 import KyleAvatar from "@/components/chat/KyleAvatar";
 import { getSectionInvestment, getDiscountStrategy } from "@/lib/sectionInvestmentUtils";
+import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
 
 
 // Countdown Timer Hook
@@ -227,33 +228,13 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       <Card className="bg-card/50 border-border/30">
         <CardContent className="p-4">
           <div className="flex items-center justify-center gap-6">
-            <div className="relative w-20 h-20">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx="40"
-                  cy="40"
-                  r="34"
-                  stroke="currentColor"
-                  strokeWidth="5"
-                  fill="transparent"
-                  className="text-muted/30"
-                />
-                <circle
-                  cx="40"
-                  cy="40"
-                  r="34"
-                  stroke="hsl(var(--accent))"
-                  strokeWidth="5"
-                  fill="transparent"
-                  strokeLinecap="round"
-                  strokeDasharray={`${(viabilityScore / 100) * 214} 214`}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-xl font-bold text-accent">{viabilityScore}</span>
-                <span className="text-[10px] text-muted-foreground">Score</span>
-              </div>
-            </div>
+            <ScoreCircle 
+              score={viabilityScore} 
+              label="Score" 
+              size="xl"
+              showLabelInside={true}
+              showGlow={true}
+            />
             <div className="text-center sm:text-left">
               <p className="text-sm font-medium text-foreground">{verdictHeadline}</p>
               <p className="text-xs text-muted-foreground mt-1">Your project is ready to be built</p>
