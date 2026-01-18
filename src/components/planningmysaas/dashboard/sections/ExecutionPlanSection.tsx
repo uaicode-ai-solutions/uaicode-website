@@ -263,7 +263,7 @@ const ExecutionPlanSection = () => {
                             key={idx} 
                             className="flex items-center gap-2 text-xs group/item"
                           >
-                            <CheckCircle2 className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
+                            <CheckCircle2 className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
                             <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
                               {item}
                             </span>
@@ -332,7 +332,7 @@ const ExecutionPlanSection = () => {
                     <div className="space-y-1 pt-2 border-t border-border/30">
                       {phase.deliverables.map((item, idx) => (
                         <div key={idx} className="flex items-center gap-1.5 text-xs">
-                          <CheckCircle2 className="h-3 w-3 text-green-400 flex-shrink-0" />
+                          <CheckCircle2 className="h-3 w-3 text-amber-500 flex-shrink-0" />
                           <span className="text-muted-foreground">{item}</span>
                         </div>
                       ))}
