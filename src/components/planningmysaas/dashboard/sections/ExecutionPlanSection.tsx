@@ -198,10 +198,10 @@ const ExecutionPlanSection = () => {
         <CardContent className="p-6">
           {/* Timeline Header */}
           <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-accent" />
-              </div>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-accent/10">
+                    <Clock className="h-4 w-4 text-accent" />
+                  </div>
               <div>
                 <h3 className="text-sm font-medium text-foreground">Execution Timeline</h3>
                 <p className="text-xs text-muted-foreground">AI-accelerated development process</p>
@@ -231,11 +231,11 @@ const ExecutionPlanSection = () => {
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     {/* Card */}
-                    <div className="bg-card/50 border border-border/30 rounded-xl p-4 transition-all duration-300 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-1 h-full">
+                    <div className="bg-card/50 border border-border/30 rounded-xl p-4 transition-colors hover:border-accent/30 h-full">
                       {/* Phase Number & Icon */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent/20 to-accent/10 border-2 border-accent/20 flex items-center justify-center group-hover:border-accent/30 group-hover:shadow-[0_0_20px_hsl(var(--accent)/0.2)] transition-all duration-300">
-                          <IconComponent className="h-6 w-6 text-accent" />
+                        <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+                          <IconComponent className="h-5 w-5 text-accent" />
                         </div>
                         <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
                           Phase {phase.phase}
@@ -302,11 +302,11 @@ const ExecutionPlanSection = () => {
                 >
                   {/* Vertical Line */}
                   {index < EXECUTION_PHASES.length - 1 && (
-                    <div className="absolute left-[11px] top-10 bottom-0 w-0.5 bg-gradient-to-b from-accent/40 to-accent/10" />
+                    <div className="absolute left-[11px] top-10 bottom-0 w-0.5 bg-accent/20" />
                   )}
                   
                   {/* Icon Circle */}
-                  <div className="absolute left-0 top-0 w-6 h-6 rounded-full bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/30 flex items-center justify-center">
+                  <div className="absolute left-0 top-0 w-6 h-6 rounded-lg bg-accent/10 flex items-center justify-center">
                     <IconComponent className="h-3 w-3 text-accent" />
                   </div>
 
@@ -364,7 +364,7 @@ const ExecutionPlanSection = () => {
       <Card className="bg-card/50 border-border/30">
         <CardContent className="p-5">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+            <div className="p-2 rounded-lg bg-accent/10">
               <Cpu className="h-4 w-4 text-accent" />
             </div>
             <div className="flex items-center gap-2">
@@ -381,10 +381,10 @@ const ExecutionPlanSection = () => {
               return (
                 <div 
                   key={index} 
-                  className="group relative p-4 rounded-xl bg-card/50 border border-border/30 transition-all duration-300 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-0.5"
+                  className="group relative p-4 rounded-xl bg-card/50 border border-border/30 transition-colors hover:border-accent/30"
                 >
                   {/* Decorative corner accent */}
-                  <div className="absolute top-0 right-0 w-6 h-6 bg-gradient-to-br from-accent/20 to-accent/10 rounded-bl-xl rounded-tr-xl" />
+                  <div className="absolute top-0 right-0 w-6 h-6 bg-accent/10 rounded-bl-xl rounded-tr-xl" />
                   
                   {/* Category with icon */}
                   <div className="flex items-center gap-2 mb-3">
