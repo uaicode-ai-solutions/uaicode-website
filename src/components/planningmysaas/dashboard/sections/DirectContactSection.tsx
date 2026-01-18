@@ -15,8 +15,8 @@ const DirectContactSection = () => {
     <section id="direct-contact" className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
-          <MessageCircle className="h-5 w-5 text-accent" />
+        <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border border-amber-500/20">
+          <MessageCircle className="h-5 w-5 text-amber-400" />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-foreground">Direct Contact</h2>
@@ -31,20 +31,20 @@ const DirectContactSection = () => {
         {/* Email Kyle Card */}
         <Card 
           onClick={() => setShowEmailDialog(true)}
-          className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg hover:shadow-accent/10 group border-accent/20 bg-gradient-to-br from-background to-accent/5"
+          className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
         >
           <CardContent className="p-6 flex items-center gap-4">
             <div className="relative">
               <KyleAvatar size="sm" isActive={true} />
               {/* Mail icon badge */}
-              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-accent shadow-lg border-2 border-background">
-                <Mail className="h-3 w-3 text-accent-foreground" />
+              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
+                <Mail className="h-3 w-3 text-black" />
               </div>
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <p className="font-semibold text-foreground">Email Kyle</p>
-                <span className="flex items-center gap-1 text-xs text-accent font-medium">
+                <span className="flex items-center gap-1 text-xs text-amber-400 font-medium">
                   <Clock className="h-3 w-3" />
                   24h reply
                 </span>
@@ -57,14 +57,14 @@ const DirectContactSection = () => {
         {/* Chat with Kyle Card */}
         <Card 
           onClick={() => setShowChatDialog(true)}
-          className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg hover:shadow-accent/10 group border-accent/20 bg-gradient-to-br from-background to-accent/5"
+          className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
         >
           <CardContent className="p-6 flex items-center gap-4">
             <div className="relative">
               <KyleAvatar size="sm" isActive={true} />
               {/* Chat icon badge */}
-              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-accent shadow-lg border-2 border-background">
-                <MessageSquare className="h-3 w-3 text-accent-foreground" />
+              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
+                <MessageSquare className="h-3 w-3 text-black" />
               </div>
             </div>
             <div className="flex-1">
@@ -86,14 +86,14 @@ const DirectContactSection = () => {
         {/* Call Kyle Card */}
         <Card 
           onClick={() => setShowKyleDialog(true)}
-          className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg hover:shadow-accent/10 group border-accent/20 bg-gradient-to-br from-background to-accent/5"
+          className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
         >
           <CardContent className="p-6 flex items-center gap-4">
             <div className="relative">
               <KyleAvatar size="sm" isActive={true} />
               {/* Phone icon badge */}
-              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-accent shadow-lg border-2 border-background">
-                <Phone className="h-3 w-3 text-accent-foreground" />
+              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
+                <Phone className="h-3 w-3 text-black" />
               </div>
             </div>
             <div className="flex-1">
