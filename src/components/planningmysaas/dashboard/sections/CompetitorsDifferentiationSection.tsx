@@ -151,34 +151,34 @@ const CompetitorsDifferentiationSection = () => {
                 )}
                 
                 {/* Strengths & Weaknesses */}
-                <div className="grid grid-cols-2 gap-2 mt-auto pt-2 border-t border-border/30">
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/30">
                   {/* Strengths */}
                   <div className="space-y-1">
-                    <p className="text-[10px] font-medium text-green-400 flex items-center gap-1">
+                    <p className="text-[10px] font-medium text-gradient-gold flex items-center gap-1">
                       <ThumbsUp className="w-3 h-3" /> Strengths
                     </p>
-                    {competitor.strengths.slice(0, 2).map((strength, i) => (
-                      <p key={i} className="text-[10px] text-muted-foreground line-clamp-1">
-                        • {strength}
+                    {competitor.strengths.map((strength, i) => (
+                      <p key={i} className="text-[10px] text-gradient-gold">
+                        <span className="text-gradient-gold">•</span> {strength}
                       </p>
                     ))}
                   </div>
                   
                   {/* Weaknesses */}
                   <div className="space-y-1">
-                    <p className="text-[10px] font-medium text-red-400 flex items-center gap-1">
+                    <p className="text-[10px] font-medium text-gradient-gold flex items-center gap-1">
                       <ThumbsDown className="w-3 h-3" /> Weaknesses
                     </p>
-                    {competitor.weaknesses.slice(0, 2).map((weakness, i) => (
-                      <p key={i} className="text-[10px] text-muted-foreground line-clamp-1">
-                        • {weakness}
+                    {competitor.weaknesses.map((weakness, i) => (
+                      <p key={i} className="text-[10px] text-gradient-gold">
+                        <span className="text-gradient-gold">•</span> {weakness}
                       </p>
                     ))}
                   </div>
                 </div>
                 
                 {/* Footer: Price + Model */}
-                <div className="flex justify-between items-end pt-2 border-t border-border/30">
+                <div className="flex justify-between items-end pt-2 border-t border-border/30 mt-auto">
                   <div className="flex flex-col">
                     <div>
                       <span className="text-xl font-bold text-gradient-gold">
