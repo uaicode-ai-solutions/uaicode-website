@@ -174,13 +174,6 @@ export interface ReportData {
   section_investment: unknown | null;
   opportunity_section: unknown | null;
   competitive_analysis_section: unknown | null;
-  // Legacy fields kept for backwards compatibility during transition
-  // These will be populated from JSONB fields when reading
-  viability_score?: number | null;
-  verdict_headline?: string | null;
-  total_market?: string | null;
-  expected_roi?: string | null;
-  payback_period?: string | null;
 }
 
 // Helper function to safely get value with fallback
