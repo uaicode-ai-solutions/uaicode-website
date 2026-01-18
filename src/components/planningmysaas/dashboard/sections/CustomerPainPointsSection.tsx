@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload }: any) => {
     const data = payload[0].payload;
     return (
       <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-w-xs">
-        <p className="font-medium text-foreground text-sm mb-1">{data.name}</p>
+        <p className="font-medium text-foreground text-sm mb-1">{data.fullName}</p>
         <p className="text-accent font-bold">{data.intensity}/10 Intensity</p>
         {data.evidence && (
           <p className="text-xs text-muted-foreground mt-2 line-clamp-3">
@@ -55,13 +55,11 @@ const CustomerPainPointsSection = () => {
 
   // Transform data for chart
   const chartData = painPoints.map((point, index) => ({
-    name: point.pain_point.length > 40 
-      ? point.pain_point.substring(0, 40) + "..." 
-      : point.pain_point,
+    name: `#${index + 1}`,
     fullName: point.pain_point,
     intensity: parseIntensity(point.intensity_score),
     evidence: cleanCitations(point.market_evidence),
-    index,
+    index: index + 1,
   }));
 
   // Sort by intensity descending
@@ -105,7 +103,12 @@ const CustomerPainPointsSection = () => {
         <Card className="bg-card/50 border-border/30 lg:col-span-2">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-foreground">Pain Intensity</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-medium text-foreground">Pain Intensity</h3>
+                <InfoTooltip side="top" size="sm">
+                  Visual ranking of customer pain points by severity (0-10 scale).
+                </InfoTooltip>
+              </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Avg:</span>
                 <span className="text-lg font-bold text-accent">{avgIntensity}/10</span>
@@ -131,8 +134,8 @@ const CustomerPainPointsSection = () => {
                   <YAxis
                     type="category"
                     dataKey="name"
-                    width={140}
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                    width={40}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12, fontWeight: 600 }}
                     axisLine={{ stroke: "hsl(var(--border))" }}
                     tickLine={false}
                   />
@@ -159,7 +162,12 @@ const CustomerPainPointsSection = () => {
         {/* Card 2: Stats Summary */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-foreground mb-5">Summary</h3>
+            <div className="flex items-center gap-2 mb-5">
+              <h3 className="text-sm font-medium text-foreground">Summary</h3>
+              <InfoTooltip side="top" size="sm">
+                Overview statistics of identified customer problems.
+              </InfoTooltip>
+            </div>
 
             {/* Big number */}
             <div className="text-center mb-6">
@@ -192,28 +200,32 @@ const CustomerPainPointsSection = () => {
         </Card>
       </div>
 
-      {/* Pain Points Cards (Top 3 with evidence) */}
-      <div className="grid md:grid-cols-3 gap-4">
-        {chartData.slice(0, 3).map((point, index) => {
+      {/* Pain Points Cards (Top 5 with evidence) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {chartData.slice(0, 5).map((point, index) => {
           const intensityPercent = (point.intensity / 10) * 100;
           return (
             <Card key={index} className="bg-card/50 border-border/30">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-3 mb-3">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-lg bg-accent/10">
-                      <TrendingUp className="h-3.5 w-3.5 text-accent" />
+                      <span className="text-xs font-bold text-accent">#{point.index}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">#{index + 1}</span>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-accent">{point.intensity}/10</div>
-                  </div>
+                  <div className="text-lg font-bold text-accent">{point.intensity}/10</div>
                 </div>
                 
-                <h4 className="font-medium text-foreground text-sm mb-3 line-clamp-2">
+                <h4 className="font-medium text-foreground text-sm mb-2 line-clamp-2">
                   {point.fullName}
                 </h4>
+
+                {/* Evidence text */}
+                {point.evidence && (
+                  <p className="text-xs text-muted-foreground line-clamp-3 mb-3">
+                    {point.evidence}
+                  </p>
+                )}
 
                 {/* Progress bar */}
                 <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
