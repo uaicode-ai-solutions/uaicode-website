@@ -86,7 +86,7 @@ const MacroTrendsSection = () => {
         {/* Stats Card */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-foreground mb-5">Overview</h3>
+            <h3 className="text-sm font-medium text-gradient-gold mb-5">Overview</h3>
 
             {/* Big number */}
             <div className="text-center mb-6">

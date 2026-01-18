@@ -140,7 +140,7 @@ const WhyUaicodeSection = () => {
                 </div>
                 
                 {/* Labels */}
-                <p className="text-sm font-medium text-foreground mb-0.5">{stat.label}</p>
+                <p className="text-sm font-medium text-gradient-gold mb-0.5">{stat.label}</p>
                 <p className="text-xs text-muted-foreground">{stat.sublabel}</p>
                 
                 {/* TOP RATED Badge */}

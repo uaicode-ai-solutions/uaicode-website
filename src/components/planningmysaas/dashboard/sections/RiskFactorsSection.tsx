@@ -64,7 +64,7 @@ const RiskFactorsSection = () => {
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              <h3 className="text-sm font-medium text-foreground">Risk Assessment</h3>
+              <h3 className="text-sm font-medium text-gradient-gold">Risk Assessment</h3>
               <InfoTooltip side="top" size="sm">
                 Safety score based on the number of identified risks. Higher is better.
               </InfoTooltip>
