@@ -203,7 +203,12 @@ const ExecutionPlanSection = () => {
                     <Clock className="h-4 w-4 text-accent" />
                   </div>
               <div>
-                <h3 className="text-sm font-medium text-foreground">Execution Timeline</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Execution Timeline</h3>
+                  <InfoTooltip side="top" size="sm">
+                    Detailed breakdown of development phases, from discovery to launch.
+                  </InfoTooltip>
+                </div>
                 <p className="text-xs text-muted-foreground">AI-accelerated development process</p>
               </div>
             </div>
@@ -400,7 +405,7 @@ const ExecutionPlanSection = () => {
                       <Badge 
                         key={idx} 
                         variant="outline" 
-                        className="text-[10px] bg-background/80 border-border/50 text-foreground/80 px-2 py-0.5 hover:border-accent/40 hover:text-accent transition-colors"
+                        className="text-[10px] bg-amber-500/10 border-amber-500/20 text-amber-400 px-2 py-0.5 hover:bg-amber-500/15 transition-colors"
                       >
                         {tech}
                       </Badge>
