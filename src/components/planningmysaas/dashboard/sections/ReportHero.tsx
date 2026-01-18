@@ -37,17 +37,30 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   // Use real data only - no mock fallbacks for validation
   const displayName = projectName || report?.saas_name || "...";
   
-  // Get metrics from tb_pms_reports with fallback
-  const viabilityScore = safeNumber(reportData?.viability_score, 0);
-  const verdictHeadline = safeValue(reportData?.verdict_headline);
-  
-  // Parse opportunity_section for TAM fallback
+  // Get metrics from section_investment JSONB (primary source)
+  const sectionInvestment = reportData?.section_investment as Record<string, unknown> | null;
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
-  const rawTotalMarket = reportData?.total_market || opportunityData?.tam_value || null;
+  
+  // Viability score from section_investment
+  const viabilityScore = safeNumber(
+    sectionInvestment?.viability_score as number | null ?? reportData?.viability_score, 
+    0
+  );
+  const verdictHeadline = safeValue(
+    sectionInvestment?.verdict_headline as string | null ?? reportData?.verdict_headline
+  );
+  
+  // Total market from opportunity_section
+  const rawTotalMarket = opportunityData?.tam_value || null;
   const totalMarket = rawTotalMarket ? formatMarketValue(String(rawTotalMarket)) : "...";
   
-  const expectedROI = safeValue(reportData?.expected_roi);
-  const paybackPeriod = safeValue(reportData?.payback_period);
+  // ROI and Payback from section_investment
+  const expectedROI = safeValue(
+    sectionInvestment?.expected_roi as string | null ?? reportData?.expected_roi
+  );
+  const paybackPeriod = safeValue(
+    sectionInvestment?.payback_period as string | null ?? reportData?.payback_period
+  );
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-amber-400";

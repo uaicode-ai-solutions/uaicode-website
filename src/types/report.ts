@@ -163,43 +163,24 @@ export interface OpportunitySection {
   risks?: OpportunityRisk[];
 }
 
-// Report data from tb_pms_reports table
+// Report data from tb_pms_reports table (simplified - legacy columns removed)
 export interface ReportData {
   id: string;
   wizard_id: string;
   status: string;
-  viability_score: number | null;
-  total_market: string | null;
-  expected_roi: string | null;
-  payback_period: string | null;
-  verdict_headline: string | null;
   created_at: string;
   updated_at: string;
-  // Opportunity fields (legacy - kept for backwards compatibility)
-  opportunity_tam: string | null;
-  opportunity_sam: string | null;
-  opportunity_som: string | null;
-  opportunity_year_rate: string | null;
-  // NEW: JSONB field containing opportunity data from n8n
-  opportunity_section: unknown | null;
-  // Legacy investment fields (kept for backwards compatibility)
-  investment_one_payment_cents: number | null;
-  investment_front_cents: number | null;
-  investment_back_cents: number | null;
-  investment_integrations_cents: number | null;
-  investment_infra_cents: number | null;
-  investment_testing_cents: number | null;
-  // Legacy price comparison fields (kept for backwards compatibility)
-  investment_one_payment_cents_traditional: number | null;
-  savings_percentage: number | null;
-  savings_amount_cents: number | null;
-  savings_marketing_months: number | null;
-  delivery_time_traditional: string | null;
-  delivery_time_uaicode: string | null;
-  // NEW: JSONB field containing all investment data
+  // JSONB fields containing all data (primary sources)
   section_investment: unknown | null;
-  // NEW: Competitive analysis data from n8n
+  opportunity_section: unknown | null;
   competitive_analysis_section: unknown | null;
+  // Legacy fields kept for backwards compatibility during transition
+  // These will be populated from JSONB fields when reading
+  viability_score?: number | null;
+  verdict_headline?: string | null;
+  total_market?: string | null;
+  expected_roi?: string | null;
+  payback_period?: string | null;
 }
 
 // Helper function to safely get value with fallback

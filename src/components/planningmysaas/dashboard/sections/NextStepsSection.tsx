@@ -124,9 +124,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
     contact: { email: "contact@uaicode.dev", whatsapp: "+1 (555) 123-4567", calendly: "https://calendly.com/uaicode" }
   });
   
-  // Viability score from reportData (same source as ReportHero)
-  const viabilityScore = reportData?.viability_score ?? 0;
-  const verdictHeadline = reportData?.verdict_headline || "High viability, your idea has real traction potential.";
+  // Viability score from section_investment JSONB (same source as ReportHero)
+  const sectionInvestmentData = getSectionInvestment(reportData);
+  const sectionInvestmentRaw = reportData?.section_investment as Record<string, unknown> | null;
+  const viabilityScore = (sectionInvestmentRaw?.viability_score as number | null) ?? 0;
+  const verdictHeadline = (sectionInvestmentRaw?.verdict_headline as string | null) || "High viability, your idea has real traction potential.";
   const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
   
   
@@ -145,8 +147,8 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   // Get section_investment data for pricing and discounts
   const sectionInvestment = getSectionInvestment(reportData);
   
-  // MVP Price from section_investment (with fallback to legacy field)
-  const mvpPriceCents = sectionInvestment?.investment_one_payment_cents ?? reportData?.investment_one_payment_cents ?? 0;
+  // MVP Price from section_investment only (no legacy fallback)
+  const mvpPriceCents = sectionInvestment?.investment_one_payment_cents ?? 0;
   const mvpPrice = mvpPriceCents > 0 ? mvpPriceCents / 100 : 0;
   
   // Get discount strategy from section_investment (with calculated fallbacks)

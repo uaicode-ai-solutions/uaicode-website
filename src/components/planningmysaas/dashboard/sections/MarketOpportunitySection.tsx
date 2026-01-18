@@ -84,16 +84,13 @@ const MarketOpportunitySection = () => {
   const geographicRegion = report?.geographic_region || 
     (rawOpportunityData?.sam_geographic_focus as string) || "";
 
-  // Use opportunity_section data with formatting applied
-  const tam = formatMarketValue(opportunityData?.tam_value || safeValue(reportData?.opportunity_tam));
-  const sam = formatMarketValue(opportunityData?.sam_value || safeValue(reportData?.opportunity_sam));
-  const som = formatMarketValue(opportunityData?.som_value || safeValue(reportData?.opportunity_som));
+  // Use opportunity_section JSONB data exclusively (no legacy fallbacks)
+  const tam = formatMarketValue(opportunityData?.tam_value || "...");
+  const sam = formatMarketValue(opportunityData?.sam_value || "...");
+  const som = formatMarketValue(opportunityData?.som_value || "...");
   
   // Growth rate formatted: "19.8% 2026-2035"
-  const growthRate = formatGrowthRate(
-    opportunityData?.market_growth_rate 
-      || (reportData?.opportunity_year_rate ? `${reportData.opportunity_year_rate}%` : "...")
-  );
+  const growthRate = formatGrowthRate(opportunityData?.market_growth_rate || "...");
 
   // Build fallback headline from wizard industry field
   const industryLabel =
