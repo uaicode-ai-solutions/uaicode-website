@@ -95,10 +95,10 @@ export function formatDeliveryWeeks(min: number, max: number): string {
 }
 
 /**
- * Gets investment breakdown with fallback to legacy fields
+ * Gets investment breakdown from section_investment JSONB only (no legacy fallbacks)
  */
 export function getInvestmentBreakdown(
-  reportData: ReportData | null | undefined,
+  _reportData: ReportData | null | undefined,
   sectionInvestment: SectionInvestment | null
 ): {
   onePayment: number | null;
@@ -108,7 +108,7 @@ export function getInvestmentBreakdown(
   infra: number | null;
   testing: number | null;
 } {
-  // Prefer section_investment data
+  // Use section_investment data exclusively
   if (sectionInvestment?.investment_breakdown) {
     return {
       onePayment: sectionInvestment.investment_one_payment_cents,
@@ -120,22 +120,22 @@ export function getInvestmentBreakdown(
     };
   }
 
-  // Fallback to legacy separate fields
+  // Return nulls if no section_investment data
   return {
-    onePayment: reportData?.investment_one_payment_cents ?? null,
-    frontend: reportData?.investment_front_cents ?? null,
-    backend: reportData?.investment_back_cents ?? null,
-    integrations: reportData?.investment_integrations_cents ?? null,
-    infra: reportData?.investment_infra_cents ?? null,
-    testing: reportData?.investment_testing_cents ?? null,
+    onePayment: null,
+    frontend: null,
+    backend: null,
+    integrations: null,
+    infra: null,
+    testing: null,
   };
 }
 
 /**
- * Gets pricing comparison data with fallback to legacy fields
+ * Gets pricing comparison data from section_investment JSONB only (no legacy fallbacks)
  */
 export function getPricingComparison(
-  reportData: ReportData | null | undefined,
+  _reportData: ReportData | null | undefined,
   sectionInvestment: SectionInvestment | null
 ): {
   uaicodePrice: number;
@@ -146,7 +146,7 @@ export function getPricingComparison(
   deliveryUaicode: string;
   deliveryTraditional: string;
 } {
-  // Prefer section_investment data
+  // Use section_investment data exclusively
   if (sectionInvestment) {
     return {
       uaicodePrice: sectionInvestment.investment_one_payment_cents,
@@ -165,15 +165,15 @@ export function getPricingComparison(
     };
   }
 
-  // Fallback to legacy separate fields
+  // Return defaults if no section_investment data
   return {
-    uaicodePrice: reportData?.investment_one_payment_cents ?? 0,
-    traditionalPrice: reportData?.investment_one_payment_cents_traditional ?? 0,
-    savingsPercentage: reportData?.savings_percentage ?? 0,
-    savingsAmount: reportData?.savings_amount_cents ?? 0,
-    marketingMonths: reportData?.savings_marketing_months ?? 0,
-    deliveryUaicode: reportData?.delivery_time_uaicode ?? "6-17 weeks",
-    deliveryTraditional: reportData?.delivery_time_traditional ?? "13-34 weeks",
+    uaicodePrice: 0,
+    traditionalPrice: 0,
+    savingsPercentage: 0,
+    savingsAmount: 0,
+    marketingMonths: 0,
+    deliveryUaicode: "...",
+    deliveryTraditional: "...",
   };
 }
 
