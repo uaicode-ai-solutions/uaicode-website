@@ -15,9 +15,11 @@ import {
   Users, 
   Building2,
   MapPin,
-  Calendar
+  Calendar,
+  Crown,
+  Shield
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -36,7 +38,7 @@ const getValue = (value: string | undefined | null): string =>
 
 // Helper: get initials from name
 const getInitials = (name: string | undefined | null): string => {
-  if (!name || name === "...") return "...";
+  if (!name || name === "...") return "?";
   return name
     .split(" ")
     .map(word => word[0])
@@ -90,28 +92,28 @@ const getExpectedROAS = (icpData: ICPIntelligenceSection | null): { value: strin
 };
 
 // Helper: extract decision makers from evaluation criteria
-const getDecisionMakers = (persona: ICPPersona | null): Array<{ role: string; initials: string; influence: string }> => {
+const getDecisionMakers = (persona: ICPPersona | null): Array<{ role: string; initials: string; influence: string; percent: number }> => {
   const criteria = persona?.buying_behavior?.evaluation_criteria;
   
   if (!criteria || criteria.length === 0) {
     return [
-      { role: "...", initials: "...", influence: "..." },
-      { role: "...", initials: "...", influence: "..." },
-      { role: "...", initials: "...", influence: "..." }
+      { role: "...", initials: "?", influence: "...", percent: 0 },
+      { role: "...", initials: "?", influence: "...", percent: 0 },
+      { role: "...", initials: "?", influence: "...", percent: 0 }
     ];
   }
   
   // Map common evaluation criteria to decision maker roles
-  const roleMap: Record<string, { role: string; initials: string; influence: string }> = {
-    "ROI": { role: "Owner/CEO", initials: "CEO", influence: "Final decision" },
-    "Ease of use": { role: "Ops Manager", initials: "OM", influence: "Daily usage" },
-    "Cost": { role: "Accountant", initials: "ACC", influence: "Cost approval" },
-    "Integration": { role: "IT Manager", initials: "IT", influence: "Tech review" },
-    "Scalability": { role: "Growth Lead", initials: "GL", influence: "Strategy" },
-    "Support": { role: "Ops Manager", initials: "OM", influence: "Daily usage" }
+  const roleMap: Record<string, { role: string; initials: string; influence: string; percent: number }> = {
+    "ROI": { role: "Owner/CEO", initials: "CEO", influence: "Final decision", percent: 85 },
+    "Ease of use": { role: "Ops Manager", initials: "OM", influence: "Daily usage", percent: 65 },
+    "Cost": { role: "Accountant", initials: "ACC", influence: "Cost approval", percent: 55 },
+    "Integration": { role: "IT Manager", initials: "IT", influence: "Tech review", percent: 60 },
+    "Scalability": { role: "Growth Lead", initials: "GL", influence: "Strategy", percent: 50 },
+    "Support": { role: "Ops Manager", initials: "OM", influence: "Daily usage", percent: 65 }
   };
   
-  const makers: Array<{ role: string; initials: string; influence: string }> = [];
+  const makers: Array<{ role: string; initials: string; influence: string; percent: number }> = [];
   
   for (const criterion of criteria) {
     const key = Object.keys(roleMap).find(k => 
@@ -128,15 +130,15 @@ const getDecisionMakers = (persona: ICPPersona | null): Array<{ role: string; in
   // Fill with defaults if needed
   while (makers.length < 3) {
     const defaults = [
-      { role: "Owner/CEO", initials: "CEO", influence: "Final decision" },
-      { role: "Ops Manager", initials: "OM", influence: "Daily usage" },
-      { role: "Accountant", initials: "ACC", influence: "Cost approval" }
+      { role: "Owner/CEO", initials: "CEO", influence: "Final decision", percent: 85 },
+      { role: "Ops Manager", initials: "OM", influence: "Daily usage", percent: 65 },
+      { role: "Accountant", initials: "ACC", influence: "Cost approval", percent: 55 }
     ];
     const next = defaults[makers.length];
     if (!makers.find(m => m.role === next.role)) {
       makers.push(next);
     } else {
-      makers.push({ role: "...", initials: "...", influence: "..." });
+      makers.push({ role: "...", initials: "?", influence: "...", percent: 0 });
     }
   }
   
@@ -193,11 +195,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
       label: "Competitive Position",
       sublabel: "vs. market",
       tooltip: "Your market positioning relative to direct competitors based on feature parity, pricing, and brand awareness.",
-      indicator: {
-        type: "progress" as const,
-        value: competitivePosition.percent,
-        label: competitivePosition.value !== "..." ? "Top tier positioning" : "..."
-      }
+      percent: competitivePosition.percent
     },
     { 
       icon: DollarSign, 
@@ -205,23 +203,15 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
       label: "Recommended Budget",
       sublabel: "Paid Media",
       tooltip: "Monthly paid media spend recommended to achieve growth targets based on your ICP and competitive landscape.",
-      indicator: {
-        type: "badge" as const,
-        label: budgetRange !== "..." ? "AI-optimized for max ROI" : "..."
-      }
+      percent: budgetRange !== "..." ? 75 : 0
     },
     { 
       icon: TrendingUp, 
       value: expectedROAS.value, 
       label: "Expected ROAS",
-      sublabel: "First 6 months",
+      sublabel: `Industry: ${expectedROAS.industry}`,
       tooltip: "Return on Ad Spend — for every $1 spent on advertising, expect this return in revenue based on industry benchmarks.",
-      indicator: {
-        type: "comparison" as const,
-        industry: expectedROAS.industry,
-        yourValue: expectedROAS.percent,
-        label: expectedROAS.value !== "..." ? "Above Avg" : "..."
-      }
+      percent: expectedROAS.percent
     },
   ];
 
@@ -234,16 +224,21 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     { icon: Calendar, label: "Business Stage", value: decisionTimeframe !== "..." ? "Growth (2-7 yrs)" : "..." }
   ];
 
+  // Decision maker icons
+  const decisionMakerIcons = [Crown, User, Shield];
+
   return (
-    <section id="marketing-intelligence" className="space-y-6">
+    <section id="marketing-intelligence" className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
-          <Megaphone className="h-5 w-5 text-accent" />
+        <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
+          <Megaphone className="h-5 w-5 text-amber-500" />
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-foreground">Marketing Intelligence</h2>
-          <p className="text-sm text-muted-foreground">Strategic insights to accelerate your growth</p>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-foreground">Marketing Intelligence</h2>
+          <InfoTooltip side="right" size="sm">
+            Strategic insights to accelerate your growth based on ICP analysis.
+          </InfoTooltip>
         </div>
       </div>
 
@@ -254,112 +249,88 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
           return (
             <Card 
               key={index} 
-              className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5 relative group"
+              className="group relative bg-card/50 border-border/30 overflow-hidden hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.02] transition-all duration-300"
             >
               {/* Gradient corner decoration */}
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-bl-full" />
               
               <CardContent className="p-5 relative">
-                {/* Icon and Tooltip */}
+                {/* Icon and Badge */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className="p-2.5 rounded-xl bg-accent/10">
-                    <Icon className="h-5 w-5 text-accent" />
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
+                    <Icon className="h-5 w-5 text-amber-500" />
                   </div>
-                  <InfoTooltip>{metric.tooltip}</InfoTooltip>
+                  <Badge 
+                    variant="outline" 
+                    className="bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs"
+                  >
+                    {metric.label}
+                  </Badge>
                 </div>
 
                 {/* Value */}
-                <div className="mb-3">
-                  <p className="text-3xl font-bold text-foreground">{metric.value}</p>
-                </div>
+                <p className="text-4xl font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent mb-1">
+                  {metric.value}
+                </p>
 
-                {/* Labels */}
-                <div className="mb-4">
-                  <p className="text-sm font-medium text-foreground">{metric.label}</p>
-                  <p className="text-xs text-muted-foreground">{metric.sublabel}</p>
-                </div>
+                {/* Sublabel */}
+                <p className="text-sm text-muted-foreground mb-4">{metric.sublabel}</p>
 
-                {/* Indicator */}
-                {metric.indicator.type === "progress" && (
-                  <div className="space-y-2">
-                    <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-accent/60 to-accent rounded-full transition-all duration-500"
-                        style={{ width: `${metric.indicator.value}%` }}
-                      />
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">{metric.indicator.label}</p>
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-full transition-all duration-500"
+                      style={{ width: `${metric.percent}%` }}
+                    />
                   </div>
-                )}
-
-                {metric.indicator.type === "badge" && (
-                  <Badge className="bg-accent/10 text-accent border-accent/30 text-[10px] font-normal">
-                    <Sparkles className="h-2.5 w-2.5 mr-1" />
-                    {metric.indicator.label}
-                  </Badge>
-                )}
-
-                {metric.indicator.type === "comparison" && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-muted-foreground">Industry: {metric.indicator.industry}</span>
-                      <Badge className="bg-accent/10 text-accent border-accent/30 text-[10px]">
-                        {metric.indicator.label}
-                      </Badge>
-                    </div>
-                    <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-accent/60 to-accent rounded-full transition-all duration-500"
-                        style={{ width: `${metric.indicator.yourValue}%` }}
-                      />
-                    </div>
+                  <div className="flex items-center justify-end">
+                    <InfoTooltip size="sm">{metric.tooltip}</InfoTooltip>
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      {/* Your Ideal Customer - Subtitle */}
-      <div className="flex items-center gap-2 mt-8">
-        <h3 className="font-semibold text-foreground text-sm">Your Ideal Customer</h3>
-        <InfoTooltip side="right" size="sm">
-          Detailed profile of your most valuable customer segment based on ICP analysis.
-        </InfoTooltip>
-      </div>
-
-      {/* ICP Row 1: Customer Avatar + Company Profile */}
+      {/* Your Ideal Customer Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Customer Avatar Card */}
-        <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <User className="h-4 w-4 text-accent" />
-              <h4 className="font-medium text-sm text-foreground">Customer Avatar</h4>
+        <Card className="bg-card/50 border-border/30 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5 text-amber-500" />
+              <CardTitle className="text-lg">Your Ideal Customer</CardTitle>
             </div>
-            
-            <div className="flex items-center gap-4 mb-5">
-              <Avatar className="h-14 w-14 border-2 border-accent/30">
-                <AvatarFallback className="bg-accent/20 text-accent font-bold text-lg">
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {/* Avatar and Name */}
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 ring-2 ring-amber-500/30 ring-offset-2 ring-offset-background">
+                <AvatarFallback className="bg-gradient-to-br from-amber-500 to-amber-600 text-white text-xl font-semibold">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-foreground text-lg">{personaInfo.name}</p>
+                <h3 className="text-xl font-semibold text-foreground">{personaInfo.name}</h3>
                 <p className="text-sm text-muted-foreground">{personaInfo.role}</p>
-                <Badge className="mt-1.5 text-xs bg-accent/10 text-accent border-accent/30">
+                <Badge variant="outline" className="mt-1 bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs">
                   {businessType}
                 </Badge>
               </div>
             </div>
-            
+
+            {/* Primary Goals */}
             <div>
-              <p className="text-xs text-muted-foreground mb-2">Primary Goals</p>
+              <p className="text-sm font-medium text-muted-foreground mb-3">Primary Goals</p>
               <div className="space-y-2">
                 {displayGoals.map((goal, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm p-2.5 rounded-lg bg-accent/5 border border-accent/10">
-                    <div className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  <div 
+                    key={i} 
+                    className="flex items-center gap-2 text-sm p-3 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10 hover:border-accent/30 transition-colors"
+                  >
+                    <div className="h-2 w-2 rounded-full bg-gradient-to-r from-amber-500 to-amber-400" />
                     <span className="text-foreground">{goal}</span>
                   </div>
                 ))}
@@ -369,23 +340,29 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
         </Card>
 
         {/* Company Profile Card */}
-        <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Building2 className="h-4 w-4 text-accent" />
-              <h4 className="font-medium text-sm text-foreground">Company Profile</h4>
+        <Card className="bg-card/50 border-border/30 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-amber-500" />
+              <CardTitle className="text-lg">Company Profile</CardTitle>
             </div>
-            
-            <div className="space-y-3 mb-5">
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
               {demographics.map((item, i) => {
                 const Icon = item.icon;
                 return (
-                  <div key={i} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Icon className="h-3.5 w-3.5 text-accent/70" />
-                      <span>{item.label}</span>
+                  <div 
+                    key={i} 
+                    className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/50 hover:border-accent/20 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500/15 to-amber-400/5">
+                        <Icon className="h-3.5 w-3.5 text-amber-500" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">{item.label}</span>
                     </div>
-                    <span className="text-foreground font-medium">{item.value}</span>
+                    <span className="text-sm font-medium text-foreground">{item.value}</span>
                   </div>
                 );
               })}
@@ -395,58 +372,77 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
       </div>
 
       {/* Decision Makers Row */}
-      <Card className="bg-card/50 border-border/30 hover:border-accent/40 transition-all duration-300 hover:-translate-y-0.5">
-        <CardContent className="p-5">
-          <div className="flex items-center gap-2 mb-5">
-            <Users className="h-4 w-4 text-accent" />
-            <h4 className="font-medium text-sm text-foreground">Decision Makers</h4>
+      <Card className="bg-card/50 border-border/30 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-2">
+            <Crown className="h-5 w-5 text-amber-500" />
+            <CardTitle className="text-lg">Decision Makers</CardTitle>
             <InfoTooltip side="right" size="sm">
               Key stakeholders involved in the purchasing decision.
             </InfoTooltip>
           </div>
-          
+        </CardHeader>
+        <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {decisionMakers.map((dm, i) => (
-              <div 
-                key={i} 
-                className="flex flex-col items-center text-center p-5 rounded-xl bg-card border border-border/50 hover:border-accent/30 transition-all"
-              >
-                <Avatar className="h-12 w-12 border-2 border-accent mb-3">
-                  <AvatarFallback className="bg-transparent text-accent font-semibold">
-                    {dm.initials}
-                  </AvatarFallback>
-                </Avatar>
-                <p className="font-medium text-foreground text-sm mb-2">{dm.role}</p>
-                <Badge className="text-xs bg-accent/10 text-accent border-accent/30">
-                  {dm.influence}
-                </Badge>
-              </div>
-            ))}
+            {decisionMakers.map((dm, i) => {
+              const IconComponent = decisionMakerIcons[i];
+              return (
+                <div 
+                  key={i} 
+                  className="group flex flex-col items-center text-center p-5 rounded-xl bg-muted/30 border border-border/50 hover:border-accent/30 hover:shadow-md transition-all duration-300"
+                >
+                  <Avatar className="h-14 w-14 mb-3 ring-2 ring-amber-500/20 group-hover:ring-amber-500/40 transition-all">
+                    <AvatarFallback className="bg-gradient-to-br from-amber-500/80 to-amber-600/80 text-white">
+                      <IconComponent className="h-6 w-6" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="font-medium text-foreground text-sm mb-2">{dm.role}</p>
+                  <Badge 
+                    variant="outline" 
+                    className="mb-3 bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs"
+                  >
+                    {dm.influence}
+                  </Badge>
+                  <div className="w-full">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>Influence</span>
+                      <span>{dm.percent > 0 ? `${dm.percent}%` : "..."}</span>
+                    </div>
+                    <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-full transition-all duration-500"
+                        style={{ width: `${dm.percent}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
 
       {/* CTA Banner */}
-      <Card className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent border-accent/30">
-        <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-accent/20">
-              <Sparkles className="h-4 w-4 text-accent" />
+      <Card className="bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border-amber-500/30 hover:border-amber-500/40 transition-all">
+        <CardContent className="p-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-400/10">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Want the full Marketing Strategy?</h3>
+                <p className="text-sm text-muted-foreground">Get detailed ICP profile, paid media plan, and growth roadmap.</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Want the full Marketing Strategy?</p>
-              <p className="text-xs text-muted-foreground">Get detailed ICP profile, paid media plan, and growth roadmap.</p>
-            </div>
+            <Button 
+              onClick={onExploreMarketing}
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg shadow-amber-500/25 shrink-0"
+            >
+              Explore Marketing Tab
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="border-accent/40 hover:bg-accent/10 gap-2 shrink-0"
-            onClick={onExploreMarketing}
-          >
-            Explore Marketing Tab
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
         </CardContent>
       </Card>
     </section>
