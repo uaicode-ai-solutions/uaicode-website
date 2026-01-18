@@ -209,7 +209,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
     <section id="next-steps" className="space-y-6 animate-fade-in">
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
+        <div className="p-2 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10">
           <ArrowRight className="h-5 w-5 text-accent" />
         </div>
         <div>
@@ -279,19 +279,25 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             return (
               <Card 
                 key={index}
-                className="bg-card/50 border-border/30 transition-colors hover:border-accent/30"
+                className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card/50 border-border/30 hover:border-yellow-500/30 hover:shadow-yellow-500/10"
               >
-                <div className="p-5 text-center relative">
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                {/* Corner decoration */}
+                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-yellow-500/15 to-yellow-400/5 rounded-bl-[40px] -mr-4 -mt-4"></div>
+                
+                <div className="relative p-5 text-center">
                   {/* Step Number Badge */}
                   <div className="absolute top-3 left-3">
-                    <Badge variant="outline" className="bg-accent/10 border-accent/20 text-accent text-[10px] px-1.5">
-                      {step.step}
-                    </Badge>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/30">
+                      <span className="text-[10px] font-semibold text-yellow-500">{step.step}</span>
+                    </div>
                   </div>
                   
                   {/* Icon */}
-                  <div className="mx-auto mb-3 p-2.5 rounded-lg bg-accent/10 w-fit">
-                    <IconComponent className="h-5 w-5 text-accent" />
+                  <div className="mx-auto mb-3 w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 bg-gradient-to-br from-yellow-500/20 to-yellow-400/10">
+                    <IconComponent className="h-6 w-6 text-yellow-500" />
                   </div>
                   
                   {/* Title */}
@@ -315,7 +321,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       <div className="flex items-center gap-3 my-6">
         <div className="flex-1 h-px bg-border/50" />
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-          <Zap className="h-3.5 w-3.5 text-accent" />
+          <Zap className="h-3.5 w-3.5 text-yellow-400" />
           Limited Time Offers
         </span>
         <div className="flex-1 h-px bg-border/50" />
@@ -327,18 +333,23 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-            <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 text-xs font-bold">
+            <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 text-xs font-bold">
               <Clock className="h-3 w-3 mr-1" />
               24H FLASH DEAL
             </Badge>
           </div>
 
-          <Card className="bg-card/50 border-border/30 transition-colors hover:border-accent/30 h-full">
+          <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card/50 border-yellow-500/30 hover:border-yellow-500/40 hover:shadow-yellow-500/10 h-full">
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            {/* Corner decoration */}
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-yellow-500/15 to-yellow-400/5 rounded-bl-[40px] -mr-4 -mt-4"></div>
 
-            <CardContent className="p-6 pt-8 flex flex-col h-full">
+            <CardContent className="relative p-6 pt-8 flex flex-col h-full">
             {/* Package Name */}
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Star className="h-5 w-5 text-accent" />
+              <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
               <h3 className="text-lg font-bold text-foreground">MVP Flash Deal</h3>
             </div>
             
@@ -348,11 +359,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 <p className="text-sm text-muted-foreground line-through">
                   {formatCurrency(mvpPrice)}
                 </p>
-                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">
+                <Badge variant="outline" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
                   -{discountStrategy.discount_24h_percent}%
                 </Badge>
               </div>
-              <div className="text-4xl font-bold text-accent">
+              <div className="text-4xl font-bold text-yellow-400">
                 {formatCurrency(discountStrategy.price_24h_cents / 100)}
               </div>
               <p className="text-xs text-muted-foreground mt-1 font-medium">
@@ -426,9 +437,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </ul>
 
             {/* Bonuses */}
-            <div className="p-3 rounded-lg bg-muted/10 border border-border/30 mb-4">
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-4">
               <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-accent" />
+                <Sparkles className="h-3 w-3 text-amber-400" />
                 Exclusive 24H Bonuses:
               </p>
               <div className="space-y-1">
@@ -439,7 +450,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       {extendedSupportDays} days of priority email support with 24-hour response time instead of standard {baseSupportDays} days.
                     </InfoTooltip>
                   </span>
-                  <span className="text-accent font-semibold">$750 value</span>
+                  <span className="text-amber-400 font-semibold">$750 value</span>
                 </div>
                 <div className="flex justify-between text-xs items-center">
                   <span className="text-muted-foreground flex items-center gap-1">
@@ -448,34 +459,34 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       Project kickoff within 7 days instead of 14. Includes expedited requirements review.
                     </InfoTooltip>
                   </span>
-                  <span className="text-accent font-semibold">$1,500 value</span>
+                  <span className="text-amber-400 font-semibold">$1,500 value</span>
                 </div>
               </div>
-              <div className="mt-2 pt-2 border-t border-border/30 flex justify-between">
+              <div className="mt-2 pt-2 border-t border-amber-500/20 flex justify-between">
                 <span className="text-xs text-foreground font-bold">Total Bonus Value:</span>
-                <span className="text-xs text-accent font-bold">$2,250</span>
+                <span className="text-xs text-amber-400 font-bold">$2,250</span>
               </div>
             </div>
 
             {/* Prominent Timer */}
-            <div className="p-3 rounded-lg bg-accent/5 border border-accent/10 mb-4">
+            <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mb-4">
               <div className="flex items-center justify-center gap-2 text-foreground mb-2">
-                <Clock className="h-4 w-4 text-accent" />
+                <Clock className="h-4 w-4 text-yellow-400 animate-pulse" />
                 <span className="text-sm font-medium">Offer expires in:</span>
               </div>
               <div className="flex items-center justify-center gap-2">
-                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
-                  <span className="text-2xl font-bold text-accent">{hours.toString().padStart(2, '0')}</span>
+                <div className="bg-yellow-500/20 border border-yellow-500/30 px-3 py-2 rounded-lg">
+                  <span className="text-2xl font-bold text-yellow-400">{hours.toString().padStart(2, '0')}</span>
                   <span className="text-[10px] text-muted-foreground block">HOURS</span>
                 </div>
                 <span className="text-2xl font-bold text-muted-foreground">:</span>
-                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
-                  <span className="text-2xl font-bold text-accent">{minutes.toString().padStart(2, '0')}</span>
+                <div className="bg-yellow-500/20 border border-yellow-500/30 px-3 py-2 rounded-lg">
+                  <span className="text-2xl font-bold text-yellow-400">{minutes.toString().padStart(2, '0')}</span>
                   <span className="text-[10px] text-muted-foreground block">MINS</span>
                 </div>
                 <span className="text-2xl font-bold text-muted-foreground">:</span>
-                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
-                  <span className="text-2xl font-bold text-accent">{seconds.toString().padStart(2, '0')}</span>
+                <div className="bg-yellow-500/20 border border-yellow-500/30 px-3 py-2 rounded-lg">
+                  <span className="text-2xl font-bold text-yellow-400">{seconds.toString().padStart(2, '0')}</span>
                   <span className="text-[10px] text-muted-foreground block">SECS</span>
                 </div>
               </div>
@@ -487,7 +498,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 e.stopPropagation();
                 onScheduleCall?.();
               }}
-              className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-base py-6"
+              className="w-full gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-black hover:from-yellow-400 hover:to-amber-400 shadow-lg shadow-yellow-500/20 font-bold text-base py-6"
             >
               <Star className="h-5 w-5" />
               CLAIM 25% DISCOUNT NOW
@@ -531,18 +542,23 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
         <div className="relative h-full flex flex-col">
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-            <Badge className="bg-accent/10 text-accent border border-accent/20 px-3 py-1 text-xs font-bold">
+            <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 text-xs font-bold">
               <Star className="h-3 w-3 mr-1" />
               BEST VALUE - 30% OFF
             </Badge>
           </div>
 
-          <Card className="bg-card/50 border-border/30 transition-colors hover:border-accent/30 h-full">
+          <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card/50 border-yellow-500/30 hover:border-yellow-500/40 hover:shadow-yellow-500/10 h-full">
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            {/* Corner decoration */}
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-yellow-500/15 to-yellow-400/5 rounded-bl-[40px] -mr-4 -mt-4"></div>
 
-            <CardContent className="p-6 pt-8 flex flex-col h-full">
+            <CardContent className="relative p-6 pt-8 flex flex-col h-full">
             {/* Package Name */}
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Star className="h-5 w-5 text-accent" />
+              <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
               <h3 className="text-lg font-bold text-foreground">Complete Launch Bundle</h3>
             </div>
             
@@ -552,11 +568,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 <p className="text-sm text-muted-foreground line-through">
                   {formatCurrency(mvpPrice + marketingAnnualUaicode)}
                 </p>
-                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">
+                <Badge variant="outline" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
                   -{discountStrategy.bundle_discount_percent}% on MVP
                 </Badge>
               </div>
-              <div className="text-4xl font-bold text-accent">
+              <div className="text-4xl font-bold text-yellow-400">
                 {formatCurrency((discountStrategy.bundle_price_cents / 100) + marketingAnnualUaicode)}
               </div>
               <p className="text-xs text-muted-foreground mt-1 font-medium">
@@ -630,9 +646,9 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             </ul>
 
             {/* Exclusive Bonuses */}
-            <div className="p-3 rounded-lg bg-muted/10 border border-border/30 mb-4">
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-4">
               <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-accent" />
+                <Sparkles className="h-3 w-3 text-amber-400" />
                 Exclusive Bundle Bonuses:
               </p>
               <div className="space-y-1">
@@ -643,7 +659,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       15 months total hosting instead of 12. Saves 3x $299/month market rate.
                     </InfoTooltip>
                   </span>
-                  <span className="text-accent font-semibold">$897 value</span>
+                  <span className="text-amber-400 font-semibold">$897 value</span>
                 </div>
                 <div className="flex justify-between text-xs items-center">
                   <span className="text-muted-foreground flex items-center gap-1">
@@ -652,7 +668,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       VIP support with 4-hour response time during business hours. Direct access to senior developers.
                     </InfoTooltip>
                   </span>
-                  <span className="text-accent font-semibold">$1,500 value</span>
+                  <span className="text-amber-400 font-semibold">$1,500 value</span>
                 </div>
                 <div className="flex justify-between text-xs items-center">
                   <span className="text-muted-foreground flex items-center gap-1">
@@ -661,28 +677,28 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                       2-hour strategy session with marketing specialist. Includes competitive analysis and 90-day roadmap.
                     </InfoTooltip>
                   </span>
-                  <span className="text-accent font-semibold">$1,500 value</span>
+                  <span className="text-amber-400 font-semibold">$1,500 value</span>
                 </div>
               </div>
-              <div className="mt-2 pt-2 border-t border-border/30 flex justify-between">
+              <div className="mt-2 pt-2 border-t border-amber-500/20 flex justify-between">
                 <span className="text-xs text-foreground font-bold">Total Bonus Value:</span>
-                <span className="text-xs text-accent font-bold">$3,897</span>
+                <span className="text-xs text-amber-400 font-bold">$3,897</span>
               </div>
             </div>
 
             {/* Social Proof */}
-            <div className="mb-4 p-4 rounded-lg bg-muted/10 border border-border/30">
+            <div className="mb-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
               <div className="flex flex-col items-center gap-3">
                 <div className="flex -space-x-3">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-accent/10 border-2 border-card flex items-center justify-center">
+                    <div key={i} className="w-8 h-8 rounded-full bg-yellow-500/20 border-2 border-card flex items-center justify-center">
                       <span className="text-xs text-muted-foreground">👤</span>
                     </div>
                   ))}
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-semibold text-foreground">
-                    <span className="text-accent">127 founders</span> chose this bundle
+                    <span className="text-yellow-400">127 founders</span> chose this bundle
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-1">
                     Last month • Average rating: ⭐ 4.9/5
@@ -697,7 +713,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                 e.stopPropagation();
                 onScheduleCall?.();
               }}
-              className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-base py-6"
+              className="w-full gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-black hover:from-yellow-400 hover:to-amber-400 shadow-lg shadow-yellow-500/20 font-bold text-base py-6"
             >
               <Star className="h-5 w-5" />
               GET MAXIMUM SAVINGS
@@ -739,12 +755,12 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
       </div>
 
       {/* Marketing Billing Notice */}
-      <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-card/50 border border-border/30">
+      <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
         <div className="flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-accent flex-shrink-0" />
+          <AlertCircle className="h-4 w-4 text-amber-400 flex-shrink-0" />
           <p className="text-sm text-foreground">
             <span className="font-medium">Important:</span> Marketing costs are 
-            <span className="text-accent font-semibold"> only charged after your MVP is launched</span>
+            <span className="text-amber-400 font-semibold"> only charged after your MVP is launched</span>
           </p>
         </div>
         <p className="text-xs text-muted-foreground text-center">
