@@ -174,6 +174,7 @@ export interface ReportData {
   section_investment: unknown | null;
   opportunity_section: unknown | null;
   competitive_analysis_section: unknown | null;
+  marketing_intelligence_section: unknown | null;
 }
 
 // Helper function to safely get value with fallback
