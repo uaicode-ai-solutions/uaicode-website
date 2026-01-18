@@ -88,49 +88,44 @@ const MacroTrendsSection = () => {
           <CardContent className="p-6">
             <h3 className="text-sm font-medium text-foreground mb-5">Overview</h3>
 
-            <div className="space-y-4">
-              {/* Total trends */}
-              <div className="text-center py-4">
-                <div className="text-4xl font-bold text-accent mb-1">
-                  {macroTrends.length}
-                </div>
-                <div className="text-sm text-muted-foreground">Trends Identified</div>
+            {/* Big number */}
+            <div className="text-center mb-6">
+              <div className="text-5xl font-bold text-accent mb-1">
+                {macroTrends.length}
               </div>
+              <div className="text-sm text-muted-foreground">Trends Identified</div>
+            </div>
 
-              {/* Positive vs Negative */}
-              <div className="flex gap-3">
-                <div className="flex-1 p-3 rounded-lg bg-accent/10 border border-accent/20 text-center">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <ArrowUpRight className="h-4 w-4 text-accent" />
-                    <span className="text-xl font-bold text-accent">{positiveTrends}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">Favorable</div>
-                </div>
-                <div className="flex-1 p-3 rounded-lg bg-muted/20 border border-border/30 text-center">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <ArrowDownRight className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xl font-bold text-muted-foreground">{negativeTrends}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">Challenging</div>
-                </div>
+            {/* Stats with tooltips */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Favorable
+                  <InfoTooltip side="top" size="sm">
+                    Trends that create opportunities for your product in the market.
+                  </InfoTooltip>
+                </span>
+                <span className="font-bold text-accent">{positiveTrends}</span>
               </div>
-
-              {/* Trend balance indicator */}
-              <div className="pt-2">
-                <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                  <span>Market Favorability</span>
-                  <span>{macroTrends.length > 0 ? Math.round((positiveTrends / macroTrends.length) * 100) : 0}%</span>
-                </div>
-                <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-accent transition-all duration-500"
-                    style={{ 
-                      width: macroTrends.length > 0 
-                        ? `${(positiveTrends / macroTrends.length) * 100}%` 
-                        : "0%" 
-                    }}
-                  />
-                </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Challenging
+                  <InfoTooltip side="top" size="sm">
+                    Trends that may pose challenges or require strategic adaptation.
+                  </InfoTooltip>
+                </span>
+                <span className="font-bold text-foreground">{negativeTrends}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  Market Favorability
+                  <InfoTooltip side="top" size="sm">
+                    Percentage of trends that are favorable for your business opportunity.
+                  </InfoTooltip>
+                </span>
+                <span className="font-bold text-accent">
+                  {macroTrends.length > 0 ? Math.round((positiveTrends / macroTrends.length) * 100) : 0}%
+                </span>
               </div>
             </div>
           </CardContent>
@@ -139,16 +134,37 @@ const MacroTrendsSection = () => {
         {/* Area Chart */}
         <Card className="bg-card/50 border-border/30 lg:col-span-2">
           <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-foreground mb-4">Trend Strength</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-sm font-medium text-foreground">Trend Strength</h3>
+              <InfoTooltip side="top" size="sm">
+                Visual representation of each trend's market impact strength over time.
+              </InfoTooltip>
+            </div>
 
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
+                    {/* Amber gradient for positive area */}
                     <linearGradient id="colorPositive" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.4} />
+                      <stop offset="50%" stopColor="#FBBF24" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#FCD34D" stopOpacity={0} />
                     </linearGradient>
+                    {/* Stroke gradient for positive line */}
+                    <linearGradient id="trendPositiveStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#F59E0B" />
+                      <stop offset="50%" stopColor="#FBBF24" />
+                      <stop offset="100%" stopColor="#FCD34D" />
+                    </linearGradient>
+                    {/* Glow filter */}
+                    <filter id="trendGlow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
                     <linearGradient id="colorNegative" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0} />
@@ -183,9 +199,10 @@ const MacroTrendsSection = () => {
                   <Area
                     type="monotone"
                     dataKey="positive"
-                    stroke="hsl(var(--accent))"
+                    stroke="url(#trendPositiveStroke)"
                     fill="url(#colorPositive)"
                     strokeWidth={2}
+                    filter="url(#trendGlow)"
                   />
                   <Area
                     type="monotone"
@@ -208,7 +225,9 @@ const MacroTrendsSection = () => {
           const strengthValue = strengthToValue(trend.strength);
 
           return (
-            <Card key={index} className="bg-card/50 border-border/30">
+            <Card key={index} className={`border-border/30 hover:border-accent/30 transition-colors ${
+              isPositive ? "bg-accent/5" : "bg-card/50"
+            }`}>
               <CardContent className="p-5">
                 <div className="flex items-start gap-3">
                   {/* Icon */}
@@ -255,15 +274,14 @@ const MacroTrendsSection = () => {
                     )}
 
                     {/* Strength indicator bar */}
-                    <div className="mt-3 h-1 bg-muted/30 rounded-full overflow-hidden">
+                    <div className="mt-3 h-2 bg-muted/30 rounded-full overflow-hidden">
                       <div
-                        className={`h-full transition-all duration-500 ${
-                          isPositive ? "bg-accent" : "bg-muted-foreground"
+                        className={`h-full transition-all duration-500 rounded-full ${
+                          isPositive 
+                            ? "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300" 
+                            : "bg-muted-foreground/50"
                         }`}
-                        style={{ 
-                          width: `${strengthValue}%`,
-                          opacity: isPositive ? 1 : 0.5
-                        }}
+                        style={{ width: `${strengthValue}%` }}
                       />
                     </div>
                   </div>
