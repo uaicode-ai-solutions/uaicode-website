@@ -12,15 +12,15 @@ import { Badge } from "@/components/ui/badge";
 
 // Config for competitor type badges
 const typeConfig: Record<string, { color: string; bgColor: string; label: string }> = {
-  direct: { color: "text-red-400", bgColor: "bg-red-500/20", label: "Direct" },
-  indirect: { color: "text-muted-foreground", bgColor: "bg-muted", label: "Indirect" },
+  direct: { color: "text-amber-500", bgColor: "bg-amber-500/20", label: "Direct" },
+  indirect: { color: "text-amber-400", bgColor: "bg-amber-400/10", label: "Indirect" },
 };
 
 // Config for priority score badges
 const priorityConfig: Record<string, { color: string; bgColor: string; label: string }> = {
-  high: { color: "text-red-400", bgColor: "bg-red-500/20", label: "High" },
-  medium: { color: "text-amber-400", bgColor: "bg-amber-500/20", label: "Medium" },
-  low: { color: "text-green-400", bgColor: "bg-green-500/20", label: "Low" },
+  high: { color: "text-amber-500", bgColor: "bg-amber-500/20", label: "High" },
+  medium: { color: "text-amber-400", bgColor: "bg-amber-400/15", label: "Medium" },
+  low: { color: "text-amber-300", bgColor: "bg-amber-300/10", label: "Low" },
 };
 
 const CompetitorsDifferentiationSection = () => {
@@ -95,7 +95,7 @@ const CompetitorsDifferentiationSection = () => {
                     <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center flex-shrink-0">
                       <span className="text-xs font-bold text-amber-500">{index + 1}</span>
                     </div>
-                    <span className="font-semibold text-foreground text-sm truncate">{competitor.name}</span>
+                    <span className="font-semibold text-gradient-gold text-sm truncate">{competitor.name}</span>
                     {competitor.website && (
                       <a 
                         href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`} 
@@ -103,7 +103,7 @@ const CompetitorsDifferentiationSection = () => {
                         rel="noopener noreferrer"
                         className="flex-shrink-0"
                       >
-                        <Globe className="w-4 h-4 text-amber-400 hover:text-amber-300 cursor-pointer transition-colors" />
+                        <Globe className="w-4 h-4 text-gradient-gold hover:text-amber-300 cursor-pointer transition-colors" />
                       </a>
                     )}
                   </div>
@@ -118,7 +118,7 @@ const CompetitorsDifferentiationSection = () => {
                 </div>
                 
                 {/* Description */}
-                <p className="text-xs text-muted-foreground line-clamp-2">
+                <p className="text-xs text-muted-foreground">
                   {competitor.description}
                 </p>
                 
@@ -127,7 +127,7 @@ const CompetitorsDifferentiationSection = () => {
                   <div className="flex items-center gap-2 text-xs">
                     <Tag className="w-3 h-3 text-accent" />
                     <span className="text-muted-foreground">Price Range:</span>
-                    <span className="font-medium text-foreground">{competitor.priceRange}</span>
+                    <span className="font-medium text-gradient-gold">{competitor.priceRange}</span>
                   </div>
                 )}
                 
@@ -138,7 +138,7 @@ const CompetitorsDifferentiationSection = () => {
                       <Zap className="w-3 h-3" /> Features:
                     </p>
                     <div className="flex flex-wrap gap-1">
-                      {competitor.features.slice(0, 4).map((feature, i) => (
+                      {competitor.features.map((feature, i) => (
                         <span 
                           key={i} 
                           className="text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-foreground"
@@ -146,11 +146,6 @@ const CompetitorsDifferentiationSection = () => {
                           {feature}
                         </span>
                       ))}
-                      {competitor.features.length > 4 && (
-                        <span className="text-[10px] text-muted-foreground">
-                          +{competitor.features.length - 4} more
-                        </span>
-                      )}
                     </div>
                   </div>
                 )}
@@ -184,11 +179,15 @@ const CompetitorsDifferentiationSection = () => {
                 
                 {/* Footer: Price + Model */}
                 <div className="flex justify-between items-end pt-2 border-t border-border/30">
-                  <div>
-                    <span className="text-xl font-bold text-foreground">
-                      ${competitor.price}
-                    </span>
-                    <span className="text-xs text-muted-foreground">/month</span>
+                  <div className="flex flex-col">
+                    <div>
+                      <span className="text-xl font-bold text-gradient-gold">
+                        ${competitor.price}
+                      </span>
+                      <span className="text-xs text-muted-foreground">/month</span>
+                      <span className="text-gradient-gold text-sm ml-0.5">*</span>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground">*today's price</span>
                   </div>
                   <PricingBadge modelId={competitor.priceModel} />
                 </div>
