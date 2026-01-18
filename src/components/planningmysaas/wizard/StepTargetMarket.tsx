@@ -14,6 +14,7 @@ import {
   HelpCircle,
   Briefcase,
   Home,
+  Globe2,
 } from "lucide-react";
 
 const customerTypes = [
@@ -44,12 +45,20 @@ const marketTypes = [
   { id: "internal", title: "Internal", description: "SaaS for internal company use", icon: Home },
 ];
 
+const geographicRegions = [
+  { id: "us", title: "United States", description: "North American market", icon: Flag },
+  { id: "brazil", title: "Brazil", description: "Latin American market", icon: Globe },
+  { id: "europe", title: "Europe", description: "European Union market", icon: Globe2 },
+  { id: "asia", title: "Asia Pacific", description: "APAC region market", icon: Globe2 },
+];
+
 interface StepTargetMarketProps {
   data: {
     customerTypes: string[];
     marketSize: string;
     targetAudience: string;
     marketType: string;
+    geographicRegion: string;
   };
   onChange: (field: string, value: string | string[]) => void;
 }
@@ -167,6 +176,30 @@ const StepTargetMarket = ({ data, onChange }: StepTargetMarketProps) => {
               description={type.description}
               selected={data.marketType === type.id}
               onClick={() => onChange("marketType", type.id)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Geographic Region - Single Select */}
+      <div className="space-y-4">
+        <div>
+          <Label className="text-foreground text-lg">
+            What is your target geographic region? <span className="text-accent">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select your primary market region
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {geographicRegions.map((region) => (
+            <SelectableCard
+              key={region.id}
+              icon={region.icon}
+              title={region.title}
+              description={region.description}
+              selected={data.geographicRegion === region.id}
+              onClick={() => onChange("geographicRegion", region.id)}
             />
           ))}
         </div>

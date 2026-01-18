@@ -107,6 +107,9 @@ export interface CompetitorUI {
   features: string[];
   strengths: string[];
   weaknesses: string[];
+  priceRange: string;
+  competitorType: string;
+  priorityScore: string;
 }
 
 export function transformCompetitorToUI(competitor: CompetitorFromAPI): CompetitorUI {
@@ -119,6 +122,9 @@ export function transformCompetitorToUI(competitor: CompetitorFromAPI): Competit
     features: competitor.saas_app_features || [],
     strengths: competitor.saas_app_strengths || [],
     weaknesses: competitor.saas_app_weakness || [],
+    priceRange: competitor.saas_app_price_range || '',
+    competitorType: competitor.competitor_type || 'direct',
+    priorityScore: competitor.priority_score || 'medium',
   };
 }
 

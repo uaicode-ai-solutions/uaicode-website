@@ -1,8 +1,17 @@
-import { Target, TrendingUp, CheckCircle2, Globe, Crosshair, Lightbulb } from "lucide-react";
+import { Target, TrendingUp, CheckCircle2, Globe, Crosshair, Lightbulb, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { Badge } from "@/components/ui/badge";
 import { useReportContext } from "@/contexts/ReportContext";
 import { safeValue, OpportunitySection } from "@/types/report";
+
+// Geographic region labels
+const regionLabels: Record<string, string> = {
+  us: "United States",
+  brazil: "Brazil",
+  europe: "Europe",
+  asia: "Asia Pacific",
+};
 
 // Industry ID to label mapping
 const industryLabels: Record<string, string> = {
@@ -68,6 +77,12 @@ const MarketOpportunitySection = () => {
 
   // Parse opportunity_section JSONB with safe casting
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
+  
+  // Get geographic region from wizard or fallback to sam_geographic_focus
+  // Cast to unknown first to avoid TypeScript overlap error
+  const rawOpportunityData = opportunityData as unknown as Record<string, unknown> | null;
+  const geographicRegion = report?.geographic_region || 
+    (rawOpportunityData?.sam_geographic_focus as string) || "";
 
   // Use opportunity_section data with formatting applied
   const tam = formatMarketValue(opportunityData?.tam_value || safeValue(reportData?.opportunity_tam));
@@ -130,19 +145,31 @@ const MarketOpportunitySection = () => {
   return (
     <section id="market-opportunity" className="space-y-6 animate-fade-in">
       {/* Section Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
-          <Target className="h-5 w-5 text-accent" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-foreground">The Opportunity</h2>
-            <InfoTooltip side="right" size="sm">
-              Market analysis including TAM, SAM, SOM calculations and growth potential.
-            </InfoTooltip>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Target className="h-5 w-5 text-accent" />
           </div>
-          <p className="text-sm text-muted-foreground">Market size and growth potential</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-foreground">The Opportunity</h2>
+              <InfoTooltip side="right" size="sm">
+                Market analysis including TAM, SAM, SOM calculations and growth potential.
+              </InfoTooltip>
+            </div>
+            <p className="text-sm text-muted-foreground">Market size and growth potential</p>
+          </div>
         </div>
+        
+        {/* Geographic Region Badge */}
+        {geographicRegion && (
+          <Badge variant="outline" className="flex items-center gap-1.5 bg-accent/10 border-accent/30 text-accent px-3 py-1">
+            <MapPin className="h-3.5 w-3.5" />
+            <span className="text-sm font-medium">
+              {regionLabels[geographicRegion] || geographicRegion}
+            </span>
+          </Badge>
+        )}
       </div>
 
       {/* Two Cards Grid */}

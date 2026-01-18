@@ -386,6 +386,7 @@ export type Database = {
           created_at: string
           customer_types: string[] | null
           description: string | null
+          geographic_region: string | null
           goal: string | null
           goal_other: string | null
           id: string
@@ -412,6 +413,7 @@ export type Database = {
           created_at?: string
           customer_types?: string[] | null
           description?: string | null
+          geographic_region?: string | null
           goal?: string | null
           goal_other?: string | null
           id?: string
@@ -438,6 +440,7 @@ export type Database = {
           created_at?: string
           customer_types?: string[] | null
           description?: string | null
+          geographic_region?: string | null
           goal?: string | null
           goal_other?: string | null
           id?: string

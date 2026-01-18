@@ -1,4 +1,4 @@
-import { Swords, Globe, Tag, Trophy, Zap } from "lucide-react";
+import { Swords, Globe, Tag, Lightbulb, CheckCircle2, AlertTriangle, ThumbsUp, ThumbsDown, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
@@ -8,9 +8,23 @@ import {
   getCompetitorsForUI,
 } from "@/lib/competitiveAnalysisUtils";
 import { PricingBadge } from "@/components/planningmysaas/dashboard/ui/PricingBadge";
+import { Badge } from "@/components/ui/badge";
+
+// Config for competitor type badges
+const typeConfig: Record<string, { color: string; bgColor: string; label: string }> = {
+  direct: { color: "text-red-400", bgColor: "bg-red-500/20", label: "Direct" },
+  indirect: { color: "text-muted-foreground", bgColor: "bg-muted", label: "Indirect" },
+};
+
+// Config for priority score badges
+const priorityConfig: Record<string, { color: string; bgColor: string; label: string }> = {
+  high: { color: "text-red-400", bgColor: "bg-red-500/20", label: "High" },
+  medium: { color: "text-amber-400", bgColor: "bg-amber-500/20", label: "Medium" },
+  low: { color: "text-green-400", bgColor: "bg-green-500/20", label: "Low" },
+};
 
 const CompetitorsDifferentiationSection = () => {
-  const { report, reportData } = useReportContext();
+  const { reportData } = useReportContext();
   
   // Parse competitive analysis section from report data
   const competitiveData = parseJsonField<CompetitiveAnalysisSectionData>(
@@ -21,42 +35,10 @@ const CompetitorsDifferentiationSection = () => {
   // Get competitors transformed for UI
   const competitors = getCompetitorsForUI(competitiveData);
   
-  // Get selected features as competitive advantages (from wizard data)
-  const selectedFeatures = parseJsonField<string[]>(report?.selected_features, []);
-  
-  // Feature labels for display
-  const featureLabels: Record<string, string> = {
-    'auth': 'User Authentication & Authorization',
-    'profiles': 'User Profile Management',
-    'crud': 'Simple Database CRUD Operations',
-    'reporting': 'Basic Reporting & Analytics',
-    'notifications': 'Email Notifications & Alerts',
-    'admin': 'Admin Dashboard',
-    'responsive': 'Mobile-first Design',
-    'security': 'Security Best Practices',
-    'advancedAnalytics': 'Advanced Analytics Dashboard',
-    'apiIntegrations': 'API Integrations',
-    'payments': 'Payment Processing & Billing',
-    'roles': 'Role-based Access Control',
-    'search': 'Advanced Search & Filtering',
-    'fileUpload': 'File Upload & Management',
-    'realtime': 'Real-time Updates',
-    'workflows': 'Workflow Automation',
-    'advancedReporting': 'Advanced Reporting',
-    'emailMarketing': 'Email Marketing Integration',
-    'ai': 'AI-powered Features',
-    'dataAnalytics': 'Data Analytics & Insights',
-    'multiTenant': 'Multi-tenant Architecture',
-    'sso': 'Single Sign-On (SSO)',
-    'customIntegrations': 'Custom Integrations',
-    'apiManagement': 'API Management',
-    'collaboration': 'Team Collaboration Tools',
-    'automation': 'Process Automation',
-    'customReporting': 'Custom Report Builder',
-    'support': 'Priority Support System',
-    'inventory': 'Inventory Management System',
-    'multiLocation': 'Multi-location Support',
-  };
+  // Get market gaps and common features
+  const marketGaps = competitiveData?.market_gaps_identified || [];
+  const commonFeatures = competitiveData?.common_features || [];
+  const averagePricingRange = competitiveData?.average_pricing_range || "";
   
   // Calculate max price for chart
   const maxPrice = competitors.length > 0 
@@ -91,53 +73,132 @@ const CompetitorsDifferentiationSection = () => {
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold text-foreground">Competitive Analysis</h2>
             <InfoTooltip side="right" size="sm">
-              Analysis of your main competitors and your unique advantages in the market.
+              Analysis of your main competitors and market opportunities.
             </InfoTooltip>
           </div>
           <p className="text-sm text-muted-foreground">Know your competition</p>
         </div>
       </div>
 
-      {/* Competitors Grid */}
+      {/* Competitors Grid - Expanded Cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {competitors.slice(0, 6).map((competitor, index) => (
-          <Card key={index} className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors flex flex-col h-full">
-            <CardContent className="p-4 flex flex-col flex-1">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center">
-                    <span className="text-xs font-bold text-amber-500">{index + 1}</span>
+        {competitors.slice(0, 6).map((competitor, index) => {
+          const typeStyle = typeConfig[competitor.competitorType] || typeConfig.direct;
+          const priorityStyle = priorityConfig[competitor.priorityScore] || priorityConfig.medium;
+          
+          return (
+            <Card key={index} className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors flex flex-col">
+              <CardContent className="p-4 flex flex-col flex-1 space-y-3">
+                {/* Header: Name + Badges */}
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-bold text-amber-500">{index + 1}</span>
+                    </div>
+                    <span className="font-semibold text-foreground text-sm truncate">{competitor.name}</span>
+                    {competitor.website && (
+                      <a 
+                        href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0"
+                      >
+                        <Globe className="w-4 h-4 text-amber-400 hover:text-amber-300 cursor-pointer transition-colors" />
+                      </a>
+                    )}
                   </div>
-                  <span className="font-semibold text-foreground text-sm">{competitor.name}</span>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${typeStyle.bgColor} ${typeStyle.color} border-0`}>
+                      {typeStyle.label}
+                    </Badge>
+                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${priorityStyle.bgColor} ${priorityStyle.color} border-0`}>
+                      {priorityStyle.label}
+                    </Badge>
+                  </div>
                 </div>
-                {competitor.website && (
-                  <a 
-                    href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                  >
-                    <Globe className="w-4 h-4 text-amber-400 hover:text-amber-300 cursor-pointer transition-colors" />
-                  </a>
+                
+                {/* Description */}
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  {competitor.description}
+                </p>
+                
+                {/* Price Range */}
+                {competitor.priceRange && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <Tag className="w-3 h-3 text-accent" />
+                    <span className="text-muted-foreground">Price Range:</span>
+                    <span className="font-medium text-foreground">{competitor.priceRange}</span>
+                  </div>
                 )}
-              </div>
-              <p className="text-xs text-muted-foreground mb-4 flex-1 line-clamp-3">
-                {competitor.description}
-              </p>
-              <div className="flex justify-between items-end mt-auto">
-                <div>
-                  <span className="text-2xl font-bold text-foreground">
-                    ${competitor.price}
-                  </span>
-                  <span className="text-xs text-muted-foreground">/month</span>
+                
+                {/* Features */}
+                {competitor.features.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                      <Zap className="w-3 h-3" /> Features:
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {competitor.features.slice(0, 4).map((feature, i) => (
+                        <span 
+                          key={i} 
+                          className="text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-foreground"
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                      {competitor.features.length > 4 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          +{competitor.features.length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Strengths & Weaknesses */}
+                <div className="grid grid-cols-2 gap-2 mt-auto pt-2 border-t border-border/30">
+                  {/* Strengths */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-medium text-green-400 flex items-center gap-1">
+                      <ThumbsUp className="w-3 h-3" /> Strengths
+                    </p>
+                    {competitor.strengths.slice(0, 2).map((strength, i) => (
+                      <p key={i} className="text-[10px] text-muted-foreground line-clamp-1">
+                        • {strength}
+                      </p>
+                    ))}
+                  </div>
+                  
+                  {/* Weaknesses */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-medium text-red-400 flex items-center gap-1">
+                      <ThumbsDown className="w-3 h-3" /> Weaknesses
+                    </p>
+                    {competitor.weaknesses.slice(0, 2).map((weakness, i) => (
+                      <p key={i} className="text-[10px] text-muted-foreground line-clamp-1">
+                        • {weakness}
+                      </p>
+                    ))}
+                  </div>
                 </div>
-                <PricingBadge modelId={competitor.priceModel} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                
+                {/* Footer: Price + Model */}
+                <div className="flex justify-between items-end pt-2 border-t border-border/30">
+                  <div>
+                    <span className="text-xl font-bold text-foreground">
+                      ${competitor.price}
+                    </span>
+                    <span className="text-xs text-muted-foreground">/month</span>
+                  </div>
+                  <PricingBadge modelId={competitor.priceModel} />
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* Bottom Row: Price Positioning + Your Advantages */}
+      {/* Bottom Row: Price Positioning + Market Gaps/Common Features */}
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Price Positioning Chart */}
         <Card className="bg-card/50 border-border/30">
@@ -162,7 +223,7 @@ const CompetitorsDifferentiationSection = () => {
                       style={{ width: `${maxPrice > 0 ? (competitor.price / maxPrice) * 100 : 0}%` }}
                     />
                   </div>
-                  <span className="text-xs font-medium text-foreground w-16 text-right">
+                  <span className="text-sm font-medium text-foreground w-20 text-right">
                     {competitor.price === 0 ? "Free" : `$${competitor.price}/mo`}
                   </span>
                 </div>
@@ -170,43 +231,80 @@ const CompetitorsDifferentiationSection = () => {
               
               {/* Legend below chart */}
               <div className="pt-3 mt-3 border-t border-border/30">
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                   {competitors.slice(0, 6).map((competitor, index) => (
                     <div key={index} className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-amber-500 w-4">{index + 1}.</span>
-                      <span className="text-xs text-muted-foreground truncate">{competitor.name}</span>
+                      <span className="text-sm font-bold text-amber-500 w-5">{index + 1}.</span>
+                      <span className="text-sm text-muted-foreground truncate">{competitor.name}</span>
                     </div>
                   ))}
                 </div>
+                
+                {/* Average pricing range */}
+                {averagePricingRange && (
+                  <div className="mt-3 pt-3 border-t border-border/30 text-center">
+                    <span className="text-sm text-muted-foreground italic">
+                      Market average: <span className="font-medium text-foreground">{averagePricingRange}</span>
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Your Competitive Advantages */}
+        {/* Market Gaps & Common Features */}
         <Card className="bg-card/50 border-border/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <Trophy className="w-4 h-4 text-amber-400" />
-              <h3 className="font-semibold text-foreground text-sm">Your Competitive Advantages</h3>
-              <InfoTooltip size="sm">
-                Features and capabilities that set you apart from competitors.
-              </InfoTooltip>
-            </div>
-            <div className="grid md:grid-cols-2 gap-2">
-              {selectedFeatures.map((feature, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-center gap-2 p-2 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/30 transition-colors"
-                >
-                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
-                    <Zap className="w-3 h-3 text-amber-500" />
-                  </div>
-                  <span className="text-xs text-foreground">
-                    {featureLabels[feature] || feature}
-                  </span>
+          <CardContent className="p-4 space-y-4">
+            {/* Market Gaps */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Lightbulb className="w-4 h-4 text-amber-400" />
+                <h3 className="font-semibold text-foreground text-sm">Market Gaps (Opportunities)</h3>
+                <InfoTooltip size="sm">
+                  Unmet needs in the market that represent opportunities for differentiation.
+                </InfoTooltip>
+              </div>
+              {marketGaps.length > 0 ? (
+                <div className="space-y-2">
+                  {marketGaps.map((gap, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-start gap-2 p-2 rounded-lg bg-amber-500/5 border border-amber-500/10"
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-xs text-foreground">{gap}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <p className="text-xs text-muted-foreground italic">No market gaps identified</p>
+              )}
+            </div>
+            
+            {/* Common Features */}
+            <div className="pt-3 border-t border-border/30">
+              <div className="flex items-center gap-2 mb-3">
+                <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
+                <h3 className="font-semibold text-foreground text-sm">Common Features in Market</h3>
+                <InfoTooltip size="sm">
+                  Features that are standard across competitors - table stakes.
+                </InfoTooltip>
+              </div>
+              {commonFeatures.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {commonFeatures.map((feature, index) => (
+                    <span 
+                      key={index} 
+                      className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground"
+                    >
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">No common features identified</p>
+              )}
             </div>
           </CardContent>
         </Card>
