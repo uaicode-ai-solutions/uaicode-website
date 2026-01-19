@@ -49,17 +49,34 @@ export function parseMoneyRange(value: string | null | undefined): MoneyRange | 
 
 /**
  * Parse a single money value like "$12,000" or "12000"
+ * Also handles numbers and scientific notation strings
  * Returns value in dollars
  */
-export function parseMoneyValue(value: string | null | undefined): number | null {
-  if (!value) return null;
+export function parseMoneyValue(value: string | number | null | undefined): number | null {
+  if (value === null || value === undefined) return null;
   
-  const cleaned = value.replace(/\$/g, '').replace(/,/g, '').trim();
-  const match = cleaned.match(/([\d.]+)/);
-  if (match) {
-    const val = parseFloat(match[1]);
-    return isNaN(val) ? null : val;
+  // If it's already a number, return it directly
+  if (typeof value === 'number') {
+    return isNaN(value) ? null : value;
   }
+  
+  // Handle string - could be formatted or scientific notation
+  if (typeof value === 'string') {
+    // First try Number() to handle scientific notation like "1.45e+07"
+    const directNum = Number(value);
+    if (!isNaN(directNum) && value.match(/^[\d.e+-]+$/i)) {
+      return directNum;
+    }
+    
+    // Otherwise parse formatted string like "$12,000"
+    const cleaned = value.replace(/\$/g, '').replace(/,/g, '').trim();
+    const match = cleaned.match(/([\d.]+)/);
+    if (match) {
+      const val = parseFloat(match[1]);
+      return isNaN(val) ? null : val;
+    }
+  }
+  
   return null;
 }
 
