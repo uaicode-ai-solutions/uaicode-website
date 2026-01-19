@@ -5,9 +5,12 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
 import { DemandValidation, OpportunitySection } from "@/types/report";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 const DemandValidationSection = () => {
-  const { report, reportData } = useReportContext();
+  const { report, reportData, reportId } = useReportContext();
+  const wizardId = reportData?.wizard_id;
   
   // UNIFIED: Get pain points from opportunity_section (primary source)
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
@@ -16,10 +19,29 @@ const DemandValidationSection = () => {
   // Parse demand validation from report (for other fields)
   const rawDemandValidation = parseJsonField<DemandValidation>(report?.demand_validation, null);
   
+  // Smart fallback for key metrics
+  const { value: searchVolume, isLoading: searchVolumeLoading } = useSmartFallbackField<number>({
+    fieldPath: "demand_validation.searchVolume",
+    currentValue: rawDemandValidation?.searchVolume,
+  });
+  
+  const { value: trendsScore, isLoading: trendsScoreLoading } = useSmartFallbackField<number>({
+    fieldPath: "demand_validation.trendsScore",
+    currentValue: rawDemandValidation?.trendsScore,
+  });
+  
+  const { value: growthRate, isLoading: growthRateLoading } = useSmartFallbackField<string>({
+    fieldPath: "demand_validation.growthRate",
+    currentValue: rawDemandValidation?.growthRate,
+  });
+  
   // Merge pain points from opportunity_section into demand validation
   const demandValidation = rawDemandValidation 
     ? {
         ...rawDemandValidation,
+        searchVolume: searchVolume ?? rawDemandValidation.searchVolume ?? 0,
+        trendsScore: trendsScore ?? rawDemandValidation.trendsScore ?? 0,
+        growthRate: growthRate ?? rawDemandValidation.growthRate ?? "0%",
         // Use opportunity_section pain points if available, otherwise use demand_validation ones
         painPoints: painPointsFromOpportunity.length > 0 
           ? painPointsFromOpportunity.map(pp => ({
@@ -95,15 +117,33 @@ const DemandValidationSection = () => {
             
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-3 rounded-lg bg-muted/20 border border-border/30">
-                <p className="text-2xl font-bold text-accent">{((demandValidation.searchVolume ?? 0) / 1000).toFixed(0)}K</p>
+                <p className="text-2xl font-bold text-accent">
+                  {searchVolumeLoading ? (
+                    <InlineValueSkeleton size="lg" />
+                  ) : (
+                    `${((demandValidation.searchVolume ?? 0) / 1000).toFixed(0)}K`
+                  )}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">Monthly Searches</p>
               </div>
               <div className="text-center p-3 rounded-lg bg-muted/20 border border-border/30">
-                <p className="text-2xl font-bold text-accent">{demandValidation.trendsScore ?? 0}</p>
+                <p className="text-2xl font-bold text-accent">
+                  {trendsScoreLoading ? (
+                    <InlineValueSkeleton size="lg" />
+                  ) : (
+                    demandValidation.trendsScore ?? 0
+                  )}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">Trends Score</p>
               </div>
               <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                <p className="text-2xl font-bold text-green-400">{demandValidation.growthRate ?? '0%'}</p>
+                <p className="text-2xl font-bold text-green-400">
+                  {growthRateLoading ? (
+                    <InlineValueSkeleton size="lg" />
+                  ) : (
+                    demandValidation.growthRate ?? '0%'
+                  )}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">YoY Growth</p>
               </div>
             </div>
@@ -236,7 +276,7 @@ const DemandValidationSection = () => {
             <CheckCircle2 className="h-4 w-4 text-green-400" />
           </div>
           <p className="text-sm text-foreground/90">
-            Strong demand signals detected with {demandValidation.trendsScore ?? 0}/100 trends score and {demandValidation.growthRate ?? '0%'} year-over-year growth. 
+            Strong demand signals detected with {trendsScoreLoading ? <InlineValueSkeleton size="sm" /> : (demandValidation.trendsScore ?? 0)}/100 trends score and {growthRateLoading ? <InlineValueSkeleton size="sm" /> : (demandValidation.growthRate ?? '0%')} year-over-year growth. 
             Customer pain points are validated across multiple sources, indicating a genuine market need for this solution.
           </p>
         </div>

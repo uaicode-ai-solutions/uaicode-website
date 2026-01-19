@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { InlineValueSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 
 interface SuccessMetricsData {
   northStar: {
@@ -20,12 +22,19 @@ interface SuccessMetricsData {
 }
 
 const SuccessMetricsSection = () => {
-  const { report } = useReportContext();
+  const { report, reportData, reportId } = useReportContext();
+  const wizardId = reportData?.wizard_id;
   
   // Parse success metrics from report
   const rawSuccessMetrics = parseJsonField<SuccessMetricsData>(report?.success_metrics, null);
   
-  const successMetrics = rawSuccessMetrics || emptyStates.successMetrics;
+  // Smart fallback for success metrics
+  const { value: successMetricsFallback, isLoading } = useSmartFallbackField<SuccessMetricsData>({
+    fieldPath: "success_metrics",
+    currentValue: rawSuccessMetrics,
+  });
+  
+  const successMetrics = successMetricsFallback ?? rawSuccessMetrics ?? emptyStates.successMetrics;
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -45,8 +54,30 @@ const SuccessMetricsSection = () => {
     }
   };
   
+  // Early return if no data and loading
+  if (!rawSuccessMetrics && isLoading) {
+    return (
+      <section id="success-metrics" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Flag className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Success Milestones</h2>
+            <p className="text-sm text-muted-foreground">Loading success metrics...</p>
+          </div>
+        </div>
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-6">
+            <CardContentSkeleton lines={4} />
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
+  
   // Early return if no data
-  if (!rawSuccessMetrics) {
+  if (!rawSuccessMetrics && !successMetricsFallback) {
     return (
       <section id="success-metrics" className="space-y-6 animate-fade-in">
         <div className="flex items-center gap-3">
@@ -91,24 +122,34 @@ const SuccessMetricsSection = () => {
             </Badge>
           </div>
           
-          <p className="text-2xl font-bold text-accent mb-4">{successMetrics.northStar.metric}</p>
+          <p className="text-2xl font-bold text-accent mb-4">
+            {isLoading ? <InlineValueSkeleton size="xl" /> : successMetrics.northStar.metric}
+          </p>
           
           <div className="grid grid-cols-4 gap-4 mb-4">
             <div className="text-center p-3 rounded-lg bg-muted/20 border border-border/30">
               <p className="text-xs text-muted-foreground">Current</p>
-              <p className="text-xl font-bold text-foreground">{successMetrics.northStar.current}</p>
+              <p className="text-xl font-bold text-foreground">
+                {isLoading ? <InlineValueSkeleton size="md" /> : successMetrics.northStar.current}
+              </p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/20 border border-border/30">
               <p className="text-xs text-muted-foreground">Month 3</p>
-              <p className="text-xl font-bold text-foreground">{successMetrics.northStar.month3Target}</p>
+              <p className="text-xl font-bold text-foreground">
+                {isLoading ? <InlineValueSkeleton size="md" /> : successMetrics.northStar.month3Target}
+              </p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/20 border border-border/30">
               <p className="text-xs text-muted-foreground">Month 6</p>
-              <p className="text-xl font-bold text-foreground">{successMetrics.northStar.month6Target}</p>
+              <p className="text-xl font-bold text-foreground">
+                {isLoading ? <InlineValueSkeleton size="md" /> : successMetrics.northStar.month6Target}
+              </p>
             </div>
             <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/20">
               <p className="text-xs text-muted-foreground">Month 12</p>
-              <p className="text-xl font-bold text-green-400">{successMetrics.northStar.month12Target}</p>
+              <p className="text-xl font-bold text-green-400">
+                {isLoading ? <InlineValueSkeleton size="md" /> : successMetrics.northStar.month12Target}
+              </p>
             </div>
           </div>
           
