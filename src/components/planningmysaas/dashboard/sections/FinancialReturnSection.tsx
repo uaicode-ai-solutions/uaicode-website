@@ -28,25 +28,25 @@ const FinancialReturnSection = () => {
   // Use the new hook to extract all financial metrics from JSONB
   const metrics = useFinancialMetrics(reportData);
   
-  // Apply smart fallback for key metrics that might be missing
-  const { value: breakEvenValue, isLoading: breakEvenLoading } = useSmartFallbackField({
-    fieldPath: "section_investment.break_even_months",
-    currentValue: metrics.breakEvenMonths !== "..." ? metrics.breakEvenMonths : undefined,
-  });
+  // NOTE: break_even and ROI are now ALWAYS calculated locally by useFinancialMetrics
+  // No need for smart fallback on these - they're derived from MRR/investment data
+  const breakEvenLoading = false;
+  const breakEvenValue = metrics.breakEvenMonths;
   
-  const { value: roiValue, isLoading: roiLoading } = useSmartFallbackField({
-    fieldPath: "section_investment.expected_roi",
-    currentValue: metrics.roiYear1 !== "..." ? metrics.roiYear1 : undefined,
-  });
+  const roiLoading = false;
+  const roiValue = metrics.roiYear1;
   
+  // Smart fallback only for raw data that might be missing (MRR/ARR from DB)
   const { value: mrrValue, isLoading: mrrLoading } = useSmartFallbackField({
     fieldPath: "growth_intelligence_section.growth_targets.12_month.mrr",
     currentValue: metrics.mrrMonth12 !== "..." ? metrics.mrrMonth12 : undefined,
+    skipFallback: metrics.mrrMonth12 !== "...", // Skip if already calculated
   });
   
   const { value: arrValue, isLoading: arrLoading } = useSmartFallbackField({
     fieldPath: "growth_intelligence_section.growth_targets.12_month.arr",
     currentValue: metrics.arrProjected !== "..." ? metrics.arrProjected : undefined,
+    skipFallback: metrics.arrProjected !== "...", // Skip if already calculated
   });
 
   const scenarioIcons: Record<string, React.ElementType> = {

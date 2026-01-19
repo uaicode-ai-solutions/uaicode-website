@@ -269,16 +269,10 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     
     // ============================================
     // REALISTIC Break-even Calculation
-    // Prioritize database value, fallback to calculation
+    // ALWAYS calculate locally - database value is unreliable (often NULL)
     // ============================================
-    const breakEvenFromInvestment = safeGet(sectionInvestment, 'break_even_months', null) as string | null;
     let breakEvenMonthsNum: number | null = null;
-    if (breakEvenFromInvestment) {
-      const match = breakEvenFromInvestment.match(/(\d+)/);
-      breakEvenMonthsNum = match ? parseInt(match[1], 10) : null;
-    }
-    // Fallback: calculate with realistic assumptions
-    if (!breakEvenMonthsNum && mvpInvestment && mrr12Months && mrr12Months.avg > 0) {
+    if (mvpInvestment && mrr12Months && mrr12Months.avg > 0) {
       breakEvenMonthsNum = calculateRealisticBreakEven(
         mrr12Months.avg,
         mvpInvestment,
@@ -290,25 +284,10 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     
     // ============================================
     // REALISTIC ROI Year 1 Calculation
-    // Prioritize database value, fallback to calculation with validation
+    // ALWAYS calculate locally - database value is unreliable (often NULL)
     // ============================================
-    const roiFromInvestment = safeGet(sectionInvestment, 'expected_roi', null) as string | null;
     let roiYear1Num: number | null = null;
-    if (roiFromInvestment) {
-      // Extract percentage from strings like "150%" or "150-200%"
-      const match = roiFromInvestment.match(/(-?\d+)/);
-      if (match) {
-        const rawRoi = parseInt(match[1], 10);
-        // Validate the ROI from DB
-        const validated = validateFinancialMetric(rawRoi, 'roi', 'from database');
-        roiYear1Num = validated.value;
-        if (validated.warning) {
-          console.warn(`[useFinancialMetrics] ROI validation: ${validated.warning}`);
-        }
-      }
-    }
-    // Fallback: calculate with realistic assumptions
-    if (roiYear1Num === null && mrr12Months && mvpInvestment && mvpInvestment > 0) {
+    if (mrr12Months && mvpInvestment && mvpInvestment > 0) {
       roiYear1Num = calculateRealisticROI(
         mrr12Months.avg,
         mvpInvestment,
