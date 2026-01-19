@@ -300,6 +300,16 @@ export interface HeroScoreSection {
   generated_at?: string;    // Timestamp de quando foi gerado
 }
 
+// ==========================================
+// Summary Section (from tb_pms_reports.summary_section)
+// ==========================================
+
+export interface SummarySection {
+  verdict?: string;           // Recomendação principal (ex: "Proceed with Development")
+  verdict_summary?: string;   // Texto do resumo executivo (parágrafos separados por \n\n)
+  generated_at?: string;      // Timestamp de quando foi gerado
+}
+
 // Report data from tb_pms_reports table (simplified - legacy columns removed)
 export interface ReportData {
   id: string;
@@ -316,6 +326,7 @@ export interface ReportData {
   price_intelligence_section: unknown | null;
   growth_intelligence_section: unknown | null;
   hero_score_section: unknown | null;
+  summary_section: unknown | null;
   // Generated avatar URL
   icp_avatar_url: string | null;
 }

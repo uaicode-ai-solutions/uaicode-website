@@ -247,6 +247,7 @@ export type Database = {
           price_intelligence_section: Json | null
           section_investment: Json | null
           status: string
+          summary_section: Json | null
           updated_at: string
           wizard_id: string
         }
@@ -263,6 +264,7 @@ export type Database = {
           price_intelligence_section?: Json | null
           section_investment?: Json | null
           status?: string
+          summary_section?: Json | null
           updated_at?: string
           wizard_id: string
         }
@@ -279,6 +281,7 @@ export type Database = {
           price_intelligence_section?: Json | null
           section_investment?: Json | null
           status?: string
+          summary_section?: Json | null
           updated_at?: string
           wizard_id?: string
         }
