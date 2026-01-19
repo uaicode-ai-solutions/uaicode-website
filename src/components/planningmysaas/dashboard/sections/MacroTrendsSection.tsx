@@ -7,8 +7,8 @@ import { OpportunitySection } from "@/types/report";
 import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
 import { FallbackSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 import {
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   ResponsiveContainer,
@@ -182,37 +182,23 @@ const MacroTrendsSection = () => {
             <div className="flex items-center gap-2 mb-4">
               <h3 className="text-sm font-medium text-foreground">Trend Strength</h3>
               <InfoTooltip side="top" size="sm">
-                Visual representation of each trend's market impact strength over time.
+                Comparative strength of each identified market trend.
               </InfoTooltip>
             </div>
 
             <div className="flex-1 min-h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
-                    {/* Amber gradient for positive area */}
-                    <linearGradient id="colorPositive" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.4} />
-                      <stop offset="50%" stopColor="#FBBF24" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#FCD34D" stopOpacity={0} />
+                    {/* Gradient for positive bars */}
+                    <linearGradient id="barPositiveGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#FBBF24" />
+                      <stop offset="100%" stopColor="#F59E0B" />
                     </linearGradient>
-                    {/* Stroke gradient for positive line */}
-                    <linearGradient id="trendPositiveStroke" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#F59E0B" />
-                      <stop offset="50%" stopColor="#FBBF24" />
-                      <stop offset="100%" stopColor="#FCD34D" />
-                    </linearGradient>
-                    {/* Glow filter */}
-                    <filter id="trendGlow" x="-20%" y="-20%" width="140%" height="140%">
-                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                      <feMerge>
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-                    <linearGradient id="colorNegative" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0} />
+                    {/* Gradient for negative/neutral bars */}
+                    <linearGradient id="barNegativeGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.6} />
+                      <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
@@ -241,22 +227,19 @@ const MacroTrendsSection = () => {
                       return label;
                     }}
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="positive"
-                    stroke="url(#trendPositiveStroke)"
-                    fill="url(#colorPositive)"
-                    strokeWidth={2}
-                    filter="url(#trendGlow)"
+                  <Bar 
+                    dataKey="positive" 
+                    fill="url(#barPositiveGradient)" 
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={50}
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="negative"
-                    stroke="hsl(var(--muted-foreground))"
-                    fill="url(#colorNegative)"
-                    strokeWidth={2}
+                  <Bar 
+                    dataKey="negative" 
+                    fill="url(#barNegativeGradient)" 
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={50}
                   />
-                </AreaChart>
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
