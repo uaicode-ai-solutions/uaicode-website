@@ -77,6 +77,41 @@ const InvestmentSection = () => {
     currentValue: mvpBreakdown.onePayment ? String(mvpBreakdown.onePayment) : undefined,
   });
 
+  // Apply smart fallback for breakdown fields
+  const { value: frontendFallback, isLoading: frontendLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.investment_breakdown.front_cents",
+    currentValue: mvpBreakdown.frontend ? String(mvpBreakdown.frontend) : undefined,
+  });
+
+  const { value: backendFallback, isLoading: backendLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.investment_breakdown.back_cents",
+    currentValue: mvpBreakdown.backend ? String(mvpBreakdown.backend) : undefined,
+  });
+
+  const { value: integrationsFallback, isLoading: integrationsLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.investment_breakdown.integrations_cents",
+    currentValue: mvpBreakdown.integrations ? String(mvpBreakdown.integrations) : undefined,
+  });
+
+  const { value: infraFallback, isLoading: infraLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.investment_breakdown.infra_cents",
+    currentValue: mvpBreakdown.infra ? String(mvpBreakdown.infra) : undefined,
+  });
+
+  const { value: testingFallback, isLoading: testingLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.investment_breakdown.testing_cents",
+    currentValue: mvpBreakdown.testing ? String(mvpBreakdown.testing) : undefined,
+  });
+
+  // Helper to get fallback value as number
+  const getFallbackNumber = (fallback: string | undefined, original: number | null): number | null => {
+    if (original !== null && original !== undefined) return original;
+    if (fallback && !isNaN(parseInt(fallback))) return parseInt(fallback);
+    return null;
+  };
+
+  const breakdownLoading = frontendLoading || backendLoading || integrationsLoading || infraLoading || testingLoading;
+
   // Format currency with fallback "..." or skeleton
   const formatValueOrFallback = (cents: number | null | undefined, loading?: boolean) => {
     if (loading) return null; // Will render skeleton
@@ -98,13 +133,13 @@ const InvestmentSection = () => {
     'hsl(var(--accent) / 0.5)',
   ];
 
-  // Breakdown items with updated names
+  // Breakdown items with updated names (using fallback values)
   const breakdownItems = [
-    { name: "Frontend Development", value: mvpBreakdown.frontend, color: COLORS[0] },
-    { name: "Backend & API", value: mvpBreakdown.backend, color: COLORS[1] },
-    { name: "Integrations", value: mvpBreakdown.integrations, color: COLORS[2] },
-    { name: "Infrastructure", value: mvpBreakdown.infra, color: COLORS[3] },
-    { name: "Testing & QA", value: mvpBreakdown.testing, color: COLORS[4] },
+    { name: "Frontend Development", value: getFallbackNumber(frontendFallback, mvpBreakdown.frontend), color: COLORS[0] },
+    { name: "Backend & API", value: getFallbackNumber(backendFallback, mvpBreakdown.backend), color: COLORS[1] },
+    { name: "Integrations", value: getFallbackNumber(integrationsFallback, mvpBreakdown.integrations), color: COLORS[2] },
+    { name: "Infrastructure", value: getFallbackNumber(infraFallback, mvpBreakdown.infra), color: COLORS[3] },
+    { name: "Testing & QA", value: getFallbackNumber(testingFallback, mvpBreakdown.testing), color: COLORS[4] },
   ];
 
   // Fixed "What's Included" items

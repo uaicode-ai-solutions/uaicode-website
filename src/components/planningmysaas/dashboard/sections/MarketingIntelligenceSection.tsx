@@ -29,6 +29,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
 import { ICPIntelligenceSection, ICPPersona } from "@/types/report";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 interface MarketingIntelligenceSectionProps {
   onExploreMarketing: () => void;
@@ -240,10 +242,18 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   const { report, reportData } = useReportContext();
 
   // Parse ICP data from reportData (tb_pms_reports.icp_intelligence_section)
-  const icpData = parseJsonField<ICPIntelligenceSection | null>(
+  const rawIcpData = parseJsonField<ICPIntelligenceSection | null>(
     reportData?.icp_intelligence_section,
     null
   );
+
+  // Apply smart fallback for the entire ICP section
+  const { value: icpDataFallback, isLoading: icpLoading } = useSmartFallbackField<ICPIntelligenceSection | null>({
+    fieldPath: "icp_intelligence_section",
+    currentValue: rawIcpData,
+  });
+
+  const icpData = icpDataFallback || rawIcpData;
 
   // Get primary persona (first one)
   const primaryPersona = icpData?.primary_personas?.[0] || null;

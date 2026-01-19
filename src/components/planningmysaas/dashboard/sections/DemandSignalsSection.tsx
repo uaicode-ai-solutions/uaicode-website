@@ -235,7 +235,6 @@ const DemandSignalsSection = () => {
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   const rawData = opportunityData as unknown as Record<string, unknown> | null;
   
-  // Apply smart fallback for monthly searches
   const { value: monthlySearchesFallback, isLoading: searchesLoading } = useSmartFallbackField({
     fieldPath: "opportunity_section.monthly_searches",
     currentValue: opportunityData?.monthly_searches,
@@ -245,12 +244,28 @@ const DemandSignalsSection = () => {
     fieldPath: "opportunity_section.search_trend",
     currentValue: opportunityData?.search_trend,
   });
+
+  // Apply smart fallback for forum_discussions, job_postings, online_reviews
+  const { value: forumDiscussionsFallback, isLoading: forumsLoading } = useSmartFallbackField({
+    fieldPath: "opportunity_section.forum_discussions",
+    currentValue: rawData?.forum_discussions as string | undefined,
+  });
+  
+  const { value: jobPostingsFallback, isLoading: jobsLoading } = useSmartFallbackField({
+    fieldPath: "opportunity_section.job_postings",
+    currentValue: rawData?.job_postings as string | undefined,
+  });
+  
+  const { value: onlineReviewsFallback, isLoading: reviewsLoading } = useSmartFallbackField({
+    fieldPath: "opportunity_section.online_reviews",
+    currentValue: rawData?.online_reviews as string | undefined,
+  });
   
   const monthlySearches = monthlySearchesFallback || "...";
   const searchTrend = searchTrendFallback || "...";
-  const forumDiscussionsRaw = extractValue(rawData?.forum_discussions);
-  const jobPostingsRaw = extractValue(rawData?.job_postings);
-  const onlineReviewsRaw = extractValue(rawData?.online_reviews);
+  const forumDiscussionsRaw = extractValue(forumDiscussionsFallback || rawData?.forum_discussions);
+  const jobPostingsRaw = extractValue(jobPostingsFallback || rawData?.job_postings);
+  const onlineReviewsRaw = extractValue(onlineReviewsFallback || rawData?.online_reviews);
 
   const trendConfig = getTrendConfig(searchTrend);
 
