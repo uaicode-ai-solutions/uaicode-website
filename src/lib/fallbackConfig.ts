@@ -796,17 +796,35 @@ export function getFieldConfig(fieldPath: string): FallbackFieldConfig | undefin
 
 /**
  * Check if a value needs a fallback (null, undefined, empty, or placeholder)
+ * IMPORTANT: Valid numbers (including 0) do NOT need fallback
  */
 export function requiresFallback(value: unknown): boolean {
+  // Null/undefined need fallback
   if (value === null || value === undefined) return true;
+  
+  // Valid numbers do NOT need fallback (including 0)
+  if (typeof value === "number" && !isNaN(value)) return false;
+  
+  // Check strings for placeholder values
   if (typeof value === "string") {
     const trimmed = value.trim();
     if (trimmed === "" || trimmed === "..." || trimmed === "$..." || trimmed === "...%") return true;
     if (trimmed.startsWith("...") || trimmed.endsWith("...")) return true;
+    // Non-empty, non-placeholder strings don't need fallback
+    return false;
   }
+  
+  // Empty arrays need fallback
   if (Array.isArray(value) && value.length === 0) return true;
+  // Non-empty arrays don't need fallback
+  if (Array.isArray(value) && value.length > 0) return false;
+  
+  // Empty objects need fallback
   if (typeof value === "object" && Object.keys(value as object).length === 0) return true;
-  return false;
+  // Non-empty objects don't need fallback
+  if (typeof value === "object" && Object.keys(value as object).length > 0) return false;
+  
+  return true;
 }
 
 /**

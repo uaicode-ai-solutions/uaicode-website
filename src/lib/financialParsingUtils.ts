@@ -273,38 +273,100 @@ export function safeGet<T>(obj: unknown, path: string, fallback: T): T {
 
 /**
  * Extract MRR value from growth targets object
+ * Handles both numeric and string formats
  */
 export function extractMRRFromTargets(targets: unknown): MoneyRange | null {
   if (!targets || typeof targets !== 'object') return null;
   const mrr = (targets as Record<string, unknown>).mrr;
-  return typeof mrr === 'string' ? parseMoneyRange(mrr) : null;
+  
+  // Handle direct numeric value
+  if (typeof mrr === 'number' && !isNaN(mrr)) {
+    return { min: mrr, max: mrr, avg: mrr };
+  }
+  
+  // Handle string (formatted or scientific notation)
+  if (typeof mrr === 'string') {
+    const numVal = parseMoneyValue(mrr);
+    if (numVal !== null) {
+      return { min: numVal, max: numVal, avg: numVal };
+    }
+    return parseMoneyRange(mrr);
+  }
+  
+  return null;
 }
 
 /**
  * Extract ARR value from growth targets object
+ * Handles both numeric and string formats
  */
 export function extractARRFromTargets(targets: unknown): MoneyRange | null {
   if (!targets || typeof targets !== 'object') return null;
   const arr = (targets as Record<string, unknown>).arr;
-  return typeof arr === 'string' ? parseMoneyRange(arr) : null;
+  
+  // Handle direct numeric value
+  if (typeof arr === 'number' && !isNaN(arr)) {
+    return { min: arr, max: arr, avg: arr };
+  }
+  
+  // Handle string (formatted or scientific notation)
+  if (typeof arr === 'string') {
+    const numVal = parseMoneyValue(arr);
+    if (numVal !== null) {
+      return { min: numVal, max: numVal, avg: numVal };
+    }
+    return parseMoneyRange(arr);
+  }
+  
+  return null;
 }
 
 /**
  * Extract churn value from growth targets object
+ * Handles both numeric and string formats
  */
 export function extractChurnFromTargets(targets: unknown): PercentageRange | null {
   if (!targets || typeof targets !== 'object') return null;
   const churn = (targets as Record<string, unknown>).churn;
-  return typeof churn === 'string' ? parsePercentageRange(churn) : null;
+  
+  // Handle direct numeric value (percentage as decimal or whole number)
+  if (typeof churn === 'number' && !isNaN(churn)) {
+    // If churn > 1, assume it's already a percentage. Otherwise, convert from decimal
+    const val = churn > 1 ? churn : churn * 100;
+    return { min: val, max: val, avg: val };
+  }
+  
+  // Handle string
+  if (typeof churn === 'string') {
+    return parsePercentageRange(churn);
+  }
+  
+  return null;
 }
 
 /**
  * Extract customers from growth targets object
+ * Handles both numeric and string formats
  */
 export function extractCustomersFromTargets(targets: unknown): MoneyRange | null {
   if (!targets || typeof targets !== 'object') return null;
   const customers = (targets as Record<string, unknown>).customers;
-  return typeof customers === 'string' ? parseCustomerRange(customers) : null;
+  
+  // Handle direct numeric value
+  if (typeof customers === 'number' && !isNaN(customers)) {
+    return { min: customers, max: customers, avg: customers };
+  }
+  
+  // Handle string
+  if (typeof customers === 'string') {
+    const numVal = parseMoneyValue(customers);
+    if (numVal !== null) {
+      return { min: numVal, max: numVal, avg: numVal };
+    }
+    return parseCustomerRange(customers);
+  }
+  
+  return null;
 }
 
 // ============================================
@@ -505,42 +567,83 @@ export function extractBreakEvenFromText(text: string | null | undefined): Money
 }
 
 /**
- * Smart extract MRR - handles both object and string formats
+ * Smart extract MRR - handles number, object, and string formats
  */
 export function smartExtractMRR(data: unknown): MoneyRange | null {
   if (!data) return null;
+  
+  // Direct number
+  if (typeof data === 'number' && !isNaN(data)) {
+    return { min: data, max: data, avg: data };
+  }
+  
+  // String - try parsing as text with MRR pattern
   if (typeof data === 'string') return extractMRRFromText(data);
+  
+  // Object - extract from targets
   if (typeof data === 'object') return extractMRRFromTargets(data);
+  
   return null;
 }
 
 /**
- * Smart extract ARR - handles both object and string formats
+ * Smart extract ARR - handles number, object, and string formats
  */
 export function smartExtractARR(data: unknown): MoneyRange | null {
   if (!data) return null;
+  
+  // Direct number
+  if (typeof data === 'number' && !isNaN(data)) {
+    return { min: data, max: data, avg: data };
+  }
+  
+  // String - try parsing as text with ARR pattern
   if (typeof data === 'string') return extractARRFromText(data);
+  
+  // Object - extract from targets
   if (typeof data === 'object') return extractARRFromTargets(data);
+  
   return null;
 }
 
 /**
- * Smart extract Churn - handles both object and string formats
+ * Smart extract Churn - handles number, object, and string formats
  */
 export function smartExtractChurn(data: unknown): PercentageRange | null {
   if (!data) return null;
+  
+  // Direct number (percentage)
+  if (typeof data === 'number' && !isNaN(data)) {
+    const val = data > 1 ? data : data * 100;
+    return { min: val, max: val, avg: val };
+  }
+  
+  // String - try parsing as text with churn pattern
   if (typeof data === 'string') return extractChurnFromText(data);
+  
+  // Object - extract from targets
   if (typeof data === 'object') return extractChurnFromTargets(data);
+  
   return null;
 }
 
 /**
- * Smart extract Customers - handles both object and string formats
+ * Smart extract Customers - handles number, object, and string formats
  */
 export function smartExtractCustomers(data: unknown): MoneyRange | null {
   if (!data) return null;
+  
+  // Direct number
+  if (typeof data === 'number' && !isNaN(data)) {
+    return { min: data, max: data, avg: data };
+  }
+  
+  // String - try parsing as text with customer pattern
   if (typeof data === 'string') return extractCustomersFromText(data);
+  
+  // Object - extract from targets
   if (typeof data === 'object') return extractCustomersFromTargets(data);
+  
   return null;
 }
 
