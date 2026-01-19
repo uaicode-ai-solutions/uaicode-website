@@ -289,7 +289,7 @@ const MarketTimingSection = () => {
                     The ideal time frame to enter the market based on current conditions and trends.
                   </InfoTooltip>
                 </div>
-                <p className="text-sm text-foreground leading-relaxed">
+              <p className="text-sm text-foreground leading-relaxed capitalize">
                   {windowLoading ? <InlineValueSkeleton /> : (optimalWindowValue || "To be determined based on market analysis")}
                 </p>
               </div>
@@ -305,7 +305,7 @@ const MarketTimingSection = () => {
                     The current direction and speed of market growth, indicating momentum.
                   </InfoTooltip>
                 </div>
-                <p className="text-sm text-foreground leading-relaxed">
+                <p className="text-sm text-foreground leading-relaxed capitalize">
                   {trajectoryLoading ? <InlineValueSkeleton /> : (currentTrajectoryValue || "Analyzing market trajectory...")}
                 </p>
               </div>
@@ -321,7 +321,7 @@ const MarketTimingSection = () => {
                     The current lifecycle stage of the market, from emerging to mature.
                   </InfoTooltip>
                 </div>
-                <p className="text-sm text-foreground leading-relaxed">
+                <p className="text-sm text-foreground leading-relaxed capitalize">
                   {maturityLoading ? <InlineValueSkeleton /> : (marketMaturityValue || "Analyzing market maturity...")}
                 </p>
               </div>
@@ -337,7 +337,7 @@ const MarketTimingSection = () => {
                     The estimated time window for this market opportunity to remain viable.
                   </InfoTooltip>
                 </div>
-                <p className="text-sm text-foreground leading-relaxed">
+                <p className="text-sm text-foreground leading-relaxed capitalize">
                   {timeframeLoading ? <InlineValueSkeleton /> : (opportunityTimeframeValue || "Analyzing opportunity timeframe...")}
                 </p>
               </div>
@@ -408,15 +408,28 @@ const MarketTimingSection = () => {
       {/* Saturation Risk Alert - Generate fallback based on saturation level */}
       {(() => {
         const saturationLevel = saturationLevelValue?.toLowerCase() || "";
-        const saturationRiskText = opportunityData?.saturation_risk || (
-          saturationLevel.includes("low") || saturationLevel.includes("minimal")
-            ? "Market has low saturation - good opportunity for new entrants with differentiated offerings."
-            : saturationLevel.includes("moderate") || saturationLevel.includes("medium")
-              ? "Moderate market saturation - differentiation and strong positioning are key to success."
-              : saturationLevel.includes("high") || saturationLevel.includes("saturated")
-                ? "High market saturation detected - requires strong competitive advantage and unique value proposition."
-                : null
-        );
+        const rawSaturationRisk = opportunityData?.saturation_risk;
+        
+        // Check if saturation_risk is just a timeframe (contains year like "2029")
+        const isTimeframe = rawSaturationRisk && /\d{4}/.test(rawSaturationRisk);
+        
+        // Always generate descriptive text based on saturation level
+        let saturationRiskText = "";
+        if (saturationLevel.includes("low") || saturationLevel.includes("minimal")) {
+          saturationRiskText = "Market has low saturation - excellent opportunity for new entrants with differentiated offerings.";
+        } else if (saturationLevel.includes("moderate") || saturationLevel.includes("medium")) {
+          saturationRiskText = "Moderate market saturation - differentiation and strong positioning are key to success.";
+        } else if (saturationLevel.includes("high") || saturationLevel.includes("saturated")) {
+          saturationRiskText = "High market saturation detected - requires strong competitive advantage and unique value proposition.";
+        } else if (!isTimeframe && rawSaturationRisk) {
+          // If not a timeframe and we have text, use it directly
+          saturationRiskText = rawSaturationRisk;
+        }
+        
+        // Add timeframe info if available
+        if (isTimeframe && saturationRiskText) {
+          saturationRiskText += ` Expected market shift: ${rawSaturationRisk}.`;
+        }
         
         if (!saturationRiskText) return null;
         
