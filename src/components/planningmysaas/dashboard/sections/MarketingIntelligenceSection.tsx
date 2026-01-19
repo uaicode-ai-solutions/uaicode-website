@@ -193,7 +193,7 @@ const getExpectedROAS = (icpData: ICPIntelligenceSection | null): { value: strin
   }, 0) / painPoints.length;
   
   const roas = avgIntensity / 2.5;
-  const percent = Math.min(100, (roas / 5) * 100);
+  const percent = Math.round(Math.min(100, (roas / 5) * 100));
   
   return { 
     value: `${roas.toFixed(1)}x`, 
