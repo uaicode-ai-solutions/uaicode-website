@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField, parseScoreField, emptyStates } from "@/lib/reportDataUtils";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { InlineValueSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 
 interface PivotScenariosData {
   readinessScore: number;
@@ -13,15 +15,29 @@ interface PivotScenariosData {
 }
 
 const PivotScenariosSection = () => {
-  const { report } = useReportContext();
+  const { report, reportData, reportId } = useReportContext();
+  const wizardId = reportData?.wizard_id;
   
   // Parse pivot scenarios from report
   const rawPivotScenarios = parseJsonField<PivotScenariosData>(report?.pivot_scenarios, null);
   const pivotReadinessScore = parseScoreField(report?.pivot_readiness_score, 0);
   
+  // Smart fallback for readiness score
+  const { value: fallbackReadinessScore, isLoading: scoreLoading } = useSmartFallbackField<number>({
+    fieldPath: "pivot_scenarios.readinessScore",
+    currentValue: pivotReadinessScore || rawPivotScenarios?.readinessScore,
+  });
+  
+  // Smart fallback for scenarios
+  const { value: fallbackScenarios, isLoading: scenariosLoading } = useSmartFallbackField<PivotScenariosData['scenarios']>({
+    fieldPath: "pivot_scenarios.scenarios",
+    currentValue: rawPivotScenarios?.scenarios,
+  });
+  
   const pivotScenarios = rawPivotScenarios ? {
     ...rawPivotScenarios,
-    readinessScore: pivotReadinessScore || rawPivotScenarios.readinessScore || 0
+    readinessScore: fallbackReadinessScore ?? pivotReadinessScore ?? rawPivotScenarios.readinessScore ?? 0,
+    scenarios: fallbackScenarios ?? rawPivotScenarios.scenarios ?? []
   } : emptyStates.pivotScenarios;
 
   const getViabilityColor = (viability: number) => {
@@ -38,8 +54,30 @@ const PivotScenariosSection = () => {
     }
   };
   
+  // Early return if no data and loading
+  if (!rawPivotScenarios && scenariosLoading) {
+    return (
+      <section id="pivot-scenarios" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <GitBranch className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Plan B & Beyond</h2>
+            <p className="text-sm text-muted-foreground">Loading pivot scenarios...</p>
+          </div>
+        </div>
+        <Card className="bg-card/50 border-border/30">
+          <CardContent className="p-5">
+            <CardContentSkeleton lines={4} />
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
+  
   // Early return if no data
-  if (!rawPivotScenarios) {
+  if (!rawPivotScenarios && !fallbackScenarios) {
     return (
       <section id="pivot-scenarios" className="space-y-6 animate-fade-in">
         <div className="flex items-center gap-3">
@@ -80,7 +118,11 @@ const PivotScenariosSection = () => {
             <div>
               <p className="text-sm text-muted-foreground mb-1">Pivot Readiness Score</p>
               <div className="flex items-center gap-3">
-                <span className="text-3xl font-bold text-accent">{pivotScenarios.readinessScore}</span>
+                {scoreLoading ? (
+                  <InlineValueSkeleton size="xl" />
+                ) : (
+                  <span className="text-3xl font-bold text-accent">{pivotScenarios.readinessScore}</span>
+                )}
                 <span className="text-lg text-muted-foreground">/100</span>
               </div>
             </div>
@@ -216,7 +258,7 @@ const PivotScenariosSection = () => {
             <CheckCircle2 className="h-4 w-4 text-green-400" />
           </div>
           <p className="text-sm text-foreground/90">
-            With a {pivotScenarios.readinessScore ?? 0}% pivot readiness score and ~{Math.round((pivotScenarios.reusableAssets || []).reduce((acc, a) => acc + (a.reusabilityScore ?? 0), 0) / (pivotScenarios.reusableAssets?.length || 1))}% average asset reusability, 
+            With a {scoreLoading ? <InlineValueSkeleton size="sm" /> : (pivotScenarios.readinessScore ?? 0)}% pivot readiness score and ~{Math.round((pivotScenarios.reusableAssets || []).reduce((acc, a) => acc + (a.reusabilityScore ?? 0), 0) / (pivotScenarios.reusableAssets?.length || 1))}% average asset reusability, 
             you have strong optionality. If triggers are hit, you can pivot efficiently while preserving most of your investment.
           </p>
         </div>

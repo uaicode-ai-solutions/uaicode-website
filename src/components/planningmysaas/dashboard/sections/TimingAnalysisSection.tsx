@@ -5,9 +5,12 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField, parseScoreField, emptyStates } from "@/lib/reportDataUtils";
 import { TimingAnalysis, OpportunitySection } from "@/types/report";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 const TimingAnalysisSection = () => {
-  const { report, reportData } = useReportContext();
+  const { report, reportData, reportId } = useReportContext();
+  const wizardId = reportData?.wizard_id;
   
   // UNIFIED: Get macro trends from opportunity_section (primary source)
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
@@ -17,11 +20,23 @@ const TimingAnalysisSection = () => {
   const timingScore = parseScoreField(report?.timing_score, 0);
   const rawTimingAnalysis = parseJsonField<any>(report?.timing_analysis, null);
   
+  // Smart fallback for timing score
+  const { value: fallbackTimingScore, isLoading: timingScoreLoading } = useSmartFallbackField<number>({
+    fieldPath: "timing_analysis.timingScore",
+    currentValue: timingScore || rawTimingAnalysis?.score,
+  });
+  
+  // Smart fallback for verdict
+  const { value: fallbackVerdict, isLoading: verdictLoading } = useSmartFallbackField<string>({
+    fieldPath: "timing_analysis.verdict",
+    currentValue: rawTimingAnalysis?.verdict,
+  });
+  
   // Build the timing analysis object with proper structure
   // Use opportunity_section macro_trends as primary source
   const timingAnalysis = rawTimingAnalysis ? {
-    timingScore: timingScore || rawTimingAnalysis.score || 0,
-    verdict: rawTimingAnalysis.verdict || "Analysis pending...",
+    timingScore: fallbackTimingScore ?? timingScore ?? rawTimingAnalysis.score ?? 0,
+    verdict: fallbackVerdict ?? rawTimingAnalysis.verdict ?? "Analysis pending...",
     // UNIFIED: Use opportunity_section macro_trends if available
     macroTrends: macroTrendsFromOpportunity.length > 0 
       ? macroTrendsFromOpportunity.map(mt => ({
@@ -94,9 +109,13 @@ const TimingAnalysisSection = () => {
             <div className="relative">
               <div className="w-28 h-28 rounded-full bg-muted/20 border-4 border-accent/30 flex items-center justify-center">
                 <div className="text-center">
-                  <span className={`text-3xl font-bold ${getScoreColor(timingAnalysis.timingScore)}`}>
-                    {timingAnalysis.timingScore}
-                  </span>
+                  {timingScoreLoading ? (
+                    <InlineValueSkeleton size="xl" />
+                  ) : (
+                    <span className={`text-3xl font-bold ${getScoreColor(timingAnalysis.timingScore)}`}>
+                      {timingAnalysis.timingScore}
+                    </span>
+                  )}
                   <p className="text-xs text-muted-foreground">/100</p>
                 </div>
               </div>
@@ -110,7 +129,13 @@ const TimingAnalysisSection = () => {
               <Badge className="bg-green-500/10 text-green-400 border-green-500/20 mb-2">
                 Excellent Timing
               </Badge>
-              <p className="text-lg text-foreground">{timingAnalysis.verdict}</p>
+              <p className="text-lg text-foreground">
+                {verdictLoading ? (
+                  <InlineValueSkeleton size="lg" className="w-64" />
+                ) : (
+                  timingAnalysis.verdict
+                )}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -234,7 +259,7 @@ const TimingAnalysisSection = () => {
             <CheckCircle2 className="h-4 w-4 text-green-400" />
           </div>
           <p className="text-sm text-foreground/90">
-            With a timing score of {timingAnalysis.timingScore}/100, market conditions are highly favorable. 
+            With a timing score of {timingScoreLoading ? <InlineValueSkeleton size="sm" /> : timingAnalysis.timingScore}/100, market conditions are highly favorable. 
             The window of opportunity is open now and will begin closing in {timingAnalysis.windowOfOpportunity.closes}. 
             Acting now provides significant first-mover advantages.
           </p>
