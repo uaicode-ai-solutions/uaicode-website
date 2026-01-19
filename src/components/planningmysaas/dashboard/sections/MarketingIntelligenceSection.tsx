@@ -340,7 +340,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     },
     { 
       icon: DollarSign, 
-      value: budgetRange, 
+      value: extractBudgetValue(primaryPersona?.summary?.budget_range), 
       label: "Recommended Budget",
       sublabel: "Paid Media",
       tooltip: "Monthly paid media spend recommended to achieve growth targets based on your ICP and competitive landscape.",
