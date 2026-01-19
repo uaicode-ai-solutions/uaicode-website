@@ -33,7 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
-import { NextSteps, ExecutionPhase } from "@/types/report";
+import { NextSteps, ExecutionPhase, HeroScoreSection, safeNumber } from "@/types/report";
 import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
 import KyleChatDialog from "../KyleChatDialog";
@@ -124,11 +124,21 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
     contact: { email: "contact@uaicode.dev", whatsapp: "+1 (555) 123-4567", calendly: "https://calendly.com/uaicode" }
   });
   
-  // Viability score from section_investment JSONB (same source as ReportHero)
+  // Get hero score data (same source as ReportHero)
+  const heroScoreData = reportData?.hero_score_section as HeroScoreSection | null;
   const sectionInvestmentData = getSectionInvestment(reportData);
   const sectionInvestmentRaw = reportData?.section_investment as Record<string, unknown> | null;
-  const viabilityScore = (sectionInvestmentRaw?.viability_score as number | null) ?? 0;
-  const verdictHeadline = (sectionInvestmentRaw?.verdict_headline as string | null) || "High viability, your idea has real traction potential.";
+  
+  // Viability score: prefer hero_score_section, fallback to section_investment
+  const viabilityScore = safeNumber(
+    heroScoreData?.score ?? (sectionInvestmentRaw?.viability_score as number | null),
+    0
+  );
+  
+  // Tagline: prefer hero_score_section, fallback to section_investment verdict_headline
+  const verdictHeadline = heroScoreData?.tagline 
+    || (sectionInvestmentRaw?.verdict_headline as string | null) 
+    || "High viability, your idea has real traction potential.";
   const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
   
   
