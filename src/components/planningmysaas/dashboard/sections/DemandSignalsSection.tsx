@@ -5,6 +5,8 @@ import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
 import { Badge } from "@/components/ui/badge";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 // Seasonal variation percentages by month (based on holidays and business cycles)
 const seasonalVariation: Record<string, number> = {
@@ -227,13 +229,25 @@ const countAvailableSignals = (signals: { value: string }[]): number => {
 };
 
 const DemandSignalsSection = () => {
-  const { reportData } = useReportContext();
+  const { reportData, reportId } = useReportContext();
+  const wizardId = reportData?.wizard_id;
 
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   const rawData = opportunityData as unknown as Record<string, unknown> | null;
   
-  const monthlySearches = opportunityData?.monthly_searches || "...";
-  const searchTrend = opportunityData?.search_trend || "...";
+  // Apply smart fallback for monthly searches
+  const { value: monthlySearchesFallback, isLoading: searchesLoading } = useSmartFallbackField({
+    fieldPath: "opportunity_section.monthly_searches",
+    currentValue: opportunityData?.monthly_searches,
+  });
+  
+  const { value: searchTrendFallback, isLoading: trendLoading } = useSmartFallbackField({
+    fieldPath: "opportunity_section.search_trend",
+    currentValue: opportunityData?.search_trend,
+  });
+  
+  const monthlySearches = monthlySearchesFallback || "...";
+  const searchTrend = searchTrendFallback || "...";
   const forumDiscussionsRaw = extractValue(rawData?.forum_discussions);
   const jobPostingsRaw = extractValue(rawData?.job_postings);
   const onlineReviewsRaw = extractValue(rawData?.online_reviews);

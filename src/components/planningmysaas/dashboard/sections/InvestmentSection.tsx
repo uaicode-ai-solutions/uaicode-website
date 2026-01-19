@@ -12,6 +12,8 @@ import PricingComparisonSlider from "../PricingComparisonSlider";
 import MarketingComparisonSlider from "../MarketingComparisonSlider";
 import MarketingServiceSelector from "../marketing/MarketingServiceSelector";
 import MarketingInvestmentSummary from "../marketing/MarketingInvestmentSummary";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 import {
   PieChart as RechartsPieChart,
   Pie,
@@ -21,7 +23,8 @@ import {
 } from "recharts";
 
 const InvestmentSection = () => {
-  const { report, reportData, selectedMarketingIds, setSelectedMarketingIds, marketingTotals, setMarketingTotals } = useReportContext();
+  const { report, reportData, selectedMarketingIds, setSelectedMarketingIds, marketingTotals, setMarketingTotals, reportId } = useReportContext();
+  const wizardId = reportData?.wizard_id;
   const selectedFeatures = report?.selected_features || [];
   const { tier, pricing, featureCounts, isLoading: tierLoading } = useMvpTier(selectedFeatures);
   const { services, isLoading: marketingLoading } = useMarketingTiers();
@@ -67,9 +70,16 @@ const InvestmentSection = () => {
   
   // MVP Investment breakdown values - prefer section_investment, fallback to legacy fields
   const mvpBreakdown = getInvestmentBreakdown(reportData, sectionInvestment);
+  
+  // Apply smart fallback for investment value if missing
+  const { value: investmentFallback, isLoading: investmentLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.investment_one_payment_cents",
+    currentValue: mvpBreakdown.onePayment ? String(mvpBreakdown.onePayment) : undefined,
+  });
 
-  // Format currency with fallback "..."
-  const formatValueOrFallback = (cents: number | null | undefined) => {
+  // Format currency with fallback "..." or skeleton
+  const formatValueOrFallback = (cents: number | null | undefined, loading?: boolean) => {
+    if (loading) return null; // Will render skeleton
     if (cents === null || cents === undefined) return "...";
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -209,7 +219,7 @@ const InvestmentSection = () => {
             <div className="text-center mb-6">
               <p className="text-sm text-muted-foreground mb-1">Total MVP Investment</p>
               <div className="text-4xl md:text-5xl font-bold text-gradient-gold">
-                {formatValueOrFallback(mvpBreakdown.onePayment)}
+                {investmentLoading ? <InlineValueSkeleton size="xl" /> : formatValueOrFallback(mvpBreakdown.onePayment)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">One-time payment</p>
             </div>
