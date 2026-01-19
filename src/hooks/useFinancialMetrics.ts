@@ -17,6 +17,10 @@ import {
   smartExtractCustomers,
   extractCACFromText,
   extractRatioFromText,
+  extractMarketingBudgetFromText,
+  calculateRealisticBreakEven,
+  calculateRealisticROI,
+  generateRealisticProjections,
   MoneyRange,
   PercentageRange,
 } from "@/lib/financialParsingUtils";
@@ -186,8 +190,23 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const ltvCacRatioStr = safeGet(performanceTargets, 'ltv_cac_ratio_target', null) as string | null;
     const ltvCacRatioNum = extractRatioFromText(ltvCacRatioStr);
     
+    // Marketing budget - try to extract from budget strategy text
     const marketingBudgetStr = safeGet(budgetStrategy, 'recommended_marketing_budget_monthly', null) as string | null;
-    const marketingBudgetMonthly = parseMoneyValue(marketingBudgetStr);
+    let marketingBudgetMonthly = parseMoneyValue(marketingBudgetStr);
+    
+    // If not found, try text extraction from various fields
+    if (!marketingBudgetMonthly) {
+      const budgetText = JSON.stringify(budgetStrategy || {});
+      marketingBudgetMonthly = extractMarketingBudgetFromText(budgetText);
+    }
+    
+    // Default marketing budget if none found (estimate 8-10% of MRR target)
+    if (!marketingBudgetMonthly && mrr12Months) {
+      marketingBudgetMonthly = Math.round(mrr12Months.avg * 0.10);
+    }
+    
+    // Fallback to reasonable default
+    const effectiveMarketingBudget = marketingBudgetMonthly || 5000;
     
     // ============================================
     // Calculate Derived Metrics
@@ -213,87 +232,88 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       paybackPeriod = Math.round(targetCac.avg / idealTicket);
     }
     
-    // Break-even calculation: MVP Investment / (MRR - monthly costs)
-    // Estimate monthly costs as 30% of MRR (typical SaaS)
+    // ============================================
+    // REALISTIC Break-even Calculation
+    // Uses S-curve growth and includes all costs
+    // ============================================
     let breakEvenMonthsNum: number | null = null;
     if (mvpInvestment && mrr12Months && mrr12Months.avg > 0) {
-      const netMrrMonthly = mrr12Months.avg * 0.7; // 70% margin
-      // Linear interpolation: at month 0 MRR is 0, at month 12 it's mrr12Months
-      // Average monthly revenue = mrr12Months / 2
-      const avgMonthlyRevenue = mrr12Months.avg / 2;
-      const netMonthly = avgMonthlyRevenue * 0.7;
-      if (netMonthly > 0) {
-        breakEvenMonthsNum = Math.ceil(mvpInvestment / netMonthly);
-      }
+      breakEvenMonthsNum = calculateRealisticBreakEven(
+        mrr12Months.avg,
+        mvpInvestment,
+        effectiveMarketingBudget,
+        0.01, // 1% operational cost
+        0.70  // 70% margin
+      );
     }
     
-    // ROI Year 1: ((Revenue Year 1 - Investment) / Investment) × 100
+    // ============================================
+    // REALISTIC ROI Year 1 Calculation
+    // Includes MVP, marketing, and operational costs
+    // ============================================
     let roiYear1Num: number | null = null;
-    if (arr12Months && mvpInvestment && mvpInvestment > 0) {
-      // Revenue year 1 = approximately ARR / 2 (ramp up during the year)
-      const revenueYear1 = arr12Months.avg / 2;
-      roiYear1Num = Math.round(((revenueYear1 - mvpInvestment) / mvpInvestment) * 100);
+    if (mrr12Months && mvpInvestment && mvpInvestment > 0) {
+      roiYear1Num = calculateRealisticROI(
+        mrr12Months.avg,
+        mvpInvestment,
+        effectiveMarketingBudget,
+        0.01 // 1% operational cost
+      );
     }
     
     // ============================================
-    // Generate Projection Data (12 months)
+    // Generate Projection Data (12 months) - REALISTIC S-CURVE
     // ============================================
-    const projectionData: ProjectionDataPoint[] = [];
+    let projectionData: ProjectionDataPoint[] = [];
     if (mrr12Months && mvpInvestment) {
-      const monthlyOperatingCost = (marketingBudgetMonthly || 5000) + (mvpInvestment * 0.01); // Marketing + ~1% of investment as ops
-      
-      for (let i = 1; i <= 12; i++) {
-        // Linear ramp from 0 to MRR_12
-        const monthRevenue = (mrr12Months.avg / 12) * i;
-        // Front-loaded costs (higher initially)
-        const monthCosts = i <= 3 ? monthlyOperatingCost * 1.5 : monthlyOperatingCost;
-        
-        projectionData.push({
-          month: `M${i}`,
-          revenue: Math.round(monthRevenue),
-          costs: Math.round(monthCosts),
-          cumulative: 0, // Will calculate below
-        });
-      }
-      
-      // Calculate cumulative
-      let cumulative = -mvpInvestment;
-      projectionData.forEach(point => {
-        cumulative += point.revenue - point.costs;
-        point.cumulative = Math.round(cumulative);
-      });
+      projectionData = generateRealisticProjections(
+        mrr12Months.avg,
+        mvpInvestment,
+        effectiveMarketingBudget,
+        12
+      );
     }
     
     // ============================================
-    // Generate Financial Scenarios
+    // Generate Financial Scenarios - BASED ON REAL RANGES
     // ============================================
     const financialScenarios: FinancialScenario[] = [];
-    if (mrr12Months) {
-      // Conservative: min values
+    if (mrr12Months && mvpInvestment) {
+      // Conservative: use min MRR values
+      const conservativeBreakEven = calculateRealisticBreakEven(
+        mrr12Months.min,
+        mvpInvestment,
+        effectiveMarketingBudget
+      );
       financialScenarios.push({
         name: "Conservative",
         mrrMonth12: mrr12Months.min,
         arrYear1: mrr12Months.min * 12,
-        breakEven: breakEvenMonthsNum ? Math.ceil(breakEvenMonthsNum * 1.3) : 18,
-        probability: "20%",
+        breakEven: conservativeBreakEven,
+        probability: "Lower bound", // Changed from fixed percentage
       });
       
-      // Realistic: avg values
+      // Realistic: use avg values
       financialScenarios.push({
         name: "Realistic",
         mrrMonth12: mrr12Months.avg,
         arrYear1: mrr12Months.avg * 12,
         breakEven: breakEvenMonthsNum || 12,
-        probability: "60%",
+        probability: "Expected", // Changed from fixed percentage
       });
       
-      // Optimistic: max values
+      // Optimistic: use max values
+      const optimisticBreakEven = calculateRealisticBreakEven(
+        mrr12Months.max,
+        mvpInvestment,
+        effectiveMarketingBudget
+      );
       financialScenarios.push({
         name: "Optimistic",
         mrrMonth12: mrr12Months.max,
         arrYear1: mrr12Months.max * 12,
-        breakEven: breakEvenMonthsNum ? Math.ceil(breakEvenMonthsNum * 0.7) : 8,
-        probability: "20%",
+        breakEven: optimisticBreakEven,
+        probability: "Upper bound", // Changed from fixed percentage
       });
     }
     
