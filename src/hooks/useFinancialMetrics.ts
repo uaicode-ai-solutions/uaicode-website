@@ -43,6 +43,7 @@ export interface FinancialMetrics {
   mrrMonth12Num: number | null;
   arrProjectedNum: number | null;
   ltvCacRatioNum: number | null;
+  ltvCacCalculated: number | null;
   
   // MRR Evolution
   mrr6Months: MoneyRange | null;
@@ -109,6 +110,7 @@ export interface UnitEconomicsDisplay {
   ltv: string;
   ltvMonths: string;
   ltvCacRatio: string;
+  ltvCacCalculated: string;
   monthlyChurn: string;
   howItWorks: string;
 }
@@ -230,6 +232,12 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     let paybackPeriod: number | null = null;
     if (targetCac && idealTicket && idealTicket > 0) {
       paybackPeriod = Math.round(targetCac.avg / idealTicket);
+    }
+    
+    // LTV/CAC Calculated: LTV / CAC average (the real calculated value)
+    let ltvCacCalculated: number | null = null;
+    if (ltv && targetCac && targetCac.avg > 0) {
+      ltvCacCalculated = Math.round((ltv / targetCac.avg) * 10) / 10; // 1 decimal place
     }
     
     // ============================================
@@ -361,7 +369,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     // Unit Economics Display
     // ============================================
     let unitEconomics: UnitEconomicsDisplay | null = null;
-    if (idealTicket || ltv || paybackPeriod || ltvCacRatioNum) {
+    if (idealTicket || ltv || paybackPeriod || ltvCacRatioNum || ltvCacCalculated) {
       unitEconomics = {
         idealTicket: idealTicket ? `$${idealTicket}` : fallback,
         paybackPeriod: paybackPeriod ? `${paybackPeriod}` : fallback,
@@ -370,6 +378,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
           ? `${Math.round(1 / (churn12Months.avg / 100))}` 
           : fallback,
         ltvCacRatio: ltvCacRatioNum ? `${ltvCacRatioNum}` : fallback,
+        ltvCacCalculated: ltvCacCalculated ? `${ltvCacCalculated}` : fallback,
         monthlyChurn: churn12Months ? `${churn12Months.avg.toFixed(1)}%` : fallback,
         howItWorks: `With a target CAC of ${targetCac ? `$${targetCac.avg}` : fallback} and monthly ARPU of ${idealTicket ? `$${idealTicket}` : fallback}, each customer pays back acquisition costs in ${paybackPeriod || fallback} months and generates ${ltv ? `$${ltv.toLocaleString()}` : fallback} in lifetime value.`,
       };
@@ -392,6 +401,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       mrrMonth12Num: mrr12Months?.avg || null,
       arrProjectedNum: arr12Months?.avg || null,
       ltvCacRatioNum,
+      ltvCacCalculated,
       
       // MRR Evolution
       mrr6Months,
