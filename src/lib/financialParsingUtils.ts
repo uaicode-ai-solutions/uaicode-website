@@ -541,49 +541,123 @@ export function extractMarketingBudgetFromText(text: string | null | undefined):
   return null;
 }
 
+// ============================================
+// Financial Validation Constants
+// ============================================
+const VALIDATION_LIMITS = {
+  ROI_MIN: -100,
+  ROI_MAX: 300, // Cap at 300% - very aggressive but achievable for top SaaS
+  ROI_WARNING_THRESHOLD: 250,
+  BREAK_EVEN_MIN: 3,
+  BREAK_EVEN_MAX: 48,
+  LTV_CAC_MIN: 0.5,
+  LTV_CAC_MAX: 15,
+  PAYBACK_MIN: 1,
+  PAYBACK_MAX: 36,
+  ARPU_MIN: 5,
+  ARPU_MAX: 10000,
+};
+
+/**
+ * Validate and clamp a financial metric within reasonable bounds
+ * Returns the clamped value and a warning if it was adjusted
+ */
+export function validateFinancialMetric(
+  value: number,
+  metric: 'roi' | 'breakEven' | 'ltvCac' | 'payback' | 'arpu',
+  context?: string
+): { value: number; warning: string | null; wasAdjusted: boolean } {
+  const limits = {
+    roi: { min: VALIDATION_LIMITS.ROI_MIN, max: VALIDATION_LIMITS.ROI_MAX },
+    breakEven: { min: VALIDATION_LIMITS.BREAK_EVEN_MIN, max: VALIDATION_LIMITS.BREAK_EVEN_MAX },
+    ltvCac: { min: VALIDATION_LIMITS.LTV_CAC_MIN, max: VALIDATION_LIMITS.LTV_CAC_MAX },
+    payback: { min: VALIDATION_LIMITS.PAYBACK_MIN, max: VALIDATION_LIMITS.PAYBACK_MAX },
+    arpu: { min: VALIDATION_LIMITS.ARPU_MIN, max: VALIDATION_LIMITS.ARPU_MAX },
+  };
+
+  const { min, max } = limits[metric];
+  
+  if (value < min) {
+    return {
+      value: min,
+      warning: `${metric} was ${value}, clamped to minimum ${min}${context ? ` (${context})` : ''}`,
+      wasAdjusted: true,
+    };
+  }
+  
+  if (value > max) {
+    return {
+      value: max,
+      warning: `${metric} was ${value}, clamped to maximum ${max}${context ? ` (${context})` : ''}`,
+      wasAdjusted: true,
+    };
+  }
+  
+  // Special warning for ROI approaching threshold
+  if (metric === 'roi' && value > VALIDATION_LIMITS.ROI_WARNING_THRESHOLD) {
+    return {
+      value,
+      warning: `High ROI projection (${value}%) - verify assumptions`,
+      wasAdjusted: false,
+    };
+  }
+  
+  return { value, warning: null, wasAdjusted: false };
+}
+
 /**
  * S-curve growth function for realistic SaaS revenue ramp-up
  * Returns a value between 0 and 1 representing growth progress
  * @param month - current month (1-indexed)
- * @param rampMonths - months to reach ~63% of target (default 9 - realistic for SaaS)
+ * @param rampMonths - months to reach ~63% of target (default 12 - more conservative)
  */
-export function sCurveGrowth(month: number, rampMonths: number = 9): number {
+export function sCurveGrowth(month: number, rampMonths: number = 12): number {
   // Logistic S-curve: 1 / (1 + e^(-k*(t-midpoint)))
   // Simplified: 1 - e^(-month/rampMonths) for exponential approach
+  // With ramp=12, month 12 reaches ~63%, month 24 reaches ~87%
   return 1 - Math.exp(-month / rampMonths);
 }
 
 /**
  * Calculate cumulative break-even month using realistic cost model
  * Includes MVP investment, marketing costs, and operational costs
+ * 
+ * IMPORTANT: mrrTarget is the target MRR at month 12, NOT a constant monthly value.
+ * The S-curve models the ramp-up from 0 to this target.
  */
 export function calculateRealisticBreakEven(
   mrrTarget: number,
   mvpInvestment: number,
   monthlyMarketingBudget: number,
-  operationalCostPercent: number = 0.01,
-  marginPercent: number = 0.70,
-  maxMonths: number = 36
+  operationalCostPercent: number = 0.02, // More realistic 2%
+  marginPercent: number = 0.65, // Conservative 65% margin
+  maxMonths: number = 48
 ): number {
   let cumulativeRevenue = 0;
   let cumulativeCosts = mvpInvestment; // Start with initial investment
   
+  // Use more conservative ramp-up (12 months to 63% maturity)
+  const rampMonths = 12;
+  
   for (let month = 1; month <= maxMonths; month++) {
-    // Revenue with S-curve growth (realistic ramp-up - 9 months to maturity)
-    const growthFactor = sCurveGrowth(month, 9);
+    // Revenue with S-curve growth (realistic ramp-up)
+    const growthFactor = sCurveGrowth(month, rampMonths);
     const monthRevenue = mrrTarget * growthFactor;
     
-    // Net revenue after margin (70% typical for SaaS)
+    // Net revenue after margin
     const netMonthRevenue = monthRevenue * marginPercent;
     cumulativeRevenue += netMonthRevenue;
     
-    // Monthly costs: marketing + operational
+    // Monthly costs: marketing (scales down over time) + operational
+    const marketingDecay = month <= 6 ? 1.0 : 0.8; // Reduce marketing after month 6
     const monthlyOpCost = mvpInvestment * operationalCostPercent;
-    cumulativeCosts += monthlyMarketingBudget + monthlyOpCost;
+    cumulativeCosts += (monthlyMarketingBudget * marketingDecay) + monthlyOpCost;
     
     // Check if break-even reached
     if (cumulativeRevenue >= cumulativeCosts) {
-      return month;
+      // Validate result
+      const validated = validateFinancialMetric(month, 'breakEven');
+      return validated.value;
     }
   }
   
@@ -593,18 +667,24 @@ export function calculateRealisticBreakEven(
 
 /**
  * Calculate realistic Year 1 ROI including all costs
+ * Uses S-curve growth model with conservative assumptions
+ * 
+ * Formula: ROI = ((Total Revenue - Total Costs) / Total Costs) × 100
  */
 export function calculateRealisticROI(
   mrrTarget: number,
   mvpInvestment: number,
   monthlyMarketingBudget: number,
-  operationalCostPercent: number = 0.01
+  operationalCostPercent: number = 0.02 // More realistic 2%
 ): number {
-  // Calculate Year 1 revenue with realistic S-curve ramp-up (9 months to maturity)
+  // Calculate Year 1 revenue with realistic S-curve ramp-up (12 months to 63% maturity)
   let totalRevenue = 0;
+  const rampMonths = 12;
+  
   for (let month = 1; month <= 12; month++) {
-    const growthFactor = sCurveGrowth(month, 9);
-    totalRevenue += mrrTarget * growthFactor;
+    const growthFactor = sCurveGrowth(month, rampMonths);
+    // Apply conservative margin of 65%
+    totalRevenue += mrrTarget * growthFactor * 0.65;
   }
   
   // Total costs: MVP + 12 months of marketing + 12 months of operational
@@ -614,7 +694,17 @@ export function calculateRealisticROI(
   
   // ROI = (Revenue - Costs) / Costs × 100
   if (totalCosts <= 0) return 0;
-  return Math.round(((totalRevenue - totalCosts) / totalCosts) * 100);
+  
+  const rawROI = Math.round(((totalRevenue - totalCosts) / totalCosts) * 100);
+  
+  // Validate and clamp ROI to reasonable bounds
+  const validated = validateFinancialMetric(rawROI, 'roi');
+  
+  if (validated.warning) {
+    console.warn(`[Financial Metrics] ${validated.warning}`);
+  }
+  
+  return validated.value;
 }
 
 /**
@@ -629,15 +719,20 @@ export function generateRealisticProjections(
   const data: { month: string; revenue: number; costs: number; cumulative: number }[] = [];
   let cumulativeNet = -mvpInvestment; // Start negative with investment
   
-  const monthlyOpCost = mvpInvestment * 0.01;
+  const monthlyOpCost = mvpInvestment * 0.02; // 2% operational cost
+  const rampMonths = 12; // Conservative 12-month ramp
   
   for (let month = 1; month <= months; month++) {
-    // S-curve revenue growth (9 months to maturity)
-    const growthFactor = sCurveGrowth(month, 9);
-    const monthRevenue = Math.round(mrrTarget * growthFactor);
+    // S-curve revenue growth
+    const growthFactor = sCurveGrowth(month, rampMonths);
+    // Apply margin of 65%
+    const monthRevenue = Math.round(mrrTarget * growthFactor * 0.65);
     
-    // Costs: marketing + operational (higher in first 3 months for setup)
-    const setupMultiplier = month <= 3 ? 1.3 : 1.0;
+    // Costs: marketing (higher in first 3 months, decays after 6) + operational
+    let setupMultiplier = 1.0;
+    if (month <= 3) setupMultiplier = 1.4;
+    else if (month > 6) setupMultiplier = 0.8;
+    
     const monthCosts = Math.round((monthlyMarketingBudget + monthlyOpCost) * setupMultiplier);
     
     // Update cumulative
@@ -652,4 +747,53 @@ export function generateRealisticProjections(
   }
   
   return data;
+}
+
+/**
+ * Sanitize numeric value from AI response
+ * Handles scientific notation, currency strings, and malformed numbers
+ */
+export function sanitizeNumericValue(
+  value: unknown,
+  fallback: number | null = null,
+  maxReasonable: number = 1000000000 // 1 billion max for most metrics
+): number | null {
+  if (value === null || value === undefined) return fallback;
+  
+  // If it's already a reasonable number
+  if (typeof value === 'number') {
+    if (isNaN(value) || !isFinite(value)) return fallback;
+    if (Math.abs(value) > maxReasonable) return fallback;
+    return value;
+  }
+  
+  // If it's a string, try to parse it
+  if (typeof value === 'string') {
+    // Remove currency symbols and common formatting
+    let cleaned = value.replace(/[$,€£¥]/g, '').trim();
+    
+    // Handle K/M/B suffixes
+    let multiplier = 1;
+    if (/k$/i.test(cleaned)) {
+      multiplier = 1000;
+      cleaned = cleaned.replace(/k$/i, '');
+    } else if (/m$/i.test(cleaned)) {
+      multiplier = 1000000;
+      cleaned = cleaned.replace(/m$/i, '');
+    } else if (/b$/i.test(cleaned)) {
+      multiplier = 1000000000;
+      cleaned = cleaned.replace(/b$/i, '');
+    }
+    
+    // Try to parse
+    const parsed = parseFloat(cleaned);
+    if (isNaN(parsed) || !isFinite(parsed)) return fallback;
+    
+    const result = parsed * multiplier;
+    if (Math.abs(result) > maxReasonable) return fallback;
+    
+    return result;
+  }
+  
+  return fallback;
 }
