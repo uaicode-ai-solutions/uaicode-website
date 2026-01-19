@@ -3,7 +3,9 @@
 // Fallback and parsing utilities for report JSONB fields
 // ============================================
 
-import { ReportRow } from "@/types/report";
+import { ReportRow, ReportData } from "@/types/report";
+import { requiresFallback as checkNeedsFallback, getFieldConfig, getStaticFallback } from "@/lib/fallbackConfig";
+import type { UseFallbackAgentReturn } from "@/hooks/useFallbackAgent";
 
 // Type-safe JSONB field parser
 export function parseJsonField<T>(field: unknown, defaultValue: T): T {
@@ -17,6 +19,114 @@ export function parseJsonField<T>(field: unknown, defaultValue: T): T {
     }
   }
   return defaultValue;
+}
+
+// Get nested value from object using dot notation path
+export function getNestedValue(obj: unknown, path: string): unknown {
+  if (!obj || typeof obj !== "object") return undefined;
+  
+  const parts = path.split(".");
+  let current: unknown = obj;
+  
+  for (const part of parts) {
+    if (current === null || current === undefined) return undefined;
+    if (typeof current !== "object") return undefined;
+    current = (current as Record<string, unknown>)[part];
+  }
+  
+  return current;
+}
+
+// Check if a value needs a fallback (null, undefined, empty, or placeholder)
+export function requiresFallback(value: unknown): boolean {
+  return checkNeedsFallback(value);
+}
+
+// Smart fallback wrapper - returns direct value or triggers fallback agent
+export async function getWithSmartFallback<T>(
+  reportData: ReportData | null | undefined,
+  fieldPath: string,
+  staticFallback: T,
+  fallbackAgent?: UseFallbackAgentReturn | null,
+  wizardId?: string,
+  reportId?: string
+): Promise<T> {
+  // 1. Try to get direct value from reportData
+  if (reportData) {
+    const directValue = getNestedValue(reportData, fieldPath);
+    if (directValue !== null && directValue !== undefined && !checkNeedsFallback(directValue)) {
+      return directValue as T;
+    }
+  }
+
+  // 2. If fallback agent is available and we have IDs, request intelligent fallback
+  if (fallbackAgent && wizardId && reportId) {
+    const config = getFieldConfig(fieldPath);
+    if (config) {
+      try {
+        const result = await fallbackAgent.requestFallback({
+          reportId,
+          wizardId,
+          fieldPath,
+          sectionName: config.sectionName,
+          fieldDescription: config.fieldDescription,
+          fieldPurpose: config.fieldPurpose,
+          expectedType: config.expectedType,
+          expectedFormat: config.expectedFormat,
+          validationRules: config.validationRules as Record<string, unknown>,
+          perplexitySearchType: config.perplexitySearchType,
+        });
+        
+        if (result?.success && result.value !== null && result.value !== undefined) {
+          return result.value as T;
+        }
+      } catch (error) {
+        console.error(`[getWithSmartFallback] Error for ${fieldPath}:`, error);
+      }
+    }
+  }
+
+  // 3. Try config static fallback
+  const configFallback = getStaticFallback(fieldPath);
+  if (configFallback !== null && configFallback !== undefined) {
+    return configFallback as T;
+  }
+
+  // 4. Return provided static fallback
+  return staticFallback;
+}
+
+// Synchronous version that returns cached value or static fallback
+export function getWithFallback<T>(
+  reportData: ReportData | null | undefined,
+  fieldPath: string,
+  staticFallback: T,
+  fallbackAgent?: UseFallbackAgentReturn | null
+): T {
+  // 1. Try to get direct value from reportData
+  if (reportData) {
+    const directValue = getNestedValue(reportData, fieldPath);
+    if (directValue !== null && directValue !== undefined && !checkNeedsFallback(directValue)) {
+      return directValue as T;
+    }
+  }
+
+  // 2. Check fallback agent cache
+  if (fallbackAgent) {
+    const cachedValue = fallbackAgent.getCachedValue(fieldPath);
+    if (cachedValue !== null && cachedValue !== undefined) {
+      return cachedValue as T;
+    }
+  }
+
+  // 3. Try config static fallback
+  const configFallback = getStaticFallback(fieldPath);
+  if (configFallback !== null && configFallback !== undefined) {
+    return configFallback as T;
+  }
+
+  // 4. Return provided static fallback
+  return staticFallback;
 }
 
 // Parse numeric score field (stored as string in DB)
