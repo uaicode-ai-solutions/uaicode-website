@@ -1,5 +1,6 @@
 import { useCallback } from "react";
-import { DollarSign, Check, Minus, PieChart, AlertCircle, Sparkles, Megaphone, TrendingUp } from "lucide-react";
+import { DollarSign, Check, Minus, PieChart, AlertCircle, Sparkles, Megaphone, TrendingUp, AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -209,6 +210,44 @@ const InvestmentSection = () => {
     }).format(value);
   };
 
+  // Detect mismatch between user budget and calculated investment
+  const getBudgetMismatchInfo = (userBudget: string | null | undefined, investmentCents: number | null) => {
+    if (!userBudget || !investmentCents) return null;
+    
+    // If user chose "guidance", don't show alert
+    if (userBudget === "guidance") return null;
+    
+    const budgetRanges: Record<string, { min: number; max: number; label: string }> = {
+      '5k-10k':   { min: 500000,   max: 1000000,  label: '$5K - $10K' },
+      '10k-25k':  { min: 1000000,  max: 2500000,  label: '$10K - $25K' },
+      '25k-50k':  { min: 2500000,  max: 5000000,  label: '$25K - $50K' },
+      '50k-100k': { min: 5000000,  max: 10000000, label: '$50K - $100K' },
+      '100k+':    { min: 10000000, max: Infinity, label: '$100K+' },
+    };
+    
+    const range = budgetRanges[userBudget];
+    if (!range) return null;
+    
+    // If budget is 100k+, no upper limit
+    if (userBudget === '100k+') return null;
+    
+    // Mismatch exists if investment exceeds max budget by more than 20%
+    const threshold = range.max * 1.2;
+    if (investmentCents <= threshold) return null;
+    
+    const overageMultiple = investmentCents / range.max;
+    
+    return {
+      userBudgetLabel: range.label,
+      investmentFormatted: formatCurrency(investmentCents / 100),
+      overageMultiple: overageMultiple.toFixed(1),
+      severity: overageMultiple > 3 ? 'critical' as const : 'warning' as const,
+    };
+  };
+
+  // Calculate budget mismatch
+  const budgetMismatch = getBudgetMismatchInfo(userBudget, mvpBreakdown.onePayment);
+
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -249,6 +288,41 @@ const InvestmentSection = () => {
           One-time investment to build your minimum viable product.
         </InfoTooltip>
       </div>
+
+      {/* Budget Mismatch Alert */}
+      {budgetMismatch && (
+        <Card className={cn(
+          "border-2 animate-fade-in",
+          budgetMismatch.severity === 'critical' 
+            ? "bg-red-500/10 border-red-500/50" 
+            : "bg-amber-500/10 border-amber-500/50"
+        )}>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className={cn(
+                "h-5 w-5 flex-shrink-0 mt-0.5",
+                budgetMismatch.severity === 'critical' ? "text-red-500" : "text-amber-500"
+              )} />
+              <div className="flex-1">
+                <h4 className={cn(
+                  "font-semibold text-sm",
+                  budgetMismatch.severity === 'critical' ? "text-red-400" : "text-amber-400"
+                )}>
+                  Investment Exceeds Your Budget
+                </h4>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Your selected budget range is <span className="font-medium text-foreground">{budgetMismatch.userBudgetLabel}</span>, 
+                  but the calculated MVP investment is <span className="font-medium text-foreground">{budgetMismatch.investmentFormatted}</span> 
+                  ({budgetMismatch.overageMultiple}× your maximum budget).
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  💡 Consider reducing features or scheduling a call to discuss phased development options.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Main Investment Card with Chart */}
