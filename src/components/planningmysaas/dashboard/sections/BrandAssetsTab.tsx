@@ -12,6 +12,7 @@ import {
   Type,
   Copy
 } from "lucide-react";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,9 +32,19 @@ const BrandAssetsTab = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Brand Assets</h2>
-          <p className="text-sm text-muted-foreground">Brand and design deliverables included in the project</p>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Palette className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-foreground">Brand Assets</h2>
+              <InfoTooltip side="right" size="sm">
+                Visual identity and design deliverables included in your MVP project.
+              </InfoTooltip>
+            </div>
+            <p className="text-sm text-muted-foreground">Brand and design deliverables included in the project</p>
+          </div>
         </div>
         <Button className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground">
           <Download className="h-4 w-4" />

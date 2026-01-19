@@ -224,7 +224,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
     <section id="next-steps" className="space-y-6 animate-fade-in">
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10">
+        <div className="p-2 rounded-lg bg-accent/10">
           <ArrowRight className="h-5 w-5 text-accent" />
         </div>
         <div>
