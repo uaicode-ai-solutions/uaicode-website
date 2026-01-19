@@ -478,7 +478,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                     key={i} 
                     className="flex items-center gap-2 text-sm p-3 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10 hover:border-accent/30 transition-colors"
                   >
-                    <div className="h-2 w-2 rounded-full bg-gradient-to-r from-amber-500 to-amber-400" />
+                    <div className="h-2 w-2 rounded-full bg-amber-500" />
                     <span className="text-foreground">{goal}</span>
                   </div>
                 ))}
