@@ -1,4 +1,4 @@
-import { TrendingUp, Clock, DollarSign, Target, BarChart3, Shield, Rocket, CheckCircle, AlertCircle } from "lucide-react";
+import { TrendingUp, Clock, DollarSign, Target, BarChart3, Shield, Rocket, CheckCircle, AlertCircle, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -79,8 +79,8 @@ const FinancialReturnSection = () => {
     <section id="financial-return" className="space-y-6 animate-fade-in">
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
-          <BarChart3 className="h-5 w-5 text-accent" />
+        <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border border-amber-500/20">
+          <BarChart3 className="h-5 w-5 text-amber-400" />
         </div>
         <div>
           <div className="flex items-center gap-2">
@@ -98,11 +98,11 @@ const FinancialReturnSection = () => {
         {keyMetrics.map((metric, index) => (
           <Card 
             key={index}
-            className={`bg-card/50 border-border/30 transition-all duration-300 hover:shadow-md ${metric.highlight ? 'ring-1 ring-accent/30' : ''} ${metric.warning ? 'ring-1 ring-amber-500/30' : ''}`}
+            className={`bg-card/50 border-border/30 transition-all duration-300 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/5 ${metric.highlight ? 'ring-1 ring-accent/30' : ''} ${metric.warning ? 'ring-1 ring-amber-500/30' : ''}`}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-1.5 mb-2">
-                <div className={`p-1 rounded-lg ${metric.warning ? 'bg-amber-500/20' : metric.highlight ? 'bg-accent/20' : 'bg-muted/30'}`}>
+                <div className={`p-1.5 rounded-lg ${metric.warning ? 'bg-amber-500/20' : metric.highlight ? 'bg-accent/20' : 'bg-muted/30'}`}>
                   <metric.icon className={`h-3.5 w-3.5 ${metric.warning ? 'text-amber-500' : metric.highlight ? 'text-accent' : 'text-muted-foreground'}`} />
                 </div>
                 <span className="text-xs text-muted-foreground">{metric.label}</span>
@@ -110,7 +110,7 @@ const FinancialReturnSection = () => {
                   {metric.tooltip}
                 </InfoTooltip>
               </div>
-              <div className={`text-xl font-bold ${metric.warning ? 'text-amber-500' : metric.highlight ? 'text-accent' : 'text-foreground'}`}>
+              <div className={`text-2xl font-bold ${metric.warning ? 'text-amber-500' : 'text-gradient-gold'}`}>
                 {metric.value}
               </div>
               <p className={`text-xs mt-0.5 ${metric.warning ? 'text-amber-500/80' : 'text-muted-foreground'}`}>{metric.sublabel}</p>
@@ -120,13 +120,18 @@ const FinancialReturnSection = () => {
       </div>
 
       {/* Revenue vs Costs Chart - Full Width */}
-      <Card className="bg-card/50 border-border/30">
+      <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-all duration-300">
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-foreground text-sm">Revenue vs Costs (12 months)</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-foreground text-sm">Revenue vs Costs (12 months)</h3>
+              <InfoTooltip side="top" size="sm">
+                Monthly revenue vs operational and marketing costs projection over the first year.
+              </InfoTooltip>
+            </div>
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-accent" />
+                <div className="w-2 h-2 rounded-full bg-amber-500" />
                 <span className="text-muted-foreground">Revenue</span>
               </div>
               <div className="flex items-center gap-1">
@@ -141,8 +146,8 @@ const FinancialReturnSection = () => {
                 <AreaChart data={metrics.projectionData}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="costsGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
@@ -176,15 +181,15 @@ const FinancialReturnSection = () => {
                   {metrics.breakEvenMonthsNum && metrics.breakEvenMonthsNum <= 12 && (
                     <ReferenceLine 
                       x={`M${metrics.breakEvenMonthsNum}`}
-                      stroke="hsl(var(--accent))" 
+                      stroke="#F59E0B" 
                       strokeDasharray="5 5"
-                      label={{ value: 'Break-even', fill: 'hsl(var(--accent))', fontSize: 10 }}
+                      label={{ value: 'Break-even', fill: '#F59E0B', fontSize: 10 }}
                     />
                   )}
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="hsl(var(--accent))"
+                    stroke="#F59E0B"
                     strokeWidth={2}
                     fill="url(#revenueGradient)"
                     name="revenue"
@@ -213,7 +218,10 @@ const FinancialReturnSection = () => {
 
       {/* Projection Scenarios - Horizontal Row */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 rounded-lg bg-accent/10">
+            <TrendingUp className="h-4 w-4 text-accent" />
+          </div>
           <h3 className="font-semibold text-foreground text-sm">Projection Scenarios</h3>
           <InfoTooltip side="right" size="sm">
             Three scenarios based on different market conditions and execution quality.
@@ -223,11 +231,14 @@ const FinancialReturnSection = () => {
         {/* ROI Estimate & 3-Year MRR Evolution Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* ROI Estimate Donut Chart */}
-          <Card className="bg-card/50 border-border/30">
+          <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-all duration-300">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="h-4 w-4 text-accent" />
                 <h4 className="font-medium text-sm text-foreground">ROI Estimate</h4>
+                <InfoTooltip side="top" size="sm">
+                  Return on Investment projection for the first 12 months of operation.
+                </InfoTooltip>
               </div>
               
               {/* Donut Chart */}
@@ -247,15 +258,15 @@ const FinancialReturnSection = () => {
                       endAngle={-270}
                       dataKey="value"
                     >
-                      <Cell fill="hsl(var(--accent))" />
+                      <Cell fill="#F59E0B" />
                       <Cell fill="hsl(var(--muted))" opacity={0.2} />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
                 {/* Center text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-accent">{metrics.roiYear1}</span>
-                  <TrendingUp className="h-4 w-4 text-accent" />
+                  <span className="text-3xl font-bold text-gradient-gold">{metrics.roiYear1}</span>
+                  <TrendingUp className="h-4 w-4 text-amber-500" />
                 </div>
               </div>
               
@@ -265,7 +276,7 @@ const FinancialReturnSection = () => {
                   <p className="text-sm text-foreground">
                     <span className="font-medium">$1 invested</span>
                     <span className="mx-2 text-muted-foreground">→</span>
-                    <span className="font-bold text-accent">${(1 + (metrics.roiYear1Num || 0) / 100).toFixed(2)} return</span>
+                    <span className="font-bold text-gradient-gold">${(1 + (metrics.roiYear1Num || 0) / 100).toFixed(2)} return</span>
                   </p>
                 ) : (
                   <p className="text-sm text-muted-foreground">ROI calculation pending</p>
@@ -285,7 +296,7 @@ const FinancialReturnSection = () => {
                   </span>
                   <Badge className={`text-[10px] ${
                     metrics.roiYear1Num !== null && metrics.roiYear1Num > 50 
-                      ? 'bg-accent/10 text-accent border-accent/30'
+                      ? 'bg-amber-500/10 text-amber-500 border-amber-500/30'
                       : metrics.roiYear1Num !== null && metrics.roiYear1Num > 0
                         ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30'
                         : 'bg-red-500/10 text-red-500 border-red-500/30'
@@ -297,11 +308,11 @@ const FinancialReturnSection = () => {
                   </Badge>
                 </div>
                 {/* Progress bar - scale to max 200% for display */}
-                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
                   <div 
                     className={`h-full rounded-full ${
                       metrics.roiYear1Num !== null && metrics.roiYear1Num > 0 
-                        ? 'bg-gradient-to-r from-accent/60 to-accent'
+                        ? 'bg-gradient-to-r from-amber-500 to-amber-300'
                         : 'bg-red-400/60'
                     }`}
                     style={{ width: `${Math.min(100, Math.max(5, Math.abs(metrics.roiYear1Num || 0) / 2))}%` }}
@@ -315,21 +326,24 @@ const FinancialReturnSection = () => {
           </Card>
 
           {/* 3-Year MRR Evolution */}
-          <Card className="bg-card/50 border-border/30">
+          <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-all duration-300">
             <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 mb-2">
                 <h4 className="font-medium text-sm text-foreground">3-Year MRR Evolution</h4>
+                <InfoTooltip side="top" size="sm">
+                  Projected Annual Recurring Revenue growth over the next 3 years.
+                </InfoTooltip>
               </div>
               <p className="text-xs text-muted-foreground mb-4">Monthly Recurring Revenue growth over 36 months</p>
               
               {/* Year milestones cards */}
               <div className="grid grid-cols-3 gap-2">
                 {metrics.yearEvolution.map((item, idx) => (
-                  <div key={idx} className="bg-muted/20 rounded-lg p-2.5 text-center border border-border/20">
+                  <div key={idx} className="bg-muted/20 rounded-lg p-2.5 text-center border border-border/20 hover:border-accent/30 transition-colors">
                     <p className="text-[10px] text-muted-foreground">{item.year}</p>
-                    <p className="text-base font-bold text-accent">{item.arr}</p>
+                    <p className="text-lg font-bold text-gradient-gold">{item.arr}</p>
                     <p className="text-[10px] text-muted-foreground">ARR</p>
-                    <p className="text-[9px] text-accent/80">{item.mrr}</p>
+                    <p className="text-[9px] text-amber-500/80">{item.mrr}</p>
                   </div>
                 ))}
               </div>
@@ -358,21 +372,29 @@ const FinancialReturnSection = () => {
                   key={index}
                   className={`transition-all duration-300 ${
                     scenario.name === 'Realistic' 
-                      ? 'bg-accent/10 border-accent/30 ring-1 ring-accent/20' 
-                      : 'bg-card/50 border-border/30 hover:border-border/50'
+                      ? 'glass-card border-amber-500/30 ring-1 ring-amber-500/20 hover:border-amber-500/50' 
+                      : 'bg-card/50 border-border/30 hover:border-accent/30'
                   }`}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <ScenarioIcon className={`h-4 w-4 ${
-                          scenario.name === 'Realistic' ? 'text-accent' : 'text-muted-foreground'
+                          scenario.name === 'Realistic' ? 'text-amber-500' : 'text-muted-foreground'
                         }`} />
                         <span className={`font-medium text-sm ${
-                          scenario.name === 'Realistic' ? 'text-accent' : 'text-foreground'
+                          scenario.name === 'Realistic' ? 'text-amber-500' : 'text-foreground'
                         }`}>
                           {scenario.name}
                         </span>
+                        <InfoTooltip side="top" size="sm">
+                          {scenario.name === 'Conservative' 
+                            ? 'Pessimistic scenario assuming slower market adoption and higher churn.'
+                            : scenario.name === 'Realistic'
+                              ? 'Most likely scenario based on market data and comparable companies.'
+                              : 'Optimistic scenario assuming faster growth and better retention.'
+                          }
+                        </InfoTooltip>
                       </div>
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                         {scenario.probability}
@@ -381,13 +403,13 @@ const FinancialReturnSection = () => {
                     <div className="space-y-1.5 text-xs">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Month 12 MRR</span>
-                        <span className="font-medium text-foreground">
+                        <span className="font-medium text-gradient-gold">
                           {formatCurrency(scenario.mrrMonth12)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Year 1 ARR</span>
-                        <span className="font-medium text-foreground">
+                        <span className="font-medium text-gradient-gold">
                           {formatCurrency(scenario.arrYear1)}
                         </span>
                       </div>
@@ -413,7 +435,10 @@ const FinancialReturnSection = () => {
 
       {/* Unit Economics */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 rounded-lg bg-accent/10">
+            <DollarSign className="h-4 w-4 text-accent" />
+          </div>
           <h3 className="font-semibold text-foreground text-sm">Unit Economics</h3>
           <InfoTooltip side="right" size="sm">
             Key metrics showing your customer acquisition efficiency and lifetime value analysis.
@@ -424,42 +449,62 @@ const FinancialReturnSection = () => {
             {/* 5 Cards Grid */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {/* Ideal Ticket */}
-              <Card className="bg-card/50 border-border/30">
+              <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
                 <CardContent className="p-4 text-center">
-                  <span className="text-xs text-muted-foreground">Ideal Ticket</span>
-                  <div className="text-xl font-bold text-foreground mt-1">{metrics.unitEconomics.idealTicket}</div>
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">Ideal Ticket</span>
+                    <InfoTooltip side="top" size="sm">
+                      Average Revenue Per User - the average monthly revenue per paying customer.
+                    </InfoTooltip>
+                  </div>
+                  <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.idealTicket}</div>
                   <span className="text-xs text-muted-foreground">/month</span>
                 </CardContent>
               </Card>
               
               {/* Payback Period */}
-              <Card className="bg-card/50 border-border/30">
+              <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
                 <CardContent className="p-4 text-center">
-                  <span className="text-xs text-muted-foreground">Payback Period</span>
-                  <div className="text-xl font-bold text-foreground mt-1">{metrics.unitEconomics.paybackPeriod}</div>
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">Payback Period</span>
+                    <InfoTooltip side="top" size="sm">
+                      Time to recover Customer Acquisition Cost from a customer's subscription payments.
+                    </InfoTooltip>
+                  </div>
+                  <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.paybackPeriod}</div>
                   <span className="text-xs text-muted-foreground">months</span>
                 </CardContent>
               </Card>
               
               {/* LTV */}
-              <Card className="bg-card/50 border-border/30">
+              <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
                 <CardContent className="p-4 text-center">
-                  <span className="text-xs text-muted-foreground">LTV (Lifetime Value)</span>
-                  <div className="text-xl font-bold text-foreground mt-1">{metrics.unitEconomics.ltv}</div>
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">LTV (Lifetime Value)</span>
+                    <InfoTooltip side="top" size="sm">
+                      Customer Lifetime Value - total revenue expected from a customer during their entire relationship.
+                    </InfoTooltip>
+                  </div>
+                  <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.ltv}</div>
                   <span className="text-xs text-muted-foreground">{metrics.unitEconomics.ltvMonths} months</span>
                 </CardContent>
               </Card>
               
               {/* LTV/CAC Ratio - Calculated */}
-              <Card className="bg-card/50 border-border/30">
+              <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
                 <CardContent className="p-4 text-center">
-                  <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
+                    <InfoTooltip side="top" size="sm">
+                      Calculated ratio of Customer Lifetime Value to Acquisition Cost. Higher is better (LTV ÷ CAC).
+                    </InfoTooltip>
+                  </div>
                   <div className="flex items-center justify-center gap-1.5 mt-1">
-                    <span className="text-xl font-bold text-accent">
+                    <span className="text-2xl font-bold text-gradient-gold">
                       {metrics.unitEconomics.ltvCacCalculated}x
                     </span>
                     {metrics.ltvCacCalculated && metrics.ltvCacCalculated >= 3 && (
-                      <CheckCircle className="h-4 w-4 text-accent" />
+                      <CheckCircle className="h-4 w-4 text-amber-500" />
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground">calculated</span>
@@ -467,10 +512,15 @@ const FinancialReturnSection = () => {
               </Card>
               
               {/* LTV/CAC Target */}
-              <Card className="bg-card/50 border-border/30">
+              <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
                 <CardContent className="p-4 text-center">
-                  <span className="text-xs text-muted-foreground">LTV/CAC Target</span>
-                  <div className="text-xl font-bold text-foreground mt-1">{metrics.unitEconomics.ltvCacRatio}x</div>
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">LTV/CAC Target</span>
+                    <InfoTooltip side="top" size="sm">
+                      Industry target for healthy unit economics. 3x+ indicates sustainable growth potential.
+                    </InfoTooltip>
+                  </div>
+                  <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.ltvCacRatio}x</div>
                   <span className="text-xs text-muted-foreground">healthy (&gt;3x)</span>
                 </CardContent>
               </Card>
@@ -478,12 +528,17 @@ const FinancialReturnSection = () => {
             
             {/* How it works */}
             {metrics.unitEconomics.howItWorks && metrics.idealTicket && (
-              <Card className="bg-accent/5 border-accent/20">
+              <Card className="glass-card border-amber-500/20">
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">How it works: </span>
-                    {metrics.unitEconomics.howItWorks}
-                  </p>
+                  <div className="flex items-start gap-3">
+                    <div className="p-1.5 rounded-lg bg-amber-500/20 flex-shrink-0">
+                      <Zap className="h-4 w-4 text-amber-400" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">How it works: </span>
+                      {metrics.unitEconomics.howItWorks}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             )}
