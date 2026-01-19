@@ -16,9 +16,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 
 const FinancialReturnSection = () => {
@@ -269,32 +266,58 @@ const FinancialReturnSection = () => {
                 </InfoTooltip>
               </div>
               
-              {/* Donut Chart */}
+              {/* Premium Circular Progress - Same style as Hero */}
               <div className="relative h-40 flex items-center justify-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: "ROI", value: Math.min(Math.abs(metrics.roiYear1Num || 0), 250) },
-                        { name: "Remaining", value: Math.max(0, 250 - Math.abs(metrics.roiYear1Num || 0)) }
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={70}
-                      startAngle={90}
-                      endAngle={-270}
-                      dataKey="value"
-                    >
-                      <Cell fill="#F59E0B" />
-                      <Cell fill="hsl(var(--muted))" opacity={0.2} />
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                {/* Center text */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold text-gradient-gold">{metrics.roiYear1}</span>
-                  <TrendingUp className="h-4 w-4 text-amber-500" />
+                <div className="relative w-32 h-32 drop-shadow-[0_0_20px_rgba(251,191,36,0.25)]">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <defs>
+                      <linearGradient id="roiScoreGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#F59E0B" />
+                        <stop offset="50%" stopColor="#FBBF24" />
+                        <stop offset="100%" stopColor="#FCD34D" />
+                      </linearGradient>
+                      <filter id="roiGlow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    {/* Background circle */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      stroke="currentColor"
+                      strokeWidth="7"
+                      fill="transparent"
+                      className="text-muted/20"
+                    />
+                    {/* Progress circle with gradient and glow */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      stroke="url(#roiScoreGradient)"
+                      strokeWidth="7"
+                      fill="transparent"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(Math.min(Math.abs(metrics.roiYear1Num || 0), 250) / 250) * 2 * Math.PI * 42} ${2 * Math.PI * 42}`}
+                      className="transition-all duration-1000"
+                      filter="url(#roiGlow)"
+                    />
+                  </svg>
+                  {/* Center text */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-3xl font-bold bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent">
+                      {metrics.roiYear1}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <TrendingUp className="h-3.5 w-3.5 text-amber-500" />
+                      <span className="text-[10px] text-muted-foreground">ROI</span>
+                    </div>
+                  </div>
                 </div>
               </div>
               
