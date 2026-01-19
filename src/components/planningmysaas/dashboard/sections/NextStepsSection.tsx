@@ -173,7 +173,8 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   const sectionInvestment = getSectionInvestment(reportData);
   
   // MVP Price from section_investment only (no legacy fallback)
-  const mvpPriceCents = sectionInvestment?.investment_one_payment_cents ?? 0;
+  // Use safeNumber to handle scientific notation strings from JSONB
+  const mvpPriceCents = safeNumber(sectionInvestment?.investment_one_payment_cents, 0);
   const mvpPrice = mvpPriceCents > 0 ? mvpPriceCents / 100 : 0;
   
   // Get discount strategy from section_investment (with calculated fallbacks)

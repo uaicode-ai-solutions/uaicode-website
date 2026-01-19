@@ -142,11 +142,25 @@ export function parseRatio(value: string | null | undefined): number | null {
 }
 
 /**
- * Convert cents to USD dollars
+ * Safely convert any value to a number, handling scientific notation strings
+ * This is critical for Supabase JSONB which may return large numbers as "1.45e+07"
  */
-export function parseCentsToUSD(cents: number | null | undefined): number | null {
+export function safeNumber(value: unknown, fallback: number = 0): number {
+  if (value === null || value === undefined) return fallback;
+  const num = typeof value === 'string' ? Number(value) : Number(value);
+  return isNaN(num) ? fallback : num;
+}
+
+/**
+ * Convert cents to USD dollars
+ * Handles scientific notation strings from Supabase JSONB (e.g., "1.45e+07")
+ */
+export function parseCentsToUSD(cents: number | string | null | undefined): number | null {
   if (cents === null || cents === undefined) return null;
-  return cents / 100;
+  // Handle scientific notation strings from JSONB
+  const numValue = typeof cents === 'string' ? Number(cents) : cents;
+  if (isNaN(numValue)) return null;
+  return numValue / 100;
 }
 
 /**
@@ -179,32 +193,38 @@ export function parseCustomerRange(value: string | null | undefined): MoneyRange
 
 /**
  * Format number as currency string
+ * Handles scientific notation strings from Supabase JSONB (e.g., "1.45e+07")
  */
 export function formatCurrency(value: number | string | null | undefined, fallback = "..."): string {
   if (value === null || value === undefined) return fallback;
   
-  // If already formatted string, return it
+  let numValue: number;
+  
   if (typeof value === 'string') {
+    // If already formatted string with currency symbols, return it
     if (value.includes('$') || value.includes('K') || value.includes('M') || value.includes('B')) {
       return value;
     }
-    const numValue = parseFloat(value.replace(/[^0-9.-]/g, ''));
+    // Use Number() to handle scientific notation (e.g., "1.45e+07")
+    // DO NOT use regex replacement as it destroys scientific notation
+    numValue = Number(value);
     if (isNaN(numValue)) return fallback;
-    value = numValue;
+  } else {
+    numValue = value;
   }
   
-  if (typeof value !== 'number' || isNaN(value)) return fallback;
+  if (typeof numValue !== 'number' || isNaN(numValue)) return fallback;
   
-  if (value >= 1000000000) {
-    return `$${(value / 1000000000).toFixed(1)}B`;
+  if (numValue >= 1000000000) {
+    return `$${(numValue / 1000000000).toFixed(1)}B`;
   }
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
+  if (numValue >= 1000000) {
+    return `$${(numValue / 1000000).toFixed(1)}M`;
   }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`;
+  if (numValue >= 1000) {
+    return `$${(numValue / 1000).toFixed(0)}K`;
   }
-  return `$${value.toFixed(0)}`;
+  return `$${numValue.toFixed(0)}`;
 }
 
 /**

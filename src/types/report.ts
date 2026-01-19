@@ -336,8 +336,14 @@ export const safeValue = (value: string | null | undefined, fallback = "..."): s
   return value?.trim() || fallback;
 };
 
-export const safeNumber = (value: number | null | undefined, fallback = 0): number => {
-  return value ?? fallback;
+/**
+ * Safely convert any value to a number, handling scientific notation strings
+ * This is critical for Supabase JSONB which may return large numbers as "1.45e+07"
+ */
+export const safeNumber = (value: unknown, fallback = 0): number => {
+  if (value === null || value === undefined) return fallback;
+  const num = typeof value === 'string' ? Number(value) : Number(value);
+  return isNaN(num) ? fallback : num;
 };
 
 // ==========================================

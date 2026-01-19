@@ -113,15 +113,19 @@ const InvestmentSection = () => {
   const breakdownLoading = frontendLoading || backendLoading || integrationsLoading || infraLoading || testingLoading;
 
   // Format currency with fallback "..." or skeleton
-  const formatValueOrFallback = (cents: number | null | undefined, loading?: boolean) => {
+  // Uses Number() to handle scientific notation strings from Supabase JSONB
+  const formatValueOrFallback = (cents: number | string | null | undefined, loading?: boolean) => {
     if (loading) return null; // Will render skeleton
     if (cents === null || cents === undefined) return "...";
+    // Handle scientific notation strings from JSONB (e.g., "1.45e+07")
+    const numCents = typeof cents === 'string' ? Number(cents) : cents;
+    if (isNaN(numCents)) return "...";
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(cents / 100);
+    }).format(numCents / 100);
   };
 
   // Colors for donut chart
