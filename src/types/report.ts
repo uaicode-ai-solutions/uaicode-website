@@ -250,9 +250,14 @@ export interface GrowthTargetMetrics {
 
 export interface GrowthIntelligenceSection {
   growth_targets: {
-    six_month_targets: GrowthTargetMetrics;
-    twelve_month_targets: GrowthTargetMetrics;
-    twenty_four_month_targets: GrowthTargetMetrics;
+    // Legacy format (for backwards compatibility)
+    six_month_targets?: GrowthTargetMetrics;
+    twelve_month_targets?: GrowthTargetMetrics;
+    twenty_four_month_targets?: GrowthTargetMetrics;
+    // New format from n8n (numeric keys)
+    "6_month"?: GrowthTargetMetrics;
+    "12_month"?: GrowthTargetMetrics;
+    "24_month"?: GrowthTargetMetrics;
   };
   monetization?: {
     pricing_strategy: string;

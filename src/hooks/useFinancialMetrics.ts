@@ -132,17 +132,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const opportunitySection = reportData?.opportunity_section as Record<string, unknown> | null;
     
     // ============================================
-    // DEBUG: Log input data structure
-    // ============================================
-    console.log('[FinancialMetrics] Input reportData:', {
-      hasGrowthIntelligence: !!growthIntelligence,
-      growthIntelligenceKeys: growthIntelligence ? Object.keys(growthIntelligence) : [],
-      hasSectionInvestment: !!sectionInvestment,
-      sectionInvestmentKeys: sectionInvestment ? Object.keys(sectionInvestment) : [],
-    });
-    
-    // ============================================
-    // Extract Growth Targets (handles both string and object formats)
+    // Extract Growth Targets (handles both new and legacy key formats)
     // ============================================
     const growthTargets = safeGet(growthIntelligence, 'growth_targets', null) as Record<string, unknown> | null;
     
@@ -151,20 +141,10 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const twelveMonthTargets = safeGet(growthTargets, '12_month', null) ?? safeGet(growthTargets, 'twelve_month_targets', null);
     const twentyFourMonthTargets = safeGet(growthTargets, '24_month', null) ?? safeGet(growthTargets, 'twenty_four_month_targets', null);
     
-    // DEBUG: Log targets structure
-    console.log('[FinancialMetrics] Growth Targets:', {
-      growthTargetsKeys: growthTargets ? Object.keys(growthTargets) : [],
-      twelveMonthTargets,
-      twelveMonthTargetsType: typeof twelveMonthTargets,
-    });
-    
     // MRR values - smart extraction handles both text and object formats
     const mrr6Months = smartExtractMRR(sixMonthTargets);
     const mrr12Months = smartExtractMRR(twelveMonthTargets);
     const mrr24Months = smartExtractMRR(twentyFourMonthTargets);
-    
-    // DEBUG: Log extracted MRR values
-    console.log('[FinancialMetrics] Extracted MRR:', { mrr6Months, mrr12Months, mrr24Months });
     
     // ARR values - smart extraction handles both text and object formats
     let arr12Months = smartExtractARR(twelveMonthTargets);
