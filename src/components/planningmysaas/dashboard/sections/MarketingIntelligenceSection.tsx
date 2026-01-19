@@ -341,13 +341,11 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     },
   ];
 
-  // Company profile demographics - all fullWidth for consistent vertical layout
+  // Company profile demographics - reduced to 4 items (Location & Decision Timeframe moved to ICP card)
   const demographics = [
     { icon: Users, label: "Company Size", value: companySize },
     { icon: DollarSign, label: "Budget Range", value: budgetRange },
     { icon: Building2, label: "Industry", value: industry },
-    { icon: MapPin, label: "Location", value: location },
-    { icon: Calendar, label: "Decision Timeframe", value: decisionTimeframe },
     { icon: CreditCard, label: "Pricing Model", value: pricingModel }
   ];
 
@@ -448,7 +446,30 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
               </div>
             </div>
 
-            {/* Primary Goals */}
+            {/* Location & Decision Timeframe - horizontal layout */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/50 hover:border-accent/20 transition-colors">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500/15 to-amber-400/5">
+                    <MapPin className="h-3.5 w-3.5 text-amber-500" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">Location</span>
+                </div>
+                <span className="text-sm font-medium text-foreground">{location}</span>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/50 hover:border-accent/20 transition-colors">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500/15 to-amber-400/5">
+                    <Calendar className="h-3.5 w-3.5 text-amber-500" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">Decision Timeframe</span>
+                </div>
+                <span className="text-sm font-medium text-foreground">{decisionTimeframe}</span>
+              </div>
+            </div>
+
+            {/* Key Features */}
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-3">Key Features</p>
               <div className="space-y-2">
