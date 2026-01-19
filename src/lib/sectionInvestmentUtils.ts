@@ -3,6 +3,7 @@
  */
 
 import { ReportData } from "@/types/report";
+import { safeNumber } from "@/lib/financialParsingUtils";
 
 // ==========================================
 // Section Investment Types
@@ -96,6 +97,7 @@ export function formatDeliveryWeeks(min: number, max: number): string {
 
 /**
  * Gets investment breakdown from section_investment JSONB only (no legacy fallbacks)
+ * Uses safeNumber to handle scientific notation strings from Supabase
  */
 export function getInvestmentBreakdown(
   _reportData: ReportData | null | undefined,
@@ -110,13 +112,21 @@ export function getInvestmentBreakdown(
 } {
   // Use section_investment data exclusively
   if (sectionInvestment?.investment_breakdown) {
+    // Use safeNumber to handle scientific notation strings from JSONB
+    const onePaymentValue = safeNumber(sectionInvestment.investment_one_payment_cents, 0);
+    const frontendValue = safeNumber(sectionInvestment.investment_breakdown.front_cents, 0);
+    const backendValue = safeNumber(sectionInvestment.investment_breakdown.back_cents, 0);
+    const integrationsValue = safeNumber(sectionInvestment.investment_breakdown.integrations_cents, 0);
+    const infraValue = safeNumber(sectionInvestment.investment_breakdown.infra_cents, 0);
+    const testingValue = safeNumber(sectionInvestment.investment_breakdown.testing_cents, 0);
+    
     return {
-      onePayment: sectionInvestment.investment_one_payment_cents,
-      frontend: sectionInvestment.investment_breakdown.front_cents,
-      backend: sectionInvestment.investment_breakdown.back_cents,
-      integrations: sectionInvestment.investment_breakdown.integrations_cents,
-      infra: sectionInvestment.investment_breakdown.infra_cents,
-      testing: sectionInvestment.investment_breakdown.testing_cents,
+      onePayment: onePaymentValue > 0 ? onePaymentValue : null,
+      frontend: frontendValue > 0 ? frontendValue : null,
+      backend: backendValue > 0 ? backendValue : null,
+      integrations: integrationsValue > 0 ? integrationsValue : null,
+      infra: infraValue > 0 ? infraValue : null,
+      testing: testingValue > 0 ? testingValue : null,
     };
   }
 
@@ -179,21 +189,41 @@ export function getPricingComparison(
 
 /**
  * Gets discount strategy with defaults
+ * Uses safeNumber to handle scientific notation strings from Supabase
  */
 export function getDiscountStrategy(
   sectionInvestment: SectionInvestment | null,
   mvpPriceCents: number
 ): DiscountStrategy {
-  // If we have discount_strategy from JSON, use it
+  // Handle scientific notation for mvpPriceCents
+  const safeMvpPriceCents = safeNumber(mvpPriceCents, 0);
+  
+  // If we have discount_strategy from JSON, use it with safeNumber for all _cents fields
   if (sectionInvestment?.discount_strategy) {
-    return sectionInvestment.discount_strategy;
+    const ds = sectionInvestment.discount_strategy;
+    return {
+      discount_24h_percent: safeNumber(ds.discount_24h_percent, 20),
+      discount_7d_percent: safeNumber(ds.discount_7d_percent, 15),
+      discount_30d_percent: safeNumber(ds.discount_30d_percent, 10),
+      bundle_discount_percent: safeNumber(ds.bundle_discount_percent, 25),
+      price_24h_cents: safeNumber(ds.price_24h_cents, 0),
+      price_7d_cents: safeNumber(ds.price_7d_cents, 0),
+      price_30d_cents: safeNumber(ds.price_30d_cents, 0),
+      bundle_price_cents: safeNumber(ds.bundle_price_cents, 0),
+      savings_24h_cents: safeNumber(ds.savings_24h_cents, 0),
+      savings_7d_cents: safeNumber(ds.savings_7d_cents, 0),
+      savings_30d_cents: safeNumber(ds.savings_30d_cents, 0),
+      savings_bundle_cents: safeNumber(ds.savings_bundle_cents, 0),
+      savings_vs_traditional_24h_cents: safeNumber(ds.savings_vs_traditional_24h_cents, 0),
+      savings_vs_traditional_24h_percent: safeNumber(ds.savings_vs_traditional_24h_percent, 0),
+    };
   }
 
   // Fallback to calculated defaults (10%, 15%, 20%, 25% bundle)
-  const price10 = Math.round(mvpPriceCents * 0.90);
-  const price15 = Math.round(mvpPriceCents * 0.85);
-  const price20 = Math.round(mvpPriceCents * 0.80);
-  const bundle = Math.round(mvpPriceCents * 0.75);
+  const price10 = Math.round(safeMvpPriceCents * 0.90);
+  const price15 = Math.round(safeMvpPriceCents * 0.85);
+  const price20 = Math.round(safeMvpPriceCents * 0.80);
+  const bundle = Math.round(safeMvpPriceCents * 0.75);
 
   return {
     discount_24h_percent: 20,
@@ -204,10 +234,10 @@ export function getDiscountStrategy(
     price_7d_cents: price15,
     price_30d_cents: price10,
     bundle_price_cents: bundle,
-    savings_24h_cents: mvpPriceCents - price20,
-    savings_7d_cents: mvpPriceCents - price15,
-    savings_30d_cents: mvpPriceCents - price10,
-    savings_bundle_cents: mvpPriceCents - bundle,
+    savings_24h_cents: safeMvpPriceCents - price20,
+    savings_7d_cents: safeMvpPriceCents - price15,
+    savings_30d_cents: safeMvpPriceCents - price10,
+    savings_bundle_cents: safeMvpPriceCents - bundle,
     savings_vs_traditional_24h_cents: 0,
     savings_vs_traditional_24h_percent: 0,
   };
