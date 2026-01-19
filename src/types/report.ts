@@ -191,6 +191,7 @@ export interface ICPPersonaSummary {
   main_competitors: string[];
   key_features?: string[];
   top_evaluation_criteria?: string[];
+  preferred_pricing_model?: string;
 }
 
 export interface ICPPersona {

@@ -17,7 +17,8 @@ import {
   MapPin,
   Calendar,
   Crown,
-  Shield
+  Shield,
+  CreditCard
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -95,6 +96,42 @@ const formatFeatureName = (feature: string): string => {
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, str => str.toUpperCase())
     .trim();
+};
+
+// ============================================
+// COMPANY PROFILE HELPERS
+// ============================================
+
+// Helper: Extract main value (before parentheses or semicolons)
+const extractMainValue = (value: string | undefined | null): string => {
+  if (!value?.trim()) return "...";
+  // Remove text inside parentheses and after semicolons
+  const cleaned = value.split("(")[0].split(";")[0].trim();
+  // Capitalize first letter if starts with text
+  if (cleaned.length === 0) return "...";
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+};
+
+// Helper: Map wizard region to display name
+const REGION_DISPLAY_MAP: Record<string, string> = {
+  us: "United States",
+  brazil: "Brazil",
+  europe: "Europe",
+  asia: "Asia Pacific"
+};
+
+const getLocationDisplay = (region: string | null | undefined): string => {
+  if (!region) return "...";
+  const lowerRegion = region.toLowerCase();
+  return REGION_DISPLAY_MAP[lowerRegion] || region.charAt(0).toUpperCase() + region.slice(1);
+};
+
+// Helper: Format pricing model (capitalize first letter)
+const formatPricingModel = (value: string | undefined | null): string => {
+  if (!value?.trim()) return "...";
+  const main = value.split(";")[0].trim();
+  if (main.length === 0) return "...";
+  return main.charAt(0).toUpperCase() + main.slice(1);
 };
 
 // Helper: calculate competitive position from data
@@ -217,21 +254,27 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     primaryPersona?.industry_focus?.split(",")[0]?.trim()
   );
   
-  // Other profile data
-  const companySize = getValue(primaryPersona?.company_size);
-  const budgetRange = getValue(primaryPersona?.buying_behavior?.budget_range);
-  const decisionTimeframe = getValue(primaryPersona?.buying_behavior?.decision_timeframe);
+  // ============================================
+  // COMPANY PROFILE DATA (from summary)
+  // ============================================
   
-  // Get industry from highest value segment or persona
-  const industry = getValue(
-    icpData?.market_insights?.highest_value_segment || 
-    primaryPersona?.industry_focus?.split(",")[0]?.trim()
-  );
-  
-  // Get location from market insights
-  const location = getValue(icpData?.market_insights?.total_addressable_personas?.includes("Urban") 
-    ? "Urban Markets" 
-    : undefined);
+  // Company Size: From summary.company_size, extract main value only
+  const companySize = extractMainValue(primaryPersona?.summary?.company_size);
+
+  // Budget Range: From summary.budget_range, extract main value only
+  const budgetRange = extractMainValue(primaryPersona?.summary?.budget_range);
+
+  // Industry: From summary.industry_focus
+  const industry = getValue(primaryPersona?.summary?.industry_focus);
+
+  // Location: From wizard's geographic_region
+  const location = getLocationDisplay(report?.geographic_region);
+
+  // Decision Timeframe: From summary.decision_timeframe, extract main value only
+  const decisionTimeframe = extractMainValue(primaryPersona?.summary?.decision_timeframe);
+
+  // Preferred Pricing Model: From summary.preferred_pricing_model
+  const pricingModel = formatPricingModel(primaryPersona?.summary?.preferred_pricing_model);
 
   // Primary Goals: From summary.key_features, formatted
   const keyFeatures = primaryPersona?.summary?.key_features || [];
@@ -275,10 +318,11 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // Company profile demographics
   const demographics = [
     { icon: Users, label: "Company Size", value: companySize },
-    { icon: DollarSign, label: "Annual Revenue", value: "..." },
+    { icon: DollarSign, label: "Budget Range", value: budgetRange },
     { icon: Building2, label: "Industry", value: industry },
     { icon: MapPin, label: "Location", value: location },
-    { icon: Calendar, label: "Business Stage", value: decisionTimeframe !== "..." ? "Growth (2-7 yrs)" : "..." }
+    { icon: Calendar, label: "Decision Timeframe", value: decisionTimeframe },
+    { icon: CreditCard, label: "Pricing Model", value: pricingModel }
   ];
 
   // Decision maker icons
