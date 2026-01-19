@@ -34,25 +34,17 @@ import { useReport } from "@/hooks/useReport";
 // Section Components
 import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHero";
 import ExecutiveVerdict from "@/components/planningmysaas/dashboard/sections/ExecutiveVerdict";
-import BusinessModelSection from "@/components/planningmysaas/dashboard/sections/BusinessModelSection";
 import MarketOpportunitySection from "@/components/planningmysaas/dashboard/sections/MarketOpportunitySection";
 import MarketTimingSection from "@/components/planningmysaas/dashboard/sections/MarketTimingSection";
 import CustomerPainPointsSection from "@/components/planningmysaas/dashboard/sections/CustomerPainPointsSection";
 import MacroTrendsSection from "@/components/planningmysaas/dashboard/sections/MacroTrendsSection";
 import RiskFactorsSection from "@/components/planningmysaas/dashboard/sections/RiskFactorsSection";
-import DemandValidationSection from "@/components/planningmysaas/dashboard/sections/DemandValidationSection";
 import DemandSignalsSection from "@/components/planningmysaas/dashboard/sections/DemandSignalsSection";
-import TimingAnalysisSection from "@/components/planningmysaas/dashboard/sections/TimingAnalysisSection";
-import MarketBenchmarksSection from "@/components/planningmysaas/dashboard/sections/MarketBenchmarksSection";
 import CompetitorsDifferentiationSection from "@/components/planningmysaas/dashboard/sections/CompetitorsDifferentiationSection";
-import GoToMarketPreviewSection from "@/components/planningmysaas/dashboard/sections/GoToMarketPreviewSection";
 import MarketingIntelligenceSection from "@/components/planningmysaas/dashboard/sections/MarketingIntelligenceSection";
 import InvestmentSection from "@/components/planningmysaas/dashboard/sections/InvestmentSection";
-import ResourceRequirementsSection from "@/components/planningmysaas/dashboard/sections/ResourceRequirementsSection";
 import FinancialReturnSection from "@/components/planningmysaas/dashboard/sections/FinancialReturnSection";
-import PivotScenariosSection from "@/components/planningmysaas/dashboard/sections/PivotScenariosSection";
 import ExecutionPlanSection from "@/components/planningmysaas/dashboard/sections/ExecutionPlanSection";
-import SuccessMetricsSection from "@/components/planningmysaas/dashboard/sections/SuccessMetricsSection";
 import WhyUaicodeSection from "@/components/planningmysaas/dashboard/sections/WhyUaicodeSection";
 import NextStepsSection from "@/components/planningmysaas/dashboard/sections/NextStepsSection";
 import ScheduleCallSection from "@/components/planningmysaas/dashboard/sections/ScheduleCallSection";
@@ -491,29 +483,21 @@ const PmsDashboardContent = () => {
             {activeTab === "report" && (
                 <div className="space-y-16">
                   <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
-                <ExecutiveVerdict />
-                <MarketOpportunitySection />
-                <DemandSignalsSection />
-                <MarketTimingSection />
-                <CustomerPainPointsSection />
-                <MacroTrendsSection />
-                <RiskFactorsSection />
-                <BusinessModelSection />
-                <DemandValidationSection />
-                <TimingAnalysisSection />
-                <MarketBenchmarksSection />
-                <CompetitorsDifferentiationSection />
-                <GoToMarketPreviewSection onNavigateToMarketing={() => setActiveTab("marketing")} />
-                <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
-                <InvestmentSection />
-                <ResourceRequirementsSection />
-                <FinancialReturnSection />
-                <PivotScenariosSection />
-                <ExecutionPlanSection />
-                <SuccessMetricsSection />
-                <WhyUaicodeSection />
-                <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
-                <ScheduleCallSection projectName={projectName} />
+                  <ExecutiveVerdict />
+                  <MarketOpportunitySection />
+                  <DemandSignalsSection />
+                  <MarketTimingSection />
+                  <CustomerPainPointsSection />
+                  <MacroTrendsSection />
+                  <RiskFactorsSection />
+                  <CompetitorsDifferentiationSection />
+                  <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
+                  <InvestmentSection />
+                  <FinancialReturnSection />
+                  <ExecutionPlanSection />
+                  <WhyUaicodeSection />
+                  <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
+                  <ScheduleCallSection projectName={projectName} />
                 </div>
             )}
 
