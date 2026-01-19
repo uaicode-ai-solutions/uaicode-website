@@ -134,6 +134,24 @@ const formatPricingModel = (value: string | undefined | null): string => {
   return main.charAt(0).toUpperCase() + main.slice(1);
 };
 
+// Helper: Extract budget value (only monetary amount + period)
+const extractBudgetValue = (value: string | undefined | null): string => {
+  if (!value?.trim()) return "...";
+  // Match pattern like "$50-150/month" or "$100/month"
+  const budgetMatch = value.match(/\$[\d,]+-?[\d,]*\/\w+/);
+  if (budgetMatch) {
+    return budgetMatch[0];
+  }
+  // Fallback: take first part before space after /
+  const parts = value.split(" ");
+  for (const part of parts) {
+    if (part.includes("$") && part.includes("/")) {
+      return part;
+    }
+  }
+  return extractMainValue(value);
+};
+
 // Helper: calculate competitive position from data
 const getCompetitivePosition = (icpData: ICPIntelligenceSection | null): { value: string; percent: number } => {
   if (!icpData?.aggregated_insights?.competitive_threats) {
@@ -262,7 +280,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   const companySize = extractMainValue(primaryPersona?.summary?.company_size);
 
   // Budget Range: From summary.budget_range, extract main value only
-  const budgetRange = extractMainValue(primaryPersona?.summary?.budget_range);
+  const budgetRange = extractBudgetValue(primaryPersona?.summary?.budget_range);
 
   // Industry: From summary.industry_focus
   const industry = getValue(primaryPersona?.summary?.industry_focus);
@@ -317,12 +335,12 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
 
   // Company profile demographics
   const demographics = [
-    { icon: Users, label: "Company Size", value: companySize },
-    { icon: DollarSign, label: "Budget Range", value: budgetRange },
-    { icon: Building2, label: "Industry", value: industry },
-    { icon: MapPin, label: "Location", value: location },
-    { icon: Calendar, label: "Decision Timeframe", value: decisionTimeframe },
-    { icon: CreditCard, label: "Pricing Model", value: pricingModel }
+    { icon: Users, label: "Company Size", value: companySize, fullWidth: false },
+    { icon: DollarSign, label: "Budget Range", value: budgetRange, fullWidth: false },
+    { icon: Building2, label: "Industry", value: industry, fullWidth: true },
+    { icon: MapPin, label: "Location", value: location, fullWidth: false },
+    { icon: Calendar, label: "Decision Timeframe", value: decisionTimeframe, fullWidth: false },
+    { icon: CreditCard, label: "Pricing Model", value: pricingModel, fullWidth: true }
   ];
 
   // Decision maker icons
@@ -455,7 +473,9 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                 return (
                   <div 
                     key={i} 
-                    className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/50 hover:border-accent/20 transition-colors"
+                    className={`p-3 rounded-xl bg-muted/30 border border-border/50 hover:border-accent/20 transition-colors ${
+                      item.fullWidth ? 'flex flex-col gap-2' : 'flex items-center justify-between'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500/15 to-amber-400/5">
@@ -463,7 +483,11 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                       </div>
                       <span className="text-sm text-muted-foreground">{item.label}</span>
                     </div>
-                    <span className="text-sm font-medium text-foreground">{item.value}</span>
+                    <span className={`text-sm font-medium text-foreground ${
+                      item.fullWidth ? 'pl-8' : ''
+                    }`}>
+                      {item.value}
+                    </span>
                   </div>
                 );
               })}
