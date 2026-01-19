@@ -380,7 +380,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
 
             {/* Primary Goals */}
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-3">Primary Goals</p>
+              <p className="text-sm font-medium text-muted-foreground mb-3">Key Features</p>
               <div className="space-y-2">
                 {displayGoals.map((goal, i) => (
                   <div 
