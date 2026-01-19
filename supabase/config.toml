@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.pms-generate-all-avatars]
 verify_jwt = false
+
+[functions.pms-smart-fallback]
+verify_jwt = false
