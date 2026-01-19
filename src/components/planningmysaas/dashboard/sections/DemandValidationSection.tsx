@@ -4,15 +4,32 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
-import { DemandValidation } from "@/types/report";
+import { DemandValidation, OpportunitySection } from "@/types/report";
 
 const DemandValidationSection = () => {
-  const { report } = useReportContext();
+  const { report, reportData } = useReportContext();
   
-  // Parse demand validation from report
+  // UNIFIED: Get pain points from opportunity_section (primary source)
+  const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
+  const painPointsFromOpportunity = opportunityData?.customer_pain_points || [];
+  
+  // Parse demand validation from report (for other fields)
   const rawDemandValidation = parseJsonField<DemandValidation>(report?.demand_validation, null);
   
-  const demandValidation = rawDemandValidation || emptyStates.demandValidation;
+  // Merge pain points from opportunity_section into demand validation
+  const demandValidation = rawDemandValidation 
+    ? {
+        ...rawDemandValidation,
+        // Use opportunity_section pain points if available, otherwise use demand_validation ones
+        painPoints: painPointsFromOpportunity.length > 0 
+          ? painPointsFromOpportunity.map(pp => ({
+              pain: pp.pain_point,
+              intensity: parseInt(pp.intensity_score.replace(/[^\d]/g, '')) || 70,
+              source: pp.market_evidence || "Market Research"
+            }))
+          : rawDemandValidation.painPoints || []
+      }
+    : emptyStates.demandValidation;
 
   const getIntensityColor = (intensity: number) => {
     if (intensity >= 80) return "bg-red-500/20 text-red-400 border-red-500/30";

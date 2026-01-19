@@ -228,9 +228,18 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       ltv = Math.round(idealTicket * avgLifetimeMonths);
     }
     
-    // Payback Period: CAC / ARPU
+    // ============================================
+    // Payback Period: Prioritize database value, fallback to calculation
+    // ============================================
+    const paybackFromInvestment = safeGet(sectionInvestment, 'payback_period', null) as string | null;
     let paybackPeriod: number | null = null;
-    if (targetCac && idealTicket && idealTicket > 0) {
+    if (paybackFromInvestment) {
+      // Extract number from strings like "8 months" or "8-12 months"
+      const match = paybackFromInvestment.match(/(\d+)/);
+      paybackPeriod = match ? parseInt(match[1], 10) : null;
+    }
+    // Fallback: calculate from CAC / ARPU
+    if (!paybackPeriod && targetCac && idealTicket && idealTicket > 0) {
       paybackPeriod = Math.round(targetCac.avg / idealTicket);
     }
     
@@ -241,31 +250,58 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     }
     
     // ============================================
-    // REALISTIC Break-even Calculation
-    // Uses S-curve growth and includes all costs
+    // Extract margin and operational cost from report (more realistic values)
     // ============================================
+    const marginFromReport = safeGet(growthIntelligence, 'profit_margin', null) as string | null;
+    let marginPercent = 0.65; // 65% default (more conservative than 70%)
+    if (marginFromReport) {
+      const marginMatch = marginFromReport.match(/(\d+)/);
+      if (marginMatch) marginPercent = parseInt(marginMatch[1], 10) / 100;
+    }
+    
+    // Operational cost based on MVP size
+    const mvpPriceCents = safeGet(sectionInvestment, 'mvp_price_cents', 0) as number;
+    const operationalCostPercent = mvpPriceCents > 5000000 ? 0.03 : 0.02; // 2-3%
+    
+    // ============================================
+    // REALISTIC Break-even Calculation
+    // Prioritize database value, fallback to calculation
+    // ============================================
+    const breakEvenFromInvestment = safeGet(sectionInvestment, 'break_even_months', null) as string | null;
     let breakEvenMonthsNum: number | null = null;
-    if (mvpInvestment && mrr12Months && mrr12Months.avg > 0) {
+    if (breakEvenFromInvestment) {
+      const match = breakEvenFromInvestment.match(/(\d+)/);
+      breakEvenMonthsNum = match ? parseInt(match[1], 10) : null;
+    }
+    // Fallback: calculate with realistic assumptions
+    if (!breakEvenMonthsNum && mvpInvestment && mrr12Months && mrr12Months.avg > 0) {
       breakEvenMonthsNum = calculateRealisticBreakEven(
         mrr12Months.avg,
         mvpInvestment,
         effectiveMarketingBudget,
-        0.01, // 1% operational cost
-        0.70  // 70% margin
+        operationalCostPercent,
+        marginPercent
       );
     }
     
     // ============================================
     // REALISTIC ROI Year 1 Calculation
-    // Includes MVP, marketing, and operational costs
+    // Prioritize database value, fallback to calculation
     // ============================================
+    const roiFromInvestment = safeGet(sectionInvestment, 'expected_roi', null) as string | null;
     let roiYear1Num: number | null = null;
-    if (mrr12Months && mvpInvestment && mvpInvestment > 0) {
+    if (roiFromInvestment) {
+      // Extract percentage from strings like "150%" or "150-200%"
+      const match = roiFromInvestment.match(/(-?\d+)/);
+      roiYear1Num = match ? parseInt(match[1], 10) : null;
+    }
+    // Fallback: calculate with realistic assumptions
+    if (roiYear1Num === null && mrr12Months && mvpInvestment && mvpInvestment > 0) {
       roiYear1Num = calculateRealisticROI(
         mrr12Months.avg,
         mvpInvestment,
         effectiveMarketingBudget,
-        0.01 // 1% operational cost
+        operationalCostPercent
       );
     }
     
@@ -345,9 +381,10 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     });
     
     // Year 3 - Project based on Year 2 with growth
+    // Use market growth rate from report, with more conservative 25% fallback
     const marketGrowthRateStr = safeGet(opportunitySection, 'market_growth_rate', null) as string | null;
     const marketGrowth = parsePercentageRange(marketGrowthRateStr);
-    const growthMultiplier = marketGrowth ? 1 + (marketGrowth.avg / 100) : 1.3; // Default 30% growth
+    const growthMultiplier = marketGrowth ? 1 + (marketGrowth.avg / 100) : 1.25; // Default 25% growth (conservative)
     
     if (arr24Months && mrr24Months) {
       const arr36 = arr24Months.avg * growthMultiplier;
