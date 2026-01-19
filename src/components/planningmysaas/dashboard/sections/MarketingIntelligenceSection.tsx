@@ -195,58 +195,54 @@ const getExpectedROAS = (icpData: ICPIntelligenceSection | null): { value: strin
   };
 };
 
-// Helper: extract decision makers from evaluation criteria
+// Helper: extract roles from job_title field (format: "Role 1 / Role 2")
+const getJobTitleRoles = (jobTitle: string | undefined | null): string[] => {
+  if (!jobTitle) return [];
+  return jobTitle.split('/').map(role => role.trim()).filter(Boolean);
+};
+
+// Helper: generate initials from role name (max 2-3 letters)
+const getRoleInitials = (role: string): string => {
+  const words = role.split(' ').filter(w => w.length > 2);
+  if (words.length === 0) return role.substring(0, 2).toUpperCase();
+  return words.slice(0, 2).map(w => w[0].toUpperCase()).join('');
+};
+
+// Helper: extract decision makers - Card 1 fixed, Cards 2-3 from job_title
 const getDecisionMakers = (persona: ICPPersona | null): Array<{ role: string; initials: string; influence: string; percent: number }> => {
-  const criteria = persona?.buying_behavior?.evaluation_criteria;
-  
-  if (!criteria || criteria.length === 0) {
-    return [
-      { role: "...", initials: "?", influence: "...", percent: 0 },
-      { role: "...", initials: "?", influence: "...", percent: 0 },
-      { role: "...", initials: "?", influence: "...", percent: 0 }
-    ];
-  }
-  
-  // Map common evaluation criteria to decision maker roles
-  const roleMap: Record<string, { role: string; initials: string; influence: string; percent: number }> = {
-    "ROI": { role: "Owner/CEO", initials: "CEO", influence: "Final decision", percent: 85 },
-    "Ease of use": { role: "Ops Manager", initials: "OM", influence: "Daily usage", percent: 65 },
-    "Cost": { role: "Accountant", initials: "ACC", influence: "Cost approval", percent: 55 },
-    "Integration": { role: "IT Manager", initials: "IT", influence: "Tech review", percent: 60 },
-    "Scalability": { role: "Growth Lead", initials: "GL", influence: "Strategy", percent: 50 },
-    "Support": { role: "Ops Manager", initials: "OM", influence: "Daily usage", percent: 65 }
+  // Card 1: Always fixed as Owner/CEO
+  const ceo = { 
+    role: "Owner/CEO", 
+    initials: "CEO", 
+    influence: "Final decision", 
+    percent: 85 
   };
   
-  const makers: Array<{ role: string; initials: string; influence: string; percent: number }> = [];
+  // Extract roles from job_title field
+  const jobTitle = persona?.summary?.job_title;
+  const roles = getJobTitleRoles(jobTitle);
   
-  for (const criterion of criteria) {
-    const key = Object.keys(roleMap).find(k => 
-      criterion.toLowerCase().includes(k.toLowerCase())
-    );
-    if (key && makers.length < 3) {
-      const maker = roleMap[key];
-      if (!makers.find(m => m.role === maker.role)) {
-        makers.push(maker);
-      }
-    }
-  }
+  // Card 2: First role from job_title or fallback
+  const role2 = roles[0] || "Growth Lead";
+  const role2Initials = getRoleInitials(role2) || "GL";
+  const secondMaker = {
+    role: role2,
+    initials: role2Initials,
+    influence: "Key evaluator",
+    percent: 70
+  };
   
-  // Fill with defaults if needed
-  while (makers.length < 3) {
-    const defaults = [
-      { role: "Owner/CEO", initials: "CEO", influence: "Final decision", percent: 85 },
-      { role: "Ops Manager", initials: "OM", influence: "Daily usage", percent: 65 },
-      { role: "Accountant", initials: "ACC", influence: "Cost approval", percent: 55 }
-    ];
-    const next = defaults[makers.length];
-    if (!makers.find(m => m.role === next.role)) {
-      makers.push(next);
-    } else {
-      makers.push({ role: "...", initials: "?", influence: "...", percent: 0 });
-    }
-  }
+  // Card 3: Second role from job_title or fallback
+  const role3 = roles[1] || "Accountant";
+  const role3Initials = getRoleInitials(role3) || "ACC";
+  const thirdMaker = {
+    role: role3,
+    initials: role3Initials,
+    influence: "Budget input",
+    percent: 55
+  };
   
-  return makers.slice(0, 3);
+  return [ceo, secondMaker, thirdMaker];
 };
 
 const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntelligenceSectionProps) => {
