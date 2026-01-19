@@ -267,3 +267,239 @@ export function extractCustomersFromTargets(targets: unknown): MoneyRange | null
   const customers = (targets as Record<string, unknown>).customers;
   return typeof customers === 'string' ? parseCustomerRange(customers) : null;
 }
+
+// ============================================
+// TEXT EXTRACTION FUNCTIONS
+// For parsing long text strings containing embedded metrics
+// ============================================
+
+/**
+ * Extract MRR from long text like "Monthly Recurring Revenue (MRR) of $35,000-55,000"
+ */
+export function extractMRRFromText(text: string | null | undefined): MoneyRange | null {
+  if (!text || typeof text !== 'string') return null;
+  
+  // Match patterns like "MRR of $35,000-55,000" or "MRR) of $90,000-150,000"
+  const mrrMatch = text.match(/(?:MRR|Monthly Recurring Revenue)[^$]*\$?([\d,]+)(?:\s*[-–—]\s*\$?([\d,]+))?/i);
+  if (mrrMatch) {
+    const min = parseInt(mrrMatch[1].replace(/,/g, ''));
+    const max = mrrMatch[2] ? parseInt(mrrMatch[2].replace(/,/g, '')) : min;
+    if (!isNaN(min) && !isNaN(max)) {
+      return { min, max, avg: (min + max) / 2 };
+    }
+  }
+  return null;
+}
+
+/**
+ * Extract ARR from long text like "Annual Recurring Revenue (ARR) of $420,000-660,000"
+ */
+export function extractARRFromText(text: string | null | undefined): MoneyRange | null {
+  if (!text || typeof text !== 'string') return null;
+  
+  // Match patterns like "ARR of $420,000" or "Annual Recurring Revenue of $1.08M-1.8M"
+  const arrMatch = text.match(/(?:ARR|Annual Recurring Revenue)[^$]*\$?([\d,.]+)([MKB])?(?:\s*[-–—]\s*\$?([\d,.]+)([MKB])?)?/i);
+  if (arrMatch) {
+    let min = parseFloat(arrMatch[1].replace(/,/g, ''));
+    let max = arrMatch[3] ? parseFloat(arrMatch[3].replace(/,/g, '')) : min;
+    
+    // Handle M/K/B suffixes
+    const minSuffix = arrMatch[2]?.toUpperCase();
+    const maxSuffix = arrMatch[4]?.toUpperCase() || minSuffix;
+    
+    if (minSuffix === 'M') min *= 1000000;
+    else if (minSuffix === 'K') min *= 1000;
+    else if (minSuffix === 'B') min *= 1000000000;
+    
+    if (maxSuffix === 'M') max *= 1000000;
+    else if (maxSuffix === 'K') max *= 1000;
+    else if (maxSuffix === 'B') max *= 1000000000;
+    
+    if (!isNaN(min) && !isNaN(max)) {
+      return { min, max, avg: (min + max) / 2 };
+    }
+  }
+  return null;
+}
+
+/**
+ * Extract Churn from text like "Churn rate of <8% monthly" or "churn <6%"
+ */
+export function extractChurnFromText(text: string | null | undefined): PercentageRange | null {
+  if (!text || typeof text !== 'string') return null;
+  
+  // Match patterns like "Churn rate of <8%" or "churn <6%" or "Churn rate of 3-5%"
+  const churnMatch = text.match(/(?:churn|churn rate)[^<\d]*([<>]?\s*[\d.]+)(?:\s*[-–—]\s*([\d.]+))?%?/i);
+  if (churnMatch) {
+    const value = churnMatch[1].trim();
+    if (value.startsWith('<')) {
+      const max = parseFloat(value.slice(1).trim());
+      if (!isNaN(max)) {
+        return { min: 0, max, avg: max / 2 };
+      }
+    } else if (value.startsWith('>')) {
+      const min = parseFloat(value.slice(1).trim());
+      if (!isNaN(min)) {
+        return { min, max: min * 1.5, avg: min * 1.25 };
+      }
+    } else {
+      const min = parseFloat(value);
+      const max = churnMatch[2] ? parseFloat(churnMatch[2]) : min;
+      if (!isNaN(min) && !isNaN(max)) {
+        return { min, max, avg: (min + max) / 2 };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Extract Customers from text like "650-1,000 total clinic customers" or "2,500-4,000 customers"
+ */
+export function extractCustomersFromText(text: string | null | undefined): MoneyRange | null {
+  if (!text || typeof text !== 'string') return null;
+  
+  // Match patterns like "650-1,000 total" or "2,500-4,000 customers"
+  const custMatch = text.match(/([\d,]+)\s*[-–—]\s*([\d,]+)\s*(?:total|customer|clinic|user|subscriber)/i);
+  if (custMatch) {
+    const min = parseInt(custMatch[1].replace(/,/g, ''));
+    const max = parseInt(custMatch[2].replace(/,/g, ''));
+    if (!isNaN(min) && !isNaN(max)) {
+      return { min, max, avg: Math.round((min + max) / 2) };
+    }
+  }
+  return null;
+}
+
+/**
+ * Extract Activation Rate from text like "Activation rate of 30-40%"
+ */
+export function extractActivationFromText(text: string | null | undefined): PercentageRange | null {
+  if (!text || typeof text !== 'string') return null;
+  
+  // Match patterns like "Activation rate of 30-40%" or "activation 45-55%"
+  const actMatch = text.match(/activation[^<\d]*([\d.]+)(?:\s*[-–—]\s*([\d.]+))?%?/i);
+  if (actMatch) {
+    const min = parseFloat(actMatch[1]);
+    const max = actMatch[2] ? parseFloat(actMatch[2]) : min;
+    if (!isNaN(min) && !isNaN(max)) {
+      return { min, max, avg: (min + max) / 2 };
+    }
+  }
+  return null;
+}
+
+/**
+ * Extract CAC from text like "$60-100 (blended; aligns with...)"
+ */
+export function extractCACFromText(text: string | null | undefined): MoneyRange | null {
+  if (!text || typeof text !== 'string') return null;
+  
+  // Match "$60-100" at the start or after "CAC"
+  const cacMatch = text.match(/\$?([\d,]+)\s*[-–—]\s*\$?([\d,]+)/);
+  if (cacMatch) {
+    const min = parseInt(cacMatch[1].replace(/,/g, ''));
+    const max = parseInt(cacMatch[2].replace(/,/g, ''));
+    if (!isNaN(min) && !isNaN(max)) {
+      return { min, max, avg: (min + max) / 2 };
+    }
+  }
+  
+  // Try single value
+  const singleMatch = text.match(/\$?([\d,]+)/);
+  if (singleMatch) {
+    const val = parseInt(singleMatch[1].replace(/,/g, ''));
+    if (!isNaN(val)) {
+      return { min: val, max: val, avg: val };
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Extract LTV/CAC ratio from text like "3:1 (assuming $29-99/mo pricing...)"
+ */
+export function extractRatioFromText(text: string | null | undefined): number | null {
+  if (!text || typeof text !== 'string') return null;
+  
+  // Match "3:1" or "3.5:1" at the start
+  const ratioMatch = text.match(/^([\d.]+)\s*:\s*(\d+)/);
+  if (ratioMatch) {
+    const numerator = parseFloat(ratioMatch[1]);
+    const denominator = parseFloat(ratioMatch[2]);
+    if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
+      return numerator / denominator;
+    }
+  }
+  
+  // Also try "ratio of X:Y" pattern
+  const altMatch = text.match(/ratio[^:]*?([\d.]+)\s*:\s*(\d+)/i);
+  if (altMatch) {
+    const numerator = parseFloat(altMatch[1]);
+    const denominator = parseFloat(altMatch[2]);
+    if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
+      return numerator / denominator;
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Extract break-even months from text like "Break-even: 12-18 months"
+ */
+export function extractBreakEvenFromText(text: string | null | undefined): MoneyRange | null {
+  if (!text || typeof text !== 'string') return null;
+  
+  // Match "break-even" followed by months
+  const beMatch = text.match(/break[\s-]*even[^:]*:?\s*([\d]+)(?:\s*[-–—]\s*([\d]+))?\s*months?/i);
+  if (beMatch) {
+    const min = parseInt(beMatch[1]);
+    const max = beMatch[2] ? parseInt(beMatch[2]) : min;
+    if (!isNaN(min) && !isNaN(max)) {
+      return { min, max, avg: Math.round((min + max) / 2) };
+    }
+  }
+  return null;
+}
+
+/**
+ * Smart extract MRR - handles both object and string formats
+ */
+export function smartExtractMRR(data: unknown): MoneyRange | null {
+  if (!data) return null;
+  if (typeof data === 'string') return extractMRRFromText(data);
+  if (typeof data === 'object') return extractMRRFromTargets(data);
+  return null;
+}
+
+/**
+ * Smart extract ARR - handles both object and string formats
+ */
+export function smartExtractARR(data: unknown): MoneyRange | null {
+  if (!data) return null;
+  if (typeof data === 'string') return extractARRFromText(data);
+  if (typeof data === 'object') return extractARRFromTargets(data);
+  return null;
+}
+
+/**
+ * Smart extract Churn - handles both object and string formats
+ */
+export function smartExtractChurn(data: unknown): PercentageRange | null {
+  if (!data) return null;
+  if (typeof data === 'string') return extractChurnFromText(data);
+  if (typeof data === 'object') return extractChurnFromTargets(data);
+  return null;
+}
+
+/**
+ * Smart extract Customers - handles both object and string formats
+ */
+export function smartExtractCustomers(data: unknown): MoneyRange | null {
+  if (!data) return null;
+  if (typeof data === 'string') return extractCustomersFromText(data);
+  if (typeof data === 'object') return extractCustomersFromTargets(data);
+  return null;
+}
