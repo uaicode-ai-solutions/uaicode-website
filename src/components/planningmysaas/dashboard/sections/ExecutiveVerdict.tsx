@@ -6,13 +6,17 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
+import { SummarySection } from "@/types/report";
 
 const ExecutiveVerdict = () => {
-  const { report } = useReportContext();
+  const { report, reportData } = useReportContext();
   
-  // Use real data only - no mock fallbacks for validation
-  const verdict = report?.verdict || "";
-  const verdictSummary = report?.verdict_summary || "";
+  // Get summary data from summary_section JSONB (prefer over legacy fields)
+  const summaryData = reportData?.summary_section as SummarySection | null;
+  
+  // Prefer summary_section, fallback to report fields
+  const verdict = summaryData?.verdict || report?.verdict || "";
+  const verdictSummary = summaryData?.verdict_summary || report?.verdict_summary || "";
 
   // Parse executive summary into bullet points for better readability
   const summaryParagraphs = verdictSummary.split('\n\n').filter(p => p.trim());
