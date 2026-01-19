@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
-import { safeNumber, OpportunitySection } from "@/types/report";
+import { safeNumber, OpportunitySection, HeroScoreSection } from "@/types/report";
 
 interface ReportHeroProps {
   projectName?: string;
@@ -42,13 +42,16 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   // Get metrics from section_investment JSONB (primary source)
   const sectionInvestment = reportData?.section_investment as Record<string, unknown> | null;
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
+  const heroScoreData = reportData?.hero_score_section as HeroScoreSection | null;
   
-  // Viability score from section_investment JSONB only
+  // Viability score: prefer hero_score_section, fallback to section_investment
   const viabilityScore = safeNumber(
-    sectionInvestment?.viability_score as number | null, 
+    heroScoreData?.score ?? (sectionInvestment?.viability_score as number | null), 
     0
   );
-  const verdictHeadline = sectionInvestment?.verdict_headline as string | null || "...";
+  
+  // Tagline: prefer hero_score_section, fallback to section_investment verdict_headline
+  const verdictHeadline = heroScoreData?.tagline || (sectionInvestment?.verdict_headline as string | null) || "...";
   
   // Total market from opportunity_section
   const rawTotalMarket = opportunityData?.tam_value || null;

@@ -289,6 +289,17 @@ export interface PaidMediaIntelligenceSection {
   }>;
 }
 
+// ==========================================
+// Hero Score Section (from tb_pms_reports.hero_score_section)
+// ==========================================
+
+export interface HeroScoreSection {
+  score?: number;           // Score de 0 a 100
+  tagline?: string;         // Frase descritiva abaixo do score
+  score_label?: string;     // Label opcional (ex: "Viability Score")
+  generated_at?: string;    // Timestamp de quando foi gerado
+}
+
 // Report data from tb_pms_reports table (simplified - legacy columns removed)
 export interface ReportData {
   id: string;
@@ -304,6 +315,7 @@ export interface ReportData {
   paid_media_intelligence_section: unknown | null;
   price_intelligence_section: unknown | null;
   growth_intelligence_section: unknown | null;
+  hero_score_section: unknown | null;
   // Generated avatar URL
   icp_avatar_url: string | null;
 }
