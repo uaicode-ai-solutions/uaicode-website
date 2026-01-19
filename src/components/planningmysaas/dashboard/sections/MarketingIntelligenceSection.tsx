@@ -342,8 +342,8 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
       icon: DollarSign, 
       value: extractBudgetValue(primaryPersona?.summary?.budget_range), 
       label: "Recommended Budget",
-      sublabel: "Paid Media",
-      tooltip: "Monthly paid media spend recommended to achieve growth targets based on your ICP and competitive landscape.",
+      sublabel: "ICP Monthly Spend",
+      tooltip: "How much your Ideal Customer Profile (ICP) is willing to spend monthly on a SaaS solution like yours, based on their budget range and purchasing behavior.",
       percent: budgetRange !== "..." ? 75 : 0
     },
     { 
@@ -446,6 +446,9 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
             <div className="flex items-center gap-2">
               <User className="h-5 w-5 text-amber-500" />
               <CardTitle className="text-lg">Your Ideal Customer</CardTitle>
+              <InfoTooltip side="right" size="sm">
+                A detailed profile of your ideal customer, including demographics, location, decision-making timeline, and the key features they value most.
+              </InfoTooltip>
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
@@ -517,6 +520,9 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
             <div className="flex items-center gap-2">
               <Building2 className="h-5 w-5 text-amber-500" />
               <CardTitle className="text-lg">Company Profile</CardTitle>
+              <InfoTooltip side="right" size="sm">
+                The typical company characteristics of your ICP, including size, budget capacity, industry focus, and preferred pricing model.
+              </InfoTooltip>
             </div>
           </CardHeader>
           <CardContent>
