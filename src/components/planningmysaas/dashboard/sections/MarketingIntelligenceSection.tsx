@@ -371,8 +371,8 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     <section id="marketing-intelligence" className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
-          <Megaphone className="h-5 w-5 text-amber-500" />
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Megaphone className="h-5 w-5 text-accent" />
         </div>
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold text-foreground">Marketing Intelligence</h2>
