@@ -54,11 +54,10 @@ const goals = [
 ];
 
 const budgets = [
-  { id: "5k-10k", title: "$5K - $10K", description: "Micro MVP" },
-  { id: "10k-25k", title: "$10K - $25K", description: "Basic MVP" },
-  { id: "25k-50k", title: "$25K - $50K", description: "Complete MVP" },
-  { id: "50k-100k", title: "$50K - $100K", description: "Robust product" },
-  { id: "100k+", title: "$100K+", description: "Enterprise solution" },
+  { id: "10k-25k", title: "$10K - $25K", description: "Starter MVP" },
+  { id: "25k-60k", title: "$25K - $60K", description: "Growth MVP" },
+  { id: "60k-160k", title: "$60K - $160K", description: "Enterprise MVP" },
+  { id: "160k+", title: "$160K+", description: "Custom Solution" },
   { id: "guidance", title: "I need guidance", description: "Help me decide" },
 ];
 

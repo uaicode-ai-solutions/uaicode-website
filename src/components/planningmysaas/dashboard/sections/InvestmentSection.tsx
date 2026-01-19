@@ -218,11 +218,10 @@ const InvestmentSection = () => {
     if (userBudget === "guidance") return null;
     
     const budgetRanges: Record<string, { min: number; max: number; label: string }> = {
-      '5k-10k':   { min: 500000,   max: 1000000,  label: '$5K - $10K' },
       '10k-25k':  { min: 1000000,  max: 2500000,  label: '$10K - $25K' },
-      '25k-50k':  { min: 2500000,  max: 5000000,  label: '$25K - $50K' },
-      '50k-100k': { min: 5000000,  max: 10000000, label: '$50K - $100K' },
-      '100k+':    { min: 10000000, max: Infinity, label: '$100K+' },
+      '25k-60k':  { min: 2500000,  max: 6000000,  label: '$25K - $60K' },
+      '60k-160k': { min: 6000000,  max: 16000000, label: '$60K - $160K' },
+      '160k+':    { min: 16000000, max: Infinity, label: '$160K+' },
     };
     
     const range = budgetRanges[userBudget];
