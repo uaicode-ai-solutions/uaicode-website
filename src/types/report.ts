@@ -232,6 +232,63 @@ export interface ICPIntelligenceSection {
   citations?: string[];
 }
 
+// ==========================================
+// Growth Intelligence Section (from tb_pms_reports.growth_intelligence_section)
+// ==========================================
+
+export interface GrowthTargetMetrics {
+  mrr: string;                    // "$35,000-55,000"
+  arr: string;                    // "$420,000-660,000"
+  customers: string;              // "650-1,000"
+  churn: string;                  // "<8%"
+  activation?: string;            // "30-40%"
+  nps?: string;                   // "40-50"
+  market_share?: string;          // "0.02-0.04%"
+  expansion_revenue?: string;     // "$150,000-250,000"
+  gross_margins?: string;         // "40-50%"
+}
+
+export interface GrowthIntelligenceSection {
+  growth_targets: {
+    six_month_targets: GrowthTargetMetrics;
+    twelve_month_targets: GrowthTargetMetrics;
+    twenty_four_month_targets: GrowthTargetMetrics;
+  };
+  monetization?: {
+    pricing_strategy: string;
+    upsell_opportunities?: string[];
+  };
+  engagement?: {
+    onboarding_insights?: {
+      time_to_value_target: string;
+    };
+    retention_strategies?: string[];
+  };
+}
+
+// ==========================================
+// Paid Media Intelligence Section (from tb_pms_reports.paid_media_intelligence_section)
+// ==========================================
+
+export interface PaidMediaIntelligenceSection {
+  performance_targets: {
+    target_cac: string;                    // "$60-100"
+    ltv_cac_ratio_target: string;          // "3:1"
+    target_roas?: string;                  // "3-4x"
+    cpc_benchmark?: string;                // "$2-5"
+  };
+  budget_strategy: {
+    recommended_marketing_budget_monthly: string;  // "$12,000"
+    channel_allocation?: Record<string, string>;   // { "Google Ads": "40%", "Meta Ads": "30%" }
+  };
+  channel_recommendations?: Array<{
+    channel: string;
+    priority: string;
+    expected_cac: string;
+    notes: string;
+  }>;
+}
+
 // Report data from tb_pms_reports table (simplified - legacy columns removed)
 export interface ReportData {
   id: string;
