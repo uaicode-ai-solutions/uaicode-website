@@ -6,17 +6,17 @@
 import { useMemo } from "react";
 import { ReportData } from "@/types/report";
 import {
-  parseMoneyRange,
   parseMoneyValue,
   parsePercentageRange,
-  parseRatio,
   parseCentsToUSD,
   formatCurrency,
   safeGet,
-  extractMRRFromTargets,
-  extractARRFromTargets,
-  extractChurnFromTargets,
-  extractCustomersFromTargets,
+  smartExtractMRR,
+  smartExtractARR,
+  smartExtractChurn,
+  smartExtractCustomers,
+  extractCACFromText,
+  extractRatioFromText,
   MoneyRange,
   PercentageRange,
 } from "@/lib/financialParsingUtils";
@@ -124,21 +124,21 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const opportunitySection = reportData?.opportunity_section as Record<string, unknown> | null;
     
     // ============================================
-    // Extract Growth Targets
+    // Extract Growth Targets (handles both string and object formats)
     // ============================================
     const growthTargets = safeGet(growthIntelligence, 'growth_targets', null) as Record<string, unknown> | null;
     const sixMonthTargets = safeGet(growthTargets, 'six_month_targets', null);
     const twelveMonthTargets = safeGet(growthTargets, 'twelve_month_targets', null);
     const twentyFourMonthTargets = safeGet(growthTargets, 'twenty_four_month_targets', null);
     
-    // MRR values
-    const mrr6Months = extractMRRFromTargets(sixMonthTargets);
-    const mrr12Months = extractMRRFromTargets(twelveMonthTargets);
-    const mrr24Months = extractMRRFromTargets(twentyFourMonthTargets);
+    // MRR values - smart extraction handles both text and object formats
+    const mrr6Months = smartExtractMRR(sixMonthTargets);
+    const mrr12Months = smartExtractMRR(twelveMonthTargets);
+    const mrr24Months = smartExtractMRR(twentyFourMonthTargets);
     
-    // ARR values (or calculate from MRR)
-    let arr12Months = extractARRFromTargets(twelveMonthTargets);
-    let arr24Months = extractARRFromTargets(twentyFourMonthTargets);
+    // ARR values - smart extraction handles both text and object formats
+    let arr12Months = smartExtractARR(twelveMonthTargets);
+    let arr24Months = smartExtractARR(twentyFourMonthTargets);
     
     // If ARR not available, calculate from MRR × 12
     if (!arr12Months && mrr12Months) {
@@ -156,15 +156,15 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       };
     }
     
-    // Customers
-    const customers6Months = extractCustomersFromTargets(sixMonthTargets);
-    const customers12Months = extractCustomersFromTargets(twelveMonthTargets);
-    const customers24Months = extractCustomersFromTargets(twentyFourMonthTargets);
+    // Customers - smart extraction
+    const customers6Months = smartExtractCustomers(sixMonthTargets);
+    const customers12Months = smartExtractCustomers(twelveMonthTargets);
+    const customers24Months = smartExtractCustomers(twentyFourMonthTargets);
     
-    // Churn
-    const churn6Months = extractChurnFromTargets(sixMonthTargets);
-    const churn12Months = extractChurnFromTargets(twelveMonthTargets);
-    const churn24Months = extractChurnFromTargets(twentyFourMonthTargets);
+    // Churn - smart extraction
+    const churn6Months = smartExtractChurn(sixMonthTargets);
+    const churn12Months = smartExtractChurn(twelveMonthTargets);
+    const churn24Months = smartExtractChurn(twentyFourMonthTargets);
     
     // ============================================
     // Extract Investment Data
@@ -178,11 +178,13 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const performanceTargets = safeGet(paidMediaIntelligence, 'performance_targets', null) as Record<string, unknown> | null;
     const budgetStrategy = safeGet(paidMediaIntelligence, 'budget_strategy', null) as Record<string, unknown> | null;
     
+    // Target CAC - use text extraction for strings like "$60-100 (blended...)"
     const targetCacStr = safeGet(performanceTargets, 'target_cac', null) as string | null;
-    const targetCac = parseMoneyRange(targetCacStr);
+    const targetCac = extractCACFromText(targetCacStr);
     
+    // LTV/CAC Ratio - use text extraction for strings like "3:1 (assuming...)"
     const ltvCacRatioStr = safeGet(performanceTargets, 'ltv_cac_ratio_target', null) as string | null;
-    const ltvCacRatioNum = parseRatio(ltvCacRatioStr);
+    const ltvCacRatioNum = extractRatioFromText(ltvCacRatioStr);
     
     const marketingBudgetStr = safeGet(budgetStrategy, 'recommended_marketing_budget_monthly', null) as string | null;
     const marketingBudgetMonthly = parseMoneyValue(marketingBudgetStr);
