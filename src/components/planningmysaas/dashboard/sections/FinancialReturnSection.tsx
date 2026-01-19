@@ -264,24 +264,43 @@ const FinancialReturnSection = () => {
                 <p className="text-xs text-muted-foreground">12 months</p>
               </div>
               
-              {/* Industry comparison */}
+              {/* ROI Status */}
               <div className="mt-4 pt-4 border-t border-border/30">
                 <div className="flex items-center justify-between text-xs mb-2">
-                  <span className="text-muted-foreground">Industry Avg: 80-120%</span>
-                  <Badge className="bg-accent/10 text-accent border-accent/30 text-[10px]">
+                  <span className="text-muted-foreground">
+                    {metrics.roiYear1Num !== null && metrics.roiYear1Num > 0 
+                      ? 'Positive ROI projected'
+                      : metrics.roiYear1Num !== null && metrics.roiYear1Num < 0
+                        ? 'Negative ROI - longer runway needed'
+                        : 'Calculating...'}
+                  </span>
+                  <Badge className={`text-[10px] ${
+                    metrics.roiYear1Num !== null && metrics.roiYear1Num > 50 
+                      ? 'bg-accent/10 text-accent border-accent/30'
+                      : metrics.roiYear1Num !== null && metrics.roiYear1Num > 0
+                        ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30'
+                        : 'bg-red-500/10 text-red-500 border-red-500/30'
+                  }`}>
                     {metrics.roiYear1Num !== null 
-                      ? (metrics.roiYear1Num > 120 ? 'Above Average' : metrics.roiYear1Num >= 80 ? 'Average' : 'Below Average')
-                      : 'Calculating...'
+                      ? (metrics.roiYear1Num > 50 ? 'Strong' : metrics.roiYear1Num > 0 ? 'Moderate' : 'Needs runway')
+                      : 'Pending'
                     }
                   </Badge>
                 </div>
-                {/* Progress bar */}
+                {/* Progress bar - scale to max 200% for display */}
                 <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-accent/60 to-accent rounded-full" 
-                    style={{ width: `${Math.min(100, Math.abs(metrics.roiYear1Num || 0) / 2)}%` }}
+                    className={`h-full rounded-full ${
+                      metrics.roiYear1Num !== null && metrics.roiYear1Num > 0 
+                        ? 'bg-gradient-to-r from-accent/60 to-accent'
+                        : 'bg-red-400/60'
+                    }`}
+                    style={{ width: `${Math.min(100, Math.max(5, Math.abs(metrics.roiYear1Num || 0) / 2))}%` }}
                   />
                 </div>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Includes MVP, marketing &amp; operational costs
+                </p>
               </div>
             </CardContent>
           </Card>

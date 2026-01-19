@@ -503,3 +503,150 @@ export function smartExtractCustomers(data: unknown): MoneyRange | null {
   if (typeof data === 'object') return extractCustomersFromTargets(data);
   return null;
 }
+
+/**
+ * Extract monthly marketing budget from budget strategy text
+ * Example: "$12,000/month Meta/Google Ads budget" or "$10k/mo"
+ */
+export function extractMarketingBudgetFromText(text: string | null | undefined): number | null {
+  if (!text || typeof text !== 'string') return null;
+  
+  // Match patterns like "$12,000/month", "$12k/mo", "$15,000 per month"
+  const patterns = [
+    /\$?([\d,]+)(?:k)?\s*\/\s*(?:month|mo)/i,
+    /\$?([\d,]+)(?:k)?\s*per\s*month/i,
+    /recommended[^$]*\$?([\d,]+)(?:k)?/i,
+    /budget[^$]*\$?([\d,]+)(?:k)?/i,
+  ];
+  
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      let value = parseFloat(match[1].replace(/,/g, ''));
+      if (text.toLowerCase().includes('k')) value *= 1000;
+      if (!isNaN(value)) return value;
+    }
+  }
+  
+  // Try to find any money value as fallback
+  const fallbackMatch = text.match(/\$?([\d,]+)/);
+  if (fallbackMatch) {
+    const value = parseFloat(fallbackMatch[1].replace(/,/g, ''));
+    if (!isNaN(value) && value > 100) return value; // Only if reasonable budget
+  }
+  
+  return null;
+}
+
+/**
+ * S-curve growth function for realistic SaaS revenue ramp-up
+ * Returns a value between 0 and 1 representing growth progress
+ * @param month - current month (1-indexed)
+ * @param rampMonths - months to reach ~63% of target (default 6)
+ */
+export function sCurveGrowth(month: number, rampMonths: number = 6): number {
+  // Logistic S-curve: 1 / (1 + e^(-k*(t-midpoint)))
+  // Simplified: 1 - e^(-month/rampMonths) for exponential approach
+  return 1 - Math.exp(-month / rampMonths);
+}
+
+/**
+ * Calculate cumulative break-even month using realistic cost model
+ * Includes MVP investment, marketing costs, and operational costs
+ */
+export function calculateRealisticBreakEven(
+  mrrTarget: number,
+  mvpInvestment: number,
+  monthlyMarketingBudget: number,
+  operationalCostPercent: number = 0.01,
+  marginPercent: number = 0.70,
+  maxMonths: number = 36
+): number {
+  let cumulativeRevenue = 0;
+  let cumulativeCosts = mvpInvestment; // Start with initial investment
+  
+  for (let month = 1; month <= maxMonths; month++) {
+    // Revenue with S-curve growth (realistic ramp-up)
+    const growthFactor = sCurveGrowth(month, 6);
+    const monthRevenue = mrrTarget * growthFactor;
+    
+    // Net revenue after margin (70% typical for SaaS)
+    const netMonthRevenue = monthRevenue * marginPercent;
+    cumulativeRevenue += netMonthRevenue;
+    
+    // Monthly costs: marketing + operational
+    const monthlyOpCost = mvpInvestment * operationalCostPercent;
+    cumulativeCosts += monthlyMarketingBudget + monthlyOpCost;
+    
+    // Check if break-even reached
+    if (cumulativeRevenue >= cumulativeCosts) {
+      return month;
+    }
+  }
+  
+  // If not reached in maxMonths, return maxMonths
+  return maxMonths;
+}
+
+/**
+ * Calculate realistic Year 1 ROI including all costs
+ */
+export function calculateRealisticROI(
+  mrrTarget: number,
+  mvpInvestment: number,
+  monthlyMarketingBudget: number,
+  operationalCostPercent: number = 0.01
+): number {
+  // Calculate Year 1 revenue with realistic S-curve ramp-up
+  let totalRevenue = 0;
+  for (let month = 1; month <= 12; month++) {
+    const growthFactor = sCurveGrowth(month, 6);
+    totalRevenue += mrrTarget * growthFactor;
+  }
+  
+  // Total costs: MVP + 12 months of marketing + 12 months of operational
+  const annualMarketingCost = monthlyMarketingBudget * 12;
+  const annualOperationalCost = (mvpInvestment * operationalCostPercent) * 12;
+  const totalCosts = mvpInvestment + annualMarketingCost + annualOperationalCost;
+  
+  // ROI = (Revenue - Costs) / Costs × 100
+  if (totalCosts <= 0) return 0;
+  return Math.round(((totalRevenue - totalCosts) / totalCosts) * 100);
+}
+
+/**
+ * Generate realistic projection data with S-curve growth
+ */
+export function generateRealisticProjections(
+  mrrTarget: number,
+  mvpInvestment: number,
+  monthlyMarketingBudget: number,
+  months: number = 12
+): { month: string; revenue: number; costs: number; cumulative: number }[] {
+  const data: { month: string; revenue: number; costs: number; cumulative: number }[] = [];
+  let cumulativeNet = -mvpInvestment; // Start negative with investment
+  
+  const monthlyOpCost = mvpInvestment * 0.01;
+  
+  for (let month = 1; month <= months; month++) {
+    // S-curve revenue growth
+    const growthFactor = sCurveGrowth(month, 6);
+    const monthRevenue = Math.round(mrrTarget * growthFactor);
+    
+    // Costs: marketing + operational (higher in first 3 months for setup)
+    const setupMultiplier = month <= 3 ? 1.3 : 1.0;
+    const monthCosts = Math.round((monthlyMarketingBudget + monthlyOpCost) * setupMultiplier);
+    
+    // Update cumulative
+    cumulativeNet += monthRevenue - monthCosts;
+    
+    data.push({
+      month: `M${month}`,
+      revenue: monthRevenue,
+      costs: monthCosts,
+      cumulative: Math.round(cumulativeNet),
+    });
+  }
+  
+  return data;
+}
