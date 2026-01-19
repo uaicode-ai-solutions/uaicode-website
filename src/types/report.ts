@@ -244,10 +244,11 @@ export interface ReportData {
   opportunity_section: unknown | null;
   competitive_analysis_section: unknown | null;
   icp_intelligence_section: unknown | null;
-  marketing_intelligence_section: unknown | null;
   paid_media_intelligence_section: unknown | null;
   price_intelligence_section: unknown | null;
   growth_intelligence_section: unknown | null;
+  // Generated avatar URL
+  icp_avatar_url: string | null;
 }
 
 // Helper function to safely get value with fallback
