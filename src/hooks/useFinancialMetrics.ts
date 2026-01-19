@@ -21,6 +21,8 @@ import {
   calculateRealisticBreakEven,
   calculateRealisticROI,
   generateRealisticProjections,
+  validateFinancialMetric,
+  sanitizeNumericValue,
   MoneyRange,
   PercentageRange,
 } from "@/lib/financialParsingUtils";
@@ -286,14 +288,22 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     
     // ============================================
     // REALISTIC ROI Year 1 Calculation
-    // Prioritize database value, fallback to calculation
+    // Prioritize database value, fallback to calculation with validation
     // ============================================
     const roiFromInvestment = safeGet(sectionInvestment, 'expected_roi', null) as string | null;
     let roiYear1Num: number | null = null;
     if (roiFromInvestment) {
       // Extract percentage from strings like "150%" or "150-200%"
       const match = roiFromInvestment.match(/(-?\d+)/);
-      roiYear1Num = match ? parseInt(match[1], 10) : null;
+      if (match) {
+        const rawRoi = parseInt(match[1], 10);
+        // Validate the ROI from DB
+        const validated = validateFinancialMetric(rawRoi, 'roi', 'from database');
+        roiYear1Num = validated.value;
+        if (validated.warning) {
+          console.warn(`[useFinancialMetrics] ROI validation: ${validated.warning}`);
+        }
+      }
     }
     // Fallback: calculate with realistic assumptions
     if (roiYear1Num === null && mrr12Months && mvpInvestment && mvpInvestment > 0) {
