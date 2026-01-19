@@ -166,15 +166,51 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       };
     }
     
-    // Customers - smart extraction
-    const customers6Months = smartExtractCustomers(sixMonthTargets);
-    const customers12Months = smartExtractCustomers(twelveMonthTargets);
-    const customers24Months = smartExtractCustomers(twentyFourMonthTargets);
+    // Customers - smart extraction with fallback estimation
+    let customers6Months = smartExtractCustomers(sixMonthTargets);
+    let customers12Months = smartExtractCustomers(twelveMonthTargets);
+    let customers24Months = smartExtractCustomers(twentyFourMonthTargets);
     
-    // Churn - smart extraction
-    const churn6Months = smartExtractChurn(sixMonthTargets);
-    const churn12Months = smartExtractChurn(twelveMonthTargets);
-    const churn24Months = smartExtractChurn(twentyFourMonthTargets);
+    // Fallback: estimate customers from MRR if not available (assume $150 avg ticket for SaaS B2B)
+    const ESTIMATED_TICKET = 150;
+    if (!customers12Months && mrr12Months && mrr12Months.avg > 0) {
+      customers12Months = {
+        min: Math.round(mrr12Months.min / ESTIMATED_TICKET),
+        max: Math.round(mrr12Months.max / ESTIMATED_TICKET),
+        avg: Math.round(mrr12Months.avg / ESTIMATED_TICKET),
+      };
+    }
+    if (!customers6Months && mrr6Months && mrr6Months.avg > 0) {
+      customers6Months = {
+        min: Math.round(mrr6Months.min / ESTIMATED_TICKET),
+        max: Math.round(mrr6Months.max / ESTIMATED_TICKET),
+        avg: Math.round(mrr6Months.avg / ESTIMATED_TICKET),
+      };
+    }
+    if (!customers24Months && mrr24Months && mrr24Months.avg > 0) {
+      customers24Months = {
+        min: Math.round(mrr24Months.min / ESTIMATED_TICKET),
+        max: Math.round(mrr24Months.max / ESTIMATED_TICKET),
+        avg: Math.round(mrr24Months.avg / ESTIMATED_TICKET),
+      };
+    }
+    
+    // Churn - smart extraction with fallback (SaaS average ~5% monthly churn)
+    let churn6Months = smartExtractChurn(sixMonthTargets);
+    let churn12Months = smartExtractChurn(twelveMonthTargets);
+    let churn24Months = smartExtractChurn(twentyFourMonthTargets);
+    
+    // Fallback: use SaaS industry average if not available
+    const SAAS_AVG_CHURN = { min: 3, max: 7, avg: 5 };
+    if (!churn12Months) {
+      churn12Months = SAAS_AVG_CHURN;
+    }
+    if (!churn6Months) {
+      churn6Months = SAAS_AVG_CHURN;
+    }
+    if (!churn24Months) {
+      churn24Months = { min: 2, max: 5, avg: 3.5 }; // Slightly lower for mature product
+    }
     
     // ============================================
     // Extract Investment Data

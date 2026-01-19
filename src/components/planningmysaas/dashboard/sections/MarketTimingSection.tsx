@@ -405,20 +405,35 @@ const MarketTimingSection = () => {
         </div>
       </div>
 
-      {/* Saturation Risk Alert */}
-      {opportunityData?.saturation_risk && (
-        <div className="p-4 rounded-xl bg-accent/5 border border-accent/20">
-          <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded-lg bg-accent/10 flex-shrink-0">
-              <AlertTriangle className="h-4 w-4 text-accent" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground mb-1">Saturation Alert</p>
-              <p className="text-sm text-muted-foreground">{opportunityData.saturation_risk}</p>
+      {/* Saturation Risk Alert - Generate fallback based on saturation level */}
+      {(() => {
+        const saturationLevel = saturationLevelValue?.toLowerCase() || "";
+        const saturationRiskText = opportunityData?.saturation_risk || (
+          saturationLevel.includes("low") || saturationLevel.includes("minimal")
+            ? "Market has low saturation - good opportunity for new entrants with differentiated offerings."
+            : saturationLevel.includes("moderate") || saturationLevel.includes("medium")
+              ? "Moderate market saturation - differentiation and strong positioning are key to success."
+              : saturationLevel.includes("high") || saturationLevel.includes("saturated")
+                ? "High market saturation detected - requires strong competitive advantage and unique value proposition."
+                : null
+        );
+        
+        if (!saturationRiskText) return null;
+        
+        return (
+          <div className="p-4 rounded-xl bg-accent/5 border border-accent/20">
+            <div className="flex items-start gap-3">
+              <div className="p-1.5 rounded-lg bg-accent/10 flex-shrink-0">
+                <AlertTriangle className="h-4 w-4 text-accent" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground mb-1">Saturation Alert</p>
+                <p className="text-sm text-muted-foreground">{saturationRiskText}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </section>
   );
 };

@@ -16,11 +16,13 @@ const RiskFactorsSection = () => {
   const { reportData } = useReportContext();
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   
-  // Use smart fallback for risk factors
+  // Use smart fallback for risk factors - skip if data already exists
   const rawRiskFactors = opportunityData?.risk_factors;
+  const hasValidRisks = Array.isArray(rawRiskFactors) && rawRiskFactors.length > 0;
   const { value: riskFactors, isLoading } = useSmartFallbackField<string[]>({
     fieldPath: "opportunity_section.risk_factors",
     currentValue: rawRiskFactors,
+    skipFallback: hasValidRisks, // Skip fallback if we already have data
   });
 
   const riskFactorsArray = riskFactors || [];
