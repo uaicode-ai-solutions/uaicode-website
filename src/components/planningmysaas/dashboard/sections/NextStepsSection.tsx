@@ -41,6 +41,8 @@ import KyleAvatar from "@/components/chat/KyleAvatar";
 import EmailContactDialog from "@/components/chat/EmailContactDialog";
 import { getSectionInvestment, getDiscountStrategy } from "@/lib/sectionInvestmentUtils";
 import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 
 // Countdown Timer Hook
@@ -109,7 +111,8 @@ interface NextStepsSectionProps {
 }
 
 const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionProps) => {
-  const { report, reportData, marketingTotals } = useReportContext();
+  const { report, reportData, marketingTotals, reportId } = useReportContext();
+  const wizardId = reportData?.wizard_id;
   
   // Parse data from report
   const nextSteps = parseJsonField<NextSteps>(report?.next_steps, {
@@ -129,16 +132,28 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   const sectionInvestmentData = getSectionInvestment(reportData);
   const sectionInvestmentRaw = reportData?.section_investment as Record<string, unknown> | null;
   
+  // Apply smart fallback for viability score
+  const rawViabilityScore = heroScoreData?.score ?? (sectionInvestmentRaw?.viability_score as number | null);
+  const { value: viabilityScoreFallback, isLoading: scoreLoading } = useSmartFallbackField({
+    fieldPath: "hero_score_section.score",
+    currentValue: rawViabilityScore !== null && rawViabilityScore !== undefined ? String(rawViabilityScore) : undefined,
+  });
+  
   // Viability score: prefer hero_score_section, fallback to section_investment
   const viabilityScore = safeNumber(
-    heroScoreData?.score ?? (sectionInvestmentRaw?.viability_score as number | null),
+    viabilityScoreFallback ? parseFloat(viabilityScoreFallback) : rawViabilityScore,
     0
   );
   
+  // Apply smart fallback for tagline
+  const rawTagline = heroScoreData?.tagline || (sectionInvestmentRaw?.verdict_headline as string | null);
+  const { value: taglineFallback, isLoading: taglineLoading } = useSmartFallbackField({
+    fieldPath: "hero_score_section.tagline",
+    currentValue: rawTagline || undefined,
+  });
+  
   // Tagline: prefer hero_score_section, fallback to section_investment verdict_headline
-  const verdictHeadline = heroScoreData?.tagline 
-    || (sectionInvestmentRaw?.verdict_headline as string | null) 
-    || "High viability, your idea has real traction potential.";
+  const verdictHeadline = taglineFallback || "High viability, your idea has real traction potential.";
   const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
   
   

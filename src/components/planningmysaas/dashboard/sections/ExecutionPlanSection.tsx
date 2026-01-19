@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { getSectionInvestment } from "@/lib/sectionInvestmentUtils";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 // ==========================================
 // Fixed Execution Phases Data
@@ -151,15 +153,36 @@ const calculatePhaseWeeks = (
 // ==========================================
 
 const ExecutionPlanSection = () => {
-  const { reportData } = useReportContext();
+  const { reportData, reportId } = useReportContext();
+  const wizardId = reportData?.wizard_id;
   
   // Get section_investment data for delivery weeks
   const sectionInvestment = getSectionInvestment(reportData);
   
-  // Fallback delivery weeks based on typical Growth tier (9-13 weeks)
-  const totalMinWeeks = sectionInvestment?.delivery_weeks_uaicode_min ?? 9;
-  const totalMaxWeeks = sectionInvestment?.delivery_weeks_uaicode_max ?? 13;
-  const mvpTier = (sectionInvestment?.mvp_tier?.toLowerCase() as "starter" | "growth" | "enterprise") ?? "growth";
+  // Apply smart fallback for delivery weeks
+  const { value: minWeeksFallback, isLoading: minWeeksLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.delivery_weeks_uaicode_min",
+    currentValue: sectionInvestment?.delivery_weeks_uaicode_min != null 
+      ? String(sectionInvestment.delivery_weeks_uaicode_min) 
+      : undefined,
+  });
+  
+  const { value: maxWeeksFallback, isLoading: maxWeeksLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.delivery_weeks_uaicode_max",
+    currentValue: sectionInvestment?.delivery_weeks_uaicode_max != null 
+      ? String(sectionInvestment.delivery_weeks_uaicode_max) 
+      : undefined,
+  });
+  
+  const { value: mvpTierFallback, isLoading: mvpTierLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.mvp_tier",
+    currentValue: sectionInvestment?.mvp_tier || undefined,
+  });
+  
+  // Use fallback values or defaults
+  const totalMinWeeks = minWeeksFallback ? parseInt(minWeeksFallback) : (sectionInvestment?.delivery_weeks_uaicode_min ?? 9);
+  const totalMaxWeeks = maxWeeksFallback ? parseInt(maxWeeksFallback) : (sectionInvestment?.delivery_weeks_uaicode_max ?? 13);
+  const mvpTier = ((mvpTierFallback || sectionInvestment?.mvp_tier)?.toLowerCase() as "starter" | "growth" | "enterprise") ?? "growth";
   
   // Get traditional weeks for comparison
   const traditionalMinWeeks = sectionInvestment?.delivery_weeks_traditional_min ?? 26;
@@ -170,10 +193,15 @@ const ExecutionPlanSection = () => {
   const avgTraditionalWeeks = (traditionalMinWeeks + traditionalMaxWeeks) / 2;
   const fasterPercent = Math.round(((avgTraditionalWeeks - avgUaicodeWeeks) / avgTraditionalWeeks) * 100);
   
+  // Loading state
+  const isLoading = minWeeksLoading || maxWeeksLoading || mvpTierLoading;
+  
   // Total time display
-  const totalTimeDisplay = totalMinWeeks === totalMaxWeeks 
-    ? `${totalMinWeeks} weeks` 
-    : `${totalMinWeeks}-${totalMaxWeeks} weeks`;
+  const totalTimeDisplay = isLoading 
+    ? null 
+    : totalMinWeeks === totalMaxWeeks 
+      ? `${totalMinWeeks} weeks` 
+      : `${totalMinWeeks}-${totalMaxWeeks} weeks`;
 
   return (
     <section id="execution-plan" className="space-y-6 animate-fade-in">
@@ -354,11 +382,13 @@ const ExecutionPlanSection = () => {
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-amber-400" />
                 <span className="text-muted-foreground">Total estimated time:</span>
-                <span className="font-bold text-foreground text-lg">{totalTimeDisplay}</span>
+                <span className="font-bold text-foreground text-lg">
+                  {isLoading ? <InlineValueSkeleton size="lg" /> : totalTimeDisplay}
+                </span>
               </div>
               <Badge variant="outline" className="border-green-500/30 text-green-400 gap-1.5">
                 <Zap className="h-3 w-3" />
-                {fasterPercent}% faster than traditional agencies
+                {isLoading ? <InlineValueSkeleton size="sm" /> : `${fasterPercent}% faster than traditional agencies`}
               </Badge>
             </div>
           </div>

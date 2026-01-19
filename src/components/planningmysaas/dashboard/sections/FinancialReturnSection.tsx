@@ -5,6 +5,8 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
 import { formatCurrency } from "@/lib/financialParsingUtils";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 import {
   AreaChart,
   Area,
@@ -20,10 +22,32 @@ import {
 } from "recharts";
 
 const FinancialReturnSection = () => {
-  const { reportData } = useReportContext();
+  const { reportData, reportId } = useReportContext();
+  const wizardId = reportData?.wizard_id;
   
   // Use the new hook to extract all financial metrics from JSONB
   const metrics = useFinancialMetrics(reportData);
+  
+  // Apply smart fallback for key metrics that might be missing
+  const { value: breakEvenValue, isLoading: breakEvenLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.break_even_months",
+    currentValue: metrics.breakEvenMonths !== "..." ? metrics.breakEvenMonths : undefined,
+  });
+  
+  const { value: roiValue, isLoading: roiLoading } = useSmartFallbackField({
+    fieldPath: "section_investment.expected_roi",
+    currentValue: metrics.roiYear1 !== "..." ? metrics.roiYear1 : undefined,
+  });
+  
+  const { value: mrrValue, isLoading: mrrLoading } = useSmartFallbackField({
+    fieldPath: "growth_intelligence_section.growth_targets.twelve_month_targets.mrr",
+    currentValue: metrics.mrrMonth12 !== "..." ? metrics.mrrMonth12 : undefined,
+  });
+  
+  const { value: arrValue, isLoading: arrLoading } = useSmartFallbackField({
+    fieldPath: "growth_intelligence_section.growth_targets.twelve_month_targets.arr",
+    currentValue: metrics.arrProjected !== "..." ? metrics.arrProjected : undefined,
+  });
 
   const scenarioIcons: Record<string, React.ElementType> = {
     Conservative: Shield,
@@ -40,7 +64,8 @@ const FinancialReturnSection = () => {
     {
       icon: Clock,
       label: "Break-even",
-      value: metrics.breakEvenMonths,
+      value: breakEvenLoading ? null : (breakEvenValue || metrics.breakEvenMonths),
+      isLoading: breakEvenLoading,
       sublabel: isBreakEvenExtended ? "Extended runway needed" : "Until investment payoff",
       highlight: true,
       tooltip: "The month when your cumulative revenue exceeds your total investment and operational costs.",
@@ -49,7 +74,8 @@ const FinancialReturnSection = () => {
     {
       icon: TrendingUp,
       label: "Year 1 ROI",
-      value: metrics.roiYear1,
+      value: roiLoading ? null : (roiValue || metrics.roiYear1),
+      isLoading: roiLoading,
       sublabel: isROIVeryHigh ? "High estimate - verify assumptions" : isROINegative ? "Negative - longer runway needed" : "Return on investment",
       highlight: false,
       tooltip: "Return on Investment - The projected percentage gain on your investment in the first year.",
@@ -58,7 +84,8 @@ const FinancialReturnSection = () => {
     {
       icon: DollarSign,
       label: "Month 12 MRR",
-      value: metrics.mrrMonth12,
+      value: mrrLoading ? null : (mrrValue || metrics.mrrMonth12),
+      isLoading: mrrLoading,
       sublabel: "Monthly recurring revenue",
       highlight: false,
       tooltip: "Monthly Recurring Revenue - The predictable monthly revenue from subscriptions at month 12.",
@@ -67,7 +94,8 @@ const FinancialReturnSection = () => {
     {
       icon: Target,
       label: "Projected ARR",
-      value: metrics.arrProjected,
+      value: arrLoading ? null : (arrValue || metrics.arrProjected),
+      isLoading: arrLoading,
       sublabel: "Annual recurring revenue",
       highlight: false,
       tooltip: "Annual Recurring Revenue - The yearly value of your recurring subscriptions (MRR × 12).",
@@ -111,7 +139,7 @@ const FinancialReturnSection = () => {
                 </InfoTooltip>
               </div>
               <div className={`text-2xl font-bold ${metric.warning ? 'text-amber-500' : 'text-gradient-gold'}`}>
-                {metric.value}
+                {metric.isLoading ? <InlineValueSkeleton size="lg" /> : metric.value}
               </div>
               <p className={`text-xs mt-0.5 ${metric.warning ? 'text-amber-500/80' : 'text-muted-foreground'}`}>{metric.sublabel}</p>
             </CardContent>
