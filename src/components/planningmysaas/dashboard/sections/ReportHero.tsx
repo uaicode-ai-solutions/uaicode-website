@@ -3,7 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { safeValue, safeNumber, OpportunitySection } from "@/types/report";
+import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
+import { safeNumber, OpportunitySection } from "@/types/report";
 
 interface ReportHeroProps {
   projectName?: string;
@@ -33,6 +34,7 @@ const formatMarketValue = (value: string): string => {
 
 const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHeroProps) => {
   const { report, reportData } = useReportContext();
+  const financialMetrics = useFinancialMetrics(reportData);
   
   // Use real data only - no mock fallbacks for validation
   const displayName = projectName || report?.saas_name || "...";
@@ -46,21 +48,17 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
     sectionInvestment?.viability_score as number | null, 
     0
   );
-  const verdictHeadline = safeValue(
-    sectionInvestment?.verdict_headline as string | null
-  );
+  const verdictHeadline = sectionInvestment?.verdict_headline as string | null || "...";
   
   // Total market from opportunity_section
   const rawTotalMarket = opportunityData?.tam_value || null;
   const totalMarket = rawTotalMarket ? formatMarketValue(String(rawTotalMarket)) : "...";
   
-  // ROI and Payback from section_investment JSONB only
-  const expectedROI = safeValue(
-    sectionInvestment?.expected_roi as string | null
-  );
-  const paybackPeriod = safeValue(
-    sectionInvestment?.payback_period as string | null
-  );
+  // ROI and Payback from useFinancialMetrics (same source as FinancialReturnSection)
+  const expectedROI = financialMetrics.roiYear1 || "...";
+  const paybackPeriod = financialMetrics.paybackPeriod 
+    ? `${financialMetrics.paybackPeriod} mo` 
+    : (financialMetrics.unitEconomics?.paybackPeriod || "...");
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-amber-400";
