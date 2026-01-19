@@ -31,11 +31,12 @@ const RiskFactorsSection = () => {
   const riskCount = riskFactorsArray.length;
   const riskScore = Math.max(0, 100 - (riskCount * 12)); // Each risk reduces score by ~12
 
-  // Data for radial bar chart
+  // Data for radial bar chart - plot riskScore directly (Safety Score)
+  // This makes the visual arc match the displayed number (76 = 76% arc)
   const chartData = [
     {
-      name: "Risk Level",
-      value: 100 - riskScore, // Show risk level (higher = more risk)
+      name: "Safety Score",
+      value: riskScore, // Plot safety score directly (higher = better = more filled)
       fill: "url(#riskBarGradient)",
     },
   ];

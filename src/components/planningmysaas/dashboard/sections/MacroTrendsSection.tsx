@@ -57,27 +57,23 @@ const MacroTrendsSection = () => {
 
   const trendsArray = macroTrends || [];
 
-  // Count positive vs negative trends
+  // Count favorable (strong trends) vs challenging (medium/weak trends)
+  // Favorable: strong impact strength (>=90)
+  // Challenging: medium or weak strength (<90) - represents trends requiring more effort
   const positiveTrends = trendsArray.filter(
-    t => t.impact?.toLowerCase().includes("positive")
+    t => strengthToValue(t.strength) >= 90
   ).length;
   const negativeTrends = trendsArray.filter(
-    t => t.impact?.toLowerCase().includes("negative")
+    t => strengthToValue(t.strength) < 90
   ).length;
 
-  // Create chart data - simulated trend visualization
+  // Create chart data - NO padding points to avoid artificial decay
   const chartData = trendsArray.map((trend, index) => ({
     name: `T${index + 1}`,
     positive: trend.impact?.toLowerCase().includes("positive") ? strengthToValue(trend.strength) : 0,
     negative: trend.impact?.toLowerCase().includes("negative") ? strengthToValue(trend.strength) : 0,
     trend: trend.trend,
   }));
-
-  // Add some padding points for visual
-  if (chartData.length > 0) {
-    chartData.unshift({ name: "", positive: 0, negative: 0, trend: "" });
-    chartData.push({ name: "", positive: 0, negative: 0, trend: "" });
-  }
 
   // Show loading skeleton
   if (isLoading) {

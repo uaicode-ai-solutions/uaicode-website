@@ -224,13 +224,32 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const performanceTargets = safeGet(paidMediaIntelligence, 'performance_targets', null) as Record<string, unknown> | null;
     const budgetStrategy = safeGet(paidMediaIntelligence, 'budget_strategy', null) as Record<string, unknown> | null;
     
-    // Target CAC - use text extraction for strings like "$60-100 (blended...)"
-    const targetCacStr = safeGet(performanceTargets, 'target_cac', null) as string | null;
-    const targetCac = extractCACFromText(targetCacStr);
+    // Target CAC - handle both number and string formats
+    const targetCacRaw = safeGet(performanceTargets, 'target_cac', null);
+    let targetCac: MoneyRange | null = null;
+    if (typeof targetCacRaw === 'number' && targetCacRaw > 0) {
+      // If it's a plain number (e.g., 130), use it directly
+      targetCac = { min: targetCacRaw, max: targetCacRaw, avg: targetCacRaw };
+    } else if (typeof targetCacRaw === 'string') {
+      // If it's a string (e.g., "$60-100 (blended...)"), extract it
+      targetCac = extractCACFromText(targetCacRaw);
+    }
     
-    // LTV/CAC Ratio - use text extraction for strings like "3:1 (assuming...)"
-    const ltvCacRatioStr = safeGet(performanceTargets, 'ltv_cac_ratio_target', null) as string | null;
-    const ltvCacRatioNum = extractRatioFromText(ltvCacRatioStr);
+    // LTV/CAC Ratio - handle both number and string formats
+    const ltvCacRatioRaw = safeGet(performanceTargets, 'ltv_cac_ratio_target', null);
+    let ltvCacRatioNum: number | null = null;
+    if (typeof ltvCacRatioRaw === 'number' && ltvCacRatioRaw > 0) {
+      // If it's a plain number (e.g., 3.5), use it directly
+      ltvCacRatioNum = ltvCacRatioRaw;
+    } else if (typeof ltvCacRatioRaw === 'string') {
+      // Try extractRatioFromText first
+      ltvCacRatioNum = extractRatioFromText(ltvCacRatioRaw);
+      // Fallback: try parsing formats like "3.5x" or just "3.5"
+      if (ltvCacRatioNum === null) {
+        const match = ltvCacRatioRaw.match(/(\d+\.?\d*)/);
+        if (match) ltvCacRatioNum = parseFloat(match[1]);
+      }
+    }
     
     // Marketing budget - try to extract from budget strategy text
     const marketingBudgetStr = safeGet(budgetStrategy, 'recommended_marketing_budget_monthly', null) as string | null;

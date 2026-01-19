@@ -145,13 +145,24 @@ const formatPricingModel = (value: string | undefined | null): string => {
   return main.charAt(0).toUpperCase() + main.slice(1);
 };
 
-// Helper: Extract budget value and format /month to /mo
+// Helper: Extract budget value - only the monetary range (e.g., "$99-$299")
 const extractBudgetValue = (value: string | undefined | null): string => {
   if (!value?.trim()) return "...";
-  // Find the part with $ and replace /month with /mo
-  const parts = value.split(" ");
-  const budgetPart = parts.find(p => p.includes("$")) || value;
-  return budgetPart.replace("/month", "/mo");
+  
+  // Try to extract just the monetary range using regex
+  // Matches patterns like "$99-$299", "$99-299", "$1,000-$2,000"
+  const rangeMatch = value.match(/\$[\d,]+\s*[-–—]\s*\$?[\d,]+/);
+  if (rangeMatch) {
+    return rangeMatch[0].replace(/\s+/g, ""); // Remove any spaces
+  }
+  
+  // Fallback: try to find first monetary value
+  const singleMatch = value.match(/\$[\d,]+/);
+  if (singleMatch) {
+    return singleMatch[0];
+  }
+  
+  return "...";
 };
 
 // Helper: calculate competitive position from data
