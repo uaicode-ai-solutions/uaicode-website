@@ -151,7 +151,12 @@ const MacroTrendsSection = () => {
         {/* Stats Card */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-foreground mb-5">Overview</h3>
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-sm font-medium text-foreground">Overview</h3>
+                <InfoTooltip side="top" size="sm">
+                  Summary of macro trends affecting your market opportunity.
+                </InfoTooltip>
+              </div>
 
             {/* Big number */}
             <div className="text-center mb-6">
