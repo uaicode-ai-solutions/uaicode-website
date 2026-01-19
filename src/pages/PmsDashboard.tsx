@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { 
   Download, 
@@ -28,8 +28,10 @@ import { BackToTopButton } from "@/components/blog/BackToTopButton";
 import DashboardSkeleton from "@/components/planningmysaas/skeletons/DashboardSkeleton";
 import GeneratingReportSkeleton from "@/components/planningmysaas/skeletons/GeneratingReportSkeleton";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
-import { ReportProvider } from "@/contexts/ReportContext";
+import { ReportProvider, useReportContext } from "@/contexts/ReportContext";
 import { useReport } from "@/hooks/useReport";
+import { checkDataQuality } from "@/lib/dataQualityUtils";
+import DataQualityBanner from "@/components/planningmysaas/dashboard/ui/DataQualityBanner";
 
 // Section Components
 import ReportHero from "@/components/planningmysaas/dashboard/sections/ReportHero";
@@ -60,6 +62,15 @@ const PmsDashboardContent = () => {
   const [activeTab, setActiveTab] = useState("report");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  
+  // Get report data from context for quality check
+  const { reportData } = useReportContext();
+  
+  // Check data quality (memoized to avoid recalculating on every render)
+  const dataQualityIssues = useMemo(() => {
+    return checkDataQuality(reportData);
+  }, [reportData]);
 
   // Poll for report status changes in tb_pms_reports
   const pollReportStatus = async (reportId: string) => {
@@ -474,6 +485,18 @@ const PmsDashboardContent = () => {
             </div>
           </div>
         </div>
+
+          {/* Data Quality Banner */}
+          {!bannerDismissed && dataQualityIssues.length > 0 && (
+            <div className="py-4">
+              <DataQualityBanner
+                issues={dataQualityIssues}
+                onRegenerate={handleRegenerateReport}
+                onDismiss={() => setBannerDismissed(true)}
+                isRegenerating={isRegenerating}
+              />
+            </div>
+          )}
 
           {/* Tab Content */}
           <div 
