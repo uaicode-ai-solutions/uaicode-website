@@ -238,6 +238,7 @@ export type Database = {
           competitive_analysis_section: Json | null
           created_at: string
           growth_intelligence_section: Json | null
+          icp_avatar_url: string | null
           icp_intelligence_section: Json | null
           id: string
           opportunity_section: Json | null
@@ -252,6 +253,7 @@ export type Database = {
           competitive_analysis_section?: Json | null
           created_at?: string
           growth_intelligence_section?: Json | null
+          icp_avatar_url?: string | null
           icp_intelligence_section?: Json | null
           id?: string
           opportunity_section?: Json | null
@@ -266,6 +268,7 @@ export type Database = {
           competitive_analysis_section?: Json | null
           created_at?: string
           growth_intelligence_section?: Json | null
+          icp_avatar_url?: string | null
           icp_intelligence_section?: Json | null
           id?: string
           opportunity_section?: Json | null
