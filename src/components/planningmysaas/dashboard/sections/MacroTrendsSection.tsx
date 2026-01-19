@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Activity } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -13,8 +13,28 @@ import {
   YAxis,
   ResponsiveContainer,
   Tooltip,
-  CartesianGrid,
+  Cell,
 } from "recharts";
+
+// Get opacity based on strength value (higher = more opaque)
+const getBarOpacity = (value: number): number => {
+  return 0.4 + (value / 100) * 0.6; // Range: 0.4 to 1.0
+};
+
+// Custom tooltip for the bar chart
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const value = data.positive || data.negative;
+    return (
+      <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-w-xs">
+        <p className="font-medium text-foreground text-sm mb-1">{data.trend}</p>
+        <p className="text-accent font-bold">{value}/100 Strength</p>
+      </div>
+    );
+  }
+  return null;
+};
 
 // Remove citation markers like [1], [2] from text
 const cleanCitations = (text: string): string => {
@@ -190,55 +210,70 @@ const MacroTrendsSection = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
-                    {/* Gradient for positive bars */}
-                    <linearGradient id="barPositiveGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#FBBF24" />
+                    {/* Premium gradient matching Pain Intensity style */}
+                    <linearGradient id="trendBarGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#FCD34D" />
+                      <stop offset="50%" stopColor="#FBBF24" />
                       <stop offset="100%" stopColor="#F59E0B" />
                     </linearGradient>
-                    {/* Gradient for negative/neutral bars */}
-                    <linearGradient id="barNegativeGradient" x1="0" y1="0" x2="0" y2="1">
+                    {/* Glow filter for premium effect */}
+                    <filter id="trendBarGlow" x="-20%" y="-50%" width="140%" height="200%">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                    {/* Gradient for negative bars */}
+                    <linearGradient id="trendBarNegative" x1="0%" y1="0%" x2="0%" y2="100%">
                       <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.6} />
                       <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
                   <XAxis 
                     dataKey="name" 
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
-                    axisLine={{ stroke: "hsl(var(--border))" }}
-                  />
-                  <YAxis 
-                    domain={[0, 100]}
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12, fontWeight: 600 }}
                     axisLine={{ stroke: "hsl(var(--border))" }}
                     tickLine={false}
                   />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      color: "hsl(var(--foreground))",
-                    }}
-                    labelFormatter={(label, payload) => {
-                      if (payload && payload[0]?.payload?.trend) {
-                        return payload[0].payload.trend;
-                      }
-                      return label;
-                    }}
+                  <YAxis 
+                    domain={[0, 100]}
+                    tickCount={6}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                    axisLine={{ stroke: "hsl(var(--border))" }}
+                    tickLine={{ stroke: "hsl(var(--border))" }}
                   />
-                  <Bar 
-                    dataKey="positive" 
-                    fill="url(#barPositiveGradient)" 
+                  <Tooltip 
+                    content={<CustomTooltip />} 
+                    cursor={{ fill: "hsl(var(--accent) / 0.05)" }} 
+                  />
+                  <Bar
+                    dataKey="positive"
                     radius={[4, 4, 0, 0]}
-                    maxBarSize={50}
-                  />
-                  <Bar 
-                    dataKey="negative" 
-                    fill="url(#barNegativeGradient)" 
+                    maxBarSize={40}
+                    filter="url(#trendBarGlow)"
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell
+                        key={`cell-pos-${index}`}
+                        fill="url(#trendBarGradient)"
+                        fillOpacity={getBarOpacity(entry.positive)}
+                      />
+                    ))}
+                  </Bar>
+                  <Bar
+                    dataKey="negative"
                     radius={[4, 4, 0, 0]}
-                    maxBarSize={50}
-                  />
+                    maxBarSize={40}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell
+                        key={`cell-neg-${index}`}
+                        fill="url(#trendBarNegative)"
+                        fillOpacity={getBarOpacity(entry.negative)}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -258,15 +293,15 @@ const MacroTrendsSection = () => {
             }`}>
               <CardContent className="p-5">
                 <div className="flex items-start gap-3">
-                  {/* Icon */}
-                  <div className={`p-2 rounded-lg flex-shrink-0 ${
+                  {/* Numbered Badge - matches chart labels */}
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                     isPositive ? "bg-accent/10" : "bg-muted/20"
                   }`}>
-                    {isPositive ? (
-                      <TrendingUp className="h-4 w-4 text-accent" />
-                    ) : (
-                      <TrendingDown className="h-4 w-4 text-muted-foreground" />
-                    )}
+                    <span className={`text-sm font-bold ${
+                      isPositive ? "text-accent" : "text-muted-foreground"
+                    }`}>
+                      T{index + 1}
+                    </span>
                   </div>
 
                   {/* Content */}
