@@ -47,14 +47,54 @@ const getInitials = (name: string | undefined | null): string => {
     .slice(0, 2);
 };
 
-// Helper: extract first name and age-like info
-const parsePersonaName = (persona: ICPPersona | null): { name: string; age: string; role: string } => {
-  if (!persona) return { name: "...", age: "...", role: "..." };
+// ============================================
+// NAME GENERATION: Based on region and gender
+// ============================================
+const NAME_MAP: Record<string, Record<string, { firstName: string; lastName: string }>> = {
+  us: {
+    male: { firstName: "Michael", lastName: "Johnson" },
+    female: { firstName: "Sarah", lastName: "Williams" },
+    any: { firstName: "Taylor", lastName: "Anderson" }
+  },
+  brazil: {
+    male: { firstName: "Carlos", lastName: "Silva" },
+    female: { firstName: "Maria", lastName: "Oliveira" },
+    any: { firstName: "Alex", lastName: "Santos" }
+  },
+  europe: {
+    male: { firstName: "Thomas", lastName: "Müller" },
+    female: { firstName: "Emma", lastName: "Schmidt" },
+    any: { firstName: "Alex", lastName: "Martin" }
+  },
+  asia: {
+    male: { firstName: "Kenji", lastName: "Tanaka" },
+    female: { firstName: "Yuki", lastName: "Yamamoto" },
+    any: { firstName: "Hiro", lastName: "Sato" }
+  }
+};
+
+// Helper: generate ICP display name from wizard data
+const getIcpDisplayName = (
+  targetAudience: string | null | undefined,
+  geographicRegion: string | null | undefined
+): string => {
+  const region = geographicRegion || "us";
+  const gender = targetAudience || "any";
   
-  const name = getValue(persona.summary?.name || persona.persona_name);
-  const role = getValue(persona.job_title);
+  const regionNames = NAME_MAP[region] || NAME_MAP.us;
+  const personName = regionNames[gender] || regionNames.any;
   
-  return { name, age: "...", role };
+  return `${personName.firstName} ${personName.lastName}`;
+};
+
+// Helper: format camelCase to Title Case (e.g., advancedAnalytics -> Advanced Analytics)
+const formatFeatureName = (feature: string): string => {
+  if (!feature) return "...";
+  
+  return feature
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase())
+    .trim();
 };
 
 // Helper: calculate competitive position from data
@@ -146,7 +186,7 @@ const getDecisionMakers = (persona: ICPPersona | null): Array<{ role: string; in
 };
 
 const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntelligenceSectionProps) => {
-  const { reportData } = useReportContext();
+  const { report, reportData } = useReportContext();
 
   // Parse ICP data from reportData (tb_pms_reports.icp_intelligence_section)
   const icpData = parseJsonField<ICPIntelligenceSection | null>(
@@ -157,10 +197,27 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // Get primary persona (first one)
   const primaryPersona = icpData?.primary_personas?.[0] || null;
 
-  // Extract persona display data
-  const personaInfo = parsePersonaName(primaryPersona);
-  const initials = getInitials(personaInfo.name);
-  const businessType = getValue(primaryPersona?.industry_focus?.split(",")[0]?.trim());
+  // ============================================
+  // ICP Display Data (Updated per requirements)
+  // ============================================
+  
+  // Name: Generated from wizard's target_audience + geographic_region
+  const icpDisplayName = getIcpDisplayName(
+    report?.target_audience,
+    report?.geographic_region
+  );
+  const initials = getInitials(icpDisplayName);
+  
+  // Role: Comes from summary.name (e.g., "Mid-Market Clinic Operations Director")
+  const icpRole = getValue(primaryPersona?.summary?.name || primaryPersona?.persona_name);
+  
+  // Industry Badge: First item from industry_focus
+  const businessType = getValue(
+    primaryPersona?.summary?.industry_focus?.split(",")[0]?.trim() ||
+    primaryPersona?.industry_focus?.split(",")[0]?.trim()
+  );
+  
+  // Other profile data
   const companySize = getValue(primaryPersona?.company_size);
   const budgetRange = getValue(primaryPersona?.buying_behavior?.budget_range);
   const decisionTimeframe = getValue(primaryPersona?.buying_behavior?.decision_timeframe);
@@ -176,10 +233,10 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     ? "Urban Markets" 
     : undefined);
 
-  // Get goals from feature priorities
-  const goals = primaryPersona?.feature_priorities?.slice(0, 3) || [];
-  const displayGoals = goals.length > 0 
-    ? goals.map(g => getValue(g))
+  // Primary Goals: From summary.key_features, formatted
+  const keyFeatures = primaryPersona?.summary?.key_features || [];
+  const displayGoals = keyFeatures.length > 0 
+    ? keyFeatures.slice(0, 3).map(formatFeatureName)
     : ["...", "...", "..."];
 
   // Calculate metrics
@@ -313,8 +370,8 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="text-xl font-semibold text-foreground">{personaInfo.name}</h3>
-                <p className="text-sm text-muted-foreground">{personaInfo.role}</p>
+                <h3 className="text-xl font-semibold text-foreground">{icpDisplayName}</h3>
+                <p className="text-sm text-muted-foreground">{icpRole}</p>
                 <Badge variant="outline" className="mt-1 bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs">
                   {businessType}
                 </Badge>
