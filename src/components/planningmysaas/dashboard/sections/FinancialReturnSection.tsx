@@ -31,22 +31,29 @@ const FinancialReturnSection = () => {
     Optimistic: Rocket,
   };
 
+  // Validation flags for extreme values
+  const isROIVeryHigh = metrics.roiYear1Num !== null && metrics.roiYear1Num > 250;
+  const isROINegative = metrics.roiYear1Num !== null && metrics.roiYear1Num < -50;
+  const isBreakEvenExtended = metrics.breakEvenMonthsNum !== null && metrics.breakEvenMonthsNum > 24;
+
   const keyMetrics = [
     {
       icon: Clock,
       label: "Break-even",
       value: metrics.breakEvenMonths,
-      sublabel: "Until investment payoff",
+      sublabel: isBreakEvenExtended ? "Extended runway needed" : "Until investment payoff",
       highlight: true,
-      tooltip: "The month when your cumulative revenue exceeds your total investment and operational costs."
+      tooltip: "The month when your cumulative revenue exceeds your total investment and operational costs.",
+      warning: isBreakEvenExtended
     },
     {
       icon: TrendingUp,
       label: "Year 1 ROI",
       value: metrics.roiYear1,
-      sublabel: "Return on investment",
+      sublabel: isROIVeryHigh ? "High estimate - verify assumptions" : isROINegative ? "Negative - longer runway needed" : "Return on investment",
       highlight: false,
-      tooltip: "Return on Investment - The projected percentage gain on your investment in the first year."
+      tooltip: "Return on Investment - The projected percentage gain on your investment in the first year.",
+      warning: isROIVeryHigh || isROINegative
     },
     {
       icon: DollarSign,
@@ -54,7 +61,8 @@ const FinancialReturnSection = () => {
       value: metrics.mrrMonth12,
       sublabel: "Monthly recurring revenue",
       highlight: false,
-      tooltip: "Monthly Recurring Revenue - The predictable monthly revenue from subscriptions at month 12."
+      tooltip: "Monthly Recurring Revenue - The predictable monthly revenue from subscriptions at month 12.",
+      warning: false
     },
     {
       icon: Target,
@@ -62,7 +70,8 @@ const FinancialReturnSection = () => {
       value: metrics.arrProjected,
       sublabel: "Annual recurring revenue",
       highlight: false,
-      tooltip: "Annual Recurring Revenue - The yearly value of your recurring subscriptions (MRR × 12)."
+      tooltip: "Annual Recurring Revenue - The yearly value of your recurring subscriptions (MRR × 12).",
+      warning: false
     },
   ];
 
@@ -89,22 +98,22 @@ const FinancialReturnSection = () => {
         {keyMetrics.map((metric, index) => (
           <Card 
             key={index}
-            className={`bg-card/50 border-border/30 transition-all duration-300 hover:shadow-md ${metric.highlight ? 'ring-1 ring-accent/30' : ''}`}
+            className={`bg-card/50 border-border/30 transition-all duration-300 hover:shadow-md ${metric.highlight ? 'ring-1 ring-accent/30' : ''} ${metric.warning ? 'ring-1 ring-amber-500/30' : ''}`}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-1.5 mb-2">
-                <div className={`p-1 rounded-lg ${metric.highlight ? 'bg-accent/20' : 'bg-muted/30'}`}>
-                  <metric.icon className={`h-3.5 w-3.5 ${metric.highlight ? 'text-accent' : 'text-muted-foreground'}`} />
+                <div className={`p-1 rounded-lg ${metric.warning ? 'bg-amber-500/20' : metric.highlight ? 'bg-accent/20' : 'bg-muted/30'}`}>
+                  <metric.icon className={`h-3.5 w-3.5 ${metric.warning ? 'text-amber-500' : metric.highlight ? 'text-accent' : 'text-muted-foreground'}`} />
                 </div>
                 <span className="text-xs text-muted-foreground">{metric.label}</span>
                 <InfoTooltip side="top" size="sm">
                   {metric.tooltip}
                 </InfoTooltip>
               </div>
-              <div className={`text-xl font-bold ${metric.highlight ? 'text-accent' : 'text-foreground'}`}>
+              <div className={`text-xl font-bold ${metric.warning ? 'text-amber-500' : metric.highlight ? 'text-accent' : 'text-foreground'}`}>
                 {metric.value}
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">{metric.sublabel}</p>
+              <p className={`text-xs mt-0.5 ${metric.warning ? 'text-amber-500/80' : 'text-muted-foreground'}`}>{metric.sublabel}</p>
             </CardContent>
           </Card>
         ))}

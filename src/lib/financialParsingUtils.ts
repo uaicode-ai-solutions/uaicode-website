@@ -72,13 +72,15 @@ export function parsePercentageRange(value: string | null | undefined): Percenta
   
   const cleaned = value.replace(/%/g, '').trim();
   
-  // Handle "<X" format
+  // Handle "<X" format - interpret as "max X, expected ~75% of max"
+  // Example: "<6%" becomes min: 3%, max: 6%, avg: 4.5% (more conservative)
   if (cleaned.startsWith('<')) {
     const match = cleaned.match(/<\s*([\d.]+)/);
     if (match) {
       const max = parseFloat(match[1]);
       if (!isNaN(max)) {
-        return { min: 0, max, avg: max / 2 };
+        // Conservative interpretation: min = 50% of max, avg = 75% of max
+        return { min: max * 0.5, max, avg: max * 0.75 };
       }
     }
   }
@@ -335,7 +337,8 @@ export function extractChurnFromText(text: string | null | undefined): Percentag
     if (value.startsWith('<')) {
       const max = parseFloat(value.slice(1).trim());
       if (!isNaN(max)) {
-        return { min: 0, max, avg: max / 2 };
+        // Conservative interpretation: min = 50% of max, avg = 75% of max
+        return { min: max * 0.5, max, avg: max * 0.75 };
       }
     } else if (value.startsWith('>')) {
       const min = parseFloat(value.slice(1).trim());
@@ -542,9 +545,9 @@ export function extractMarketingBudgetFromText(text: string | null | undefined):
  * S-curve growth function for realistic SaaS revenue ramp-up
  * Returns a value between 0 and 1 representing growth progress
  * @param month - current month (1-indexed)
- * @param rampMonths - months to reach ~63% of target (default 6)
+ * @param rampMonths - months to reach ~63% of target (default 9 - realistic for SaaS)
  */
-export function sCurveGrowth(month: number, rampMonths: number = 6): number {
+export function sCurveGrowth(month: number, rampMonths: number = 9): number {
   // Logistic S-curve: 1 / (1 + e^(-k*(t-midpoint)))
   // Simplified: 1 - e^(-month/rampMonths) for exponential approach
   return 1 - Math.exp(-month / rampMonths);
@@ -566,8 +569,8 @@ export function calculateRealisticBreakEven(
   let cumulativeCosts = mvpInvestment; // Start with initial investment
   
   for (let month = 1; month <= maxMonths; month++) {
-    // Revenue with S-curve growth (realistic ramp-up)
-    const growthFactor = sCurveGrowth(month, 6);
+    // Revenue with S-curve growth (realistic ramp-up - 9 months to maturity)
+    const growthFactor = sCurveGrowth(month, 9);
     const monthRevenue = mrrTarget * growthFactor;
     
     // Net revenue after margin (70% typical for SaaS)
@@ -597,10 +600,10 @@ export function calculateRealisticROI(
   monthlyMarketingBudget: number,
   operationalCostPercent: number = 0.01
 ): number {
-  // Calculate Year 1 revenue with realistic S-curve ramp-up
+  // Calculate Year 1 revenue with realistic S-curve ramp-up (9 months to maturity)
   let totalRevenue = 0;
   for (let month = 1; month <= 12; month++) {
-    const growthFactor = sCurveGrowth(month, 6);
+    const growthFactor = sCurveGrowth(month, 9);
     totalRevenue += mrrTarget * growthFactor;
   }
   
@@ -629,8 +632,8 @@ export function generateRealisticProjections(
   const monthlyOpCost = mvpInvestment * 0.01;
   
   for (let month = 1; month <= months; month++) {
-    // S-curve revenue growth
-    const growthFactor = sCurveGrowth(month, 6);
+    // S-curve revenue growth (9 months to maturity)
+    const growthFactor = sCurveGrowth(month, 9);
     const monthRevenue = Math.round(mrrTarget * growthFactor);
     
     // Costs: marketing + operational (higher in first 3 months for setup)
