@@ -14,11 +14,14 @@ import {
   Lock,
   Info,
   ArrowLeft,
+  Calendar,
+  CalendarDays,
+  Clock,
+  type LucideIcon,
 } from "lucide-react";
 import SelectableCard from "./SelectableCard";
 import { Input } from "@/components/ui/input";
 import { determineMvpTier } from "@/types/report";
-import { cn } from "@/lib/utils";
 
 // Tier to budget/timeline availability mapping
 const TIER_BUDGET_MAP: Record<string, string[]> = {
@@ -90,19 +93,19 @@ const goals = [
   },
 ];
 
-const budgets = [
-  { id: "10k-25k", title: "$10K - $25K", description: "Starter MVP" },
-  { id: "25k-60k", title: "$25K - $60K", description: "Growth MVP" },
-  { id: "60k-160k", title: "$60K - $160K", description: "Enterprise MVP" },
-  { id: "160k+", title: "$160K+", description: "Custom Solution" },
-  { id: "guidance", title: "I need guidance", description: "Help me decide" },
+const budgets: { id: string; title: string; description: string; icon: LucideIcon }[] = [
+  { id: "10k-25k", title: "$10K - $25K", description: "Starter MVP", icon: Rocket },
+  { id: "25k-60k", title: "$25K - $60K", description: "Growth MVP", icon: TrendingUp },
+  { id: "60k-160k", title: "$60K - $160K", description: "Enterprise MVP", icon: Target },
+  { id: "160k+", title: "$160K+", description: "Custom Solution", icon: Zap },
+  { id: "guidance", title: "I need guidance", description: "Help me decide", icon: HelpCircle },
 ];
 
-const timelines = [
-  { id: "asap", label: "ASAP (within 3 months)" },
-  { id: "this-year", label: "This year (3-6 months)" },
-  { id: "next-year", label: "Next year (6-12 months)" },
-  { id: "flexible", label: "I'm flexible on timing" },
+const timelines: { id: string; title: string; description: string; icon: LucideIcon }[] = [
+  { id: "asap", title: "ASAP", description: "Within 3 months", icon: Zap },
+  { id: "this-year", title: "This year", description: "3-6 months", icon: Calendar },
+  { id: "next-year", title: "Next year", description: "6-12 months", icon: CalendarDays },
+  { id: "flexible", title: "I'm flexible", description: "Open to suggestions", icon: Clock },
 ];
 
 const challenges = [
@@ -249,40 +252,19 @@ const StepGoals = ({ data, onChange, selectedFeatures }: StepGoalsProps) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {budgets.map((budget) => {
             const isAvailable = availableBudgets.includes(budget.id);
-            const isSelected = data.budget === budget.id;
 
             return (
-              <button
+              <SelectableCard
                 key={budget.id}
-                type="button"
+                icon={budget.icon}
+                title={budget.title}
+                description={budget.description}
+                selected={data.budget === budget.id}
+                onClick={() => onChange("budget", budget.id)}
                 disabled={!isAvailable}
-                onClick={() => isAvailable && onChange("budget", budget.id)}
-                className={cn(
-                  "p-4 rounded-xl border-2 transition-all duration-200 text-left relative",
-                  isSelected && isAvailable && "border-accent bg-accent/10 shadow-md",
-                  !isSelected && isAvailable && "border-border/50 hover:border-accent/50 hover:bg-muted/50",
-                  !isAvailable && "border-border/30 bg-muted/20 opacity-60 cursor-not-allowed"
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={cn(
-                      "font-semibold",
-                      isSelected && isAvailable ? "text-accent" : "text-foreground",
-                      !isAvailable && "text-muted-foreground"
-                    )}>
-                      {budget.title}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{budget.description}</p>
-                  </div>
-                  {!isAvailable && <Lock className="w-4 h-4 text-muted-foreground" />}
-                </div>
-                {!isAvailable && (
-                  <p className="text-xs text-muted-foreground/80 mt-2 italic">
-                    Not compatible with your feature selection
-                  </p>
-                )}
-              </button>
+                disabledMessage="Not compatible with your features"
+                className="p-4"
+              />
             );
           })}
         </div>
@@ -297,27 +279,22 @@ const StepGoals = ({ data, onChange, selectedFeatures }: StepGoalsProps) => {
           <p className="text-sm text-muted-foreground">When do you want to go live?</p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {timelines.map((timeline) => {
             const isAvailable = availableTimelines.includes(timeline.id);
-            const isSelected = data.timeline === timeline.id;
 
             return (
-              <button
+              <SelectableCard
                 key={timeline.id}
-                type="button"
+                icon={timeline.icon}
+                title={timeline.title}
+                description={timeline.description}
+                selected={data.timeline === timeline.id}
+                onClick={() => onChange("timeline", timeline.id)}
                 disabled={!isAvailable}
-                onClick={() => isAvailable && onChange("timeline", timeline.id)}
-                className={cn(
-                  "px-4 py-2.5 rounded-full border-2 transition-all duration-200 text-sm font-medium flex items-center gap-2",
-                  isSelected && isAvailable && "border-accent bg-accent text-background shadow-md",
-                  !isSelected && isAvailable && "border-border/50 text-muted-foreground hover:border-accent/50 hover:text-foreground",
-                  !isAvailable && "border-border/30 text-muted-foreground/50 cursor-not-allowed opacity-60"
-                )}
-              >
-                {timeline.label}
-                {!isAvailable && <Lock className="w-3 h-3" />}
-              </button>
+                disabledMessage="Requires more dev time"
+                className="p-4"
+              />
             );
           })}
         </div>
