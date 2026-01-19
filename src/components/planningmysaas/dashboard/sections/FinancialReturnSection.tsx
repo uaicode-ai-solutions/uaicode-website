@@ -421,8 +421,8 @@ const FinancialReturnSection = () => {
         </div>
         {metrics.unitEconomics ? (
           <>
-            {/* 4 Cards Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {/* 5 Cards Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {/* Ideal Ticket */}
               <Card className="bg-card/50 border-border/30">
                 <CardContent className="p-4 text-center">
@@ -450,12 +450,10 @@ const FinancialReturnSection = () => {
                 </CardContent>
               </Card>
               
-              {/* LTV/CAC Ratio */}
+              {/* LTV/CAC Ratio - Calculated */}
               <Card className="bg-card/50 border-border/30">
                 <CardContent className="p-4 text-center">
                   <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
-                  
-                  {/* Calculated Value (primary, highlighted) */}
                   <div className="flex items-center justify-center gap-1.5 mt-1">
                     <span className="text-xl font-bold text-accent">
                       {metrics.unitEconomics.ltvCacCalculated}x
@@ -464,19 +462,16 @@ const FinancialReturnSection = () => {
                       <CheckCircle className="h-4 w-4 text-accent" />
                     )}
                   </div>
-                  <span className="text-[10px] text-accent/80">calculated</span>
-                  
-                  {/* Divider */}
-                  <div className="border-t border-border/30 my-2" />
-                  
-                  {/* Target Value (secondary) */}
-                  <div className="flex items-center justify-center gap-1">
-                    <span className="text-xs text-muted-foreground">Target:</span>
-                    <span className="text-xs font-medium text-foreground">
-                      {metrics.unitEconomics.ltvCacRatio}x
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">healthy (&gt;3x)</span>
+                  <span className="text-xs text-muted-foreground">calculated</span>
+                </CardContent>
+              </Card>
+              
+              {/* LTV/CAC Target */}
+              <Card className="bg-card/50 border-border/30">
+                <CardContent className="p-4 text-center">
+                  <span className="text-xs text-muted-foreground">LTV/CAC Target</span>
+                  <div className="text-xl font-bold text-foreground mt-1">{metrics.unitEconomics.ltvCacRatio}x</div>
+                  <span className="text-xs text-muted-foreground">healthy (&gt;3x)</span>
                 </CardContent>
               </Card>
             </div>
