@@ -145,13 +145,15 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     // Extract Growth Targets (handles both string and object formats)
     // ============================================
     const growthTargets = safeGet(growthIntelligence, 'growth_targets', null) as Record<string, unknown> | null;
-    const sixMonthTargets = safeGet(growthTargets, 'six_month_targets', null);
-    const twelveMonthTargets = safeGet(growthTargets, 'twelve_month_targets', null);
-    const twentyFourMonthTargets = safeGet(growthTargets, 'twenty_four_month_targets', null);
+    
+    // Support both new format (6_month/12_month/24_month) and legacy format (six_month_targets/etc)
+    const sixMonthTargets = safeGet(growthTargets, '6_month', null) ?? safeGet(growthTargets, 'six_month_targets', null);
+    const twelveMonthTargets = safeGet(growthTargets, '12_month', null) ?? safeGet(growthTargets, 'twelve_month_targets', null);
+    const twentyFourMonthTargets = safeGet(growthTargets, '24_month', null) ?? safeGet(growthTargets, 'twenty_four_month_targets', null);
     
     // DEBUG: Log targets structure
     console.log('[FinancialMetrics] Growth Targets:', {
-      growthTargets,
+      growthTargetsKeys: growthTargets ? Object.keys(growthTargets) : [],
       twelveMonthTargets,
       twelveMonthTargetsType: typeof twelveMonthTargets,
     });
