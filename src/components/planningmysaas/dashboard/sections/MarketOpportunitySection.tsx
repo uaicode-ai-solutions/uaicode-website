@@ -25,6 +25,30 @@ const industryLabels: Record<string, string> = {
   other: "",
 };
 
+// Extract maximum value from ranges like "$2.8B - $4.2B" → "$4.2B"
+const extractMaxValue = (value: string): string => {
+  if (!value || value === "...") return value;
+  
+  // Normalize text suffixes first
+  let normalized = value
+    .replace(/\s*billion/gi, "B")
+    .replace(/\s*million/gi, "M")
+    .replace(/\s*trillion/gi, "T")
+    .replace(/\s*thousand/gi, "K");
+  
+  // Check for range pattern (e.g., "$2.8B - $4.2B", "2.8B-4.2B", "$2.8B – $4.2B")
+  const rangeMatch = normalized.match(/\$?([\d.,]+)\s*([BMTK])?\s*[-–]\s*\$?([\d.,]+)\s*([BMTK])?/i);
+  
+  if (rangeMatch) {
+    const maxNumber = rangeMatch[3];
+    // Use second suffix if present, otherwise first
+    const suffix = rangeMatch[4] || rangeMatch[2] || "";
+    return `$${maxNumber}${suffix}`;
+  }
+  
+  return value;
+};
+
 // Format market values: "$713.36 billion" → "$713.4B" (1 decimal place)
 const formatMarketValue = (value: string): string => {
   if (!value || value === "...") return value;
@@ -63,12 +87,13 @@ const formatGrowthRate = (value: string): string => {
 const cleanHeadline = (text: string): string => {
   if (!text) return text;
   return text
-    .replace(/\[\d+\]/g, "")
+    .replace(/\[\d+\]/g, "")      // Remove [1], [2], [3], etc.
+    .replace(/\(\d+\)/g, "")      // Remove (1), (2), (3), etc.
     .replace(/\s*billion/gi, "B")
     .replace(/\s*million/gi, "M")
     .replace(/\s*trillion/gi, "T")
     .replace(/\s*thousand/gi, "K")
-    .replace(/\s+/g, " ")
+    .replace(/\s{2,}/g, " ")      // Collapse multiple spaces
     .trim();
 };
 
@@ -85,9 +110,10 @@ const MarketOpportunitySection = () => {
     (rawOpportunityData?.sam_geographic_focus as string) || "";
 
   // Use opportunity_section JSONB data exclusively (no legacy fallbacks)
-  const tam = formatMarketValue(opportunityData?.tam_value || "...");
-  const sam = formatMarketValue(opportunityData?.sam_value || "...");
-  const som = formatMarketValue(opportunityData?.som_value || "...");
+  // Extract max value from ranges before formatting
+  const tam = formatMarketValue(extractMaxValue(opportunityData?.tam_value || "..."));
+  const sam = formatMarketValue(extractMaxValue(opportunityData?.sam_value || "..."));
+  const som = formatMarketValue(extractMaxValue(opportunityData?.som_value || "..."));
   
   // Growth rate formatted: "19.8% 2026-2035"
   const growthRate = formatGrowthRate(opportunityData?.market_growth_rate || "...");
