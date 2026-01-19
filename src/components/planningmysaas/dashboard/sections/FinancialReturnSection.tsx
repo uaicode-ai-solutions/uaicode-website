@@ -309,14 +309,10 @@ const FinancialReturnSection = () => {
                     />
                   </svg>
                   {/* Center text */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-3xl font-bold bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent">
                       {metrics.roiYear1}
                     </span>
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className="h-3.5 w-3.5 text-amber-500" />
-                      <span className="text-[10px] text-muted-foreground">ROI</span>
-                    </div>
                   </div>
                 </div>
               </div>
