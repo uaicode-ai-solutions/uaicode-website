@@ -40,12 +40,12 @@ const FinancialReturnSection = () => {
   });
   
   const { value: mrrValue, isLoading: mrrLoading } = useSmartFallbackField({
-    fieldPath: "growth_intelligence_section.growth_targets.twelve_month_targets.mrr",
+    fieldPath: "growth_intelligence_section.growth_targets.12_month.mrr",
     currentValue: metrics.mrrMonth12 !== "..." ? metrics.mrrMonth12 : undefined,
   });
   
   const { value: arrValue, isLoading: arrLoading } = useSmartFallbackField({
-    fieldPath: "growth_intelligence_section.growth_targets.twelve_month_targets.arr",
+    fieldPath: "growth_intelligence_section.growth_targets.12_month.arr",
     currentValue: metrics.arrProjected !== "..." ? metrics.arrProjected : undefined,
   });
 

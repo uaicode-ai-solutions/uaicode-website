@@ -561,11 +561,85 @@ export const FALLBACK_CONFIG: Record<string, FallbackFieldConfig> = {
 
   // ==========================================
   // GROWTH INTELLIGENCE SECTION (growth_intelligence_section)
+  // New format keys: 6_month, 12_month, 24_month
+  // Legacy format keys: six_month_targets, twelve_month_targets, twenty_four_month_targets
   // ==========================================
 
-  "growth_intelligence_section.growth_targets.six_month_targets": {
+  // New format (preferred)
+  "growth_intelligence_section.growth_targets.6_month": {
     sectionName: "Growth Intelligence",
     fieldDescription: "6-month growth targets including users, revenue, and metrics",
+    fieldPurpose: "Sets short-term growth milestones",
+    expectedType: "object",
+    expectedFormat: "{users, mrr, arr, growth_rate, churn}",
+    perplexitySearchType: "growth_projection",
+    validationRules: {
+      hasRequiredKeys: ["users", "mrr"]
+    },
+    priority: "high",
+    staticFallback: { users: 0, mrr: 0, arr: 0 }
+  },
+
+  "growth_intelligence_section.growth_targets.12_month": {
+    sectionName: "Growth Intelligence",
+    fieldDescription: "12-month growth targets including users, revenue, and metrics",
+    fieldPurpose: "Sets medium-term growth milestones",
+    expectedType: "object",
+    expectedFormat: "{users, mrr, arr, growth_rate, churn}",
+    perplexitySearchType: "growth_projection",
+    validationRules: {
+      hasRequiredKeys: ["users", "mrr"]
+    },
+    priority: "critical",
+    staticFallback: { users: 0, mrr: 0, arr: 0 }
+  },
+
+  "growth_intelligence_section.growth_targets.12_month.mrr": {
+    sectionName: "Growth Intelligence",
+    fieldDescription: "12-month Monthly Recurring Revenue target",
+    fieldPurpose: "Key revenue projection metric",
+    expectedType: "number",
+    expectedFormat: "Number in dollars (e.g., 425000)",
+    perplexitySearchType: "growth_projection",
+    validationRules: {
+      reasonableRange: { min: 1000, max: 100000000 }
+    },
+    priority: "critical",
+    staticFallback: 0
+  },
+
+  "growth_intelligence_section.growth_targets.12_month.arr": {
+    sectionName: "Growth Intelligence",
+    fieldDescription: "12-month Annual Recurring Revenue target",
+    fieldPurpose: "Key annual revenue projection",
+    expectedType: "number",
+    expectedFormat: "Number in dollars (e.g., 5100000)",
+    perplexitySearchType: "growth_projection",
+    validationRules: {
+      reasonableRange: { min: 10000, max: 1000000000 }
+    },
+    priority: "critical",
+    staticFallback: 0
+  },
+
+  "growth_intelligence_section.growth_targets.24_month": {
+    sectionName: "Growth Intelligence",
+    fieldDescription: "24-month growth targets including users, revenue, and metrics",
+    fieldPurpose: "Sets long-term growth milestones",
+    expectedType: "object",
+    expectedFormat: "{users, mrr, arr, growth_rate, churn}",
+    perplexitySearchType: "growth_projection",
+    validationRules: {
+      hasRequiredKeys: ["users", "mrr"]
+    },
+    priority: "medium",
+    staticFallback: { users: 0, mrr: 0, arr: 0 }
+  },
+
+  // Legacy format (for backward compatibility with older reports)
+  "growth_intelligence_section.growth_targets.six_month_targets": {
+    sectionName: "Growth Intelligence",
+    fieldDescription: "6-month growth targets including users, revenue, and metrics (legacy)",
     fieldPurpose: "Sets short-term growth milestones",
     expectedType: "object",
     expectedFormat: "{users, mrr, arr, growth_rate}",
@@ -579,7 +653,7 @@ export const FALLBACK_CONFIG: Record<string, FallbackFieldConfig> = {
 
   "growth_intelligence_section.growth_targets.twelve_month_targets": {
     sectionName: "Growth Intelligence",
-    fieldDescription: "12-month growth targets including users, revenue, and metrics",
+    fieldDescription: "12-month growth targets including users, revenue, and metrics (legacy)",
     fieldPurpose: "Sets medium-term growth milestones",
     expectedType: "object",
     expectedFormat: "{users, mrr, arr, growth_rate}",
@@ -593,7 +667,7 @@ export const FALLBACK_CONFIG: Record<string, FallbackFieldConfig> = {
 
   "growth_intelligence_section.growth_targets.twenty_four_month_targets": {
     sectionName: "Growth Intelligence",
-    fieldDescription: "24-month growth targets including users, revenue, and metrics",
+    fieldDescription: "24-month growth targets including users, revenue, and metrics (legacy)",
     fieldPurpose: "Sets long-term growth milestones",
     expectedType: "object",
     expectedFormat: "{users, mrr, arr, growth_rate}",
