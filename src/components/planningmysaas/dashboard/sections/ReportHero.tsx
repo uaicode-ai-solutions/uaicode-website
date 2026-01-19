@@ -5,6 +5,8 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
 import { safeNumber, OpportunitySection, HeroScoreSection } from "@/types/report";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { FallbackSkeleton } from "@/components/ui/fallback-skeleton";
 
 interface ReportHeroProps {
   projectName?: string;
@@ -14,7 +16,7 @@ interface ReportHeroProps {
 
 // Format market values: "$713.36 billion" → "$713.4B"
 const formatMarketValue = (value: string): string => {
-  if (!value || value === "...") return value;
+  if (!value || value === "..." || value === "$...") return "...";
   
   let formatted = value
     .replace(/\s*billion/gi, "B")
@@ -44,18 +46,27 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   const heroScoreData = reportData?.hero_score_section as HeroScoreSection | null;
   
-  // Viability score: prefer hero_score_section, fallback to section_investment
-  const viabilityScore = safeNumber(
-    heroScoreData?.score ?? (sectionInvestment?.viability_score as number | null), 
-    0
-  );
+  // Use smart fallback for viability score
+  const rawScore = heroScoreData?.score ?? (sectionInvestment?.viability_score as number | null);
+  const { value: viabilityScore, isLoading: scoreLoading } = useSmartFallbackField<number>({
+    fieldPath: "hero_score_section.score",
+    currentValue: rawScore,
+    formatter: (v) => safeNumber(v, 0),
+  });
   
-  // Tagline: prefer hero_score_section, fallback to section_investment verdict_headline
-  const verdictHeadline = heroScoreData?.tagline || (sectionInvestment?.verdict_headline as string | null) || "...";
+  // Use smart fallback for tagline
+  const rawTagline = heroScoreData?.tagline || (sectionInvestment?.verdict_headline as string | null);
+  const { value: verdictHeadline, isLoading: taglineLoading } = useSmartFallbackField<string>({
+    fieldPath: "hero_score_section.tagline",
+    currentValue: rawTagline,
+  });
   
-  // Total market from opportunity_section
-  const rawTotalMarket = opportunityData?.tam_value || null;
-  const totalMarket = rawTotalMarket ? formatMarketValue(String(rawTotalMarket)) : "...";
+  // Use smart fallback for TAM
+  const { value: totalMarket, isLoading: tamLoading } = useSmartFallbackField<string>({
+    fieldPath: "opportunity_section.tam_value",
+    currentValue: opportunityData?.tam_value,
+    formatter: (v) => formatMarketValue(String(v)),
+  });
   
   // ROI and Payback from useFinancialMetrics (same source as FinancialReturnSection)
   const expectedROI = financialMetrics.roiYear1 || "...";
@@ -69,10 +80,13 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
     return "text-red-400";
   };
 
+  const displayScore = viabilityScore ?? 0;
+
   const metrics = [
     { 
       icon: TrendingUp, 
-      value: totalMarket, 
+      value: totalMarket || "...", 
+      isLoading: tamLoading,
       label: "Total Market",
       sublabel: "Global TAM",
       tooltip: "Total Addressable Market - The total global market demand for your product or service. Source: AI market research analysis."
@@ -80,6 +94,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
     { 
       icon: DollarSign, 
       value: expectedROI, 
+      isLoading: false,
       label: "Expected ROI",
       sublabel: "Year 1",
       tooltip: "Return on Investment - The projected percentage gain on your investment in the first year. Source: AI analysis based on projected revenue vs. total investment."
@@ -87,6 +102,7 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
     { 
       icon: Clock, 
       value: paybackPeriod, 
+      isLoading: false,
       label: "Payback Period",
       sublabel: "To break-even",
       tooltip: "The estimated time until your cumulative revenue exceeds your total investment. Source: AI analysis based on your market and pricing model."
@@ -121,56 +137,68 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
           <div className="relative">
             {/* Score Ring */}
             <div className="relative w-32 h-32 md:w-36 md:h-36 mx-auto drop-shadow-[0_0_20px_rgba(251,191,36,0.25)]">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  stroke="currentColor"
-                  strokeWidth="7"
-                  fill="transparent"
-                  className="text-muted/20"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  stroke="url(#scoreGradient)"
-                  strokeWidth="7"
-                  fill="transparent"
-                  strokeLinecap="round"
-                  strokeDasharray={`${(viabilityScore / 100) * 2 * Math.PI * 42} ${2 * Math.PI * 42}`}
-                  className="transition-all duration-1000"
-                  filter="url(#glow)"
-                />
-                <defs>
-                  <linearGradient id="scoreGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#F59E0B" />
-                    <stop offset="50%" stopColor="#FBBF24" />
-                    <stop offset="100%" stopColor="#FCD34D" />
-                  </linearGradient>
-                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl md:text-5xl font-bold bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent">
-                  {viabilityScore}
-                </span>
-                <span className="text-xs text-muted-foreground">Viability</span>
-              </div>
+              {scoreLoading ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <FallbackSkeleton variant="card" className="w-28 h-28 rounded-full" />
+                </div>
+              ) : (
+                <>
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      stroke="currentColor"
+                      strokeWidth="7"
+                      fill="transparent"
+                      className="text-muted/20"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      stroke="url(#scoreGradient)"
+                      strokeWidth="7"
+                      fill="transparent"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(displayScore / 100) * 2 * Math.PI * 42} ${2 * Math.PI * 42}`}
+                      className="transition-all duration-1000"
+                      filter="url(#glow)"
+                    />
+                    <defs>
+                      <linearGradient id="scoreGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#F59E0B" />
+                        <stop offset="50%" stopColor="#FBBF24" />
+                        <stop offset="100%" stopColor="#FCD34D" />
+                      </linearGradient>
+                      <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-4xl md:text-5xl font-bold bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent">
+                      {displayScore}
+                    </span>
+                    <span className="text-xs text-muted-foreground">Viability</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
           {/* Verdict Headline */}
-          <p className="text-lg md:text-xl text-accent font-medium max-w-lg">
-            {verdictHeadline}
-          </p>
+          {taglineLoading ? (
+            <FallbackSkeleton size="lg" className="w-64" />
+          ) : (
+            <p className="text-lg md:text-xl text-accent font-medium max-w-lg">
+              {verdictHeadline || "..."}
+            </p>
+          )}
         </div>
 
         {/* Key Metrics */}
@@ -188,7 +216,13 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
                   {metric.tooltip}
                 </InfoTooltip>
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-foreground">{metric.value}</div>
+              {metric.isLoading ? (
+                <div className="flex justify-center">
+                  <FallbackSkeleton size="xl" />
+                </div>
+              ) : (
+                <div className="text-2xl md:text-3xl font-bold text-foreground">{metric.value}</div>
+              )}
               <div className="text-sm text-muted-foreground">{metric.label}</div>
               <div className="text-xs text-muted-foreground/70 mt-0.5">{metric.sublabel}</div>
             </Card>

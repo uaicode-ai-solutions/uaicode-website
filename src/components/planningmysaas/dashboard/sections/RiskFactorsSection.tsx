@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { FallbackSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 import {
   RadialBarChart,
   RadialBar,
@@ -13,10 +15,18 @@ import {
 const RiskFactorsSection = () => {
   const { reportData } = useReportContext();
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
-  const riskFactors = opportunityData?.risk_factors || [];
+  
+  // Use smart fallback for risk factors
+  const rawRiskFactors = opportunityData?.risk_factors;
+  const { value: riskFactors, isLoading } = useSmartFallbackField<string[]>({
+    fieldPath: "opportunity_section.risk_factors",
+    currentValue: rawRiskFactors,
+  });
+
+  const riskFactorsArray = riskFactors || [];
 
   // Calculate risk score based on number of risks (inverted - more risks = lower score)
-  const riskCount = riskFactors.length;
+  const riskCount = riskFactorsArray.length;
   const riskScore = Math.max(0, 100 - (riskCount * 12)); // Each risk reduces score by ~12
 
   // Data for radial bar chart
@@ -36,7 +46,36 @@ const RiskFactorsSection = () => {
     return "High Risk";
   };
 
-  if (riskFactors.length === 0) {
+  // Show loading skeleton
+  if (isLoading) {
+    return (
+      <section id="risk-factors" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Shield className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Risk Factors</h2>
+            <p className="text-sm text-muted-foreground">Loading risk factors...</p>
+          </div>
+        </div>
+        <div className="grid lg:grid-cols-3 gap-6">
+          <Card className="bg-card/50 border-border/30">
+            <CardContent className="p-6">
+              <CardContentSkeleton lines={4} />
+            </CardContent>
+          </Card>
+          <Card className="bg-card/50 border-border/30 lg:col-span-2">
+            <CardContent className="p-6">
+              <CardContentSkeleton lines={5} />
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    );
+  }
+
+  if (riskFactorsArray.length === 0) {
     return null;
   }
 
@@ -170,7 +209,7 @@ const RiskFactorsSection = () => {
             </div>
 
             <div className="flex-1 space-y-3">
-              {riskFactors.map((risk, index) => (
+              {riskFactorsArray.map((risk, index) => (
                 <div
                   key={index}
                   className="flex items-start gap-3 p-3 rounded-xl bg-accent/5 border border-accent/10 hover:border-accent/30 transition-colors"

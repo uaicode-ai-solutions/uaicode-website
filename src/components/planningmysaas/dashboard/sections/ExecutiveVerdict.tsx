@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { SummarySection } from "@/types/report";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { FallbackSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 
 const ExecutiveVerdict = () => {
   const { report, reportData } = useReportContext();
@@ -14,12 +16,22 @@ const ExecutiveVerdict = () => {
   // Get summary data from summary_section JSONB (prefer over legacy fields)
   const summaryData = reportData?.summary_section as SummarySection | null;
   
-  // Prefer summary_section, fallback to report fields
-  const verdict = summaryData?.verdict || report?.verdict || "";
-  const verdictSummary = summaryData?.verdict_summary || report?.verdict_summary || "";
+  // Use smart fallback for verdict
+  const rawVerdict = summaryData?.verdict || report?.verdict;
+  const { value: verdict, isLoading: verdictLoading } = useSmartFallbackField<string>({
+    fieldPath: "summary_section.verdict",
+    currentValue: rawVerdict,
+  });
+
+  // Use smart fallback for verdict_summary
+  const rawVerdictSummary = summaryData?.verdict_summary || report?.verdict_summary;
+  const { value: verdictSummary, isLoading: summaryLoading } = useSmartFallbackField<string>({
+    fieldPath: "summary_section.verdict_summary",
+    currentValue: rawVerdictSummary,
+  });
 
   // Parse executive summary into bullet points for better readability
-  const summaryParagraphs = verdictSummary.split('\n\n').filter(p => p.trim());
+  const summaryParagraphs = (verdictSummary || "").split('\n\n').filter(p => p.trim());
 
   return (
     <section id="executive-verdict" className="space-y-6 animate-fade-in">
@@ -46,9 +58,13 @@ const ExecutiveVerdict = () => {
         </div>
         <div>
           <span className="text-sm text-muted-foreground">Our Recommendation:</span>
-          <div className="text-xl font-bold text-green-400">
-            {verdict}
-          </div>
+          {verdictLoading ? (
+            <FallbackSkeleton size="lg" className="mt-1" />
+          ) : (
+            <div className="text-xl font-bold text-green-400">
+              {verdict || "..."}
+            </div>
+          )}
         </div>
       </div>
 
@@ -61,7 +77,9 @@ const ExecutiveVerdict = () => {
               AI-generated executive summary of your SaaS idea's viability and market potential.
             </InfoTooltip>
           </div>
-          {summaryParagraphs.length > 0 ? (
+          {summaryLoading ? (
+            <CardContentSkeleton lines={4} />
+          ) : summaryParagraphs.length > 0 ? (
             <div className="space-y-3">
               {summaryParagraphs.map((paragraph, index) => (
                 <div 

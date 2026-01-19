@@ -1,9 +1,10 @@
 import { Target, TrendingUp, CheckCircle2, Globe, Crosshair, Lightbulb, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { Badge } from "@/components/ui/badge";
 import { useReportContext } from "@/contexts/ReportContext";
 import { safeValue, OpportunitySection } from "@/types/report";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { FallbackSkeleton } from "@/components/ui/fallback-skeleton";
 
 // Geographic region labels
 const regionLabels: Record<string, string> = {
@@ -51,7 +52,7 @@ const extractMaxValue = (value: string): string => {
 
 // Format market values: "$713.36 billion" → "$713.4B" (1 decimal place)
 const formatMarketValue = (value: string): string => {
-  if (!value || value === "...") return value;
+  if (!value || value === "..." || value === "$...") return "...";
   
   // First, replace text suffixes
   let formatted = value
@@ -72,7 +73,7 @@ const formatMarketValue = (value: string): string => {
 
 // Format growth rate: "19.8% annually (2026-2035)" → "19.8% 2026-2035"
 const formatGrowthRate = (value: string): string => {
-  if (!value || value === "...") return value;
+  if (!value || value === "..." || value === "...%") return "...";
   const percentMatch = value.match(/([\d.]+)%/);
   const yearRangeMatch = value.match(/(\d{4}[-–]\d{4})/);
   if (percentMatch) {
@@ -97,6 +98,12 @@ const cleanHeadline = (text: string): string => {
     .trim();
 };
 
+// Helper to format value with extraction
+const formatTamSamSom = (value: unknown): string => {
+  if (typeof value !== 'string') return "...";
+  return formatMarketValue(extractMaxValue(value));
+};
+
 const MarketOpportunitySection = () => {
   const { report, reportData } = useReportContext();
 
@@ -104,19 +111,49 @@ const MarketOpportunitySection = () => {
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   
   // Get geographic region from wizard or fallback to sam_geographic_focus
-  // Cast to unknown first to avoid TypeScript overlap error
   const rawOpportunityData = opportunityData as unknown as Record<string, unknown> | null;
   const geographicRegion = report?.geographic_region || 
     (rawOpportunityData?.sam_geographic_focus as string) || "";
 
-  // Use opportunity_section JSONB data exclusively (no legacy fallbacks)
-  // Extract max value from ranges before formatting
-  const tam = formatMarketValue(extractMaxValue(opportunityData?.tam_value || "..."));
-  const sam = formatMarketValue(extractMaxValue(opportunityData?.sam_value || "..."));
-  const som = formatMarketValue(extractMaxValue(opportunityData?.som_value || "..."));
-  
-  // Growth rate formatted: "19.8% 2026-2035"
-  const growthRate = formatGrowthRate(opportunityData?.market_growth_rate || "...");
+  // Use smart fallback for TAM, SAM, SOM
+  const { value: tam, isLoading: tamLoading } = useSmartFallbackField<string>({
+    fieldPath: "opportunity_section.tam_value",
+    currentValue: opportunityData?.tam_value,
+    formatter: formatTamSamSom,
+  });
+
+  const { value: sam, isLoading: samLoading } = useSmartFallbackField<string>({
+    fieldPath: "opportunity_section.sam_value",
+    currentValue: opportunityData?.sam_value,
+    formatter: formatTamSamSom,
+  });
+
+  const { value: som, isLoading: somLoading } = useSmartFallbackField<string>({
+    fieldPath: "opportunity_section.som_value",
+    currentValue: opportunityData?.som_value,
+    formatter: formatTamSamSom,
+  });
+
+  // Use smart fallback for growth rate
+  const { value: growthRate, isLoading: growthLoading } = useSmartFallbackField<string>({
+    fieldPath: "opportunity_section.market_growth_rate",
+    currentValue: opportunityData?.market_growth_rate,
+    formatter: (v) => formatGrowthRate(String(v)),
+  });
+
+  // Use smart fallback for launch reasoning
+  const { value: launchReasoning, isLoading: launchLoading } = useSmartFallbackField<string>({
+    fieldPath: "opportunity_section.launch_reasoning",
+    currentValue: opportunityData?.launch_reasoning,
+    formatter: (v) => cleanHeadline(String(v)),
+  });
+
+  // Use smart fallback for opportunity justification
+  const { value: opportunityJustification, isLoading: justificationLoading } = useSmartFallbackField<string>({
+    fieldPath: "opportunity_section.opportunity_justification",
+    currentValue: opportunityData?.opportunity_justification,
+    formatter: (v) => cleanHeadline(String(v)),
+  });
 
   // Build fallback headline from wizard industry field
   const industryLabel =
@@ -125,22 +162,16 @@ const MarketOpportunitySection = () => {
       : industryLabels[report?.industry || ""] || "...";
 
   // Use launch_reasoning with citations removed and values formatted
-  const headline = cleanHeadline(
-    opportunityData?.launch_reasoning || 
-    `There is clear room for a new player focused on ${industryLabel} businesses.`
-  );
-
-  // Extract opportunity_justification separately
-  const opportunityJustification = cleanHeadline(
-    opportunityData?.opportunity_justification || ""
-  );
+  const headline = launchReasoning || 
+    `There is clear room for a new player focused on ${industryLabel} businesses.`;
 
   const marketLevels = [
     {
       key: "tam",
       label: "TAM",
       fullName: "Total Addressable Market",
-      value: tam,
+      value: tam || "...",
+      isLoading: tamLoading,
       icon: Globe,
       description:
         "The entire global market demand for your product/service category. This represents the total revenue opportunity if you achieved 100% market share.",
@@ -149,7 +180,8 @@ const MarketOpportunitySection = () => {
       key: "sam",
       label: "SAM",
       fullName: "Serviceable Available Market",
-      value: sam,
+      value: sam || "...",
+      isLoading: samLoading,
       icon: Target,
       description:
         "The segment of TAM you can realistically serve based on your geography, capabilities, and business model constraints.",
@@ -158,7 +190,8 @@ const MarketOpportunitySection = () => {
       key: "som",
       label: "SOM",
       fullName: "Serviceable Obtainable Market",
-      value: som,
+      value: som || "...",
+      isLoading: somLoading,
       icon: Crosshair,
       description:
         "The portion of SAM you can realistically capture in the first 3 years. This is your immediate addressable opportunity.",
@@ -209,7 +242,11 @@ const MarketOpportunitySection = () => {
                 {/* TAM Label - Top */}
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center">
                   <span className="text-xs font-medium text-accent/70 uppercase tracking-wider">TAM</span>
-                  <span className="text-xl font-bold text-foreground">{tam}</span>
+                  {tamLoading ? (
+                    <FallbackSkeleton size="lg" className="mt-1" />
+                  ) : (
+                    <span className="text-xl font-bold text-foreground">{tam || "..."}</span>
+                  )}
                 </div>
 
                 {/* SAM - Middle Circle */}
@@ -217,7 +254,11 @@ const MarketOpportunitySection = () => {
                   {/* SAM Label - Top */}
                   <div className="absolute top-3 left-1/2 -translate-x-1/2 flex flex-col items-center">
                     <span className="text-xs font-medium text-accent/80 uppercase tracking-wider">SAM</span>
-                    <span className="text-xl font-bold text-foreground">{sam}</span>
+                    {samLoading ? (
+                      <FallbackSkeleton size="lg" className="mt-1" />
+                    ) : (
+                      <span className="text-xl font-bold text-foreground">{sam || "..."}</span>
+                    )}
                   </div>
 
                   {/* SOM - Inner Circle */}
@@ -225,7 +266,11 @@ const MarketOpportunitySection = () => {
                     {/* SOM Label - Centered */}
                     <div className="flex flex-col items-center">
                       <span className="text-xs font-medium text-accent uppercase tracking-wider">SOM</span>
-                      <span className="text-2xl font-bold text-foreground">{som}</span>
+                      {somLoading ? (
+                        <FallbackSkeleton size="lg" className="mt-1" />
+                      ) : (
+                        <span className="text-2xl font-bold text-foreground">{som || "..."}</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -238,7 +283,11 @@ const MarketOpportunitySection = () => {
             {/* Growth Legend */}
             <div className="mt-4 flex items-center justify-center gap-2 text-sm">
               <TrendingUp className="h-4 w-4 text-accent" />
-              <span className="font-semibold text-accent">{growthRate}</span>
+              {growthLoading ? (
+                <FallbackSkeleton size="md" />
+              ) : (
+                <span className="font-semibold text-accent">{growthRate || "..."}</span>
+              )}
               <span className="text-muted-foreground">Year-over-Year market growth rate</span>
             </div>
           </CardContent>
@@ -300,13 +349,17 @@ const MarketOpportunitySection = () => {
                 The strategic rationale for launching this product in the current market.
               </InfoTooltip>
             </div>
-            <p className="text-sm text-foreground/90 leading-relaxed">{headline}</p>
+            {launchLoading ? (
+              <FallbackSkeleton size="lg" className="w-full h-5" />
+            ) : (
+              <p className="text-sm text-foreground/90 leading-relaxed">{headline}</p>
+            )}
           </div>
         </div>
       </div>
 
       {/* Opportunity Justification Banner */}
-      {opportunityJustification && (
+      {(opportunityJustification || justificationLoading) && (
         <div className="p-5 rounded-xl bg-gradient-to-r from-card/80 via-card/60 to-card/80 border border-border/50 hover:border-accent/30 transition-all duration-300">
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-xl bg-accent/15 flex-shrink-0">
@@ -319,9 +372,13 @@ const MarketOpportunitySection = () => {
                   The strategic justification for pursuing this market opportunity.
                 </InfoTooltip>
               </div>
-              <p className="text-sm text-foreground/80 leading-relaxed">
-                {opportunityJustification}
-              </p>
+              {justificationLoading ? (
+                <FallbackSkeleton size="lg" className="w-full h-5" />
+              ) : (
+                <p className="text-sm text-foreground/80 leading-relaxed">
+                  {opportunityJustification}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -329,5 +386,8 @@ const MarketOpportunitySection = () => {
     </section>
   );
 };
+
+// Need to import Badge
+import { Badge } from "@/components/ui/badge";
 
 export default MarketOpportunitySection;
