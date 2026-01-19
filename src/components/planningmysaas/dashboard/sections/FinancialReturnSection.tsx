@@ -3,7 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { UnitEconomics, FinancialScenario, ProjectionDataPoint } from "@/types/report";
+import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
+import { formatCurrency } from "@/lib/financialParsingUtils";
 import {
   AreaChart,
   Area,
@@ -16,40 +17,13 @@ import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
 } from "recharts";
 
 const FinancialReturnSection = () => {
-  const { report } = useReportContext();
+  const { reportData } = useReportContext();
   
-  // Use real data only - no mock fallbacks for validation
-  const breakEvenMonths = report?.break_even_months || "-";
-  const roiYear1 = report?.expected_roi_year1 || "-";
-  const mrrMonth12 = report?.mrr_month12_cents || "-";
-  const arrProjected = report?.arr_projected_cents || "-";
-  const ltvCacRatio = report?.ltv_cac_ratio || "-";
-  
-  // Parse JSONB fields - undefined/empty arrays if not available
-  const unitEconomics = report?.unit_economics as unknown as UnitEconomics | undefined;
-  const financialScenarios: FinancialScenario[] = (report?.financial_scenarios as unknown as FinancialScenario[]) || [];
-  const projectionData: ProjectionDataPoint[] = (report?.projection_data as unknown as ProjectionDataPoint[]) || [];
-
-  const formatCurrency = (value: number | string) => {
-    // If already formatted string, return it
-    if (typeof value === 'string' && (value.includes('$') || value.includes('K') || value.includes('M'))) {
-      return value;
-    }
-    const numValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.-]/g, '')) : value;
-    if (isNaN(numValue)) return String(value);
-    if (numValue >= 1000000) {
-      return `$${(numValue / 1000000).toFixed(1)}M`;
-    }
-    if (numValue >= 1000) {
-      return `$${(numValue / 1000).toFixed(0)}K`;
-    }
-    return `$${numValue}`;
-  };
+  // Use the new hook to extract all financial metrics from JSONB
+  const metrics = useFinancialMetrics(reportData);
 
   const scenarioIcons: Record<string, React.ElementType> = {
     Conservative: Shield,
@@ -57,22 +31,11 @@ const FinancialReturnSection = () => {
     Optimistic: Rocket,
   };
 
-  // Parse numeric values from TEXT fields
-  const parseNumericBreakEven = () => {
-    const match = breakEvenMonths.match(/\d+/);
-    return match ? parseInt(match[0]) : 0;
-  };
-
-  const parseNumericROI = () => {
-    const match = roiYear1.match(/[\d.]+/);
-    return match ? parseFloat(match[0]) : 0;
-  };
-
-  const metrics = [
+  const keyMetrics = [
     {
       icon: Clock,
       label: "Break-even",
-      value: breakEvenMonths.includes('month') ? breakEvenMonths : `${breakEvenMonths} months`,
+      value: metrics.breakEvenMonths,
       sublabel: "Until investment payoff",
       highlight: true,
       tooltip: "The month when your cumulative revenue exceeds your total investment and operational costs."
@@ -80,7 +43,7 @@ const FinancialReturnSection = () => {
     {
       icon: TrendingUp,
       label: "Year 1 ROI",
-      value: roiYear1.includes('%') ? roiYear1 : `${roiYear1}%`,
+      value: metrics.roiYear1,
       sublabel: "Return on investment",
       highlight: false,
       tooltip: "Return on Investment - The projected percentage gain on your investment in the first year."
@@ -88,7 +51,7 @@ const FinancialReturnSection = () => {
     {
       icon: DollarSign,
       label: "Month 12 MRR",
-      value: formatCurrency(mrrMonth12),
+      value: metrics.mrrMonth12,
       sublabel: "Monthly recurring revenue",
       highlight: false,
       tooltip: "Monthly Recurring Revenue - The predictable monthly revenue from subscriptions at month 12."
@@ -96,7 +59,7 @@ const FinancialReturnSection = () => {
     {
       icon: Target,
       label: "Projected ARR",
-      value: formatCurrency(arrProjected),
+      value: metrics.arrProjected,
       sublabel: "Annual recurring revenue",
       highlight: false,
       tooltip: "Annual Recurring Revenue - The yearly value of your recurring subscriptions (MRR × 12)."
@@ -123,7 +86,7 @@ const FinancialReturnSection = () => {
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {metrics.map((metric, index) => (
+        {keyMetrics.map((metric, index) => (
           <Card 
             key={index}
             className={`bg-card/50 border-border/30 transition-all duration-300 hover:shadow-md ${metric.highlight ? 'ring-1 ring-accent/30' : ''}`}
@@ -163,10 +126,10 @@ const FinancialReturnSection = () => {
               </div>
             </div>
           </div>
-          {projectionData.length > 0 ? (
+          {metrics.projectionData.length > 0 ? (
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={projectionData}>
+                <AreaChart data={metrics.projectionData}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.4} />
@@ -201,12 +164,14 @@ const FinancialReturnSection = () => {
                       name === 'revenue' ? 'Revenue' : 'Costs'
                     ]}
                   />
-                  <ReferenceLine 
-                    x={`M${parseNumericBreakEven()}`}
-                    stroke="hsl(var(--accent))" 
-                    strokeDasharray="5 5"
-                    label={{ value: 'Break-even', fill: 'hsl(var(--accent))', fontSize: 10 }}
-                  />
+                  {metrics.breakEvenMonthsNum && metrics.breakEvenMonthsNum <= 12 && (
+                    <ReferenceLine 
+                      x={`M${metrics.breakEvenMonthsNum}`}
+                      stroke="hsl(var(--accent))" 
+                      strokeDasharray="5 5"
+                      label={{ value: 'Break-even', fill: 'hsl(var(--accent))', fontSize: 10 }}
+                    />
+                  )}
                   <Area
                     type="monotone"
                     dataKey="revenue"
@@ -262,8 +227,8 @@ const FinancialReturnSection = () => {
                   <PieChart>
                     <Pie
                       data={[
-                        { name: "ROI", value: Math.min(parseNumericROI(), 250) },
-                        { name: "Remaining", value: Math.max(0, 250 - parseNumericROI()) }
+                        { name: "ROI", value: Math.min(Math.abs(metrics.roiYear1Num || 0), 250) },
+                        { name: "Remaining", value: Math.max(0, 250 - Math.abs(metrics.roiYear1Num || 0)) }
                       ]}
                       cx="50%"
                       cy="50%"
@@ -280,18 +245,22 @@ const FinancialReturnSection = () => {
                 </ResponsiveContainer>
                 {/* Center text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-accent">{roiYear1.includes('%') ? roiYear1 : `${roiYear1}%`}</span>
+                  <span className="text-2xl font-bold text-accent">{metrics.roiYear1}</span>
                   <TrendingUp className="h-4 w-4 text-accent" />
                 </div>
               </div>
               
               {/* Description */}
               <div className="text-center mt-4">
-                <p className="text-sm text-foreground">
-                  <span className="font-medium">$1 invested</span>
-                  <span className="mx-2 text-muted-foreground">→</span>
-                  <span className="font-bold text-accent">${(1 + parseNumericROI() / 100).toFixed(2)} return</span>
-                </p>
+                {metrics.roiYear1Num !== null ? (
+                  <p className="text-sm text-foreground">
+                    <span className="font-medium">$1 invested</span>
+                    <span className="mx-2 text-muted-foreground">→</span>
+                    <span className="font-bold text-accent">${(1 + (metrics.roiYear1Num || 0) / 100).toFixed(2)} return</span>
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">ROI calculation pending</p>
+                )}
                 <p className="text-xs text-muted-foreground">12 months</p>
               </div>
               
@@ -300,14 +269,17 @@ const FinancialReturnSection = () => {
                 <div className="flex items-center justify-between text-xs mb-2">
                   <span className="text-muted-foreground">Industry Avg: 80-120%</span>
                   <Badge className="bg-accent/10 text-accent border-accent/30 text-[10px]">
-                    {parseNumericROI() > 120 ? 'Above Average' : parseNumericROI() >= 80 ? 'Average' : 'Below Average'}
+                    {metrics.roiYear1Num !== null 
+                      ? (metrics.roiYear1Num > 120 ? 'Above Average' : metrics.roiYear1Num >= 80 ? 'Average' : 'Below Average')
+                      : 'Calculating...'
+                    }
                   </Badge>
                 </div>
                 {/* Progress bar */}
                 <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-gradient-to-r from-accent/60 to-accent rounded-full" 
-                    style={{ width: `${Math.min(100, parseNumericROI() / 2)}%` }}
+                    style={{ width: `${Math.min(100, Math.abs(metrics.roiYear1Num || 0) / 2)}%` }}
                   />
                 </div>
               </div>
@@ -322,13 +294,9 @@ const FinancialReturnSection = () => {
               </div>
               <p className="text-xs text-muted-foreground mb-4">Monthly Recurring Revenue growth over 36 months</p>
               
-              {/* Year milestones cards - use real Year 1 data, placeholders for Year 2/3 */}
+              {/* Year milestones cards */}
               <div className="grid grid-cols-3 gap-2">
-                {[
-                  { year: "Year 1", arr: formatCurrency(arrProjected), mrr: formatCurrency(mrrMonth12) + " MRR" },
-                  { year: "Year 2", arr: "-", mrr: "- MRR" },
-                  { year: "Year 3", arr: "-", mrr: "- MRR" },
-                ].map((item, idx) => (
+                {metrics.yearEvolution.map((item, idx) => (
                   <div key={idx} className="bg-muted/20 rounded-lg p-2.5 text-center border border-border/20">
                     <p className="text-[10px] text-muted-foreground">{item.year}</p>
                     <p className="text-base font-bold text-accent">{item.arr}</p>
@@ -338,10 +306,13 @@ const FinancialReturnSection = () => {
                 ))}
               </div>
               
-              {/* Note about future projections */}
+              {/* Growth note */}
               <div className="mt-4 pt-4 border-t border-border/30">
                 <p className="text-xs text-muted-foreground text-center">
-                  Year 2 and 3 projections will be calculated based on growth assumptions
+                  {metrics.arr24Months 
+                    ? "Projections based on growth intelligence data"
+                    : "Year 2 and 3 projections will be calculated based on growth assumptions"
+                  }
                 </p>
               </div>
             </CardContent>
@@ -350,9 +321,9 @@ const FinancialReturnSection = () => {
 
 
         {/* Scenario Cards */}
-        {financialScenarios.length > 0 ? (
+        {metrics.financialScenarios.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {financialScenarios.map((scenario, index) => {
+            {metrics.financialScenarios.map((scenario, index) => {
               const ScenarioIcon = scenarioIcons[scenario.name] || Target;
               return (
                 <Card 
@@ -420,7 +391,7 @@ const FinancialReturnSection = () => {
             Key metrics showing your customer acquisition efficiency and lifetime value analysis.
           </InfoTooltip>
         </div>
-        {unitEconomics ? (
+        {metrics.unitEconomics ? (
           <>
             {/* 4 Cards Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -428,7 +399,7 @@ const FinancialReturnSection = () => {
               <Card className="bg-card/50 border-border/30">
                 <CardContent className="p-4 text-center">
                   <span className="text-xs text-muted-foreground">Ideal Ticket</span>
-                  <div className="text-xl font-bold text-foreground mt-1">${unitEconomics.idealTicket || "-"}</div>
+                  <div className="text-xl font-bold text-foreground mt-1">{metrics.unitEconomics.idealTicket}</div>
                   <span className="text-xs text-muted-foreground">/month</span>
                 </CardContent>
               </Card>
@@ -437,7 +408,7 @@ const FinancialReturnSection = () => {
               <Card className="bg-card/50 border-border/30">
                 <CardContent className="p-4 text-center">
                   <span className="text-xs text-muted-foreground">Payback Period</span>
-                  <div className="text-xl font-bold text-foreground mt-1">{unitEconomics.paybackPeriod || "-"}</div>
+                  <div className="text-xl font-bold text-foreground mt-1">{metrics.unitEconomics.paybackPeriod}</div>
                   <span className="text-xs text-muted-foreground">months</span>
                 </CardContent>
               </Card>
@@ -446,8 +417,8 @@ const FinancialReturnSection = () => {
               <Card className="bg-card/50 border-border/30">
                 <CardContent className="p-4 text-center">
                   <span className="text-xs text-muted-foreground">LTV (Lifetime Value)</span>
-                  <div className="text-xl font-bold text-foreground mt-1">${unitEconomics.ltv || "-"}</div>
-                  <span className="text-xs text-muted-foreground">{unitEconomics.ltvMonths || "-"} months</span>
+                  <div className="text-xl font-bold text-foreground mt-1">{metrics.unitEconomics.ltv}</div>
+                  <span className="text-xs text-muted-foreground">{metrics.unitEconomics.ltvMonths} months</span>
                 </CardContent>
               </Card>
               
@@ -456,8 +427,10 @@ const FinancialReturnSection = () => {
                 <CardContent className="p-4 text-center">
                   <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
                   <div className="flex items-center justify-center gap-1.5 mt-1">
-                    <span className="text-xl font-bold text-foreground">{ltvCacRatio}x</span>
-                    <CheckCircle className="h-4 w-4 text-accent" />
+                    <span className="text-xl font-bold text-foreground">{metrics.unitEconomics.ltvCacRatio}x</span>
+                    {metrics.ltvCacRatioNum && metrics.ltvCacRatioNum >= 3 && (
+                      <CheckCircle className="h-4 w-4 text-accent" />
+                    )}
                   </div>
                   <span className="text-xs text-muted-foreground">healthy (&gt;3x)</span>
                 </CardContent>
@@ -465,12 +438,12 @@ const FinancialReturnSection = () => {
             </div>
             
             {/* How it works */}
-            {unitEconomics.howItWorks && (
+            {metrics.unitEconomics.howItWorks && metrics.idealTicket && (
               <Card className="bg-accent/5 border-accent/20">
                 <CardContent className="p-4">
                   <p className="text-sm text-muted-foreground">
                     <span className="font-semibold text-foreground">How it works: </span>
-                    {unitEconomics.howItWorks}
+                    {metrics.unitEconomics.howItWorks}
                   </p>
                 </CardContent>
               </Card>
@@ -479,7 +452,7 @@ const FinancialReturnSection = () => {
         ) : (
           <div className="flex items-center gap-2 text-muted-foreground text-sm p-4 rounded-lg bg-card/50 border border-border/30">
             <AlertCircle className="h-4 w-4" />
-            <span>No unit economics data available</span>
+            <span>Unit economics will be calculated from growth and marketing data</span>
           </div>
         )}
       </div>
