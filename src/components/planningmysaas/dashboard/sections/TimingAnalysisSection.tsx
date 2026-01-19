@@ -4,20 +4,32 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField, parseScoreField, emptyStates } from "@/lib/reportDataUtils";
-import { TimingAnalysis } from "@/types/report";
+import { TimingAnalysis, OpportunitySection } from "@/types/report";
 
 const TimingAnalysisSection = () => {
-  const { report } = useReportContext();
+  const { report, reportData } = useReportContext();
+  
+  // UNIFIED: Get macro trends from opportunity_section (primary source)
+  const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
+  const macroTrendsFromOpportunity = opportunityData?.macro_trends || [];
   
   // Parse timing analysis from report or use empty state
   const timingScore = parseScoreField(report?.timing_score, 0);
   const rawTimingAnalysis = parseJsonField<any>(report?.timing_analysis, null);
   
   // Build the timing analysis object with proper structure
+  // Use opportunity_section macro_trends as primary source
   const timingAnalysis = rawTimingAnalysis ? {
     timingScore: timingScore || rawTimingAnalysis.score || 0,
     verdict: rawTimingAnalysis.verdict || "Analysis pending...",
-    macroTrends: rawTimingAnalysis.macroTrends || [],
+    // UNIFIED: Use opportunity_section macro_trends if available
+    macroTrends: macroTrendsFromOpportunity.length > 0 
+      ? macroTrendsFromOpportunity.map(mt => ({
+          trend: mt.trend,
+          impact: mt.impact,
+          relevance: mt.strength === "Strong" ? "high" : mt.strength === "Medium" ? "medium" : "low"
+        }))
+      : rawTimingAnalysis.macroTrends || [],
     windowOfOpportunity: rawTimingAnalysis.windowOfOpportunity || { opens: "Now", closes: "TBD", reason: "" },
     firstMoverAdvantage: {
       score: rawTimingAnalysis.firstMoverAdvantage?.score || parseScoreField(report?.first_mover_score, 0),

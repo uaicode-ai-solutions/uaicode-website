@@ -74,21 +74,21 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
       value: totalMarket, 
       label: "Total Market",
       sublabel: "Global TAM",
-      tooltip: "Total Addressable Market - The total global market demand for your product or service."
+      tooltip: "Total Addressable Market - The total global market demand for your product or service. Source: AI market research analysis."
     },
     { 
       icon: DollarSign, 
       value: expectedROI, 
       label: "Expected ROI",
       sublabel: "Year 1",
-      tooltip: "Return on Investment - The projected percentage gain on your investment in the first year."
+      tooltip: "Return on Investment - The projected percentage gain on your investment in the first year. Source: AI analysis based on projected revenue vs. total investment."
     },
     { 
       icon: Clock, 
       value: paybackPeriod, 
       label: "Payback Period",
       sublabel: "To break-even",
-      tooltip: "The estimated time until your cumulative revenue exceeds your total investment."
+      tooltip: "The estimated time until your cumulative revenue exceeds your total investment. Source: AI analysis based on your market and pricing model."
     },
   ];
 

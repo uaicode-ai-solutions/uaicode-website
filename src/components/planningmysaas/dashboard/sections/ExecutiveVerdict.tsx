@@ -8,10 +8,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { Highlight, Risk } from "@/types/report";
+import { Highlight, Risk, OpportunitySection } from "@/types/report";
 
 const ExecutiveVerdict = () => {
-  const { report } = useReportContext();
+  const { report, reportData } = useReportContext();
   
   // Use real data only - no mock fallbacks for validation
   const verdict = report?.verdict || "";
@@ -19,7 +19,20 @@ const ExecutiveVerdict = () => {
   
   // Parse JSONB fields - empty arrays if not available
   const highlights: Highlight[] = (report?.highlights as unknown as Highlight[]) || [];
-  const risks: Risk[] = (report?.risks as unknown as Risk[]) || [];
+  
+  // UNIFIED: Get risks from opportunity_section (primary source) with fallback to legacy field
+  const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
+  const riskFactorsFromOpportunity = opportunityData?.risk_factors || [];
+  const legacyRisks: Risk[] = (report?.risks as unknown as Risk[]) || [];
+  
+  // Convert risk_factors (string[]) to Risk[] format if needed
+  const risks: Risk[] = riskFactorsFromOpportunity.length > 0 
+    ? riskFactorsFromOpportunity.map((riskText, idx) => ({
+        risk: riskText,
+        priority: idx === 0 ? "high" : idx === 1 ? "medium" : "low" as "high" | "medium" | "low",
+        mitigation: "Review and address during development phase"
+      }))
+    : legacyRisks;
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {

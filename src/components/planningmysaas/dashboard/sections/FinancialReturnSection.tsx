@@ -468,7 +468,7 @@ const FinancialReturnSection = () => {
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-xs text-muted-foreground">Payback Period</span>
                     <InfoTooltip side="top" size="sm">
-                      Time to recover Customer Acquisition Cost from a customer's subscription payments.
+                      Time to recover Customer Acquisition Cost from subscription payments. Source: AI analysis based on your market and pricing model.
                     </InfoTooltip>
                   </div>
                   <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.paybackPeriod}</div>
@@ -482,7 +482,7 @@ const FinancialReturnSection = () => {
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-xs text-muted-foreground">LTV (Lifetime Value)</span>
                     <InfoTooltip side="top" size="sm">
-                      Customer Lifetime Value - total revenue expected from a customer during their entire relationship.
+                      Customer Lifetime Value calculated as ARPU × (1 / Monthly Churn Rate). Total revenue expected from a customer during their relationship.
                     </InfoTooltip>
                   </div>
                   <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.ltv}</div>
@@ -496,7 +496,7 @@ const FinancialReturnSection = () => {
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
                     <InfoTooltip side="top" size="sm">
-                      Calculated ratio of Customer Lifetime Value to Acquisition Cost. Higher is better (LTV ÷ CAC).
+                      Your projected LTV/CAC ratio based on calculated LTV ÷ CAC. Values above 3x indicate healthy unit economics for sustainable growth.
                     </InfoTooltip>
                   </div>
                   <div className="flex items-center justify-center gap-1.5 mt-1">
@@ -517,11 +517,11 @@ const FinancialReturnSection = () => {
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-xs text-muted-foreground">LTV/CAC Target</span>
                     <InfoTooltip side="top" size="sm">
-                      Industry target for healthy unit economics. 3x+ indicates sustainable growth potential.
+                      Industry benchmark target for your market segment. This is the recommended minimum ratio for sustainable growth, not your calculated value.
                     </InfoTooltip>
                   </div>
                   <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.ltvCacRatio}x</div>
-                  <span className="text-xs text-muted-foreground">healthy (&gt;3x)</span>
+                  <span className="text-xs text-muted-foreground">benchmark</span>
                 </CardContent>
               </Card>
             </div>

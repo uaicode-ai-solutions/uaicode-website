@@ -126,9 +126,24 @@ const InvestmentSection = () => {
     fill: item.color,
   }));
 
+  // UNIFIED: Prefer database onePayment value, use breakdown as detail view
+  const investmentTotal = mvpBreakdown.onePayment ? mvpBreakdown.onePayment / 100 : 0;
+  
+  // Log divergence for debugging (not shown to user)
+  if (mvpBreakdown.onePayment && totalFromBreakdown > 0) {
+    const divergence = Math.abs(mvpBreakdown.onePayment - totalFromBreakdown);
+    if (divergence > 10000) { // > $100 divergence
+      console.warn('[InvestmentSection] Investment breakdown divergence:', {
+        onePayment: mvpBreakdown.onePayment / 100,
+        breakdownTotal: totalFromBreakdown / 100,
+        divergenceUSD: divergence / 100
+      });
+    }
+  }
+
   // Build investment object for other parts of the component
   const investment = {
-    total: mvpBreakdown.onePayment ? mvpBreakdown.onePayment / 100 : 0,
+    total: investmentTotal,
     notIncluded: investmentNotIncluded?.items || []
   };
 
