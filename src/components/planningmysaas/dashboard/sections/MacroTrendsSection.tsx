@@ -46,11 +46,13 @@ const MacroTrendsSection = () => {
   const { reportData } = useReportContext();
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   
-  // Use smart fallback for macro trends
+  // Use smart fallback for macro trends - skip if data already exists
   const rawMacroTrends = opportunityData?.macro_trends;
+  const hasValidTrends = Array.isArray(rawMacroTrends) && rawMacroTrends.length > 0;
   const { value: macroTrends, isLoading } = useSmartFallbackField<MacroTrend[]>({
     fieldPath: "opportunity_section.macro_trends",
     currentValue: rawMacroTrends,
+    skipFallback: hasValidTrends, // Skip fallback if we already have data
   });
 
   const trendsArray = macroTrends || [];
