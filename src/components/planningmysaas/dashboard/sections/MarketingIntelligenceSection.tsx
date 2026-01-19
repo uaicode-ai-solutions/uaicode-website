@@ -409,12 +409,15 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                   <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-400/10">
                     <Icon className="h-5 w-5 text-amber-500" />
                   </div>
-                  <Badge 
-                    variant="outline" 
-                    className="bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs"
-                  >
-                    {metric.label}
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    <Badge 
+                      variant="outline" 
+                      className="bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs"
+                    >
+                      {metric.label}
+                    </Badge>
+                    <InfoTooltip size="sm">{metric.tooltip}</InfoTooltip>
+                  </div>
                 </div>
 
                 {/* Value */}
@@ -426,15 +429,16 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                 <p className="text-sm text-muted-foreground mb-4">{metric.sublabel}</p>
 
                 {/* Progress Bar */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Score</span>
+                    <span className="font-medium text-foreground">{metric.percent}%</span>
+                  </div>
                   <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-full transition-all duration-500"
                       style={{ width: `${metric.percent}%` }}
                     />
-                  </div>
-                  <div className="flex items-center justify-end">
-                    <InfoTooltip size="sm">{metric.tooltip}</InfoTooltip>
                   </div>
                 </div>
               </CardContent>
