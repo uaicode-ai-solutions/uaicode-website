@@ -284,11 +284,11 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // COMPANY PROFILE DATA (from summary)
   // ============================================
   
-  // Company Size: From summary.company_size, extract main value only
-  const companySize = extractMainValue(primaryPersona?.summary?.company_size);
+  // Company Size: Full value from summary.company_size
+  const companySize = getValue(primaryPersona?.summary?.company_size);
 
-  // Budget Range: From summary.budget_range, extract main value only
-  const budgetRange = extractBudgetValue(primaryPersona?.summary?.budget_range);
+  // Budget Range: Full value from summary.budget_range
+  const budgetRange = getValue(primaryPersona?.summary?.budget_range);
 
   // Industry: From summary.industry_focus
   const industry = getValue(primaryPersona?.summary?.industry_focus);
