@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.pms-generate-icp-avatar]
 verify_jwt = false
+
+[functions.pms-generate-all-avatars]
+verify_jwt = false

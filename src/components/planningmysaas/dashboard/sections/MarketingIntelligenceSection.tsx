@@ -2,9 +2,9 @@
 // Marketing Intelligence Section
 // Uses real data from icp_intelligence_section
 // Fallback: "..." for all missing values
+// Uses PRE-GENERATED static avatars from storage
 // ============================================
 
-import { useState, useEffect } from "react";
 import { 
   Megaphone, 
   Target, 
@@ -19,9 +19,7 @@ import {
   Calendar,
   Crown,
   Shield,
-  CreditCard,
-  Loader2,
-  RefreshCw
+  CreditCard
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,8 +29,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
 import { ICPIntelligenceSection, ICPPersona } from "@/types/report";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 interface MarketingIntelligenceSectionProps {
   onExploreMarketing: () => void;
@@ -255,8 +251,6 @@ const getDecisionMakers = (persona: ICPPersona | null): Array<{ role: string; in
 
 const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntelligenceSectionProps) => {
   const { report, reportData } = useReportContext();
-  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   // Parse ICP data from reportData (tb_pms_reports.icp_intelligence_section)
   const icpData = parseJsonField<ICPIntelligenceSection | null>(
@@ -278,51 +272,32 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   );
   const initials = getInitials(icpDisplayName);
   
-  // Get avatar URL from reportData
-  useEffect(() => {
-    if (reportData?.icp_avatar_url) {
-      setAvatarUrl(reportData.icp_avatar_url);
-    }
-  }, [reportData?.icp_avatar_url]);
-
-  // Generate avatar if not exists
-  const generateAvatar = async () => {
-    if (!reportData?.id || isGeneratingAvatar) return;
+  // ============================================
+  // STATIC AVATAR URL - Pre-generated avatars
+  // ============================================
+  const getStaticAvatarUrl = (region: string | null | undefined, gender: string | null | undefined): string => {
+    // Map region to storage key
+    const regionMap: Record<string, string> = {
+      us: "us",
+      brazil: "brazil",
+      europe: "europe",
+      asia: "asia"
+    };
+    const regionKey = regionMap[region?.toLowerCase() || "us"] || "us";
     
-    setIsGeneratingAvatar(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('pms-generate-icp-avatar', {
-        body: {
-          report_id: reportData.id,
-          region: report?.geographic_region,
-          gender: report?.target_audience
-        }
-      });
-
-      if (error) {
-        console.error("Error generating avatar:", error);
-        toast.error("Failed to generate avatar. Please try again.");
-        return;
-      }
-
-      if (data?.avatar_url) {
-        setAvatarUrl(data.avatar_url);
-        toast.success("Avatar generated successfully!");
-      }
-    } catch (err) {
-      console.error("Avatar generation error:", err);
-      toast.error("Failed to generate avatar. Please try again.");
-    } finally {
-      setIsGeneratingAvatar(false);
-    }
+    // Map gender/target_audience to storage key
+    const genderMap: Record<string, string> = {
+      male: "male",
+      female: "female",
+      any: "any",
+      both: "any"
+    };
+    const genderKey = genderMap[gender?.toLowerCase() || "any"] || "any";
+    
+    return `https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/icp-avatars/${regionKey}-${genderKey}.png`;
   };
-
-  // Auto-generate avatar if not exists and report is ready
-  useEffect(() => {
-    if (reportData?.id && !reportData?.icp_avatar_url && !avatarUrl && !isGeneratingAvatar && reportData?.status === 'completed') {
-      generateAvatar();
-    }
-  }, [reportData?.id, reportData?.icp_avatar_url, reportData?.status]);
+  
+  const avatarUrl = getStaticAvatarUrl(report?.geographic_region, report?.target_audience);
   
   // Role: Comes from summary.name (e.g., "Mid-Market Clinic Operations Director")
   const icpRole = getValue(primaryPersona?.summary?.name || primaryPersona?.persona_name);
@@ -485,37 +460,16 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
           <CardContent className="space-y-5">
             {/* Avatar and Name */}
             <div className="flex items-center gap-4">
-              <div className="relative">
-                <Avatar className="h-16 w-16 ring-2 ring-amber-500/30 ring-offset-2 ring-offset-background">
-                  {avatarUrl && (
-                    <AvatarImage 
-                      src={avatarUrl} 
-                      alt={icpDisplayName}
-                      className="object-cover"
-                    />
-                  )}
-                  <AvatarFallback className="bg-gradient-to-br from-amber-500 to-amber-600 text-white text-xl font-semibold">
-                    {isGeneratingAvatar ? (
-                      <Loader2 className="h-6 w-6 animate-spin" />
-                    ) : (
-                      initials
-                    )}
-                  </AvatarFallback>
-                </Avatar>
-                {/* Regenerate button */}
-                {avatarUrl && !isGeneratingAvatar && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      generateAvatar();
-                    }}
-                    className="absolute -bottom-1 -right-1 p-1 rounded-full bg-card border border-border/50 hover:border-amber-500/50 hover:bg-amber-500/10 transition-colors"
-                    title="Generate new avatar"
-                  >
-                    <RefreshCw className="h-3 w-3 text-muted-foreground hover:text-amber-500" />
-                  </button>
-                )}
-              </div>
+              <Avatar className="h-16 w-16 ring-2 ring-amber-500/30 ring-offset-2 ring-offset-background">
+                <AvatarImage 
+                  src={avatarUrl} 
+                  alt={icpDisplayName}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-gradient-to-br from-amber-500 to-amber-600 text-white text-xl font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
               <div>
                 <h3 className="text-xl font-semibold text-foreground">{icpDisplayName}</h3>
                 <p className="text-sm text-muted-foreground">{icpRole}</p>
