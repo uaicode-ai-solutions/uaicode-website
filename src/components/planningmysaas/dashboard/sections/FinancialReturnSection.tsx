@@ -454,13 +454,29 @@ const FinancialReturnSection = () => {
               <Card className="bg-card/50 border-border/30">
                 <CardContent className="p-4 text-center">
                   <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
+                  
+                  {/* Calculated Value (primary, highlighted) */}
                   <div className="flex items-center justify-center gap-1.5 mt-1">
-                    <span className="text-xl font-bold text-foreground">{metrics.unitEconomics.ltvCacRatio}x</span>
-                    {metrics.ltvCacRatioNum && metrics.ltvCacRatioNum >= 3 && (
+                    <span className="text-xl font-bold text-accent">
+                      {metrics.unitEconomics.ltvCacCalculated}x
+                    </span>
+                    {metrics.ltvCacCalculated && metrics.ltvCacCalculated >= 3 && (
                       <CheckCircle className="h-4 w-4 text-accent" />
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground">healthy (&gt;3x)</span>
+                  <span className="text-[10px] text-accent/80">calculated</span>
+                  
+                  {/* Divider */}
+                  <div className="border-t border-border/30 my-2" />
+                  
+                  {/* Target Value (secondary) */}
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">Target:</span>
+                    <span className="text-xs font-medium text-foreground">
+                      {metrics.unitEconomics.ltvCacRatio}x
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">healthy (&gt;3x)</span>
                 </CardContent>
               </Card>
             </div>
