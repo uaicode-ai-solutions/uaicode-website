@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { FallbackSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 import {
   AreaChart,
   Area,
@@ -32,21 +34,37 @@ const strengthToValue = (strength: string): number => {
   return 50;
 };
 
+// Macro trend type from API
+interface MacroTrend {
+  trend: string;
+  impact: string;
+  strength: string;
+  evidence: string;
+}
+
 const MacroTrendsSection = () => {
   const { reportData } = useReportContext();
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
-  const macroTrends = opportunityData?.macro_trends || [];
+  
+  // Use smart fallback for macro trends
+  const rawMacroTrends = opportunityData?.macro_trends;
+  const { value: macroTrends, isLoading } = useSmartFallbackField<MacroTrend[]>({
+    fieldPath: "opportunity_section.macro_trends",
+    currentValue: rawMacroTrends,
+  });
+
+  const trendsArray = macroTrends || [];
 
   // Count positive vs negative trends
-  const positiveTrends = macroTrends.filter(
+  const positiveTrends = trendsArray.filter(
     t => t.impact?.toLowerCase().includes("positive")
   ).length;
-  const negativeTrends = macroTrends.filter(
+  const negativeTrends = trendsArray.filter(
     t => t.impact?.toLowerCase().includes("negative")
   ).length;
 
   // Create chart data - simulated trend visualization
-  const chartData = macroTrends.map((trend, index) => ({
+  const chartData = trendsArray.map((trend, index) => ({
     name: `T${index + 1}`,
     positive: trend.impact?.toLowerCase().includes("positive") ? strengthToValue(trend.strength) : 0,
     negative: trend.impact?.toLowerCase().includes("negative") ? strengthToValue(trend.strength) : 0,
@@ -59,7 +77,36 @@ const MacroTrendsSection = () => {
     chartData.push({ name: "", positive: 0, negative: 0, trend: "" });
   }
 
-  if (macroTrends.length === 0) {
+  // Show loading skeleton
+  if (isLoading) {
+    return (
+      <section id="macro-trends" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Activity className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Macro Trends</h2>
+            <p className="text-sm text-muted-foreground">Loading trends...</p>
+          </div>
+        </div>
+        <div className="grid lg:grid-cols-3 gap-6">
+          <Card className="bg-card/50 border-border/30">
+            <CardContent className="p-6">
+              <CardContentSkeleton lines={4} />
+            </CardContent>
+          </Card>
+          <Card className="bg-card/50 border-border/30 lg:col-span-2">
+            <CardContent className="p-6">
+              <CardContentSkeleton lines={5} />
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    );
+  }
+
+  if (trendsArray.length === 0) {
     return null;
   }
 
@@ -91,7 +138,7 @@ const MacroTrendsSection = () => {
             {/* Big number */}
             <div className="text-center mb-6">
               <div className="text-5xl font-bold text-gradient-gold mb-1">
-                {macroTrends.length}
+                {trendsArray.length}
               </div>
               <div className="text-sm text-muted-foreground">Trends Identified</div>
             </div>
@@ -124,7 +171,7 @@ const MacroTrendsSection = () => {
                   </InfoTooltip>
                 </span>
                 <span className="font-bold text-accent">
-                  {macroTrends.length > 0 ? Math.round((positiveTrends / macroTrends.length) * 100) : 0}%
+                  {trendsArray.length > 0 ? Math.round((positiveTrends / trendsArray.length) * 100) : 0}%
                 </span>
               </div>
             </div>
@@ -220,7 +267,7 @@ const MacroTrendsSection = () => {
 
       {/* Trend Cards Grid */}
       <div className="grid md:grid-cols-2 gap-4">
-        {macroTrends.map((trend, index) => {
+        {trendsArray.map((trend, index) => {
           const isPositive = trend.impact?.toLowerCase().includes("positive");
           const strengthValue = strengthToValue(trend.strength);
 

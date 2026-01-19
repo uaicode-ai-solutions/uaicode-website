@@ -9,6 +9,8 @@ import {
 } from "@/lib/competitiveAnalysisUtils";
 import { PricingBadge } from "@/components/planningmysaas/dashboard/ui/PricingBadge";
 import { Badge } from "@/components/ui/badge";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 
 // Config for competitor type badges
 const typeConfig: Record<string, { color: string; bgColor: string; label: string }> = {
@@ -27,10 +29,16 @@ const CompetitorsDifferentiationSection = () => {
   const { reportData } = useReportContext();
   
   // Parse competitive analysis section from report data
-  const competitiveData = parseJsonField<CompetitiveAnalysisSectionData>(
+  const rawCompetitiveData = parseJsonField<CompetitiveAnalysisSectionData>(
     reportData?.competitive_analysis_section,
     null
   );
+  
+  // Use smart fallback for competitors
+  const { value: competitiveData, isLoading } = useSmartFallbackField<CompetitiveAnalysisSectionData>({
+    fieldPath: "competitive_analysis_section.competitors",
+    currentValue: rawCompetitiveData,
+  });
   
   // Get competitors transformed for UI
   const competitors = getCompetitorsForUI(competitiveData);
@@ -45,6 +53,32 @@ const CompetitorsDifferentiationSection = () => {
     ? Math.max(...competitors.map(c => c.price || 0), 1) 
     : 100;
   
+  // Show loading skeleton
+  if (isLoading) {
+    return (
+      <section id="competitors-differentiation" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Swords className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Competitive Analysis</h2>
+            <p className="text-sm text-muted-foreground">Loading competitors...</p>
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="bg-card/50 border-border/30">
+              <CardContent className="p-4">
+                <CardContentSkeleton lines={5} />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   // Early return if no data
   if (competitors.length === 0) {
     return (

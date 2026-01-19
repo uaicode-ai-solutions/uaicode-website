@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
+import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
+import { FallbackSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 import {
   BarChart,
   Bar,
@@ -48,13 +50,28 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
+// Pain point type from API
+interface PainPoint {
+  pain_point: string;
+  intensity_score: string;
+  market_evidence: string;
+}
+
 const CustomerPainPointsSection = () => {
   const { reportData } = useReportContext();
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
-  const painPoints = opportunityData?.customer_pain_points || [];
+  
+  // Use smart fallback for pain points
+  const rawPainPoints = opportunityData?.customer_pain_points;
+  const { value: painPoints, isLoading } = useSmartFallbackField<PainPoint[]>({
+    fieldPath: "opportunity_section.customer_pain_points",
+    currentValue: rawPainPoints,
+  });
+
+  const painPointsArray = painPoints || [];
 
   // Transform data for chart
-  const chartData = painPoints.map((point, index) => ({
+  const chartData = painPointsArray.map((point, index) => ({
     name: `#${index + 1}`,
     fullName: point.pain_point,
     intensity: parseIntensity(point.intensity_score),
@@ -75,7 +92,36 @@ const CustomerPainPointsSection = () => {
     return 0.4 + (intensity / 10) * 0.6; // Range: 0.4 to 1.0
   };
 
-  if (painPoints.length === 0) {
+  // Show loading skeleton
+  if (isLoading) {
+    return (
+      <section id="customer-pain-points" className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <Flame className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Customer Pain Points</h2>
+            <p className="text-sm text-muted-foreground">Loading pain points...</p>
+          </div>
+        </div>
+        <div className="grid lg:grid-cols-3 gap-6">
+          <Card className="bg-card/50 border-border/30 lg:col-span-2">
+            <CardContent className="p-6">
+              <CardContentSkeleton lines={5} />
+            </CardContent>
+          </Card>
+          <Card className="bg-card/50 border-border/30">
+            <CardContent className="p-6">
+              <CardContentSkeleton lines={4} />
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    );
+  }
+
+  if (painPointsArray.length === 0) {
     return null;
   }
 
@@ -188,7 +234,7 @@ const CustomerPainPointsSection = () => {
             {/* Big number */}
             <div className="text-center mb-6">
               <div className="text-5xl font-bold text-gradient-gold mb-1">
-                {painPoints.length}
+                {painPointsArray.length}
               </div>
               <div className="text-sm text-muted-foreground">Pain Points Identified</div>
             </div>
