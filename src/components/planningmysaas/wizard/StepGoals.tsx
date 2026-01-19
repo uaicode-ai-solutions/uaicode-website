@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { 
   RefreshCw, 
   DollarSign, 
@@ -10,9 +11,45 @@ import {
   Rocket,
   TrendingUp,
   PiggyBank,
+  Lock,
+  Info,
+  ArrowLeft,
 } from "lucide-react";
 import SelectableCard from "./SelectableCard";
 import { Input } from "@/components/ui/input";
+import { determineMvpTier } from "@/types/report";
+import { cn } from "@/lib/utils";
+
+// Tier to budget/timeline availability mapping
+const TIER_BUDGET_MAP: Record<string, string[]> = {
+  starter: ['10k-25k', 'guidance'],
+  growth: ['25k-60k', '60k-160k', '160k+', 'guidance'],
+  enterprise: ['60k-160k', '160k+', 'guidance'],
+};
+
+const TIER_TIMELINE_MAP: Record<string, string[]> = {
+  starter: ['asap', 'this-year', 'next-year', 'flexible'],
+  growth: ['this-year', 'next-year', 'flexible'],
+  enterprise: ['next-year', 'flexible'],
+};
+
+const TIER_LABELS: Record<string, { name: string; budget: string; timeline: string }> = {
+  starter: { 
+    name: 'Starter MVP', 
+    budget: '$10K - $25K',
+    timeline: '45-60 days'
+  },
+  growth: { 
+    name: 'Growth MVP', 
+    budget: '$25K - $60K',
+    timeline: '60-90 days'
+  },
+  enterprise: { 
+    name: 'Enterprise MVP', 
+    budget: '$60K - $160K+',
+    timeline: '90-120 days'
+  },
+};
 
 const goals = [
   { 
@@ -86,9 +123,26 @@ interface StepGoalsProps {
     timeline: string;
   };
   onChange: (field: string, value: string | string[]) => void;
+  selectedFeatures: string[];
 }
 
-const StepGoals = ({ data, onChange }: StepGoalsProps) => {
+const StepGoals = ({ data, onChange, selectedFeatures }: StepGoalsProps) => {
+  // Determine tier based on selected features
+  const currentTier = determineMvpTier(selectedFeatures);
+  const availableBudgets = TIER_BUDGET_MAP[currentTier];
+  const availableTimelines = TIER_TIMELINE_MAP[currentTier];
+  const tierInfo = TIER_LABELS[currentTier];
+
+  // Clear selections if they're no longer valid for the current tier
+  useEffect(() => {
+    if (data.budget && !availableBudgets.includes(data.budget)) {
+      onChange("budget", "");
+    }
+    if (data.timeline && !availableTimelines.includes(data.timeline)) {
+      onChange("timeline", "");
+    }
+  }, [currentTier, data.budget, data.timeline, availableBudgets, availableTimelines, onChange]);
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -164,6 +218,25 @@ const StepGoals = ({ data, onChange }: StepGoalsProps) => {
         </div>
       </div>
 
+      {/* Tier Info Card */}
+      <div className="p-4 rounded-xl bg-accent/10 border border-accent/30">
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              Based on your features, you're building a <span className="text-accent font-semibold">{tierInfo.name}</span>
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Estimated: {tierInfo.budget} • {tierInfo.timeline} delivery
+            </p>
+            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+              <ArrowLeft className="w-3 h-3" />
+              Go back to Step 4 to adjust features if you need different options
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Budget Section */}
       <div className="space-y-4">
         <div>
@@ -174,25 +247,44 @@ const StepGoals = ({ data, onChange }: StepGoalsProps) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {budgets.map((budget) => (
-            <button
-              key={budget.id}
-              type="button"
-              onClick={() => onChange("budget", budget.id)}
-              className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                data.budget === budget.id
-                  ? "border-accent bg-accent/10 shadow-md"
-                  : "border-border/50 hover:border-accent/50 hover:bg-muted/50"
-              }`}
-            >
-              <p className={`font-semibold ${
-                data.budget === budget.id ? "text-accent" : "text-foreground"
-              }`}>
-                {budget.title}
-              </p>
-              <p className="text-sm text-muted-foreground">{budget.description}</p>
-            </button>
-          ))}
+          {budgets.map((budget) => {
+            const isAvailable = availableBudgets.includes(budget.id);
+            const isSelected = data.budget === budget.id;
+
+            return (
+              <button
+                key={budget.id}
+                type="button"
+                disabled={!isAvailable}
+                onClick={() => isAvailable && onChange("budget", budget.id)}
+                className={cn(
+                  "p-4 rounded-xl border-2 transition-all duration-200 text-left relative",
+                  isSelected && isAvailable && "border-accent bg-accent/10 shadow-md",
+                  !isSelected && isAvailable && "border-border/50 hover:border-accent/50 hover:bg-muted/50",
+                  !isAvailable && "border-border/30 bg-muted/20 opacity-60 cursor-not-allowed"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={cn(
+                      "font-semibold",
+                      isSelected && isAvailable ? "text-accent" : "text-foreground",
+                      !isAvailable && "text-muted-foreground"
+                    )}>
+                      {budget.title}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{budget.description}</p>
+                  </div>
+                  {!isAvailable && <Lock className="w-4 h-4 text-muted-foreground" />}
+                </div>
+                {!isAvailable && (
+                  <p className="text-xs text-muted-foreground/80 mt-2 italic">
+                    Not compatible with your feature selection
+                  </p>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -206,21 +298,37 @@ const StepGoals = ({ data, onChange }: StepGoalsProps) => {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {timelines.map((timeline) => (
-            <button
-              key={timeline.id}
-              type="button"
-              onClick={() => onChange("timeline", timeline.id)}
-              className={`px-4 py-2.5 rounded-full border-2 transition-all duration-200 text-sm font-medium ${
-                data.timeline === timeline.id
-                  ? "border-accent bg-accent text-background shadow-md"
-                  : "border-border/50 text-muted-foreground hover:border-accent/50 hover:text-foreground"
-              }`}
-            >
-              {timeline.label}
-            </button>
-          ))}
+          {timelines.map((timeline) => {
+            const isAvailable = availableTimelines.includes(timeline.id);
+            const isSelected = data.timeline === timeline.id;
+
+            return (
+              <button
+                key={timeline.id}
+                type="button"
+                disabled={!isAvailable}
+                onClick={() => isAvailable && onChange("timeline", timeline.id)}
+                className={cn(
+                  "px-4 py-2.5 rounded-full border-2 transition-all duration-200 text-sm font-medium flex items-center gap-2",
+                  isSelected && isAvailable && "border-accent bg-accent text-background shadow-md",
+                  !isSelected && isAvailable && "border-border/50 text-muted-foreground hover:border-accent/50 hover:text-foreground",
+                  !isAvailable && "border-border/30 text-muted-foreground/50 cursor-not-allowed opacity-60"
+                )}
+              >
+                {timeline.label}
+                {!isAvailable && <Lock className="w-3 h-3" />}
+              </button>
+            );
+          })}
         </div>
+        
+        {/* Timeline unavailable hint */}
+        {availableTimelines.length < timelines.length && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <Lock className="w-3 h-3" />
+            Some timelines are locked because your feature scope requires more development time
+          </p>
+        )}
       </div>
 
       {/* CTA Container */}

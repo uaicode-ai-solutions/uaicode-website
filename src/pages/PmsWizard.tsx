@@ -449,6 +449,7 @@ const PmsWizard = () => {
               timeline: data.timeline,
             }}
             onChange={handleChange}
+            selectedFeatures={data.selectedFeatures}
           />
         );
       default:
