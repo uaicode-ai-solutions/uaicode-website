@@ -668,22 +668,26 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     }
     
     // ============================================
-    // Generate Year Evolution Data
+    // Generate Year Evolution Data - VALIDATED VALUES
     // ============================================
     const yearEvolution: YearEvolutionData[] = [];
+    
+    // Use VALIDATED ARR values (MRR × 12, capped by benchmarks)
+    const validatedArr12 = validatedMrr12 * 12;
+    const validatedArr24 = validatedMrr24 * 12;
     
     // Year 1
     yearEvolution.push({
       year: "Year 1",
-      arr: arr12Months ? formatCurrency(arr12Months.avg) : fallback,
-      mrr: mrr12Months ? `${formatCurrency(mrr12Months.avg)} MRR` : `${fallback} MRR`,
+      arr: validatedArr12 > 0 ? formatCurrency(validatedArr12) : fallback,
+      mrr: validatedMrr12 > 0 ? `${formatCurrency(validatedMrr12)} MRR` : `${fallback} MRR`,
     });
     
-    // Year 2
+    // Year 2 - using validated values
     yearEvolution.push({
       year: "Year 2",
-      arr: arr24Months ? formatCurrency(arr24Months.avg) : fallback,
-      mrr: mrr24Months ? `${formatCurrency(mrr24Months.avg)} MRR` : `${fallback} MRR`,
+      arr: validatedArr24 > 0 ? formatCurrency(validatedArr24) : fallback,
+      mrr: validatedMrr24 > 0 ? `${formatCurrency(validatedMrr24)} MRR` : `${fallback} MRR`,
     });
     
     // Year 3 - Project based on Year 2 with growth
@@ -692,9 +696,9 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const marketGrowth = parsePercentageRange(marketGrowthRateStr);
     const growthMultiplier = marketGrowth ? 1 + (marketGrowth.avg / 100) : 1.25; // Default 25% growth (conservative)
     
-    if (arr24Months && mrr24Months) {
-      const arr36 = arr24Months.avg * growthMultiplier;
-      const mrr36 = mrr24Months.avg * growthMultiplier;
+    if (validatedMrr24 > 0) {
+      const arr36 = validatedArr24 * growthMultiplier;
+      const mrr36 = validatedMrr24 * growthMultiplier;
       yearEvolution.push({
         year: "Year 3",
         arr: formatCurrency(arr36),
@@ -731,21 +735,45 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     debugLogger.printSummary();
     
     // ============================================
-    // Return all metrics
+    // DEBUG: Log raw vs validated comparison
+    // ============================================
+    console.log('[Financial Metrics] 📊 RAW vs VALIDATED comparison:', {
+      raw: { 
+        mrr6: mrr6Months?.avg, 
+        mrr12: mrr12Months?.avg, 
+        mrr24: mrr24Months?.avg,
+        arr12: arr12Months?.avg,
+      },
+      validated: { 
+        mrr6: validatedMrr6, 
+        mrr12: validatedMrr12, 
+        mrr24: validatedMrr24,
+        arr12: validatedArr12,
+      },
+      caps: { 
+        mrr6Max: dynamicBenchmarks.MRR_MONTH_6_MAX, 
+        mrr12Max: dynamicBenchmarks.MRR_MONTH_12_MAX,
+        mrr24Max: dynamicBenchmarks.MRR_MONTH_24_MAX,
+      },
+      wasAdjusted: wasAdjustedForRealism,
+    });
+    
+    // ============================================
+    // Return all metrics - USING VALIDATED VALUES
     // ============================================
     return {
-      // Key metrics (formatted strings)
+      // Key metrics (formatted strings) - NOW USING VALIDATED VALUES
       breakEvenMonths: breakEvenMonthsNum ? `${breakEvenMonthsNum} months` : fallback,
       roiYear1: roiYear1Num !== null ? `${roiYear1Num}%` : fallback,
-      mrrMonth12: mrr12Months ? formatCurrency(mrr12Months.avg) : fallback,
-      arrProjected: arr12Months ? formatCurrency(arr12Months.avg) : fallback,
+      mrrMonth12: validatedMrr12 > 0 ? formatCurrency(validatedMrr12) : fallback,
+      arrProjected: validatedArr12 > 0 ? formatCurrency(validatedArr12) : fallback,
       ltvCacRatio: ltvCacRatioNum ? `${ltvCacRatioNum}` : fallback,
       
-      // Numeric values
+      // Numeric values - NOW USING VALIDATED VALUES
       breakEvenMonthsNum,
       roiYear1Num,
-      mrrMonth12Num: mrr12Months?.avg || null,
-      arrProjectedNum: arr12Months?.avg || null,
+      mrrMonth12Num: validatedMrr12 > 0 ? validatedMrr12 : null,
+      arrProjectedNum: validatedArr12 > 0 ? validatedArr12 : null,
       ltvCacRatioNum,
       ltvCacCalculated,
       
