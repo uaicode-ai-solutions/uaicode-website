@@ -29,8 +29,15 @@ const FinancialReturnSection = () => {
   const paybackMonths = metrics.paybackPeriod || 6;
   const mrrMonth12 = metrics.mrrMonth12Num || 0;
   const arrYear1 = metrics.arrProjectedNum || 0;
-  const arrYear3 = metrics.arr24Months ? metrics.arr24Months.avg * 1.5 : (arrYear1 ? arrYear1 * 2.54 : 0);
-  const growthPercent = arrYear1 > 0 ? Math.round(((arrYear3 - arrYear1) / arrYear1) * 100) : 0;
+  // Calculate raw ARR Year 3 and apply realistic cap
+  const rawArrYear3 = metrics.arr24Months ? metrics.arr24Months.avg * 1.5 : (arrYear1 ? arrYear1 * 2.54 : 0);
+  const maxGrowthMultiple = 10; // 900% max growth - realistic for high-growth SaaS
+  const arrYear3 = Math.min(rawArrYear3, arrYear1 * maxGrowthMultiple);
+  
+  // Calculate growth percentage with 900% hard cap
+  const rawGrowthPercent = arrYear1 > 0 ? Math.round(((arrYear3 - arrYear1) / arrYear1) * 100) : 0;
+  const growthPercent = Math.min(rawGrowthPercent, 900);
+  const wasGrowthCapped = rawGrowthPercent > 900;
   const arpu = metrics.idealTicket || 99;
   const ltv = metrics.ltv || 0;
   const mvpInvestment = metrics.mvpInvestment || 0;
@@ -122,12 +129,13 @@ const FinancialReturnSection = () => {
     {
       label: "LTV/CAC",
       value: `${ltvCacRatioNum.toFixed(1)}x`,
-      sublabel: ltvCacRatioNum >= 3 ? "✓ healthy" : "monitor",
+      sublabel: ltvCacRatioNum >= 3 ? "healthy" : "monitor",
+      sublabelType: ltvCacRatioNum >= 3 ? "success" : "warning",
       icon: Zap,
       highlight: ltvCacRatioNum >= 3,
       tooltip: "Ratio comparing customer value to acquisition cost. Above 3x indicates healthy unit economics.",
     },
-  ];
+  ] as const;
 
   return (
     <section id="financial-return" className="space-y-6">
@@ -282,6 +290,11 @@ const FinancialReturnSection = () => {
             <div className="text-[10px] text-muted-foreground mt-1">
               {formatCurrency(arrYear1)} → {formatCurrency(arrYear3)}
             </div>
+            {wasGrowthCapped && (
+              <div className="text-[9px] text-amber-500/70 mt-1">
+                Adjusted for market realism
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -428,14 +441,21 @@ const FinancialReturnSection = () => {
                 <div className="text-xl font-bold text-gradient-gold mb-1">
                   {item.value}
                 </div>
-                <div className="text-[10px] text-muted-foreground mb-3">
+                <div className={`text-[10px] mb-3 flex items-center gap-1 ${
+                  'sublabelType' in item && item.sublabelType === 'success' 
+                    ? 'text-accent' 
+                    : 'sublabelType' in item && item.sublabelType === 'warning' 
+                      ? 'text-amber-500' 
+                      : 'text-muted-foreground'
+                }`}>
+                  {'sublabelType' in item && item.sublabelType === 'success' && '✓ '}
+                  {'sublabelType' in item && item.sublabelType === 'warning' && '⚠ '}
                   {item.sublabel}
                 </div>
-                {/* Progress bar */}
                 <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-accent rounded-full"
-                    style={{ width: item.highlight ? '100%' : '75%' }}
+                    style={{ width: 'highlight' in item && item.highlight ? '100%' : '75%' }}
                   />
                 </div>
               </div>
