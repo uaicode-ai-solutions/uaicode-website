@@ -303,24 +303,46 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       };
     }
     
-    // Fallback: use SaaS industry average if not available (0.4% monthly = ~5% annual)
-    const SAAS_AVG_CHURN_MONTHLY = { min: 0.3, max: 0.6, avg: 0.42 };
+    // Fallback: use churn based on market_type
+    // B2B SaaS: 0.4-0.6% monthly (5-7% annual) - sticky enterprise customers
+    // B2C SaaS: 5-8% monthly (50-60% annual) - consumer apps churn faster
+    const marketTypeForChurn = ((reportData as unknown as Record<string, unknown>)?.market_type as string)?.toLowerCase() || 'b2b';
+    
+    const getDefaultChurnByMarketType = (type: string): PercentageRange => {
+      if (type === 'b2c' || type === 'consumer') {
+        // B2C healthcare/wellness: 5-10% monthly = 50-80% annual
+        return { min: 5.0, max: 10.0, avg: 7.0 };
+      } else if (type === 'smb' || type === 'small_business') {
+        // SMB SaaS: 3-5% monthly = 30-50% annual
+        return { min: 3.0, max: 5.0, avg: 4.0 };
+      }
+      // B2B/Enterprise: 0.3-0.6% monthly = 4-7% annual
+      return { min: 0.3, max: 0.6, avg: 0.42 };
+    };
+    
+    const defaultChurn = getDefaultChurnByMarketType(marketTypeForChurn);
+    
     if (!churn12Months) {
-      churn12Months = SAAS_AVG_CHURN_MONTHLY;
+      churn12Months = defaultChurn;
       dataSources.churn12 = 'estimated';
       debugLogger.logFallback({
         field: 'churn12Months',
         attemptedSource: 'growth_targets.12_month.churn',
         reason: 'smartExtractChurn returned null',
-        fallbackUsed: 'SaaS industry average (0.42% monthly = 5% annual)',
-        finalValue: SAAS_AVG_CHURN_MONTHLY,
+        fallbackUsed: `Market-type based (${marketTypeForChurn}): ${defaultChurn.avg}% monthly`,
+        finalValue: defaultChurn,
       });
     }
     if (!churn6Months) {
-      churn6Months = SAAS_AVG_CHURN_MONTHLY;
+      churn6Months = defaultChurn;
     }
     if (!churn24Months) {
-      churn24Months = { min: 0.2, max: 0.4, avg: 0.3 }; // Slightly lower for mature product
+      // Slightly lower for mature product (improved retention)
+      churn24Months = { 
+        min: defaultChurn.min * 0.7, 
+        max: defaultChurn.max * 0.7, 
+        avg: defaultChurn.avg * 0.7 
+      };
     }
     
     // ============================================
@@ -472,12 +494,25 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       const netMonthlyRevenue = idealTicket * marginPercent;
       const calculatedPayback = Math.round(targetCac.avg / netMonthlyRevenue);
       
-      // Validate minimum payback (B2B SaaS rarely has < 2 month payback)
-      const MIN_PAYBACK_MONTHS = 2;
+      // Use benchmark minimum payback (will be set from dynamicBenchmarks after validation section)
+      // For now, use a market-type based minimum
+      const marketTypeForPayback = ((reportData as unknown as Record<string, unknown>)?.market_type as string)?.toLowerCase() || 'b2b';
+      
+      // B2B: 4-6 months minimum (longer sales cycle)
+      // B2C: 2-3 months minimum (faster acquisition, lower CAC)
+      const MIN_PAYBACK_BY_MARKET: Record<string, number> = {
+        b2b: 4,
+        enterprise: 6,
+        smb: 3,
+        b2c: 2,
+        consumer: 2,
+      };
+      const MIN_PAYBACK_MONTHS = MIN_PAYBACK_BY_MARKET[marketTypeForPayback] || 4;
+      
       paybackPeriod = Math.max(calculatedPayback, MIN_PAYBACK_MONTHS);
       
       if (calculatedPayback < MIN_PAYBACK_MONTHS) {
-        console.warn(`[Financial] Payback ${calculatedPayback} months seems too low - setting to ${MIN_PAYBACK_MONTHS}`);
+        console.warn(`[Financial] Payback ${calculatedPayback} months adjusted to ${MIN_PAYBACK_MONTHS} (${marketTypeForPayback} minimum)`);
       }
       
       dataSources.paybackPeriod = 'calculated';
@@ -485,7 +520,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         field: 'paybackPeriod',
         attemptedSource: 'section_investment.payback_period',
         reason: 'No payback period in database',
-        fallbackUsed: `Calculated from CAC / (ARPU × margin) = $${targetCac.avg} / ($${idealTicket} × ${marginPercent}) = ${paybackPeriod} months`,
+        fallbackUsed: `Calculated from CAC / (ARPU × margin) = $${targetCac.avg} / ($${idealTicket} × ${marginPercent}) = ${paybackPeriod} months (min: ${MIN_PAYBACK_MONTHS} for ${marketTypeForPayback})`,
         finalValue: paybackPeriod,
       });
     }
@@ -505,10 +540,22 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     else if (ltv && targetCac && targetCac.avg > 0) {
       const calculated = Math.round((ltv / targetCac.avg) * 10) / 10; // 1 decimal place
       
-      // Validate: cap at 12:1 (exceptional for SaaS)
-      const MAX_LTV_CAC = 12;
+      // Use benchmark max LTV/CAC (will be refined after benchmarks are loaded)
+      // B2B typical: 3-5:1 is healthy, 8:1+ is exceptional (needs verification)
+      // B2C typical: 2-4:1 is healthy, 6:1+ is exceptional
+      const marketTypeForLtv = ((reportData as unknown as Record<string, unknown>)?.market_type as string)?.toLowerCase() || 'b2b';
+      
+      const MAX_LTV_CAC_BY_MARKET: Record<string, number> = {
+        b2b: 8.0,
+        enterprise: 10.0,
+        smb: 6.0,
+        b2c: 5.0,
+        consumer: 4.0,
+      };
+      const MAX_LTV_CAC = MAX_LTV_CAC_BY_MARKET[marketTypeForLtv] || 8.0;
+      
       if (calculated > MAX_LTV_CAC) {
-        console.warn(`[Financial] LTV/CAC ${calculated}:1 seems high - capping at ${MAX_LTV_CAC}:1`);
+        console.warn(`[Financial] LTV/CAC ${calculated.toFixed(1)}:1 capped at ${MAX_LTV_CAC}:1 (${marketTypeForLtv} benchmark)`);
         ltvCacCalculated = MAX_LTV_CAC;
       } else {
         ltvCacCalculated = calculated;
@@ -519,7 +566,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         field: 'ltvCacCalculated',
         attemptedSource: 'performance_targets.ltv_cac_ratio_target',
         reason: 'No LTV/CAC target in database',
-        fallbackUsed: `Calculated from LTV / CAC = $${ltv} / $${targetCac.avg} = ${ltvCacCalculated}:1`,
+        fallbackUsed: `Calculated from LTV / CAC = $${ltv} / $${targetCac.avg} = ${ltvCacCalculated}:1 (max: ${MAX_LTV_CAC} for ${marketTypeForLtv})`,
         finalValue: ltvCacCalculated,
       });
     }
