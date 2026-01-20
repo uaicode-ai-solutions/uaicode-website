@@ -8,6 +8,8 @@ import { formatCurrency } from "@/lib/financialParsingUtils";
 import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
 import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 import { DataSourceBadge, DataSourceType } from "@/components/planningmysaas/dashboard/ui/DataSourceBadge";
+import { BenchmarkSourceBadge } from "@/components/planningmysaas/dashboard/ui/BenchmarkSourceBadge";
+import { useBenchmarks } from "@/hooks/useBenchmarks";
 import {
   AreaChart,
   Area,
@@ -25,6 +27,12 @@ const FinancialReturnSection = () => {
   
   // Use the new hook to extract all financial metrics from JSONB
   const metrics = useFinancialMetrics(reportData);
+  
+  // Get benchmark data to show source badge
+  // market_type comes from wizard data which is nested or accessed via the wizard
+  const wizardData = (reportData as unknown as Record<string, unknown>);
+  const marketType = (wizardData?.market_type as string) || undefined;
+  const benchmarkData = useBenchmarks(reportData?.benchmark_section, marketType);
   
   // NOTE: break_even and ROI are now ALWAYS calculated locally by useFinancialMetrics
   // No need for smart fallback on these - they're derived from MRR/investment data
@@ -118,20 +126,45 @@ const FinancialReturnSection = () => {
   return (
     <section id="financial-return" className="space-y-6 animate-fade-in">
       {/* Section Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border border-amber-500/20">
-          <BarChart3 className="h-5 w-5 text-amber-400" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-foreground">The Return</h2>
-            <InfoTooltip side="right" size="sm">
-              Financial projections including ROI, break-even analysis, and unit economics for your SaaS business model.
-            </InfoTooltip>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border border-amber-500/20">
+            <BarChart3 className="h-5 w-5 text-amber-400" />
           </div>
-          <p className="text-sm text-muted-foreground">Financial projections and scenarios</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-foreground">The Return</h2>
+              <InfoTooltip side="right" size="sm">
+                Financial projections including ROI, break-even analysis, and unit economics for your SaaS business model.
+              </InfoTooltip>
+            </div>
+            <p className="text-sm text-muted-foreground">Financial projections and scenarios</p>
+          </div>
         </div>
+        
+        {/* Benchmark Source Badge */}
+        <BenchmarkSourceBadge
+          isFromResearch={benchmarkData.isFromResearch}
+          sourceCount={benchmarkData.sourceCount}
+          confidence={benchmarkData.confidence}
+          sources={benchmarkData.rawBenchmarks?.sources}
+        />
       </div>
+      
+      {/* Validation Warning Banner */}
+      {metrics.wasAdjustedForRealism && (
+        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+            <div className="text-sm">
+              <p className="text-amber-500 font-medium">Projections adjusted for market realism</p>
+              <p className="text-muted-foreground text-xs mt-1">
+                Values were capped to match {benchmarkData.isFromResearch ? 'researched market benchmarks' : 'industry averages'} for your sector.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
