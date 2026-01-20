@@ -206,6 +206,15 @@ export const JCurveChart: React.FC<JCurveChartProps> = ({
   const marketingEfficiency = Math.min(2.5, Math.max(1, 1 + (marketingRatio - 1) * 0.3));
   const efficiencyBoostPercent = Math.round((marketingEfficiency - 1) * 100);
 
+  // Debug log to verify props updates
+  console.log('[JCurveChart] Props received:', {
+    marketingBudget,
+    baselineMarketingBudget,
+    effectiveMarketingBudget,
+    marketingEfficiency,
+    efficiencyBoostPercent,
+  });
+
   const multiScenarioData = useMemo(() => {
     if (!hasValidData || !hasScenarios || !mvpInvestment) return [];
 
