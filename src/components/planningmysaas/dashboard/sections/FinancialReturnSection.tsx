@@ -4,7 +4,7 @@
 // Reduced from ~766 lines to ~320 lines
 // ============================================
 
-import { TrendingUp, Target, Shield, Rocket, DollarSign, Clock, Zap, Lightbulb } from "lucide-react";
+import { TrendingUp, Target, Shield, Rocket, DollarSign, Clock, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -318,19 +318,15 @@ const FinancialReturnSection = () => {
         </div>
       </div>
 
-      {/* [5] Unit Economics - Premium Card */}
-      <Card className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent border-accent/20">
-        <CardContent className="p-5">
-          {/* How it works banner */}
-          <div className="flex items-start gap-3 mb-5 p-3 rounded-lg bg-accent/10 border border-accent/20">
-            <Lightbulb className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              <span className="font-medium text-foreground">How it works:</span> Each customer pays{" "}
-              <span className="text-accent font-medium">{formatCurrency(arpu)}/mo</span>, recovers CAC in{" "}
-              <span className="text-accent font-medium">{paybackMonths} months</span>, and generates{" "}
-              <span className="text-accent font-medium">{formatCurrency(ltv)}</span> lifetime value
-              {ltvCacRatioNum >= 3 && " (healthy unit economics)"}.
-            </p>
+      {/* [5] Unit Economics - Clean Style (matching Customer Pain Points) */}
+      <Card className="bg-card/50 border-border/30">
+        <CardContent className="p-6">
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-5">
+            <h3 className="text-sm font-medium text-foreground">Unit Economics</h3>
+            <InfoTooltip side="top" size="sm">
+              Key financial metrics: revenue per user, payback period, and lifetime value.
+            </InfoTooltip>
           </div>
 
           {/* Unit Economics Grid */}
@@ -338,23 +334,26 @@ const FinancialReturnSection = () => {
             {unitEconomicsData.map((item) => (
               <div
                 key={item.label}
-                className={`p-3 rounded-lg border ${
-                  item.highlight
-                    ? 'bg-green-500/10 border-green-500/20'
-                    : 'bg-card/50 border-border/30'
-                } transition-all hover:scale-[1.02]`}
+                className="p-4 rounded-lg bg-accent/5 border border-border/30 hover:border-accent/30 transition-colors"
               >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <item.icon className={`h-3.5 w-3.5 ${item.highlight ? 'text-green-500' : 'text-accent'}`} />
+                <div className="flex items-center gap-1.5 mb-2">
+                  <item.icon className="h-3.5 w-3.5 text-accent" />
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
                     {item.label}
                   </span>
                 </div>
-                <div className={`text-lg font-bold ${item.highlight ? 'text-green-500' : 'text-gradient-gold'}`}>
+                <div className="text-xl font-bold text-gradient-gold mb-1">
                   {item.value}
                 </div>
-                <div className={`text-[10px] ${item.highlight ? 'text-green-400' : 'text-muted-foreground'}`}>
+                <div className="text-[10px] text-muted-foreground mb-3">
                   {item.sublabel}
+                </div>
+                {/* Progress bar */}
+                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-accent rounded-full"
+                    style={{ width: item.highlight ? '100%' : '75%' }}
+                  />
                 </div>
               </div>
             ))}
