@@ -1,6 +1,7 @@
 // ============================================
 // useFinancialMetrics Hook
 // Extracts and calculates financial metrics from JSONB fields
+// With REALISTIC VALIDATION against market benchmarks
 // ============================================
 
 import { useMemo } from "react";
@@ -18,9 +19,6 @@ import {
   extractCACFromText,
   extractRatioFromText,
   extractMarketingBudgetFromText,
-  calculateRealisticBreakEven,
-  calculateRealisticROI,
-  generateRealisticProjections,
   validateFinancialMetric,
   sanitizeNumericValue,
   normalizeChurnToMonthly,
@@ -28,6 +26,12 @@ import {
   MoneyRange,
   PercentageRange,
 } from "@/lib/financialParsingUtils";
+import {
+  validateFinancialProjections,
+  generateValidatedProjections,
+  generateValidatedScenarios,
+  MARKET_BENCHMARKS,
+} from "@/lib/financialValidationUtils";
 import { debugLogger } from "@/lib/debugLogger";
 import { DataSourceType, DataSources, defaultDataSources } from "@/components/planningmysaas/dashboard/ui/DataSourceBadge";
 
@@ -88,8 +92,12 @@ export interface FinancialMetrics {
   // Unit Economics display
   unitEconomics: UnitEconomicsDisplay | null;
   
-  // Data source tracking (NEW)
+  // Data source tracking
   dataSources: DataSources;
+  
+  // Validation warnings (NEW - for realistic projections)
+  validationWarnings: string[];
+  wasAdjustedForRealism: boolean;
 }
 
 export interface ProjectionDataPoint {
@@ -516,89 +524,84 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     // (marginPercent and operationalCostPercent already defined above)
     
     // ============================================
-    // REALISTIC Break-even Calculation
-    // ALWAYS calculate locally - database value is unreliable (often NULL)
+    // REALISTIC Break-even & ROI Calculation
+    // Uses new validation layer for market-realistic projections
     // ============================================
-    let breakEvenMonthsNum: number | null = null;
-    if (mvpInvestment && mrr12Months && mrr12Months.avg > 0) {
-      breakEvenMonthsNum = calculateRealisticBreakEven(
-        mrr12Months.avg,
-        mvpInvestment,
-        effectiveMarketingBudget,
-        operationalCostPercent,
-        marginPercent
-      );
+    
+    // Run full validation pipeline on MRR projections
+    const validatedFinancials = validateFinancialProjections(
+      mrr6Months?.avg || null,
+      mrr12Months?.avg || null,
+      mrr24Months?.avg || null,
+      mvpInvestment || 100000, // Default investment if missing
+      effectiveMarketingBudget,
+      marginPercent
+    );
+    
+    // Use validated values
+    const validatedMrr6 = validatedFinancials.mrr6;
+    const validatedMrr12 = validatedFinancials.mrr12;
+    const validatedMrr24 = validatedFinancials.mrr24;
+    const breakEvenMonthsNum = validatedFinancials.breakEvenMonths;
+    const roiYear1Num = validatedFinancials.roiYear1;
+    
+    // Track validation warnings
+    const validationWarnings = validatedFinancials.warnings;
+    const wasAdjustedForRealism = validatedFinancials.wasAdjusted;
+    
+    if (wasAdjustedForRealism) {
+      console.log('[Financial Metrics] Projections adjusted for market realism:', validationWarnings);
     }
     
     // ============================================
-    // REALISTIC ROI Year 1 Calculation
-    // Uses interpolation with real MRR targets instead of generic S-curve
-    // ============================================
-    let roiYear1Num: number | null = null;
-    if (mrr12Months && mvpInvestment && mvpInvestment > 0) {
-      roiYear1Num = calculateRealisticROI(
-        mrr12Months.avg,
-        mvpInvestment,
-        effectiveMarketingBudget,
-        operationalCostPercent,
-        mrr6Months?.avg || null, // Pass 6-month target for better interpolation
-        marginPercent
-      );
-    }
-    
-    // ============================================
-    // Generate Projection Data (12 months) - REALISTIC S-CURVE
+    // Generate Projection Data (12 months) - VALIDATED
     // ============================================
     let projectionData: ProjectionDataPoint[] = [];
-    if (mrr12Months && mvpInvestment) {
-      projectionData = generateRealisticProjections(
-        mrr12Months.avg,
+    if (validatedMrr12 > 0 && mvpInvestment) {
+      projectionData = generateValidatedProjections(
+        validatedMrr6,
+        validatedMrr12,
         mvpInvestment,
         effectiveMarketingBudget,
+        marginPercent,
         12
       );
     }
     
     // ============================================
-    // Generate Financial Scenarios - BASED ON REAL RANGES
+    // Generate Financial Scenarios - VALIDATED
     // ============================================
     const financialScenarios: FinancialScenario[] = [];
-    if (mrr12Months && mvpInvestment) {
-      // Conservative: use min MRR values
-      const conservativeBreakEven = calculateRealisticBreakEven(
-        mrr12Months.min,
+    if (validatedMrr12 > 0 && mvpInvestment) {
+      const scenarios = generateValidatedScenarios(
+        validatedMrr12,
         mvpInvestment,
-        effectiveMarketingBudget
+        effectiveMarketingBudget,
+        marginPercent
       );
+      
       financialScenarios.push({
         name: "Conservative",
-        mrrMonth12: mrr12Months.min,
-        arrYear1: mrr12Months.min * 12,
-        breakEven: conservativeBreakEven,
-        probability: "Lower bound", // Changed from fixed percentage
+        mrrMonth12: scenarios.conservative.mrr12,
+        arrYear1: scenarios.conservative.arr12,
+        breakEven: scenarios.conservative.breakEven,
+        probability: scenarios.conservative.probability,
       });
       
-      // Realistic: use avg values
       financialScenarios.push({
         name: "Realistic",
-        mrrMonth12: mrr12Months.avg,
-        arrYear1: mrr12Months.avg * 12,
-        breakEven: breakEvenMonthsNum || 12,
-        probability: "Expected", // Changed from fixed percentage
+        mrrMonth12: scenarios.realistic.mrr12,
+        arrYear1: scenarios.realistic.arr12,
+        breakEven: scenarios.realistic.breakEven,
+        probability: scenarios.realistic.probability,
       });
       
-      // Optimistic: use max values
-      const optimisticBreakEven = calculateRealisticBreakEven(
-        mrr12Months.max,
-        mvpInvestment,
-        effectiveMarketingBudget
-      );
       financialScenarios.push({
         name: "Optimistic",
-        mrrMonth12: mrr12Months.max,
-        arrYear1: mrr12Months.max * 12,
-        breakEven: optimisticBreakEven,
-        probability: "Upper bound", // Changed from fixed percentage
+        mrrMonth12: scenarios.optimistic.mrr12,
+        arrYear1: scenarios.optimistic.arr12,
+        breakEven: scenarios.optimistic.breakEven,
+        probability: scenarios.optimistic.probability,
       });
     }
     
@@ -719,8 +722,12 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       yearEvolution,
       unitEconomics,
       
-      // Data source tracking (NEW)
+      // Data source tracking
       dataSources,
+      
+      // Validation info (NEW - for realistic projections)
+      validationWarnings,
+      wasAdjustedForRealism,
     };
   }, [reportData]);
 }
