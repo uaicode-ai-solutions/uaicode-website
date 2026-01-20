@@ -243,19 +243,6 @@ const FinancialReturnSection = () => {
               </div>
             </div>
 
-            {/* J-Curve Educational Banner - Shows when ROI is negative */}
-            {roiYear1 < 0 && (
-              <div className="flex items-start gap-2 text-xs text-amber-600/80 bg-amber-500/5 border border-amber-500/20 rounded-lg p-3 mt-4">
-                <TrendingUp className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <div>
-                  <strong className="text-amber-500">J-Curve expected:</strong>{' '}
-                  <span className="text-muted-foreground">
-                    Initial investment phase is typical for SaaS. Your {ltvCacRatioNum.toFixed(1)}x LTV/CAC 
-                    indicates strong long-term viability.
-                  </span>
-                </div>
-              </div>
-            )}
 
             {/* Investment Badge */}
             <div className="mt-4 pt-4 border-t border-border/30">
@@ -273,9 +260,23 @@ const FinancialReturnSection = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
 
-      {/* [3] Key Metrics - 3 Cards */}
+        {/* J-Curve Educational Banner - Below chart for context */}
+        {roiYear1 < 0 && (
+          <div className="flex items-start gap-3 text-sm text-amber-600/80 bg-amber-500/5 border border-amber-500/20 rounded-lg p-4">
+            <TrendingUp className="h-5 w-5 mt-0.5 flex-shrink-0 text-amber-500" />
+            <div>
+              <strong className="text-amber-500">J-Curve expected:</strong>{' '}
+              <span className="text-muted-foreground">
+                Initial investment phase is typical for SaaS. Your {ltvCacRatioNum.toFixed(1)}x LTV/CAC 
+                indicates strong long-term viability.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* [3] Key Metrics - 3 Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
           <CardContent className="p-4">
