@@ -3,7 +3,6 @@ import { Database, Calculator, Sparkles, HelpCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -80,19 +79,17 @@ export function DataSourceBadge({
 
   if (showTooltip) {
     return (
-      <TooltipProvider delayDuration={100}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            {badge}
-          </TooltipTrigger>
-          <TooltipContent 
-            side="top"
-            className="max-w-xs bg-card border-amber-500/30 shadow-lg text-xs p-3"
-          >
-            <p className="text-foreground">{config.tooltip}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip delayDuration={100}>
+        <TooltipTrigger asChild>
+          {badge}
+        </TooltipTrigger>
+        <TooltipContent 
+          side="top"
+          className="max-w-xs bg-card border-amber-500/30 shadow-lg text-xs p-3"
+        >
+          <p className="text-foreground">{config.tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
 
