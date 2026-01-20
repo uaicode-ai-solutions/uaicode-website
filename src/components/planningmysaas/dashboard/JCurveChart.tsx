@@ -25,6 +25,7 @@ interface JCurveChartProps {
   breakEvenMonths?: number | null;
   mrrMonth12?: number | null;
   marketingBudget: number | null;
+  baselineMarketingBudget?: number; // For calculating marketing efficiency
   projectionMonths?: number;
   scenarios?: ScenarioData[];
 }
@@ -55,18 +56,30 @@ const formatCurrency = (value: number): string => {
 
 const calculateCumulativeFlow = (
   mvpInvestment: number,
-  mrrMonth12: number,
+  baseMrrMonth12: number,
   marketingBudget: number,
-  month: number
+  month: number,
+  baselineMarketingBudget: number = 2000
 ): number => {
   let cumulativeCashFlow = -mvpInvestment;
+
+  // Marketing efficiency multiplier (1.0x to 2.5x)
+  // More marketing investment = faster MRR growth
+  const marketingRatio = baselineMarketingBudget > 0 
+    ? marketingBudget / baselineMarketingBudget 
+    : 1;
+  const marketingEfficiency = Math.min(2.5, Math.max(1, 1 + (marketingRatio - 1) * 0.3));
+  
+  // MRR adjusted by marketing efficiency
+  const adjustedMrrMonth12 = baseMrrMonth12 * marketingEfficiency;
 
   for (let m = 1; m <= month; m++) {
     const revenueGrowthFactor = m <= 12
       ? Math.pow(m / 12, 1.5)
       : 1 + ((m - 12) * 0.025);
 
-    const monthlyRevenue = mrrMonth12 * revenueGrowthFactor;
+    // Revenue uses adjusted MRR
+    const monthlyRevenue = adjustedMrrMonth12 * revenueGrowthFactor;
     const monthlyCosts = marketingBudget * (1 + (m * 0.005));
 
     cumulativeCashFlow += (monthlyRevenue - monthlyCosts);
@@ -79,7 +92,8 @@ const generateMultiScenarioData = (
   mvpInvestment: number,
   scenarios: ScenarioData[],
   marketingBudget: number,
-  projectionMonths: number
+  projectionMonths: number,
+  baselineMarketingBudget: number = 2000
 ): MultiScenarioDataPoint[] => {
   const data: MultiScenarioDataPoint[] = [];
 
@@ -108,19 +122,22 @@ const generateMultiScenarioData = (
         mvpInvestment,
         conservativeScenario.mrrMonth12,
         marketingBudget,
-        month
+        month,
+        baselineMarketingBudget
       ),
       realistic: calculateCumulativeFlow(
         mvpInvestment,
         realisticScenario.mrrMonth12,
         marketingBudget,
-        month
+        month,
+        baselineMarketingBudget
       ),
       optimistic: calculateCumulativeFlow(
         mvpInvestment,
         optimisticScenario.mrrMonth12,
         marketingBudget,
-        month
+        month,
+        baselineMarketingBudget
       ),
     });
   }
@@ -172,6 +189,7 @@ export const JCurveChart: React.FC<JCurveChartProps> = ({
   breakEvenMonths,
   mrrMonth12,
   marketingBudget,
+  baselineMarketingBudget = 2000,
   projectionMonths = 60,
   scenarios,
 }) => {
@@ -180,16 +198,25 @@ export const JCurveChart: React.FC<JCurveChartProps> = ({
   const hasValidData = mvpInvestment && mvpInvestment > 0 &&
     (hasScenarios || (breakEvenMonths && breakEvenMonths > 0 && mrrMonth12 && mrrMonth12 > 0));
 
+  // Calculate marketing efficiency for display
+  const effectiveMarketingBudget = marketingBudget || (scenarios?.[1]?.mrrMonth12 || 0) * 0.3;
+  const marketingRatio = baselineMarketingBudget > 0 
+    ? effectiveMarketingBudget / baselineMarketingBudget 
+    : 1;
+  const marketingEfficiency = Math.min(2.5, Math.max(1, 1 + (marketingRatio - 1) * 0.3));
+  const efficiencyBoostPercent = Math.round((marketingEfficiency - 1) * 100);
+
   const multiScenarioData = useMemo(() => {
     if (!hasValidData || !hasScenarios || !mvpInvestment) return [];
 
     return generateMultiScenarioData(
       mvpInvestment,
       scenarios!,
-      marketingBudget || (scenarios![1].mrrMonth12 * 0.3),
-      projectionMonths
+      effectiveMarketingBudget,
+      projectionMonths,
+      baselineMarketingBudget
     );
-  }, [mvpInvestment, scenarios, marketingBudget, projectionMonths, hasValidData, hasScenarios]);
+  }, [mvpInvestment, scenarios, effectiveMarketingBudget, projectionMonths, hasValidData, hasScenarios, baselineMarketingBudget]);
 
   // Get scenario details
   const conservativeScenario = scenarios?.find(s => s.name === 'Conservative');
