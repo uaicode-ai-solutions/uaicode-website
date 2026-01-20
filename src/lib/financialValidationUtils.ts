@@ -1,15 +1,17 @@
 // ============================================
 // Financial Validation Utilities
 // Ensures projections align with SaaS B2B market benchmarks
+// Now supports dynamic benchmarks from n8n research pipeline
 // ============================================
 
 import { MoneyRange, PercentageRange } from "./financialParsingUtils";
+import { NormalizedBenchmarks } from "@/types/benchmark";
 
 // ============================================
-// Market Benchmarks for SaaS B2B
-// Based on industry data from SaaS metrics reports
+// Default Market Benchmarks for SaaS B2B
+// Used as fallback when no dynamic benchmarks available
 // ============================================
-export const MARKET_BENCHMARKS = {
+export const MARKET_BENCHMARKS: NormalizedBenchmarks = {
   // New SaaS realistic MRR progression
   MRR_MONTH_6_MAX: 100000,      // $100K MRR at 6 months is exceptional
   MRR_MONTH_12_MAX: 300000,     // $300K MRR at 12 months is top decile
@@ -48,7 +50,27 @@ export const MARKET_BENCHMARKS = {
   CHURN_MIN_MONTHLY: 0.5,             // 0.5% monthly = 6% annual (exceptional)
   CHURN_REALISTIC_MONTHLY: 3.0,       // 3% monthly = 30% annual (B2B SMB)
   CHURN_MAX_MONTHLY: 8.0,             // 8% monthly = 60% annual (concerning)
+  
+  // Metadata (static fallback)
+  isFromResearch: false,
+  sourceCount: 0,
+  confidence: 'low',
+  marketType: 'b2b',
+  industry: 'general',
 };
+
+/**
+ * Get benchmarks to use for validation
+ * Uses dynamic benchmarks if provided, otherwise falls back to defaults
+ */
+export function getBenchmarks(dynamicBenchmarks?: Partial<NormalizedBenchmarks> | null): NormalizedBenchmarks {
+  if (!dynamicBenchmarks) return MARKET_BENCHMARKS;
+  
+  return {
+    ...MARKET_BENCHMARKS,
+    ...dynamicBenchmarks,
+  };
+}
 
 // ============================================
 // Validation Result Types
@@ -80,12 +102,13 @@ export interface FinancialValidationWarnings {
 export function validateMRRVsUsers(
   mrr: number,
   users: number,
-  arpu: number = 200
+  arpu: number = 200,
+  benchmarks: NormalizedBenchmarks = MARKET_BENCHMARKS
 ): ValidationResult<number> {
   const warnings: string[] = [];
   
   // Calculate expected MRR based on users × conversion × ARPU
-  const payingCustomers = Math.floor(users * MARKET_BENCHMARKS.USER_TO_PAYING_CONVERSION);
+  const payingCustomers = Math.floor(users * benchmarks.USER_TO_PAYING_CONVERSION);
   const expectedMRR = payingCustomers * arpu;
   
   // If reported MRR is more than 2x expected, cap it
@@ -94,7 +117,7 @@ export function validateMRRVsUsers(
   if (mrr > maxReasonableMRR && users > 0) {
     warnings.push(
       `MRR $${mrr.toLocaleString()} adjusted to $${maxReasonableMRR.toLocaleString()} ` +
-      `based on ${users} users × ${MARKET_BENCHMARKS.USER_TO_PAYING_CONVERSION * 100}% conversion × $${arpu} ARPU`
+      `based on ${users} users × ${benchmarks.USER_TO_PAYING_CONVERSION * 100}% conversion × $${arpu} ARPU`
     );
     
     return {
@@ -122,7 +145,8 @@ export function validateMRRVsUsers(
 export function validateMRRProgression(
   mrr6: number | null,
   mrr12: number | null,
-  mrr24: number | null
+  mrr24: number | null,
+  benchmarks: NormalizedBenchmarks = MARKET_BENCHMARKS
 ): ValidationResult<{ mrr6: number; mrr12: number; mrr24: number }> {
   const warnings: string[] = [];
   let adjusted = false;
@@ -132,36 +156,36 @@ export function validateMRRProgression(
   let validMrr12 = mrr12 ?? 0;
   let validMrr24 = mrr24 ?? 0;
   
-  // Cap absolute values
-  if (validMrr6 > MARKET_BENCHMARKS.MRR_MONTH_6_MAX) {
-    warnings.push(`MRR 6m capped from $${validMrr6.toLocaleString()} to $${MARKET_BENCHMARKS.MRR_MONTH_6_MAX.toLocaleString()}`);
-    validMrr6 = MARKET_BENCHMARKS.MRR_MONTH_6_MAX;
+  // Cap absolute values using dynamic benchmarks
+  if (validMrr6 > benchmarks.MRR_MONTH_6_MAX) {
+    warnings.push(`MRR 6m capped from $${validMrr6.toLocaleString()} to $${benchmarks.MRR_MONTH_6_MAX.toLocaleString()}`);
+    validMrr6 = benchmarks.MRR_MONTH_6_MAX;
     adjusted = true;
   }
   
-  if (validMrr12 > MARKET_BENCHMARKS.MRR_MONTH_12_MAX) {
-    warnings.push(`MRR 12m capped from $${validMrr12.toLocaleString()} to $${MARKET_BENCHMARKS.MRR_MONTH_12_MAX.toLocaleString()}`);
-    validMrr12 = MARKET_BENCHMARKS.MRR_MONTH_12_MAX;
+  if (validMrr12 > benchmarks.MRR_MONTH_12_MAX) {
+    warnings.push(`MRR 12m capped from $${validMrr12.toLocaleString()} to $${benchmarks.MRR_MONTH_12_MAX.toLocaleString()}`);
+    validMrr12 = benchmarks.MRR_MONTH_12_MAX;
     adjusted = true;
   }
   
-  if (validMrr24 > MARKET_BENCHMARKS.MRR_MONTH_24_MAX) {
-    warnings.push(`MRR 24m capped from $${validMrr24.toLocaleString()} to $${MARKET_BENCHMARKS.MRR_MONTH_24_MAX.toLocaleString()}`);
-    validMrr24 = MARKET_BENCHMARKS.MRR_MONTH_24_MAX;
+  if (validMrr24 > benchmarks.MRR_MONTH_24_MAX) {
+    warnings.push(`MRR 24m capped from $${validMrr24.toLocaleString()} to $${benchmarks.MRR_MONTH_24_MAX.toLocaleString()}`);
+    validMrr24 = benchmarks.MRR_MONTH_24_MAX;
     adjusted = true;
   }
   
   // Validate growth rate 6m → 12m (max 2x)
-  if (validMrr6 > 0 && validMrr12 > validMrr6 * MARKET_BENCHMARKS.MAX_6_TO_12_MONTH_GROWTH) {
-    const maxMrr12 = validMrr6 * MARKET_BENCHMARKS.MAX_6_TO_12_MONTH_GROWTH;
+  if (validMrr6 > 0 && validMrr12 > validMrr6 * benchmarks.MAX_6_TO_12_MONTH_GROWTH) {
+    const maxMrr12 = validMrr6 * benchmarks.MAX_6_TO_12_MONTH_GROWTH;
     warnings.push(`MRR 12m growth rate adjusted: ${((validMrr12 / validMrr6 - 1) * 100).toFixed(0)}% → ${((maxMrr12 / validMrr6 - 1) * 100).toFixed(0)}%`);
     validMrr12 = maxMrr12;
     adjusted = true;
   }
   
   // Validate growth rate 12m → 24m (max 3x)
-  if (validMrr12 > 0 && validMrr24 > validMrr12 * MARKET_BENCHMARKS.MAX_12_TO_24_MONTH_GROWTH) {
-    const maxMrr24 = validMrr12 * MARKET_BENCHMARKS.MAX_12_TO_24_MONTH_GROWTH;
+  if (validMrr12 > 0 && validMrr24 > validMrr12 * benchmarks.MAX_12_TO_24_MONTH_GROWTH) {
+    const maxMrr24 = validMrr12 * benchmarks.MAX_12_TO_24_MONTH_GROWTH;
     warnings.push(`MRR 24m growth rate adjusted: ${((validMrr24 / validMrr12 - 1) * 100).toFixed(0)}% → ${((maxMrr24 / validMrr12 - 1) * 100).toFixed(0)}%`);
     validMrr24 = maxMrr24;
     adjusted = true;
@@ -190,9 +214,13 @@ export function validateMRRProgression(
  * Validate ARR projection
  * Ensures Year 1 ARR is within realistic bounds
  */
-export function validateARR(arr: number, year: 1 | 2): ValidationResult<number> {
+export function validateARR(
+  arr: number, 
+  year: 1 | 2,
+  benchmarks: NormalizedBenchmarks = MARKET_BENCHMARKS
+): ValidationResult<number> {
   const warnings: string[] = [];
-  const maxARR = year === 1 ? MARKET_BENCHMARKS.ARR_YEAR_1_MAX : MARKET_BENCHMARKS.ARR_YEAR_2_MAX;
+  const maxARR = year === 1 ? benchmarks.ARR_YEAR_1_MAX : benchmarks.ARR_YEAR_2_MAX;
   
   if (arr > maxARR) {
     warnings.push(`Year ${year} ARR $${(arr / 1000000).toFixed(1)}M capped to $${(maxARR / 1000000).toFixed(1)}M (market benchmark)`);
@@ -228,7 +256,8 @@ export function calculateValidatedROI(
   mrr12: number,
   mvpInvestment: number,
   monthlyMarketingBudget: number,
-  marginPercent: number = 0.65
+  marginPercent: number = 0.65,
+  benchmarks: NormalizedBenchmarks = MARKET_BENCHMARKS
 ): ValidationResult<number> {
   const warnings: string[] = [];
   
@@ -267,21 +296,21 @@ export function calculateValidatedROI(
     ? Math.round(((totalRevenue - totalCosts) / totalCosts) * 100)
     : 0;
   
-  // Validate and cap ROI
+  // Validate and cap ROI using dynamic benchmarks
   const originalROI = rawROI;
   
-  if (rawROI > MARKET_BENCHMARKS.ROI_YEAR_1_MAX) {
-    warnings.push(`Year 1 ROI ${rawROI}% capped to ${MARKET_BENCHMARKS.ROI_YEAR_1_MAX}% (market benchmark)`);
-    rawROI = MARKET_BENCHMARKS.ROI_YEAR_1_MAX;
+  if (rawROI > benchmarks.ROI_YEAR_1_MAX) {
+    warnings.push(`Year 1 ROI ${rawROI}% capped to ${benchmarks.ROI_YEAR_1_MAX}% (market benchmark)`);
+    rawROI = benchmarks.ROI_YEAR_1_MAX;
   }
   
-  if (rawROI < MARKET_BENCHMARKS.ROI_YEAR_1_MIN) {
-    warnings.push(`Year 1 ROI ${rawROI}% floored to ${MARKET_BENCHMARKS.ROI_YEAR_1_MIN}%`);
-    rawROI = MARKET_BENCHMARKS.ROI_YEAR_1_MIN;
+  if (rawROI < benchmarks.ROI_YEAR_1_MIN) {
+    warnings.push(`Year 1 ROI ${rawROI}% floored to ${benchmarks.ROI_YEAR_1_MIN}%`);
+    rawROI = benchmarks.ROI_YEAR_1_MIN;
   }
   
   // Add warning for high but valid ROI
-  if (rawROI > MARKET_BENCHMARKS.ROI_YEAR_1_REALISTIC_MAX && rawROI <= MARKET_BENCHMARKS.ROI_YEAR_1_MAX) {
+  if (rawROI > benchmarks.ROI_YEAR_1_REALISTIC_MAX && rawROI <= benchmarks.ROI_YEAR_1_MAX) {
     warnings.push(`High ROI projection (${rawROI}%) - verify assumptions and execution capability`);
   }
   
@@ -306,7 +335,8 @@ export function calculateValidatedBreakEven(
   mrr12: number,
   mvpInvestment: number,
   monthlyMarketingBudget: number,
-  marginPercent: number = 0.65
+  marginPercent: number = 0.65,
+  benchmarks: NormalizedBenchmarks = MARKET_BENCHMARKS
 ): ValidationResult<number> {
   const warnings: string[] = [];
   
@@ -349,16 +379,16 @@ export function calculateValidatedBreakEven(
     }
   }
   
-  // Validate break-even
+  // Validate break-even using dynamic benchmarks
   const originalBreakEven = breakEvenMonth;
   
-  if (breakEvenMonth < MARKET_BENCHMARKS.BREAK_EVEN_MIN_MONTHS) {
-    warnings.push(`Break-even ${breakEvenMonth} months adjusted to ${MARKET_BENCHMARKS.BREAK_EVEN_MIN_MONTHS} months (too optimistic)`);
-    breakEvenMonth = MARKET_BENCHMARKS.BREAK_EVEN_MIN_MONTHS;
+  if (breakEvenMonth < benchmarks.BREAK_EVEN_MIN_MONTHS) {
+    warnings.push(`Break-even ${breakEvenMonth} months adjusted to ${benchmarks.BREAK_EVEN_MIN_MONTHS} months (too optimistic)`);
+    breakEvenMonth = benchmarks.BREAK_EVEN_MIN_MONTHS;
   }
   
-  if (breakEvenMonth > MARKET_BENCHMARKS.BREAK_EVEN_MAX_MONTHS) {
-    warnings.push(`Break-even exceeds ${MARKET_BENCHMARKS.BREAK_EVEN_MAX_MONTHS} months - extended runway required`);
+  if (breakEvenMonth > benchmarks.BREAK_EVEN_MAX_MONTHS) {
+    warnings.push(`Break-even exceeds ${benchmarks.BREAK_EVEN_MAX_MONTHS} months - extended runway required`);
   }
   
   return {
@@ -396,13 +426,14 @@ export function validateFinancialProjections(
   rawMrr24: number | null,
   mvpInvestment: number,
   monthlyMarketingBudget: number,
-  marginPercent: number = 0.65
+  marginPercent: number = 0.65,
+  benchmarks: NormalizedBenchmarks = MARKET_BENCHMARKS
 ): ValidatedFinancials {
   const allWarnings: string[] = [];
   let anyAdjusted = false;
   
   // Step 1: Validate MRR progression
-  const mrrValidation = validateMRRProgression(rawMrr6, rawMrr12, rawMrr24);
+  const mrrValidation = validateMRRProgression(rawMrr6, rawMrr12, rawMrr24, benchmarks);
   if (mrrValidation.wasAdjusted) {
     anyAdjusted = true;
     allWarnings.push(...mrrValidation.warnings);
@@ -411,8 +442,8 @@ export function validateFinancialProjections(
   const { mrr6, mrr12, mrr24 } = mrrValidation.value;
   
   // Step 2: Calculate and validate ARR
-  const arr12Validation = validateARR(mrr12 * 12, 1);
-  const arr24Validation = validateARR(mrr24 * 12, 2);
+  const arr12Validation = validateARR(mrr12 * 12, 1, benchmarks);
+  const arr24Validation = validateARR(mrr24 * 12, 2, benchmarks);
   
   if (arr12Validation.wasAdjusted) {
     anyAdjusted = true;
@@ -429,7 +460,8 @@ export function validateFinancialProjections(
     mrr12,
     mvpInvestment,
     monthlyMarketingBudget,
-    marginPercent
+    marginPercent,
+    benchmarks
   );
   
   if (roiValidation.wasAdjusted) {
@@ -443,7 +475,8 @@ export function validateFinancialProjections(
     mrr12,
     mvpInvestment,
     monthlyMarketingBudget,
-    marginPercent
+    marginPercent,
+    benchmarks
   );
   
   if (breakEvenValidation.wasAdjusted) {

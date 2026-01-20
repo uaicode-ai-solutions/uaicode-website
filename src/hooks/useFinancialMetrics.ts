@@ -2,6 +2,7 @@
 // useFinancialMetrics Hook
 // Extracts and calculates financial metrics from JSONB fields
 // With REALISTIC VALIDATION against market benchmarks
+// Now supports dynamic benchmarks from n8n research pipeline
 // ============================================
 
 import { useMemo } from "react";
@@ -31,7 +32,9 @@ import {
   generateValidatedProjections,
   generateValidatedScenarios,
   MARKET_BENCHMARKS,
+  getBenchmarks,
 } from "@/lib/financialValidationUtils";
+import { useBenchmarks } from "@/hooks/useBenchmarks";
 import { debugLogger } from "@/lib/debugLogger";
 import { DataSourceType, DataSources, defaultDataSources } from "@/components/planningmysaas/dashboard/ui/DataSourceBadge";
 
@@ -526,16 +529,22 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     // ============================================
     // REALISTIC Break-even & ROI Calculation
     // Uses new validation layer for market-realistic projections
+    // Now uses DYNAMIC BENCHMARKS from n8n research when available
     // ============================================
     
-    // Run full validation pipeline on MRR projections
+    // Extract benchmark section from report (populated by n8n pipeline)
+    const benchmarkSection = reportData?.benchmark_section as Record<string, unknown> | null;
+    const dynamicBenchmarks = benchmarkSection ? getBenchmarks(benchmarkSection as any) : MARKET_BENCHMARKS;
+    
+    // Run full validation pipeline on MRR projections with dynamic benchmarks
     const validatedFinancials = validateFinancialProjections(
       mrr6Months?.avg || null,
       mrr12Months?.avg || null,
       mrr24Months?.avg || null,
       mvpInvestment || 100000, // Default investment if missing
       effectiveMarketingBudget,
-      marginPercent
+      marginPercent,
+      dynamicBenchmarks
     );
     
     // Use validated values
@@ -551,6 +560,11 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     
     if (wasAdjustedForRealism) {
       console.log('[Financial Metrics] Projections adjusted for market realism:', validationWarnings);
+    }
+    
+    // Log if using dynamic benchmarks
+    if (benchmarkSection) {
+      console.log('[Financial Metrics] Using dynamic benchmarks from n8n research');
     }
     
     // ============================================
