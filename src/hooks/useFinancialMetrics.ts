@@ -139,7 +139,10 @@ export interface UnitEconomicsDisplay {
 // Main Hook
 // ============================================
 
-export function useFinancialMetrics(reportData: ReportData | null): FinancialMetrics {
+export function useFinancialMetrics(
+  reportData: ReportData | null,
+  marketTypeOverride?: string | null
+): FinancialMetrics {
   return useMemo(() => {
     const fallback = "...";
     
@@ -154,6 +157,22 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const paidMediaIntelligence = reportData?.paid_media_intelligence_section as Record<string, unknown> | null;
     const sectionInvestment = reportData?.section_investment as Record<string, unknown> | null;
     const opportunitySection = reportData?.opportunity_section as Record<string, unknown> | null;
+    const benchmarkSectionRaw = reportData?.benchmark_section as Record<string, unknown> | null;
+    
+    // ============================================
+    // EFFECTIVE MARKET TYPE - Priority chain:
+    // 1. marketTypeOverride (from wizard data)
+    // 2. benchmark_section.market_context.market_type (from n8n research)
+    // 3. Fallback to 'b2b'
+    // ============================================
+    const benchmarkMarketType = (benchmarkSectionRaw?.market_context as Record<string, unknown>)?.market_type as string | undefined;
+    const effectiveMarketType = (
+      marketTypeOverride?.toLowerCase() ||
+      benchmarkMarketType?.toLowerCase() ||
+      'b2b'
+    );
+    
+    console.log('[Financial] effectiveMarketType:', effectiveMarketType, '(override:', marketTypeOverride, ', benchmark:', benchmarkMarketType, ')');
     
     // ============================================
     // Extract Growth Targets (handles both new and legacy key formats)
@@ -303,13 +322,12 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       };
     }
     
-    // Fallback: use churn based on market_type
+    // Fallback: use churn based on effectiveMarketType (now uses priority chain)
     // B2B SaaS: 0.4-0.6% monthly (5-7% annual) - sticky enterprise customers
     // B2C SaaS: 5-8% monthly (50-60% annual) - consumer apps churn faster
-    const marketTypeForChurn = ((reportData as unknown as Record<string, unknown>)?.market_type as string)?.toLowerCase() || 'b2b';
     
     const getDefaultChurnByMarketType = (type: string): PercentageRange => {
-      if (type === 'b2c' || type === 'consumer') {
+      if (type === 'b2c' || type === 'consumer' || type.includes('b2c')) {
         // B2C healthcare/wellness: 5-10% monthly = 50-80% annual
         return { min: 5.0, max: 10.0, avg: 7.0 };
       } else if (type === 'smb' || type === 'small_business') {
@@ -320,7 +338,8 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       return { min: 0.3, max: 0.6, avg: 0.42 };
     };
     
-    const defaultChurn = getDefaultChurnByMarketType(marketTypeForChurn);
+    const defaultChurn = getDefaultChurnByMarketType(effectiveMarketType);
+    console.log('[Financial] defaultChurn for', effectiveMarketType, ':', defaultChurn.avg, '%');
     
     if (!churn12Months) {
       churn12Months = defaultChurn;
@@ -329,7 +348,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         field: 'churn12Months',
         attemptedSource: 'growth_targets.12_month.churn',
         reason: 'smartExtractChurn returned null',
-        fallbackUsed: `Market-type based (${marketTypeForChurn}): ${defaultChurn.avg}% monthly`,
+        fallbackUsed: `Market-type based (${effectiveMarketType}): ${defaultChurn.avg}% monthly`,
         finalValue: defaultChurn,
       });
     }
@@ -494,10 +513,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       const netMonthlyRevenue = idealTicket * marginPercent;
       const calculatedPayback = Math.round(targetCac.avg / netMonthlyRevenue);
       
-      // Use benchmark minimum payback (will be set from dynamicBenchmarks after validation section)
-      // For now, use a market-type based minimum
-      const marketTypeForPayback = ((reportData as unknown as Record<string, unknown>)?.market_type as string)?.toLowerCase() || 'b2b';
-      
+      // Use benchmark minimum payback based on effectiveMarketType
       // B2B: 4-6 months minimum (longer sales cycle)
       // B2C: 2-3 months minimum (faster acquisition, lower CAC)
       const MIN_PAYBACK_BY_MARKET: Record<string, number> = {
@@ -507,12 +523,13 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         b2c: 2,
         consumer: 2,
       };
-      const MIN_PAYBACK_MONTHS = MIN_PAYBACK_BY_MARKET[marketTypeForPayback] || 4;
+      const MIN_PAYBACK_MONTHS = MIN_PAYBACK_BY_MARKET[effectiveMarketType] || 
+        (effectiveMarketType.includes('b2c') ? 2 : 4);
       
       paybackPeriod = Math.max(calculatedPayback, MIN_PAYBACK_MONTHS);
       
       if (calculatedPayback < MIN_PAYBACK_MONTHS) {
-        console.warn(`[Financial] Payback ${calculatedPayback} months adjusted to ${MIN_PAYBACK_MONTHS} (${marketTypeForPayback} minimum)`);
+        console.warn(`[Financial] Payback ${calculatedPayback} months adjusted to ${MIN_PAYBACK_MONTHS} (${effectiveMarketType} minimum)`);
       }
       
       dataSources.paybackPeriod = 'calculated';
@@ -520,7 +537,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         field: 'paybackPeriod',
         attemptedSource: 'section_investment.payback_period',
         reason: 'No payback period in database',
-        fallbackUsed: `Calculated from CAC / (ARPU × margin) = $${targetCac.avg} / ($${idealTicket} × ${marginPercent}) = ${paybackPeriod} months (min: ${MIN_PAYBACK_MONTHS} for ${marketTypeForPayback})`,
+        fallbackUsed: `Calculated from CAC / (ARPU × margin) = $${targetCac.avg} / ($${idealTicket} × ${marginPercent}) = ${paybackPeriod} months (min: ${MIN_PAYBACK_MONTHS} for ${effectiveMarketType})`,
         finalValue: paybackPeriod,
       });
     }
@@ -540,11 +557,9 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     else if (ltv && targetCac && targetCac.avg > 0) {
       const calculated = Math.round((ltv / targetCac.avg) * 10) / 10; // 1 decimal place
       
-      // Use benchmark max LTV/CAC (will be refined after benchmarks are loaded)
+      // Use benchmark max LTV/CAC based on effectiveMarketType
       // B2B typical: 3-5:1 is healthy, 8:1+ is exceptional (needs verification)
       // B2C typical: 2-4:1 is healthy, 6:1+ is exceptional
-      const marketTypeForLtv = ((reportData as unknown as Record<string, unknown>)?.market_type as string)?.toLowerCase() || 'b2b';
-      
       const MAX_LTV_CAC_BY_MARKET: Record<string, number> = {
         b2b: 8.0,
         enterprise: 10.0,
@@ -552,10 +567,11 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         b2c: 5.0,
         consumer: 4.0,
       };
-      const MAX_LTV_CAC = MAX_LTV_CAC_BY_MARKET[marketTypeForLtv] || 8.0;
+      const MAX_LTV_CAC = MAX_LTV_CAC_BY_MARKET[effectiveMarketType] || 
+        (effectiveMarketType.includes('b2c') ? 5.0 : 8.0);
       
       if (calculated > MAX_LTV_CAC) {
-        console.warn(`[Financial] LTV/CAC ${calculated.toFixed(1)}:1 capped at ${MAX_LTV_CAC}:1 (${marketTypeForLtv} benchmark)`);
+        console.warn(`[Financial] LTV/CAC ${calculated.toFixed(1)}:1 capped at ${MAX_LTV_CAC}:1 (${effectiveMarketType} benchmark)`);
         ltvCacCalculated = MAX_LTV_CAC;
       } else {
         ltvCacCalculated = calculated;
@@ -566,7 +582,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         field: 'ltvCacCalculated',
         attemptedSource: 'performance_targets.ltv_cac_ratio_target',
         reason: 'No LTV/CAC target in database',
-        fallbackUsed: `Calculated from LTV / CAC = $${ltv} / $${targetCac.avg} = ${ltvCacCalculated}:1 (max: ${MAX_LTV_CAC} for ${marketTypeForLtv})`,
+        fallbackUsed: `Calculated from LTV / CAC = $${ltv} / $${targetCac.avg} = ${ltvCacCalculated}:1 (max: ${MAX_LTV_CAC} for ${effectiveMarketType})`,
         finalValue: ltvCacCalculated,
       });
     }
@@ -579,13 +595,9 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     // Now uses DYNAMIC BENCHMARKS from n8n research when available
     // ============================================
     
-    // Extract benchmark section from report (populated by n8n pipeline)
-    // CRITICAL: We must extract wizardData to get market_type for fallback benchmarks
-    const marketType = ((reportData as unknown as Record<string, unknown>)?.market_type as string) || 'b2b';
-    
-    // Use the useBenchmarks hook result - but since we're in useMemo, we need to call the hook outside
-    // For now, we'll use a direct normalization approach
-    const benchmarkSection = reportData?.benchmark_section;
+    // Use effectiveMarketType already computed at start of hook
+    // benchmarkSectionRaw already extracted at start
+    const benchmarkSection = benchmarkSectionRaw;
     
     // Normalize benchmark keys from snake_case (database) to UPPER_CASE (internal)
     let dynamicBenchmarks = MARKET_BENCHMARKS;
@@ -633,7 +645,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         console.log('[Financial Metrics] ⚠️ benchmark_section exists but missing required fields, using defaults');
       }
     } else {
-      console.log('[Financial Metrics] ℹ️ No benchmark_section, using static market benchmarks for:', marketType);
+      console.log('[Financial Metrics] ℹ️ No benchmark_section, using static market benchmarks for:', effectiveMarketType);
     }
     
     // Run full validation pipeline on MRR projections with dynamic benchmarks
@@ -866,5 +878,5 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       validationWarnings,
       wasAdjustedForRealism,
     };
-  }, [reportData]);
+  }, [reportData, marketTypeOverride]);
 }

@@ -22,16 +22,17 @@ import {
 } from "recharts";
 
 const FinancialReturnSection = () => {
-  const { reportData, reportId } = useReportContext();
+  const { reportData, report, reportId } = useReportContext();
   const wizardId = reportData?.wizard_id;
   
+  // Get market_type from wizard data (report) to pass to financial metrics
+  const marketType = report?.market_type || undefined;
+  
   // Use the new hook to extract all financial metrics from JSONB
-  const metrics = useFinancialMetrics(reportData);
+  // Pass marketTypeOverride from wizard data for correct B2B/B2C churn & LTV caps
+  const metrics = useFinancialMetrics(reportData, marketType);
   
   // Get benchmark data to show source badge
-  // market_type comes from wizard data which is nested or accessed via the wizard
-  const wizardData = (reportData as unknown as Record<string, unknown>);
-  const marketType = (wizardData?.market_type as string) || undefined;
   const benchmarkData = useBenchmarks(reportData?.benchmark_section, marketType);
   
   // NOTE: break_even and ROI are now ALWAYS calculated locally by useFinancialMetrics
