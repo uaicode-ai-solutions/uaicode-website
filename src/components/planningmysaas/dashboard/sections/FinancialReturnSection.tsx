@@ -88,25 +88,36 @@ const FinancialReturnSection = () => {
     probability: s.probability,
   }));
 
-  // Unit economics data
+  // Calculate additional metrics for the "How it works" explanation
+  const churnMonthly = metrics.unitEconomics?.monthlyChurn 
+    ? parseFloat(String(metrics.unitEconomics.monthlyChurn)) 
+    : 5; // fallback 5%
+  const ltvMonths = Math.round(1 / (churnMonthly / 100)) || 24;
+  const cac = metrics.targetCac?.avg || 150;
+  const profitMonths = Math.max(0, ltvMonths - paybackMonths);
+
+  // Unit economics data with tooltips
   const unitEconomicsData = [
     {
       label: "ARPU",
       value: formatCurrency(arpu),
       sublabel: "/month",
       icon: DollarSign,
+      tooltip: "Average Revenue Per User - the monthly recurring revenue you receive from each customer.",
     },
     {
       label: "Payback",
       value: `${paybackMonths}`,
       sublabel: "months",
       icon: Clock,
+      tooltip: "Time in months to recover the cost of acquiring one customer through subscription revenue.",
     },
     {
       label: "LTV",
       value: formatCurrency(ltv),
       sublabel: "lifetime",
       icon: TrendingUp,
+      tooltip: "Lifetime Value - total revenue expected from a customer throughout their relationship.",
     },
     {
       label: "LTV/CAC",
@@ -114,6 +125,7 @@ const FinancialReturnSection = () => {
       sublabel: ltvCacRatioNum >= 3 ? "✓ healthy" : "monitor",
       icon: Zap,
       highlight: ltvCacRatioNum >= 3,
+      tooltip: "Ratio comparing customer value to acquisition cost. Above 3x indicates healthy unit economics.",
     },
   ];
 
@@ -329,6 +341,27 @@ const FinancialReturnSection = () => {
             </InfoTooltip>
           </div>
 
+          {/* How it works banner */}
+          <div className="p-4 rounded-lg bg-card/80 border border-border/30 mb-5">
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              <span className="font-semibold text-foreground">How it works:</span>{" "}
+              You invest{" "}
+              <span className="font-medium text-foreground">{formatCurrency(cac)}</span>{" "}
+              once to acquire a customer (CAC). They pay{" "}
+              <span className="font-medium text-foreground">{formatCurrency(arpu)}/month</span>{" "}
+              for an average of{" "}
+              <span className="font-medium text-foreground">{ltvMonths} months</span>,{" "}
+              generating{" "}
+              <span className="font-medium text-foreground">{formatCurrency(ltv)}</span>{" "}
+              in total revenue (LTV). You recover your acquisition cost in{" "}
+              <span className="font-medium text-foreground">{paybackMonths} months</span>,{" "}
+              then profit for the remaining{" "}
+              <span className="font-medium text-foreground">{profitMonths} months</span>.{" "}
+              This is a {ltvCacRatioNum >= 3 ? "healthy" : "developing"} business model with{" "}
+              {ltvCacRatioNum >= 3 ? "strong" : "growing"} unit economics.
+            </p>
+          </div>
+
           {/* Unit Economics Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {unitEconomicsData.map((item) => (
@@ -341,6 +374,9 @@ const FinancialReturnSection = () => {
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
                     {item.label}
                   </span>
+                  <InfoTooltip side="top" size="sm">
+                    {item.tooltip}
+                  </InfoTooltip>
                 </div>
                 <div className="text-xl font-bold text-gradient-gold mb-1">
                   {item.value}
