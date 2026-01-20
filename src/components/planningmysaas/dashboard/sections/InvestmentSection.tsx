@@ -73,9 +73,10 @@ const InvestmentSection = () => {
   const suggestedPaidMedia = calculateSuggestedPaidMedia(userBudget, marketingTotals.uaicodeTotal);
   
   const handleMarketingSelectionChange = useCallback((selectedIds: string[], totals: MarketingTotals) => {
+    console.log('[InvestmentSection] Marketing selection changed:', { selectedIds, totals });
     setSelectedMarketingIds(selectedIds);
     setMarketingTotals(totals);
-  }, []);
+  }, [setSelectedMarketingIds, setMarketingTotals]);
   
   // Parse investment data from section_investment JSON (with fallback to legacy fields)
   const sectionInvestment = getSectionInvestment(reportData);

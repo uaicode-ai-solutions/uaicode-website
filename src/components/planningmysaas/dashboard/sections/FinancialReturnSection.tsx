@@ -21,6 +21,9 @@ import {
 const FinancialReturnSection = () => {
   const { reportData, report, marketingTotals } = useReportContext();
   
+  // Debug log to verify marketingTotals updates
+  console.log('[FinancialReturnSection] marketingTotals:', marketingTotals);
+  
   // Get market_type from wizard data
   const marketType = report?.market_type || undefined;
   
@@ -66,6 +69,15 @@ const FinancialReturnSection = () => {
   // Calculate marketing efficiency for display
   const marketingEfficiency = calculateMarketingEfficiency(effectiveMarketingBudget, baselineMarketingBudget);
   const efficiencyBoostPercent = Math.round((marketingEfficiency - 1) * 100);
+  
+  // Debug log to verify calculation flow
+  console.log('[FinancialReturnSection] Calculated values:', {
+    baselineMarketingBudget,
+    effectiveMarketingBudget,
+    marketingEfficiency,
+    efficiencyBoostPercent,
+    uaicodeTotal: marketingTotals.uaicodeTotal,
+  });
 
   // Scenario data for cards and chart
   const scenarios = [

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, Briefcase, Megaphone, Palette, Share2, Users, Sparkles, Lock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -257,11 +257,21 @@ const MarketingServiceSelector = ({
     }
   }, [services, initialized, defaultSelectRecommended]);
 
-  // Notify parent of changes
+  // Track last notified state to prevent duplicate calls
+  const lastNotifiedRef = useRef<string>('');
+
+  // Notify parent of changes - with deduplication
   useEffect(() => {
     if (onSelectionChange && services.length > 0) {
       const totals = calculateMarketingTotals(selectedIds, services);
-      onSelectionChange(selectedIds, totals);
+      const key = `${selectedIds.sort().join(',')}-${totals.uaicodeTotal}`;
+      
+      // Only notify if actually changed
+      if (key !== lastNotifiedRef.current) {
+        console.log('[MarketingServiceSelector] Notifying parent:', { selectedIds, totals, key });
+        lastNotifiedRef.current = key;
+        onSelectionChange(selectedIds, totals);
+      }
     }
   }, [selectedIds, services, onSelectionChange]);
 
