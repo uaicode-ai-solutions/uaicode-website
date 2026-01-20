@@ -1,10 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { Database, Calculator, Sparkles, HelpCircle } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 export type DataSourceType = 'database' | 'calculated' | 'estimated' | 'fallback';
@@ -56,17 +51,16 @@ const sourceConfig: Record<DataSourceType, {
 export function DataSourceBadge({ 
   source, 
   size = 'xs', 
-  showTooltip = true,
   className 
-}: DataSourceBadgeProps) {
+}: Omit<DataSourceBadgeProps, 'showTooltip'>) {
   const config = sourceConfig[source];
   const Icon = config.icon;
   
-  const badge = (
+  return (
     <Badge 
       variant="outline"
       className={cn(
-        "font-normal transition-colors cursor-help",
+        "font-normal transition-colors",
         size === 'xs' ? "text-[9px] px-1 py-0 h-4 gap-0.5" : "text-[10px] px-1.5 py-0.5 h-5 gap-1",
         config.colorClass,
         className
@@ -76,24 +70,6 @@ export function DataSourceBadge({
       {size === 'xs' ? config.shortLabel : config.label}
     </Badge>
   );
-
-  if (showTooltip) {
-    return (
-      <Tooltip delayDuration={100}>
-        <TooltipTrigger asChild>
-          {badge}
-        </TooltipTrigger>
-        <TooltipContent 
-          side="top"
-          className="max-w-xs bg-card border-amber-500/30 shadow-lg text-xs p-3"
-        >
-          <p className="text-foreground">{config.tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return badge;
 }
 
 // Helper hook type for tracking data sources
