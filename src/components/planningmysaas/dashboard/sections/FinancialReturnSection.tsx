@@ -170,25 +170,43 @@ const FinancialReturnSection = () => {
               <div className="text-5xl font-bold text-gradient-gold mb-1">
                 {breakEvenMonths}
               </div>
-              <div className="text-sm text-muted-foreground">
-                Months to Profitability
+              <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
+                <span>Months to Profitability</span>
+                <InfoTooltip side="top" size="sm">
+                  Time until cumulative revenue exceeds total investment. The point where your SaaS becomes self-sustaining.
+                </InfoTooltip>
               </div>
             </div>
 
             {/* Stats - Same style as Pain Points */}
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <span className="text-sm text-muted-foreground">ROI Year 1</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">ROI Year 1</span>
+                  <InfoTooltip side="top" size="sm">
+                    Return on Investment after 12 months. Calculated as (Revenue - Investment) / Investment × 100.
+                  </InfoTooltip>
+                </div>
                 <span className={`font-bold ${roiYear1 >= 0 ? 'text-green-500' : 'text-amber-500'}`}>
                   {roiYear1 >= 0 ? '+' : ''}{roiYear1}%
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <span className="text-sm text-muted-foreground">LTV/CAC Ratio</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">LTV/CAC Ratio</span>
+                  <InfoTooltip side="top" size="sm">
+                    Ratio comparing customer lifetime value to acquisition cost. Above 3x indicates healthy unit economics.
+                  </InfoTooltip>
+                </div>
                 <span className="font-bold text-foreground">{ltvCacRatioNum.toFixed(1)}x</span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <span className="text-sm text-muted-foreground">Payback Period</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">Payback Period</span>
+                  <InfoTooltip side="top" size="sm">
+                    Time in months to recover the cost of acquiring one customer through subscription revenue.
+                  </InfoTooltip>
+                </div>
                 <span className="font-bold text-foreground">{paybackMonths}mo</span>
               </div>
             </div>
@@ -196,7 +214,12 @@ const FinancialReturnSection = () => {
             {/* Investment Badge */}
             <div className="mt-4 pt-4 border-t border-border/30">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Total Investment</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Total Investment</span>
+                  <InfoTooltip side="top" size="sm">
+                    Combined cost of MVP development and first-year marketing budget required to launch and grow the product.
+                  </InfoTooltip>
+                </div>
                 <Badge variant="outline" className="bg-accent/10 border-accent/30 text-accent">
                   {formatCurrency(mvpInvestment)}
                 </Badge>
@@ -213,6 +236,9 @@ const FinancialReturnSection = () => {
             <div className="flex items-center gap-2 mb-2">
               <DollarSign className="h-4 w-4 text-accent" />
               <span className="text-xs text-muted-foreground">MRR Month 12</span>
+              <InfoTooltip side="top" size="sm">
+                Monthly Recurring Revenue projected for month 12. The predictable income from active subscriptions.
+              </InfoTooltip>
             </div>
             <div className="text-2xl font-bold text-gradient-gold">
               {formatCurrency(mrrMonth12)}
@@ -228,6 +254,9 @@ const FinancialReturnSection = () => {
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="h-4 w-4 text-accent" />
               <span className="text-xs text-muted-foreground">Projected ARR</span>
+              <InfoTooltip side="top" size="sm">
+                Annual Recurring Revenue - your MRR multiplied by 12. Key metric for SaaS valuation and growth tracking.
+              </InfoTooltip>
             </div>
             <div className="text-2xl font-bold text-gradient-gold">
               {formatCurrency(arrYear1)}
@@ -243,6 +272,9 @@ const FinancialReturnSection = () => {
             <div className="flex items-center gap-2 mb-2">
               <Rocket className="h-4 w-4 text-accent" />
               <span className="text-xs text-muted-foreground">3-Year Growth</span>
+              <InfoTooltip side="top" size="sm">
+                Percentage increase in ARR from Year 1 to Year 3, based on compound growth projections for your market.
+              </InfoTooltip>
             </div>
             <div className="text-2xl font-bold text-gradient-gold">
               {growthPercent > 0 ? `+${growthPercent}%` : `${growthPercent}%`}
@@ -297,20 +329,35 @@ const FinancialReturnSection = () => {
 
                 {/* Metrics */}
                 <div className="space-y-2 text-xs mb-4">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Month 12 MRR</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">Month 12 MRR</span>
+                      <InfoTooltip side="top" size="sm">
+                        Monthly Recurring Revenue at the end of Year 1 for this scenario.
+                      </InfoTooltip>
+                    </div>
                     <span className={`font-medium ${scenario.highlighted ? 'text-gradient-gold' : 'text-foreground'}`}>
                       {formatCurrency(scenario.mrrMonth12)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Break-even</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">Break-even</span>
+                      <InfoTooltip side="top" size="sm">
+                        Months until total revenue exceeds total investment in this scenario.
+                      </InfoTooltip>
+                    </div>
                     <span className="font-medium text-foreground">
                       {scenario.breakEvenMonths} months
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Year 1 ARR</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">Year 1 ARR</span>
+                      <InfoTooltip side="top" size="sm">
+                        Annual Recurring Revenue projection for this scenario after 12 months.
+                      </InfoTooltip>
+                    </div>
                     <span className="font-medium text-foreground">
                       {formatCurrency(scenario.arr)}
                     </span>
