@@ -206,11 +206,15 @@ export const JCurveChart: React.FC<JCurveChartProps> = ({
   const marketingEfficiency = Math.min(2.5, Math.max(1, 1 + (marketingRatio - 1) * 0.3));
   const efficiencyBoostPercent = Math.round((marketingEfficiency - 1) * 100);
 
+  // Calculate first year marketing investment (12 months)
+  const marketingYear1 = effectiveMarketingBudget * 12;
+
   // Debug log to verify props updates
   console.log('[JCurveChart] Props received:', {
     marketingBudget,
     baselineMarketingBudget,
     effectiveMarketingBudget,
+    marketingYear1,
     marketingEfficiency,
     efficiencyBoostPercent,
   });
@@ -458,6 +462,13 @@ export const JCurveChart: React.FC<JCurveChartProps> = ({
           {/* Initial investment note */}
           <p className="text-[10px] text-muted-foreground text-center mt-3">
             Initial Investment: <span className="text-foreground font-medium">{formatCurrency(mvpInvestment!)}</span>
+            {effectiveMarketingBudget > 0 && (
+              <>
+                <span className="mx-1">+</span>
+                <span className="text-foreground font-medium">{formatCurrency(marketingYear1)}</span>
+                <span className="text-muted-foreground/70"> marketing/yr</span>
+              </>
+            )}
             <span className="mx-2">•</span>
             5-Year Projection
           </p>
