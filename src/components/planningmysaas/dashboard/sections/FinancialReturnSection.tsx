@@ -173,6 +173,14 @@ const FinancialReturnSection = () => {
         {/* Summary Card - Style Pain Points */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-6">
+            {/* Header - Summary */}
+            <div className="flex items-center gap-2 mb-5">
+              <h3 className="text-sm font-medium text-foreground">Summary</h3>
+              <InfoTooltip side="top" size="sm">
+                Financial viability overview based on projected revenue, investment, and unit economics.
+              </InfoTooltip>
+            </div>
+
             {/* Big Number - Break-even */}
             <div className="text-center mb-6">
               <div className="text-5xl font-bold text-gradient-gold mb-1">
