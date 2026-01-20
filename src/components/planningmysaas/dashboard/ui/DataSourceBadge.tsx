@@ -28,28 +28,28 @@ const sourceConfig: Record<DataSourceType, {
     label: "Real Data",
     shortLabel: "Real",
     icon: Database,
-    colorClass: "bg-emerald-500/10 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/20",
+    colorClass: "bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30",
     tooltip: "This value comes directly from research data in the database.",
   },
   calculated: {
     label: "Calculated",
     shortLabel: "Calc",
     icon: Calculator,
-    colorClass: "bg-blue-500/10 text-blue-500 border-blue-500/30 hover:bg-blue-500/20",
+    colorClass: "bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/25",
     tooltip: "This value is calculated from other available data (e.g., ROI from MRR and investment).",
   },
   estimated: {
     label: "Estimated",
     shortLabel: "Est",
     icon: Sparkles,
-    colorClass: "bg-amber-500/10 text-amber-500 border-amber-500/30 hover:bg-amber-500/20",
+    colorClass: "bg-amber-500/10 text-amber-400/80 border-amber-500/20 hover:bg-amber-500/20",
     tooltip: "This value uses industry average estimates due to missing specific data.",
   },
   fallback: {
     label: "Default",
     shortLabel: "Def",
     icon: HelpCircle,
-    colorClass: "bg-muted/50 text-muted-foreground border-border hover:bg-muted",
+    colorClass: "bg-amber-500/5 text-amber-400/60 border-amber-500/15 hover:bg-amber-500/15",
     tooltip: "This value uses a default placeholder. Original data was not available.",
   },
 };
@@ -87,9 +87,9 @@ export function DataSourceBadge({
           </TooltipTrigger>
           <TooltipContent 
             side="top"
-            className="max-w-xs bg-card border-border/50 shadow-lg text-xs"
+            className="max-w-xs bg-card border-amber-500/30 shadow-lg text-xs p-3"
           >
-            {config.tooltip}
+            <p className="text-foreground">{config.tooltip}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

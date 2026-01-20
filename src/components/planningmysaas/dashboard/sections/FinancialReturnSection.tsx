@@ -512,16 +512,18 @@ const FinancialReturnSection = () => {
         {metrics.unitEconomics ? (
           <>
             {/* 5 Cards Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {/* Ideal Ticket */}
               <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
-                <CardContent className="p-4 text-center">
+                <CardContent className="p-5 text-center relative">
+                  <div className="absolute top-2 right-2">
+                    <DataSourceBadge source={metrics.dataSources.idealTicket} size="xs" />
+                  </div>
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-xs text-muted-foreground">Ideal Ticket</span>
                     <InfoTooltip side="top" size="sm">
                       Average Revenue Per User - the average monthly revenue per paying customer.
                     </InfoTooltip>
-                    <DataSourceBadge source={metrics.dataSources.idealTicket} size="xs" />
                   </div>
                   <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.idealTicket}</div>
                   <span className="text-xs text-muted-foreground">/month</span>
@@ -530,13 +532,15 @@ const FinancialReturnSection = () => {
               
               {/* Payback Period */}
               <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
-                <CardContent className="p-4 text-center">
+                <CardContent className="p-5 text-center relative">
+                  <div className="absolute top-2 right-2">
+                    <DataSourceBadge source={metrics.dataSources.paybackPeriod} size="xs" />
+                  </div>
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-xs text-muted-foreground">Payback Period</span>
                     <InfoTooltip side="top" size="sm">
                       Time to recover Customer Acquisition Cost from subscription payments. Source: AI analysis based on your market and pricing model.
                     </InfoTooltip>
-                    <DataSourceBadge source={metrics.dataSources.paybackPeriod} size="xs" />
                   </div>
                   <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.paybackPeriod}</div>
                   <span className="text-xs text-muted-foreground">months</span>
@@ -545,13 +549,15 @@ const FinancialReturnSection = () => {
               
               {/* LTV */}
               <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
-                <CardContent className="p-4 text-center">
+                <CardContent className="p-5 text-center relative">
+                  <div className="absolute top-2 right-2">
+                    <DataSourceBadge source={metrics.dataSources.ltv} size="xs" />
+                  </div>
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-xs text-muted-foreground">LTV (Lifetime Value)</span>
                     <InfoTooltip side="top" size="sm">
                       Customer Lifetime Value calculated as ARPU × (1 / Monthly Churn Rate). Total revenue expected from a customer during their relationship.
                     </InfoTooltip>
-                    <DataSourceBadge source={metrics.dataSources.ltv} size="xs" />
                   </div>
                   <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.ltv}</div>
                   <span className="text-xs text-muted-foreground">{metrics.unitEconomics.ltvMonths} months</span>
@@ -560,13 +566,15 @@ const FinancialReturnSection = () => {
               
               {/* LTV/CAC Ratio - Calculated */}
               <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
-                <CardContent className="p-4 text-center">
+                <CardContent className="p-5 text-center relative">
+                  <div className="absolute top-2 right-2">
+                    <DataSourceBadge source={metrics.dataSources.ltvCacCalculated} size="xs" />
+                  </div>
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-xs text-muted-foreground">LTV/CAC Ratio</span>
                     <InfoTooltip side="top" size="sm">
                       Your projected LTV/CAC ratio based on calculated LTV ÷ CAC. Values above 3x indicate healthy unit economics for sustainable growth.
                     </InfoTooltip>
-                    <DataSourceBadge source={metrics.dataSources.ltvCacCalculated} size="xs" />
                   </div>
                   <div className="flex items-center justify-center gap-1.5 mt-1">
                     <span className="text-2xl font-bold text-gradient-gold">
@@ -582,13 +590,15 @@ const FinancialReturnSection = () => {
               
               {/* LTV/CAC Target */}
               <Card className="bg-card/50 border-border/30 hover:border-accent/30 transition-colors">
-                <CardContent className="p-4 text-center">
+                <CardContent className="p-5 text-center relative">
+                  <div className="absolute top-2 right-2">
+                    <DataSourceBadge source={metrics.dataSources.ltvCacRatio} size="xs" />
+                  </div>
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-xs text-muted-foreground">LTV/CAC Target</span>
                     <InfoTooltip side="top" size="sm">
                       Industry benchmark target for your market segment. This is the recommended minimum ratio for sustainable growth, not your calculated value.
                     </InfoTooltip>
-                    <DataSourceBadge source={metrics.dataSources.ltvCacRatio} size="xs" />
                   </div>
                   <div className="text-2xl font-bold text-gradient-gold mt-1">{metrics.unitEconomics.ltvCacRatio}x</div>
                   <span className="text-xs text-muted-foreground">benchmark</span>
