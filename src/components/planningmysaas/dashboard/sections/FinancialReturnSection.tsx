@@ -50,8 +50,10 @@ const FinancialReturnSection = () => {
   const ltv = metrics.ltv || 0;
   const mvpInvestment = metrics.mvpInvestment || 0;
   
-  // Baseline marketing budget from AI (before user selections)
-  const baselineMarketingBudget = metrics.marketingBudgetMonthly || 2000;
+  // Fixed baseline for comparison = minimum marketing package
+  // (Project Manager $1,200 + 1 service ~$1,800 = $3,000 subscription + $3,000 paid media = $6,000/mo)
+  const MINIMUM_MARKETING_BASELINE = 6000;
+  const baselineMarketingBudget = MINIMUM_MARKETING_BASELINE;
   
   // Calculate effective marketing budget based on user selections
   const userBudget = report?.budget;
@@ -204,7 +206,7 @@ const FinancialReturnSection = () => {
         <div className="flex items-center gap-2 text-sm bg-accent/10 border border-accent/20 rounded-lg px-4 py-2">
           <Sparkles className="h-4 w-4 text-accent" />
           <span className="text-foreground/80">
-            <strong className="text-accent">Marketing boost applied:</strong> {efficiencyBoostPercent}% faster customer acquisition based on your investment selections
+            <strong className="text-accent">Marketing boost applied:</strong> +{efficiencyBoostPercent}% faster customer acquisition vs minimum package
           </span>
         </div>
       )}
