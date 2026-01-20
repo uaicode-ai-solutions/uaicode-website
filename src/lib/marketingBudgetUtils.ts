@@ -66,12 +66,12 @@ export const calculateMarketingEfficiency = (
   
   const ratio = effectiveBudget / baselineBudget;
   
-  // Linear scaling with diminishing returns
-  // At 1x baseline: 1.0 efficiency
-  // At 2x baseline: 1.3 efficiency
-  // At 5x baseline: 2.2 efficiency
+  // Increased sensitivity for user-selected budgets
+  // At 1x baseline: 1.0 efficiency (0% boost)
+  // At 1.5x baseline: 1.25 efficiency (25% boost)
+  // At 2x baseline: 1.5 efficiency (50% boost)
   // Capped at 2.5x max
-  const efficiency = 1 + (ratio - 1) * 0.3;
+  const efficiency = 1 + (ratio - 1) * 0.5;
   
   return Math.min(2.5, Math.max(1, efficiency));
 };
