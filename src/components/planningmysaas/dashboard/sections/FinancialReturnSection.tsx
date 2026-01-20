@@ -363,6 +363,12 @@ const FinancialReturnSection = () => {
         breakEvenMonths={metrics.breakEvenMonthsNum}
         mrrMonth12={metrics.mrrMonth12Num}
         marketingBudget={metrics.marketingBudgetMonthly}
+        scenarios={metrics.financialScenarios?.map(s => ({
+          name: s.name as 'Conservative' | 'Realistic' | 'Optimistic',
+          mrrMonth12: s.mrrMonth12 || 0,
+          breakEvenMonths: s.breakEven || 48,
+          probability: s.probability || '33%',
+        }))}
       />
       <div className="space-y-4">
         <div className="flex items-center gap-3">
