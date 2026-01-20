@@ -186,28 +186,29 @@ const FinancialReturnSection = () => {
               </div>
             </div>
 
-            {/* Stats - Same style as Pain Points */}
+            {/* Stats - Reordered: LTV/CAC first (strongest indicator) */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
-                <div className="flex items-center gap-1">
-                  <span className="text-sm text-muted-foreground">ROI Year 1</span>
-                  <InfoTooltip side="top" size="sm">
-                    Return on Investment after 12 months. Calculated as (Revenue - Investment) / Investment × 100.
-                  </InfoTooltip>
-                </div>
-                <span className={`font-bold ${roiYear1 >= 0 ? 'text-green-500' : 'text-amber-500'}`}>
-                  {roiYear1 >= 0 ? '+' : ''}{roiYear1}%
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
+              {/* LTV/CAC - Primary indicator (usually positive) */}
+              <div className={`flex items-center justify-between p-3 rounded-lg ${ltvCacRatioNum >= 3 ? 'bg-accent/10 border-accent/30' : 'bg-accent/5 border-accent/10'} border`}>
                 <div className="flex items-center gap-1">
                   <span className="text-sm text-muted-foreground">LTV/CAC Ratio</span>
                   <InfoTooltip side="top" size="sm">
-                    Ratio comparing customer lifetime value to acquisition cost. Above 3x indicates healthy unit economics.
+                    Key viability indicator. Ratio comparing customer lifetime value to acquisition cost. Above 3x indicates healthy, sustainable unit economics.
                   </InfoTooltip>
                 </div>
-                <span className="font-bold text-foreground">{ltvCacRatioNum.toFixed(1)}x</span>
+                <div className="flex items-center gap-2">
+                  <span className={`font-bold ${ltvCacRatioNum >= 3 ? 'text-accent' : 'text-foreground'}`}>
+                    {ltvCacRatioNum.toFixed(1)}x
+                  </span>
+                  {ltvCacRatioNum >= 3 && (
+                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-accent/10 border-accent/30 text-accent">
+                      ✓ healthy
+                    </Badge>
+                  )}
+                </div>
               </div>
+              
+              {/* Payback Period */}
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
                 <div className="flex items-center gap-1">
                   <span className="text-sm text-muted-foreground">Payback Period</span>
@@ -217,7 +218,44 @@ const FinancialReturnSection = () => {
                 </div>
                 <span className="font-bold text-foreground">{paybackMonths}mo</span>
               </div>
+              
+              {/* ROI Year 1 - With educational context */}
+              <div className="flex flex-col p-3 rounded-lg bg-accent/5 border border-accent/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground">ROI Year 1</span>
+                    <InfoTooltip side="top" size="sm">
+                      Year 1 ROI in SaaS is typically negative due to upfront investment (the "J-Curve"). 
+                      Your break-even in {breakEvenMonths} months indicates healthy trajectory. 
+                      Focus on LTV/CAC ratio as the key viability indicator.
+                    </InfoTooltip>
+                  </div>
+                  <span className={`font-bold ${roiYear1 >= 0 ? 'text-accent' : 'text-amber-500'}`}>
+                    {roiYear1 >= 0 ? '+' : ''}{roiYear1}%
+                  </span>
+                </div>
+                {roiYear1 < 0 && (
+                  <div className="flex items-center gap-1 text-[10px] text-amber-500/70 mt-1.5">
+                    <Clock className="h-3 w-3" />
+                    <span>Investment phase – typical for Year 1</span>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* J-Curve Educational Banner - Shows when ROI is negative */}
+            {roiYear1 < 0 && (
+              <div className="flex items-start gap-2 text-xs text-amber-600/80 bg-amber-500/5 border border-amber-500/20 rounded-lg p-3 mt-4">
+                <TrendingUp className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <div>
+                  <strong className="text-amber-500">J-Curve expected:</strong>{' '}
+                  <span className="text-muted-foreground">
+                    Initial investment phase is typical for SaaS. Your {ltvCacRatioNum.toFixed(1)}x LTV/CAC 
+                    indicates strong long-term viability.
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Investment Badge */}
             <div className="mt-4 pt-4 border-t border-border/30">
