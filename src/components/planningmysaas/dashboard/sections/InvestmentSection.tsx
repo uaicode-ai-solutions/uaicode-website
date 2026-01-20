@@ -31,21 +31,33 @@ const InvestmentSection = () => {
   const { services, isLoading: marketingLoading } = useMarketingTiers();
   
   // Calculate suggested paid media based on wizard budget selection
+  // Uses shared utility with correct budget ranges from StepGoals.tsx
   const calculateSuggestedPaidMedia = (budget: string | null | undefined, uaicodeTotal: number): number => {
+    // Budget map matching current wizard ranges (StepGoals.tsx)
     const budgetMap: Record<string, number> = {
-      '5k-10k': 200000,     // $2,000
-      '10k-25k': 450000,    // $4,500
-      '25k-50k': 900000,    // $9,000
-      '50k-100k': 1800000,  // $18,000
-      '100k+': 3500000,     // $35,000
+      '10k-25k': 250000,    // $2,500 (~14% of $17.5K midpoint)
+      '25k-60k': 600000,    // $6,000 (~14% of $42.5K midpoint)
+      '60k-160k': 1500000,  // $15,000 (~14% of $110K midpoint)
+      '160k+': 3000000,     // $30,000 (~15% of $200K estimated)
+      'guidance': 0,        // Calculated dynamically
     };
     
-    // If user chose a specific budget range
-    if (budget && budgetMap[budget]) {
-      return budgetMap[budget];
+    // If user chose a specific budget range (not 'guidance')
+    if (budget && budgetMap[budget] !== undefined) {
+      const mappedValue = budgetMap[budget];
+      
+      // For 'guidance' or zero-mapped budgets, calculate dynamically
+      if (mappedValue === 0 && uaicodeTotal > 0) {
+        const suggested = Math.round(uaicodeTotal * 0.75);
+        const min = 300000;  // $3,000 minimum
+        const max = 1500000; // $15,000 maximum
+        return Math.min(Math.max(suggested, min), max);
+      }
+      
+      return mappedValue;
     }
     
-    // If "guidance" or not defined, use 75% of uaicodeTotal with min/max caps
+    // If not defined, use 75% of uaicodeTotal with min/max caps
     if (uaicodeTotal > 0) {
       const suggested = Math.round(uaicodeTotal * 0.75);
       const min = 300000;  // $3,000 minimum

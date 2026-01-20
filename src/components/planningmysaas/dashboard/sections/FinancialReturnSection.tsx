@@ -1,10 +1,10 @@
 // ============================================
 // Financial Return Section - Restructured
 // Matches CustomerPainPointsSection visual style
-// Reduced from ~766 lines to ~320 lines
+// Now connected to marketing investment selections
 // ============================================
 
-import { TrendingUp, Target, Shield, Rocket, DollarSign, Clock, Zap } from "lucide-react";
+import { TrendingUp, Target, Shield, Rocket, DollarSign, Clock, Zap, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -12,9 +12,14 @@ import { useReportContext } from "@/contexts/ReportContext";
 import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
 import { formatCurrency } from "@/lib/financialParsingUtils";
 import { JCurveChart } from "@/components/planningmysaas/dashboard/JCurveChart";
+import { 
+  calculateSuggestedPaidMedia, 
+  calculateMarketingEfficiency,
+  calculateTotalMarketingMonthly 
+} from "@/lib/marketingBudgetUtils";
 
 const FinancialReturnSection = () => {
-  const { reportData, report } = useReportContext();
+  const { reportData, report, marketingTotals } = useReportContext();
   
   // Get market_type from wizard data
   const marketType = report?.market_type || undefined;
@@ -41,7 +46,26 @@ const FinancialReturnSection = () => {
   const arpu = metrics.idealTicket || 99;
   const ltv = metrics.ltv || 0;
   const mvpInvestment = metrics.mvpInvestment || 0;
-  const marketingBudget = metrics.marketingBudgetMonthly || 0;
+  
+  // Baseline marketing budget from AI (before user selections)
+  const baselineMarketingBudget = metrics.marketingBudgetMonthly || 2000;
+  
+  // Calculate effective marketing budget based on user selections
+  const userBudget = report?.budget;
+  const suggestedPaidMedia = calculateSuggestedPaidMedia(userBudget, marketingTotals.uaicodeTotal);
+  const totalMarketingMonthly = calculateTotalMarketingMonthly(
+    marketingTotals.uaicodeTotal, 
+    suggestedPaidMedia
+  );
+  
+  // Use user's marketing selection if available, otherwise fall back to baseline
+  const effectiveMarketingBudget = marketingTotals.uaicodeTotal > 0 
+    ? totalMarketingMonthly 
+    : baselineMarketingBudget;
+  
+  // Calculate marketing efficiency for display
+  const marketingEfficiency = calculateMarketingEfficiency(effectiveMarketingBudget, baselineMarketingBudget);
+  const efficiencyBoostPercent = Math.round((marketingEfficiency - 1) * 100);
 
   // Scenario data for cards and chart
   const scenarios = [
@@ -157,13 +181,24 @@ const FinancialReturnSection = () => {
         </div>
       </div>
 
+      {/* Marketing Boost Badge - Shows when user has selected marketing services */}
+      {marketingTotals.uaicodeTotal > 0 && efficiencyBoostPercent > 0 && (
+        <div className="flex items-center gap-2 text-sm bg-accent/10 border border-accent/20 rounded-lg px-4 py-2">
+          <Sparkles className="h-4 w-4 text-accent" />
+          <span className="text-foreground/80">
+            <strong className="text-accent">Marketing boost applied:</strong> {efficiencyBoostPercent}% faster customer acquisition based on your investment selections
+          </span>
+        </div>
+      )}
+
       {/* [2] Grid Principal: J-Curve (2 cols) + Summary Card (1 col) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* J-Curve Chart - Main Visual */}
         <div className="lg:col-span-2">
           <JCurveChart
             mvpInvestment={mvpInvestment}
-            marketingBudget={marketingBudget}
+            marketingBudget={effectiveMarketingBudget}
+            baselineMarketingBudget={baselineMarketingBudget}
             scenarios={chartScenarios}
             breakEvenMonths={breakEvenMonths}
             mrrMonth12={mrrMonth12}
