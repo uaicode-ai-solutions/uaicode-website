@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Shield, Target, Rocket } from 'lucide-react';
 import { InfoTooltip } from '@/components/ui/info-tooltip';
 import {
   AreaChart,
@@ -11,23 +11,37 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  ReferenceDot,
 } from 'recharts';
+
+interface ScenarioData {
+  name: 'Conservative' | 'Realistic' | 'Optimistic';
+  mrrMonth12: number;
+  breakEvenMonths: number;
+  probability: string;
+}
 
 interface JCurveChartProps {
   mvpInvestment: number | null;
-  breakEvenMonths: number | null;
-  mrrMonth12: number | null;
+  breakEvenMonths?: number | null;
+  mrrMonth12?: number | null;
   marketingBudget: number | null;
   projectionMonths?: number;
+  scenarios?: ScenarioData[];
 }
 
-interface JCurveDataPoint {
+interface MultiScenarioDataPoint {
   month: string;
   monthNum: number;
-  cumulativeCashFlow: number;
-  isBreakEven: boolean;
+  conservative: number;
+  realistic: number;
+  optimistic: number;
 }
+
+const SCENARIO_COLORS = {
+  Conservative: { stroke: '#94A3B8', fill: 'rgba(148, 163, 184, 0.15)' },
+  Realistic: { stroke: '#F59E0B', fill: 'rgba(245, 158, 11, 0.25)' },
+  Optimistic: { stroke: '#10B981', fill: 'rgba(16, 185, 129, 0.15)' },
+};
 
 const formatCurrency = (value: number): string => {
   if (Math.abs(value) >= 1000000) {
@@ -39,64 +53,114 @@ const formatCurrency = (value: number): string => {
   return `$${value.toFixed(0)}`;
 };
 
-const generateJCurveData = (
+const calculateCumulativeFlow = (
   mvpInvestment: number,
-  breakEvenMonths: number,
   mrrMonth12: number,
   marketingBudget: number,
-  projectionMonths: number
-): JCurveDataPoint[] => {
-  const data: JCurveDataPoint[] = [];
+  month: number
+): number => {
   let cumulativeCashFlow = -mvpInvestment;
 
-  // Add initial point (Month 0 - investment)
+  for (let m = 1; m <= month; m++) {
+    const revenueGrowthFactor = m <= 12
+      ? Math.pow(m / 12, 1.5)
+      : 1 + ((m - 12) * 0.025);
+
+    const monthlyRevenue = mrrMonth12 * revenueGrowthFactor;
+    const monthlyCosts = marketingBudget * (1 + (m * 0.005));
+
+    cumulativeCashFlow += (monthlyRevenue - monthlyCosts);
+  }
+
+  return Math.round(cumulativeCashFlow);
+};
+
+const generateMultiScenarioData = (
+  mvpInvestment: number,
+  scenarios: ScenarioData[],
+  marketingBudget: number,
+  projectionMonths: number
+): MultiScenarioDataPoint[] => {
+  const data: MultiScenarioDataPoint[] = [];
+
+  const conservativeScenario = scenarios.find(s => s.name === 'Conservative');
+  const realisticScenario = scenarios.find(s => s.name === 'Realistic');
+  const optimisticScenario = scenarios.find(s => s.name === 'Optimistic');
+
+  if (!conservativeScenario || !realisticScenario || !optimisticScenario) {
+    return [];
+  }
+
+  // Month 0 - Initial investment
   data.push({
     month: 'M0',
     monthNum: 0,
-    cumulativeCashFlow: Math.round(cumulativeCashFlow),
-    isBreakEven: false,
+    conservative: -mvpInvestment,
+    realistic: -mvpInvestment,
+    optimistic: -mvpInvestment,
   });
 
   for (let month = 1; month <= projectionMonths; month++) {
-    // Revenue grows gradually - S-curve style growth
-    // Slow start, accelerating growth, then stabilizing
-    const growthPhase = month / breakEvenMonths;
-    const revenueGrowthFactor = month <= 12
-      ? Math.pow(month / 12, 1.5) // Slow initial growth
-      : 1 + ((month - 12) * 0.025); // 2.5% monthly growth after Y1
-
-    const monthlyRevenue = mrrMonth12 * revenueGrowthFactor;
-    
-    // Costs grow slowly over time
-    const monthlyCosts = marketingBudget * (1 + (month * 0.005));
-
-    cumulativeCashFlow += (monthlyRevenue - monthlyCosts);
-
     data.push({
       month: `M${month}`,
       monthNum: month,
-      cumulativeCashFlow: Math.round(cumulativeCashFlow),
-      isBreakEven: month === breakEvenMonths,
+      conservative: calculateCumulativeFlow(
+        mvpInvestment,
+        conservativeScenario.mrrMonth12,
+        marketingBudget,
+        month
+      ),
+      realistic: calculateCumulativeFlow(
+        mvpInvestment,
+        realisticScenario.mrrMonth12,
+        marketingBudget,
+        month
+      ),
+      optimistic: calculateCumulativeFlow(
+        mvpInvestment,
+        optimisticScenario.mrrMonth12,
+        marketingBudget,
+        month
+      ),
     });
   }
 
   return data;
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const MultiScenarioTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
-    const value = payload[0].value;
-    const isNegative = value < 0;
-    
+    const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
+    const maxValue = sortedPayload[0]?.value || 0;
+    const minValue = sortedPayload[sortedPayload.length - 1]?.value || 0;
+
     return (
       <div className="bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg px-3 py-2 shadow-xl">
-        <p className="text-xs text-muted-foreground mb-1">{label}</p>
-        <p className={`text-sm font-semibold ${isNegative ? 'text-red-400' : 'text-green-400'}`}>
-          {formatCurrency(value)}
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          {isNegative ? 'Investment Phase' : 'Growth Phase'}
-        </p>
+        <p className="text-xs text-muted-foreground mb-2 font-medium">{label}</p>
+
+        {sortedPayload.map((entry: any, idx: number) => {
+          const isNegative = entry.value < 0;
+          const colorClass = entry.name === 'optimistic'
+            ? 'text-green-400'
+            : entry.name === 'realistic'
+              ? 'text-amber-400'
+              : 'text-slate-400';
+
+          return (
+            <div key={idx} className="flex items-center justify-between gap-4 text-sm py-0.5">
+              <span className={`capitalize ${colorClass}`}>
+                {entry.name}:
+              </span>
+              <span className={`font-medium ${isNegative ? 'text-red-400' : 'text-green-400'}`}>
+                {formatCurrency(entry.value)}
+              </span>
+            </div>
+          );
+        })}
+
+        <div className="mt-2 pt-2 border-t border-border/30 text-xs text-muted-foreground">
+          Range: {formatCurrency(minValue)} to {formatCurrency(maxValue)}
+        </div>
       </div>
     );
   }
@@ -109,41 +173,42 @@ export const JCurveChart: React.FC<JCurveChartProps> = ({
   mrrMonth12,
   marketingBudget,
   projectionMonths = 60,
+  scenarios,
 }) => {
-  // Validate required data
-  const hasValidData = mvpInvestment && mvpInvestment > 0 && 
-                       breakEvenMonths && breakEvenMonths > 0 && 
-                       mrrMonth12 && mrrMonth12 > 0;
+  const hasScenarios = scenarios && scenarios.length === 3;
 
-  const jCurveData = useMemo(() => {
-    if (!hasValidData) return [];
-    
-    return generateJCurveData(
-      mvpInvestment!,
-      breakEvenMonths!,
-      mrrMonth12!,
-      marketingBudget || mrrMonth12! * 0.3, // Fallback: 30% of MRR for marketing
+  const hasValidData = mvpInvestment && mvpInvestment > 0 &&
+    (hasScenarios || (breakEvenMonths && breakEvenMonths > 0 && mrrMonth12 && mrrMonth12 > 0));
+
+  const multiScenarioData = useMemo(() => {
+    if (!hasValidData || !hasScenarios || !mvpInvestment) return [];
+
+    return generateMultiScenarioData(
+      mvpInvestment,
+      scenarios!,
+      marketingBudget || (scenarios![1].mrrMonth12 * 0.3),
       projectionMonths
     );
-  }, [mvpInvestment, breakEvenMonths, mrrMonth12, marketingBudget, projectionMonths, hasValidData]);
+  }, [mvpInvestment, scenarios, marketingBudget, projectionMonths, hasValidData, hasScenarios]);
 
-  // Find break-even data point for the reference dot
-  const breakEvenPoint = jCurveData.find(d => d.isBreakEven);
-  
-  // Calculate gradient stop position based on break-even
-  const breakEvenPercent = hasValidData 
-    ? Math.min(95, Math.max(5, (breakEvenMonths! / projectionMonths) * 100))
-    : 50;
+  // Get scenario details
+  const conservativeScenario = scenarios?.find(s => s.name === 'Conservative');
+  const realisticScenario = scenarios?.find(s => s.name === 'Realistic');
+  const optimisticScenario = scenarios?.find(s => s.name === 'Optimistic');
 
-  // Calculate min/max for Y axis domain
-  const minValue = Math.min(...jCurveData.map(d => d.cumulativeCashFlow), 0);
-  const maxValue = Math.max(...jCurveData.map(d => d.cumulativeCashFlow), 0);
+  // Calculate Y axis domain
+  const allValues = multiScenarioData.flatMap(d => [d.conservative, d.realistic, d.optimistic]);
+  const minValue = Math.min(...allValues, 0);
+  const maxValue = Math.max(...allValues, 0);
   const yAxisPadding = Math.abs(maxValue - minValue) * 0.1;
+
+  // Get end values for footer
+  const endData = multiScenarioData[multiScenarioData.length - 1];
 
   if (!hasValidData) {
     return (
       <Card className="bg-card/50 border-border/30">
-        <CardContent className="p-5 h-[320px] flex items-center justify-center">
+        <CardContent className="p-5 h-[380px] flex items-center justify-center">
           <div className="text-center">
             <TrendingUp className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
@@ -166,22 +231,29 @@ export const JCurveChart: React.FC<JCurveChartProps> = ({
               Investment Trajectory (J-Curve)
             </h4>
             <InfoTooltip>
-              The classic J-Curve shows how SaaS investments typically have 
-              negative returns initially before turning profitable. The break-even 
-              point marks when cumulative revenue exceeds total investment.
+              The J-Curve shows 3 investment scenarios overlaid. Conservative assumes 60% of target MRR,
+              Realistic assumes 80%, and Optimistic assumes 100%. Each line shows cumulative cash flow
+              from initial investment through profitability.
             </InfoTooltip>
           </div>
-          
-          {/* Legend */}
-          <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-400" />
-              <span className="text-muted-foreground">Investment Phase</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-400" />
-              <span className="text-muted-foreground">Growth Phase</span>
-            </div>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-4 text-xs mb-4">
+          <div className="flex items-center gap-1.5">
+            <Shield className="h-3 w-3 text-slate-400" />
+            <div className="w-4 h-0.5 bg-slate-400 rounded" style={{ borderStyle: 'dashed' }} />
+            <span className="text-muted-foreground">Conservative ({conservativeScenario?.probability || '25%'})</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Target className="h-3 w-3 text-amber-500" />
+            <div className="w-4 h-0.5 bg-amber-500 rounded" />
+            <span className="text-foreground font-medium">Realistic ({realisticScenario?.probability || '50%'})</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Rocket className="h-3 w-3 text-green-500" />
+            <div className="w-4 h-0.5 bg-green-500 rounded" />
+            <span className="text-muted-foreground">Optimistic ({optimisticScenario?.probability || '25%'})</span>
           </div>
         </div>
 
@@ -189,43 +261,40 @@ export const JCurveChart: React.FC<JCurveChartProps> = ({
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={jCurveData}
+              data={multiScenarioData}
               margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
             >
               <defs>
-                {/* Horizontal gradient from red to green based on break-even position */}
-                <linearGradient id="jCurveGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#EF4444" stopOpacity={0.6} />
-                  <stop offset={`${breakEvenPercent * 0.8}%`} stopColor="#EF4444" stopOpacity={0.3} />
-                  <stop offset={`${breakEvenPercent}%`} stopColor="#F59E0B" stopOpacity={0.5} />
-                  <stop offset={`${breakEvenPercent * 1.2}%`} stopColor="#10B981" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#10B981" stopOpacity={0.6} />
+                <linearGradient id="conservativeGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#94A3B8" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#94A3B8" stopOpacity={0} />
                 </linearGradient>
-                
-                {/* Stroke gradient */}
-                <linearGradient id="jCurveStroke" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#EF4444" />
-                  <stop offset={`${breakEvenPercent}%`} stopColor="#F59E0B" />
-                  <stop offset="100%" stopColor="#10B981" />
+                <linearGradient id="realisticGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="optimisticGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                 </linearGradient>
               </defs>
 
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke="hsl(var(--border))" 
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(var(--border))"
                 opacity={0.3}
                 vertical={false}
               />
-              
-              <XAxis 
-                dataKey="month" 
+
+              <XAxis
+                dataKey="month"
                 tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                 axisLine={{ stroke: 'hsl(var(--border))' }}
                 tickLine={false}
-                interval={11} // Show every 12 months
+                interval={11}
               />
-              
-              <YAxis 
+
+              <YAxis
                 tickFormatter={formatCurrency}
                 tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                 axisLine={false}
@@ -235,89 +304,127 @@ export const JCurveChart: React.FC<JCurveChartProps> = ({
               />
 
               {/* Break-even line (Y=0) */}
-              <ReferenceLine 
-                y={0} 
-                stroke="hsl(var(--muted-foreground))" 
+              <ReferenceLine
+                y={0}
+                stroke="hsl(var(--muted-foreground))"
                 strokeDasharray="5 5"
                 strokeOpacity={0.5}
               />
 
-              {/* Break-even vertical line */}
-              <ReferenceLine
-                x={`M${breakEvenMonths}`}
-                stroke="#F59E0B"
-                strokeWidth={2}
-                strokeDasharray="4 4"
-              />
+              {/* Break-even markers for each scenario */}
+              {conservativeScenario && (
+                <ReferenceLine
+                  x={`M${conservativeScenario.breakEvenMonths}`}
+                  stroke="#94A3B8"
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                  strokeOpacity={0.6}
+                />
+              )}
+              {realisticScenario && (
+                <ReferenceLine
+                  x={`M${realisticScenario.breakEvenMonths}`}
+                  stroke="#F59E0B"
+                  strokeWidth={2}
+                  strokeDasharray="4 4"
+                />
+              )}
+              {optimisticScenario && (
+                <ReferenceLine
+                  x={`M${optimisticScenario.breakEvenMonths}`}
+                  stroke="#10B981"
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                  strokeOpacity={0.6}
+                />
+              )}
 
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<MultiScenarioTooltip />} />
+
+              {/* Order matters: bottom to top */}
+              <Area
+                type="monotone"
+                dataKey="conservative"
+                stroke="#94A3B8"
+                strokeWidth={1.5}
+                strokeDasharray="4 2"
+                fill="url(#conservativeGradient)"
+                dot={false}
+              />
 
               <Area
                 type="monotone"
-                dataKey="cumulativeCashFlow"
-                stroke="url(#jCurveStroke)"
+                dataKey="realistic"
+                stroke="#F59E0B"
                 strokeWidth={2.5}
-                fill="url(#jCurveGradient)"
+                fill="url(#realisticGradient)"
                 dot={false}
-                activeDot={{
-                  r: 4,
-                  stroke: '#F59E0B',
-                  strokeWidth: 2,
-                  fill: 'hsl(var(--background))',
-                }}
               />
 
-              {/* Break-even point marker */}
-              {breakEvenPoint && (
-                <ReferenceDot
-                  x={breakEvenPoint.month}
-                  y={breakEvenPoint.cumulativeCashFlow}
-                  r={6}
-                  fill="#F59E0B"
-                  stroke="hsl(var(--background))"
-                  strokeWidth={2}
-                />
-              )}
+              <Area
+                type="monotone"
+                dataKey="optimistic"
+                stroke="#10B981"
+                strokeWidth={2}
+                fill="url(#optimisticGradient)"
+                dot={false}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Break-even label */}
-        <div className="flex justify-center -mt-2 mb-3">
-          <div className="bg-amber-500/20 border border-amber-500/30 rounded-full px-3 py-1 flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            <span className="text-xs font-medium text-amber-400">
-              Break-even: Month {breakEvenMonths}
-            </span>
-          </div>
-        </div>
+        {/* Footer with 3 scenario results */}
+        <div className="pt-4 border-t border-border/30">
+          <div className="grid grid-cols-3 gap-2 text-center">
+            {/* Conservative */}
+            <div className="p-2.5 rounded-lg bg-slate-500/10 border border-slate-500/20">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Shield className="h-3 w-3 text-slate-400" />
+                <p className="text-[10px] text-muted-foreground">Conservative</p>
+              </div>
+              <p className="text-sm font-semibold text-slate-400">
+                {endData ? formatCurrency(endData.conservative) : '-'}
+              </p>
+              <p className="text-[9px] text-muted-foreground mt-0.5">
+                Break-even M{conservativeScenario?.breakEvenMonths || '-'}
+              </p>
+            </div>
 
-        {/* Insights footer */}
-        <div className="pt-3 border-t border-border/30 flex items-center justify-between">
-          <div className="text-center flex-1">
-            <p className="text-xs text-muted-foreground mb-0.5">Initial Investment</p>
-            <p className="text-sm font-semibold text-red-400">
-              {formatCurrency(-mvpInvestment!)}
-            </p>
+            {/* Realistic - Highlighted */}
+            <div className="p-2.5 rounded-lg bg-amber-500/20 border border-amber-500/30">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Target className="h-3 w-3 text-amber-400" />
+                <p className="text-[10px] text-amber-400">Realistic</p>
+              </div>
+              <p className="text-sm font-bold text-gradient-gold">
+                {endData ? formatCurrency(endData.realistic) : '-'}
+              </p>
+              <p className="text-[9px] text-amber-400 mt-0.5">
+                Break-even M{realisticScenario?.breakEvenMonths || '-'}
+              </p>
+            </div>
+
+            {/* Optimistic */}
+            <div className="p-2.5 rounded-lg bg-green-500/10 border border-green-500/20">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Rocket className="h-3 w-3 text-green-400" />
+                <p className="text-[10px] text-muted-foreground">Optimistic</p>
+              </div>
+              <p className="text-sm font-semibold text-green-400">
+                {endData ? formatCurrency(endData.optimistic) : '-'}
+              </p>
+              <p className="text-[9px] text-muted-foreground mt-0.5">
+                Break-even M{optimisticScenario?.breakEvenMonths || '-'}
+              </p>
+            </div>
           </div>
-          
-          <div className="h-8 w-px bg-border/30" />
-          
-          <div className="text-center flex-1">
-            <p className="text-xs text-muted-foreground mb-0.5">Time to Profit</p>
-            <p className="text-sm font-semibold text-amber-400">
-              {breakEvenMonths} months
-            </p>
-          </div>
-          
-          <div className="h-8 w-px bg-border/30" />
-          
-          <div className="text-center flex-1">
-            <p className="text-xs text-muted-foreground mb-0.5">5-Year Position</p>
-            <p className="text-sm font-semibold text-green-400">
-              {jCurveData.length > 0 ? formatCurrency(jCurveData[jCurveData.length - 1].cumulativeCashFlow) : '-'}
-            </p>
-          </div>
+
+          {/* Initial investment note */}
+          <p className="text-[10px] text-muted-foreground text-center mt-3">
+            Initial Investment: <span className="text-foreground font-medium">{formatCurrency(mvpInvestment!)}</span>
+            <span className="mx-2">•</span>
+            5-Year Projection
+          </p>
         </div>
       </CardContent>
     </Card>
