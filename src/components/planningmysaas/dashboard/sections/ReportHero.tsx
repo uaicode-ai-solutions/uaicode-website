@@ -36,7 +36,8 @@ const formatMarketValue = (value: string): string => {
 
 const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHeroProps) => {
   const { report, reportData } = useReportContext();
-  const financialMetrics = useFinancialMetrics(reportData);
+  // Pass market_type from wizard to get correct B2C/B2B churn rates for LTV calculation
+  const financialMetrics = useFinancialMetrics(reportData, report?.market_type);
   
   // Use real data only - no mock fallbacks for validation
   const displayName = projectName || report?.saas_name || "...";
