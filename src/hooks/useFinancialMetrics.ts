@@ -533,8 +533,61 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     // ============================================
     
     // Extract benchmark section from report (populated by n8n pipeline)
-    const benchmarkSection = reportData?.benchmark_section as Record<string, unknown> | null;
-    const dynamicBenchmarks = benchmarkSection ? getBenchmarks(benchmarkSection as any) : MARKET_BENCHMARKS;
+    // CRITICAL: We must extract wizardData to get market_type for fallback benchmarks
+    const marketType = ((reportData as unknown as Record<string, unknown>)?.market_type as string) || 'b2b';
+    
+    // Use the useBenchmarks hook result - but since we're in useMemo, we need to call the hook outside
+    // For now, we'll use a direct normalization approach
+    const benchmarkSection = reportData?.benchmark_section;
+    
+    // Normalize benchmark keys from snake_case (database) to UPPER_CASE (internal)
+    let dynamicBenchmarks = MARKET_BENCHMARKS;
+    if (benchmarkSection && typeof benchmarkSection === 'object') {
+      const bs = benchmarkSection as Record<string, unknown>;
+      
+      // Check if this is valid n8n research data
+      if (typeof bs.mrr_month_6_max === 'number' || typeof bs.mrr_month_12_max === 'number') {
+        dynamicBenchmarks = {
+          ...MARKET_BENCHMARKS,
+          // MRR Caps - use research values
+          MRR_MONTH_6_MAX: (bs.mrr_month_6_max as number) || MARKET_BENCHMARKS.MRR_MONTH_6_MAX,
+          MRR_MONTH_12_MAX: (bs.mrr_month_12_max as number) || MARKET_BENCHMARKS.MRR_MONTH_12_MAX,
+          MRR_MONTH_24_MAX: (bs.mrr_month_24_max as number) || MARKET_BENCHMARKS.MRR_MONTH_24_MAX,
+          // ARR Caps
+          ARR_YEAR_1_MAX: (bs.arr_year_1_max as number) || MARKET_BENCHMARKS.ARR_YEAR_1_MAX,
+          ARR_YEAR_2_MAX: (bs.arr_year_2_max as number) || MARKET_BENCHMARKS.ARR_YEAR_2_MAX,
+          // Conversion rates
+          USER_TO_PAYING_CONVERSION: (bs.user_to_paying_conversion as number) || MARKET_BENCHMARKS.USER_TO_PAYING_CONVERSION,
+          // Growth constraints
+          MAX_MONTHLY_GROWTH_RATE: (bs.max_monthly_growth as number) || MARKET_BENCHMARKS.MAX_MONTHLY_GROWTH_RATE,
+          // ROI constraints
+          ROI_YEAR_1_MIN: (bs.roi_year_1_min as number) ?? MARKET_BENCHMARKS.ROI_YEAR_1_MIN,
+          ROI_YEAR_1_MAX: (bs.roi_year_1_max as number) ?? MARKET_BENCHMARKS.ROI_YEAR_1_MAX,
+          ROI_YEAR_1_REALISTIC_MAX: (bs.roi_year_1_realistic as number) ?? MARKET_BENCHMARKS.ROI_YEAR_1_REALISTIC_MAX,
+          // Break-even
+          BREAK_EVEN_MIN_MONTHS: (bs.break_even_min_months as number) || MARKET_BENCHMARKS.BREAK_EVEN_MIN_MONTHS,
+          BREAK_EVEN_REALISTIC_MONTHS: (bs.break_even_realistic_months as number) || MARKET_BENCHMARKS.BREAK_EVEN_REALISTIC_MONTHS,
+          // Churn
+          CHURN_REALISTIC_MONTHLY: (bs.churn_monthly_max as number) || MARKET_BENCHMARKS.CHURN_REALISTIC_MONTHLY,
+          CHURN_MAX_MONTHLY: (bs.churn_monthly_max as number) || MARKET_BENCHMARKS.CHURN_MAX_MONTHLY,
+        };
+        
+        console.log('[Financial Metrics] ✅ Using DYNAMIC benchmarks from n8n research:', {
+          source: 'benchmark_section',
+          sourceCount: Array.isArray(bs.sources) ? bs.sources.length : 0,
+          confidence: bs.confidence || 'medium',
+          caps: {
+            MRR_MONTH_6_MAX: dynamicBenchmarks.MRR_MONTH_6_MAX,
+            MRR_MONTH_12_MAX: dynamicBenchmarks.MRR_MONTH_12_MAX,
+            MRR_MONTH_24_MAX: dynamicBenchmarks.MRR_MONTH_24_MAX,
+          }
+        });
+      } else {
+        console.log('[Financial Metrics] ⚠️ benchmark_section exists but missing required fields, using defaults');
+      }
+    } else {
+      console.log('[Financial Metrics] ℹ️ No benchmark_section, using static market benchmarks for:', marketType);
+    }
     
     // Run full validation pipeline on MRR projections with dynamic benchmarks
     const validatedFinancials = validateFinancialProjections(
@@ -559,12 +612,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const wasAdjustedForRealism = validatedFinancials.wasAdjusted;
     
     if (wasAdjustedForRealism) {
-      console.log('[Financial Metrics] Projections adjusted for market realism:', validationWarnings);
-    }
-    
-    // Log if using dynamic benchmarks
-    if (benchmarkSection) {
-      console.log('[Financial Metrics] Using dynamic benchmarks from n8n research');
+      console.log('[Financial Metrics] 🔄 Projections ADJUSTED for market realism:', validationWarnings);
     }
     
     // ============================================
