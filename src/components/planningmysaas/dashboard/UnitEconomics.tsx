@@ -29,7 +29,14 @@ const UnitEconomics = () => {
         <Card className="bg-card/50 border-border/50"><CardContent className="pt-6"><div className="text-center"><div className="text-2xl font-bold text-foreground">{monthlyChurn}</div><div className="text-sm text-muted-foreground">Monthly Churn Rate</div></div></CardContent></Card>
         <Card className="bg-card/50 border-border/50"><CardContent className="pt-6"><div className="text-center"><div className="text-2xl font-bold text-foreground">{grossMargin}</div><div className="text-sm text-muted-foreground">Gross Margin</div></div></CardContent></Card>
       </div>
-      <Card className="bg-card/50 border-border/50"><CardHeader><CardTitle className="text-lg">How It Works</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">{howItWorks}</p></CardContent></Card>
+      {/* How It Works - Educational Banner (same style as J-Curve expected) */}
+      <div className="flex items-start gap-3 text-sm text-amber-600/80 bg-amber-500/5 border border-amber-500/20 rounded-lg p-4">
+        <DollarSign className="h-5 w-5 mt-0.5 flex-shrink-0 text-amber-500" />
+        <div>
+          <strong className="text-amber-500">How It Works:</strong>{' '}
+          <span className="text-muted-foreground">{howItWorks}</span>
+        </div>
+      </div>
     </div>
   );
 };
