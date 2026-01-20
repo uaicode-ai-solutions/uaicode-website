@@ -686,17 +686,101 @@ export function extractMarketingBudgetFromText(text: string | null | undefined):
 // ============================================
 const VALIDATION_LIMITS = {
   ROI_MIN: -100,
-  ROI_MAX: 300, // Cap at 300% - very aggressive but achievable for top SaaS
-  ROI_WARNING_THRESHOLD: 250,
+  ROI_MAX: 150, // Cap at 150% - more realistic for Year 1 SaaS
+  ROI_WARNING_THRESHOLD: 100,
   BREAK_EVEN_MIN: 3,
   BREAK_EVEN_MAX: 48,
   LTV_CAC_MIN: 0.5,
-  LTV_CAC_MAX: 15,
-  PAYBACK_MIN: 1,
+  LTV_CAC_MAX: 12, // Reduced from 15 - exceptional SaaS rarely exceeds 10:1
+  PAYBACK_MIN: 2, // Minimum 2 months - more realistic for B2B SaaS
   PAYBACK_MAX: 36,
   ARPU_MIN: 5,
   ARPU_MAX: 10000,
 };
+
+/**
+ * Normalize churn rate to monthly percentage
+ * 
+ * PROBLEM: AI agents sometimes return annual churn (5-15%) as if it were monthly.
+ * A 5% monthly churn = 60% annual churn (unrealistic for B2B SaaS).
+ * A 5% annual churn = ~0.43% monthly churn (realistic for B2B SaaS).
+ * 
+ * HEURISTIC:
+ * - If churn > 15%, assume it's already monthly (high-churn consumer product)
+ * - If churn <= 15%, assume it's annual and convert to monthly
+ * 
+ * Annual to Monthly conversion: monthly = 1 - (1 - annual)^(1/12)
+ */
+export function normalizeChurnToMonthly(churnValue: number, assumeAnnualIfBelow: number = 15): {
+  monthlyChurn: number;
+  wasConverted: boolean;
+  originalInterpretation: 'monthly' | 'annual';
+} {
+  if (churnValue <= 0) {
+    return { monthlyChurn: 0, wasConverted: false, originalInterpretation: 'monthly' };
+  }
+  
+  // High churn values are likely already monthly (consumer apps, gaming, etc.)
+  if (churnValue > assumeAnnualIfBelow) {
+    return { 
+      monthlyChurn: churnValue, 
+      wasConverted: false, 
+      originalInterpretation: 'monthly' 
+    };
+  }
+  
+  // Low churn values are likely annual - convert to monthly
+  // Formula: monthly = (1 - (1 - annual/100)^(1/12)) * 100
+  const annualDecimal = churnValue / 100;
+  const monthlyDecimal = 1 - Math.pow(1 - annualDecimal, 1 / 12);
+  const monthlyChurn = Math.round(monthlyDecimal * 100 * 100) / 100; // 2 decimal places
+  
+  console.log(`[Financial] Churn ${churnValue}% interpreted as annual → ${monthlyChurn.toFixed(2)}% monthly`);
+  
+  return { 
+    monthlyChurn, 
+    wasConverted: true, 
+    originalInterpretation: 'annual' 
+  };
+}
+
+/**
+ * Interpolate MRR values using real data points from growth targets
+ * Instead of a generic S-curve, use the actual 6m, 12m, 24m targets
+ */
+export function interpolateMRRFromTargets(
+  month: number,
+  mrr6: number | null,
+  mrr12: number | null,
+  mrr24: number | null
+): number {
+  // If we have no data, return 0
+  if (!mrr12 && !mrr6 && !mrr24) return 0;
+  
+  // Use available data to interpolate
+  const m6 = mrr6 || (mrr12 ? mrr12 * 0.4 : 0); // Estimate 6m as 40% of 12m
+  const m12 = mrr12 || (mrr24 ? mrr24 * 0.35 : m6 * 2.5); // Estimate 12m as 35% of 24m
+  const m24 = mrr24 || m12 * 2.8; // Estimate 24m as 2.8x of 12m
+  
+  if (month <= 0) return 0;
+  
+  if (month <= 6) {
+    // Linear interpolation from 0 to m6
+    return m6 * (month / 6);
+  } else if (month <= 12) {
+    // Linear interpolation from m6 to m12
+    const progress = (month - 6) / 6;
+    return m6 + (m12 - m6) * progress;
+  } else if (month <= 24) {
+    // Linear interpolation from m12 to m24
+    const progress = (month - 12) / 12;
+    return m12 + (m24 - m12) * progress;
+  }
+  
+  // Beyond 24 months: assume 25% annual growth
+  const yearsAfter2 = (month - 24) / 12;
+  return m24 * Math.pow(1.25, yearsAfter2);
+}
 
 /**
  * Validate and clamp a financial metric within reasonable bounds
@@ -807,7 +891,10 @@ export function calculateRealisticBreakEven(
 
 /**
  * Calculate realistic Year 1 ROI including all costs
- * Uses S-curve growth model with conservative assumptions
+ * Uses interpolated growth from actual target data
+ * 
+ * CORRECTED: mrrTarget is the MRR at MONTH 12, not a constant monthly value.
+ * We calculate cumulative revenue by interpolating from 0 to mrrTarget over 12 months.
  * 
  * Formula: ROI = ((Total Revenue - Total Costs) / Total Costs) × 100
  */
@@ -815,22 +902,43 @@ export function calculateRealisticROI(
   mrrTarget: number,
   mvpInvestment: number,
   monthlyMarketingBudget: number,
-  operationalCostPercent: number = 0.02 // More realistic 2%
+  operationalCostPercent: number = 0.02, // More realistic 2%
+  mrr6: number | null = null, // Optional: actual 6-month target for better interpolation
+  marginPercent: number = 0.65 // Conservative 65% margin
 ): number {
-  // Calculate Year 1 revenue with realistic S-curve ramp-up (12 months to 63% maturity)
+  // Calculate Year 1 revenue using linear interpolation to mrrTarget
+  // mrrTarget is the MRR at month 12, NOT a constant value
   let totalRevenue = 0;
-  const rampMonths = 12;
+  
+  // Use real data if available, otherwise interpolate linearly to mrrTarget
+  const mrr6Actual = mrr6 || mrrTarget * 0.4; // Estimate 6m as 40% of target
   
   for (let month = 1; month <= 12; month++) {
-    const growthFactor = sCurveGrowth(month, rampMonths);
-    // Apply conservative margin of 65%
-    totalRevenue += mrrTarget * growthFactor * 0.65;
+    let monthMRR: number;
+    
+    if (month <= 6) {
+      // Linear interpolation from 0 to mrr6
+      monthMRR = mrr6Actual * (month / 6);
+    } else {
+      // Linear interpolation from mrr6 to mrrTarget
+      const progress = (month - 6) / 6;
+      monthMRR = mrr6Actual + (mrrTarget - mrr6Actual) * progress;
+    }
+    
+    // Apply margin to get net revenue
+    totalRevenue += monthMRR * marginPercent;
   }
   
-  // Total costs: MVP + 12 months of marketing + 12 months of operational
-  const annualMarketingCost = monthlyMarketingBudget * 12;
+  // Total costs: MVP + 12 months of marketing (with decay) + operational
+  let totalMarketingCost = 0;
+  for (let month = 1; month <= 12; month++) {
+    // Marketing spend is higher in first 6 months, then decays
+    const marketingMultiplier = month <= 6 ? 1.0 : 0.75;
+    totalMarketingCost += monthlyMarketingBudget * marketingMultiplier;
+  }
+  
   const annualOperationalCost = (mvpInvestment * operationalCostPercent) * 12;
-  const totalCosts = mvpInvestment + annualMarketingCost + annualOperationalCost;
+  const totalCosts = mvpInvestment + totalMarketingCost + annualOperationalCost;
   
   // ROI = (Revenue - Costs) / Costs × 100
   if (totalCosts <= 0) return 0;

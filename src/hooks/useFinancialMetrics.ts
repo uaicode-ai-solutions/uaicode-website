@@ -23,6 +23,8 @@ import {
   generateRealisticProjections,
   validateFinancialMetric,
   sanitizeNumericValue,
+  normalizeChurnToMonthly,
+  interpolateMRRFromTargets,
   MoneyRange,
   PercentageRange,
 } from "@/lib/financialParsingUtils";
@@ -248,35 +250,66 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       };
     }
     
-    // Churn - smart extraction with fallback (SaaS average ~5% monthly churn)
-    let churn6Months = smartExtractChurn(sixMonthTargets);
-    let churn12Months = smartExtractChurn(twelveMonthTargets);
-    let churn24Months = smartExtractChurn(twentyFourMonthTargets);
+    // Churn - smart extraction with NORMALIZATION (annual → monthly)
+    let churn6MonthsRaw = smartExtractChurn(sixMonthTargets);
+    let churn12MonthsRaw = smartExtractChurn(twelveMonthTargets);
+    let churn24MonthsRaw = smartExtractChurn(twentyFourMonthTargets);
     
-    // Track churn data source
-    if (churn12Months) {
+    // CRITICAL FIX: Normalize churn to monthly
+    // AI agents often return annual churn (5%) which we incorrectly used as monthly
+    let churn6Months: PercentageRange | null = null;
+    let churn12Months: PercentageRange | null = null;
+    let churn24Months: PercentageRange | null = null;
+    
+    if (churn12MonthsRaw) {
+      const normalized = normalizeChurnToMonthly(churn12MonthsRaw.avg);
+      churn12Months = {
+        min: normalized.monthlyChurn * 0.7,
+        max: normalized.monthlyChurn * 1.3,
+        avg: normalized.monthlyChurn,
+      };
       dataSources.churn12 = 'database';
-      debugLogger.logExtraction('churn12Months', 'growth_targets.12_month.churn', twelveMonthTargets, churn12Months, true);
+      debugLogger.logExtraction('churn12Months', 'growth_targets.12_month.churn', 
+        `${churn12MonthsRaw.avg}% (${normalized.originalInterpretation}) → ${normalized.monthlyChurn}% monthly`, 
+        churn12Months, true);
     }
     
-    // Fallback: use SaaS industry average if not available
-    const SAAS_AVG_CHURN = { min: 3, max: 7, avg: 5 };
+    if (churn6MonthsRaw) {
+      const normalized = normalizeChurnToMonthly(churn6MonthsRaw.avg);
+      churn6Months = {
+        min: normalized.monthlyChurn * 0.7,
+        max: normalized.monthlyChurn * 1.3,
+        avg: normalized.monthlyChurn,
+      };
+    }
+    
+    if (churn24MonthsRaw) {
+      const normalized = normalizeChurnToMonthly(churn24MonthsRaw.avg);
+      churn24Months = {
+        min: normalized.monthlyChurn * 0.7,
+        max: normalized.monthlyChurn * 1.3,
+        avg: normalized.monthlyChurn,
+      };
+    }
+    
+    // Fallback: use SaaS industry average if not available (0.4% monthly = ~5% annual)
+    const SAAS_AVG_CHURN_MONTHLY = { min: 0.3, max: 0.6, avg: 0.42 };
     if (!churn12Months) {
-      churn12Months = SAAS_AVG_CHURN;
+      churn12Months = SAAS_AVG_CHURN_MONTHLY;
       dataSources.churn12 = 'estimated';
       debugLogger.logFallback({
         field: 'churn12Months',
         attemptedSource: 'growth_targets.12_month.churn',
         reason: 'smartExtractChurn returned null',
-        fallbackUsed: 'SaaS industry average (5% monthly)',
-        finalValue: SAAS_AVG_CHURN,
+        fallbackUsed: 'SaaS industry average (0.42% monthly = 5% annual)',
+        finalValue: SAAS_AVG_CHURN_MONTHLY,
       });
     }
     if (!churn6Months) {
-      churn6Months = SAAS_AVG_CHURN;
+      churn6Months = SAAS_AVG_CHURN_MONTHLY;
     }
     if (!churn24Months) {
-      churn24Months = { min: 2, max: 5, avg: 3.5 }; // Slightly lower for mature product
+      churn24Months = { min: 0.2, max: 0.4, avg: 0.3 }; // Slightly lower for mature product
     }
     
     // ============================================
@@ -374,6 +407,21 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     }
     
     // ============================================
+    // Extract margin and operational cost from report (more realistic values)
+    // MOVED UP: needed for payback calculation
+    // ============================================
+    const marginFromReport = safeGet(growthIntelligence, 'profit_margin', null) as string | null;
+    let marginPercent = 0.65; // 65% default (more conservative than 70%)
+    if (marginFromReport) {
+      const marginMatch = marginFromReport.match(/(\d+)/);
+      if (marginMatch) marginPercent = parseInt(marginMatch[1], 10) / 100;
+    }
+    
+    // Operational cost based on MVP size
+    const mvpPriceCents = safeGet(sectionInvestment, 'mvp_price_cents', 0) as number;
+    const operationalCostPercent = mvpPriceCents > 5000000 ? 0.03 : 0.02; // 2-3%
+    
+    // ============================================
     // Calculate Derived Metrics
     // ============================================
     
@@ -407,39 +455,65 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         debugLogger.logExtraction('paybackPeriod', 'section_investment.payback_period', paybackFromInvestment, paybackPeriod, true);
       }
     }
-    // Fallback: calculate from CAC / ARPU
+    // Fallback: calculate from CAC / ARPU with margin consideration
     if (!paybackPeriod && targetCac && idealTicket && idealTicket > 0) {
-      paybackPeriod = Math.round(targetCac.avg / idealTicket);
+      // Consider margin in payback calculation
+      const netMonthlyRevenue = idealTicket * marginPercent;
+      const calculatedPayback = Math.round(targetCac.avg / netMonthlyRevenue);
+      
+      // Validate minimum payback (B2B SaaS rarely has < 2 month payback)
+      const MIN_PAYBACK_MONTHS = 2;
+      paybackPeriod = Math.max(calculatedPayback, MIN_PAYBACK_MONTHS);
+      
+      if (calculatedPayback < MIN_PAYBACK_MONTHS) {
+        console.warn(`[Financial] Payback ${calculatedPayback} months seems too low - setting to ${MIN_PAYBACK_MONTHS}`);
+      }
+      
       dataSources.paybackPeriod = 'calculated';
       debugLogger.logFallback({
         field: 'paybackPeriod',
         attemptedSource: 'section_investment.payback_period',
         reason: 'No payback period in database',
-        fallbackUsed: 'Calculated from CAC / ARPU',
+        fallbackUsed: `Calculated from CAC / (ARPU × margin) = $${targetCac.avg} / ($${idealTicket} × ${marginPercent}) = ${paybackPeriod} months`,
         finalValue: paybackPeriod,
       });
     }
     
-    // LTV/CAC Calculated: LTV / CAC average (the real calculated value)
+    // ============================================
+    // LTV/CAC Ratio: PRIORITIZE database target over calculated
+    // ============================================
     let ltvCacCalculated: number | null = null;
-    if (ltv && targetCac && targetCac.avg > 0) {
-      ltvCacCalculated = Math.round((ltv / targetCac.avg) * 10) / 10; // 1 decimal place
+    
+    // First check if we have a target from the database (this is the trusted value)
+    if (ltvCacRatioNum && ltvCacRatioNum > 0) {
+      ltvCacCalculated = ltvCacRatioNum;
+      dataSources.ltvCacCalculated = 'database';
+      debugLogger.logExtraction('ltvCacCalculated', 'performance_targets.ltv_cac_ratio_target', ltvCacRatioNum, ltvCacCalculated, true);
+    } 
+    // Fallback: calculate from LTV / CAC
+    else if (ltv && targetCac && targetCac.avg > 0) {
+      const calculated = Math.round((ltv / targetCac.avg) * 10) / 10; // 1 decimal place
+      
+      // Validate: cap at 12:1 (exceptional for SaaS)
+      const MAX_LTV_CAC = 12;
+      if (calculated > MAX_LTV_CAC) {
+        console.warn(`[Financial] LTV/CAC ${calculated}:1 seems high - capping at ${MAX_LTV_CAC}:1`);
+        ltvCacCalculated = MAX_LTV_CAC;
+      } else {
+        ltvCacCalculated = calculated;
+      }
+      
       dataSources.ltvCacCalculated = 'calculated';
+      debugLogger.logFallback({
+        field: 'ltvCacCalculated',
+        attemptedSource: 'performance_targets.ltv_cac_ratio_target',
+        reason: 'No LTV/CAC target in database',
+        fallbackUsed: `Calculated from LTV / CAC = $${ltv} / $${targetCac.avg} = ${ltvCacCalculated}:1`,
+        finalValue: ltvCacCalculated,
+      });
     }
     
-    // ============================================
-    // Extract margin and operational cost from report (more realistic values)
-    // ============================================
-    const marginFromReport = safeGet(growthIntelligence, 'profit_margin', null) as string | null;
-    let marginPercent = 0.65; // 65% default (more conservative than 70%)
-    if (marginFromReport) {
-      const marginMatch = marginFromReport.match(/(\d+)/);
-      if (marginMatch) marginPercent = parseInt(marginMatch[1], 10) / 100;
-    }
-    
-    // Operational cost based on MVP size
-    const mvpPriceCents = safeGet(sectionInvestment, 'mvp_price_cents', 0) as number;
-    const operationalCostPercent = mvpPriceCents > 5000000 ? 0.03 : 0.02; // 2-3%
+    // (marginPercent and operationalCostPercent already defined above)
     
     // ============================================
     // REALISTIC Break-even Calculation
@@ -458,7 +532,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     
     // ============================================
     // REALISTIC ROI Year 1 Calculation
-    // ALWAYS calculate locally - database value is unreliable (often NULL)
+    // Uses interpolation with real MRR targets instead of generic S-curve
     // ============================================
     let roiYear1Num: number | null = null;
     if (mrr12Months && mvpInvestment && mvpInvestment > 0) {
@@ -466,7 +540,9 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         mrr12Months.avg,
         mvpInvestment,
         effectiveMarketingBudget,
-        operationalCostPercent
+        operationalCostPercent,
+        mrr6Months?.avg || null, // Pass 6-month target for better interpolation
+        marginPercent
       );
     }
     
