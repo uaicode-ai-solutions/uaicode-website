@@ -10,6 +10,12 @@ import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 import { DataSourceBadge, DataSourceType } from "@/components/planningmysaas/dashboard/ui/DataSourceBadge";
 import { BenchmarkSourceBadge } from "@/components/planningmysaas/dashboard/ui/BenchmarkSourceBadge";
 import { useBenchmarks } from "@/hooks/useBenchmarks";
+import InvestmentHighlights from "@/components/planningmysaas/dashboard/InvestmentHighlights";
+import {
+  getROIBenchmarkBadge,
+  getBreakEvenBenchmarkBadge,
+  getROIStatus,
+} from "@/lib/financialDisplayUtils";
 import {
   AreaChart,
   Area,
@@ -67,6 +73,31 @@ const FinancialReturnSection = () => {
   const isROINegative = metrics.roiYear1Num !== null && metrics.roiYear1Num < -50;
   const isBreakEvenExtended = metrics.breakEvenMonthsNum !== null && metrics.breakEvenMonthsNum > 24;
 
+  // Get dynamic benchmark badges
+  const roiBenchmark = getROIBenchmarkBadge(metrics.roiYear1Num, marketType);
+  const breakEvenBenchmark = getBreakEvenBenchmarkBadge(metrics.breakEvenMonthsNum, marketType);
+  const roiStatus = getROIStatus(metrics.roiYear1Num, marketType);
+  
+  // Calculate 3-year growth percentage for highlights
+  const arrYear1 = metrics.arr12Months?.avg || metrics.arrProjectedNum || null;
+  const arrYear3 = metrics.arr24Months ? metrics.arr24Months.avg * 1.5 : (arrYear1 ? arrYear1 * 2.54 : null);
+  const growthPercent = arrYear1 && arrYear3 ? ((arrYear3 - arrYear1) / arrYear1) * 100 : null;
+  
+  // Get market size from opportunity section
+  const opportunitySection = reportData?.opportunity_section as Record<string, unknown> | null;
+  const marketSizeRaw = opportunitySection?.tam_value as string | null;
+  const marketSize = marketSizeRaw ? formatMarketSize(marketSizeRaw) : null;
+  
+  // Helper to format market size
+  function formatMarketSize(value: string): string {
+    // Extract just the number part, preferring the max if range
+    const match = value.match(/\$[\d.]+[BMK]?/g);
+    if (match && match.length > 0) {
+      return match[match.length - 1]; // Return the last (max) value
+    }
+    return value;
+  }
+
   const keyMetrics: {
     icon: typeof Clock;
     label: string;
@@ -77,28 +108,31 @@ const FinancialReturnSection = () => {
     tooltip: string;
     warning: boolean;
     dataSource: DataSourceType;
+    benchmarkBadge?: { label: string; variant: 'success' | 'warning' | 'default' | 'attention'; tooltip: string };
   }[] = [
     {
       icon: Clock,
-      label: "Break-even",
+      label: "Path to Profitability",
       value: breakEvenLoading ? undefined : (breakEvenValue || metrics.breakEvenMonths),
       isLoading: breakEvenLoading,
-      sublabel: isBreakEvenExtended ? "Extended runway needed" : "Until investment payoff",
+      sublabel: breakEvenBenchmark.label,
       highlight: true,
       tooltip: "The month when your cumulative revenue exceeds your total investment and operational costs.",
       warning: isBreakEvenExtended,
       dataSource: metrics.dataSources.breakEven,
+      benchmarkBadge: breakEvenBenchmark,
     },
     {
       icon: TrendingUp,
       label: "Year 1 ROI",
       value: roiLoading ? undefined : (roiValue || metrics.roiYear1),
       isLoading: roiLoading,
-      sublabel: isROIVeryHigh ? "High estimate - verify assumptions" : isROINegative ? "Negative - longer runway needed" : "Return on investment",
+      sublabel: roiBenchmark.label,
       highlight: false,
       tooltip: "Return on Investment - The projected percentage gain on your investment in the first year.",
-      warning: isROIVeryHigh || isROINegative,
+      warning: isROIVeryHigh,
       dataSource: metrics.dataSources.roiYear1,
+      benchmarkBadge: roiBenchmark,
     },
     {
       icon: DollarSign,
@@ -167,6 +201,19 @@ const FinancialReturnSection = () => {
         </div>
       )}
 
+      {/* Investment Highlights - Dynamic Component */}
+      <InvestmentHighlights
+        ltvCacRatio={metrics.ltvCacCalculated}
+        paybackMonths={metrics.paybackPeriod}
+        marketSize={marketSize}
+        growthPercent={growthPercent}
+        arrYear1={arrYear1}
+        arrYear3={arrYear3}
+        breakEvenMonths={metrics.breakEvenMonthsNum}
+        roiYear1={metrics.roiYear1Num}
+        marketType={marketType}
+      />
+
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {keyMetrics.map((metric, index) => (
@@ -190,7 +237,23 @@ const FinancialReturnSection = () => {
               <div className={`text-2xl font-bold ${metric.warning ? 'text-amber-500' : 'text-gradient-gold'}`}>
                 {metric.isLoading ? <InlineValueSkeleton size="lg" /> : metric.value}
               </div>
-              <p className={`text-xs mt-0.5 ${metric.warning ? 'text-amber-500/80' : 'text-muted-foreground'}`}>{metric.sublabel}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className={`text-xs ${metric.warning ? 'text-amber-500/80' : 'text-muted-foreground'}`}>{metric.sublabel}</p>
+                {metric.benchmarkBadge && (
+                  <Badge 
+                    className={`text-[9px] px-1.5 py-0 ${
+                      metric.benchmarkBadge.variant === 'success' 
+                        ? 'bg-green-500/10 text-green-500 border-green-500/30' 
+                        : metric.benchmarkBadge.variant === 'warning'
+                          ? 'bg-amber-500/10 text-amber-500 border-amber-500/30'
+                          : 'bg-muted/20 text-muted-foreground border-border/30'
+                    }`}
+                    title={metric.benchmarkBadge.tooltip}
+                  >
+                    {metric.benchmarkBadge.variant === 'success' ? '✓' : ''}
+                  </Badge>
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -369,56 +432,60 @@ const FinancialReturnSection = () => {
                 </div>
               </div>
               
-              {/* Description */}
+              {/* Description - Adaptive based on ROI value */}
               <div className="text-center mt-4">
                 {metrics.roiYear1Num !== null ? (
-                  <p className="text-sm text-foreground">
-                    <span className="font-medium">$1 invested</span>
-                    <span className="mx-2 text-muted-foreground">→</span>
-                    <span className="font-bold text-gradient-gold">${(1 + (metrics.roiYear1Num || 0) / 100).toFixed(2)} return</span>
-                  </p>
+                  metrics.roiYear1Num >= 0 ? (
+                    // Positive ROI - show return calculation
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">$1 invested</span>
+                      <span className="mx-2 text-muted-foreground">→</span>
+                      <span className="font-bold text-gradient-gold">${(1 + (metrics.roiYear1Num || 0) / 100).toFixed(2)} return</span>
+                    </p>
+                  ) : (
+                    // Negative ROI - show investment phase message
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">{roiStatus.label}</span>
+                    </p>
+                  )
                 ) : (
                   <p className="text-sm text-muted-foreground">ROI calculation pending</p>
                 )}
-                <p className="text-xs text-muted-foreground">12 months</p>
+                <p className="text-xs text-muted-foreground">
+                  {metrics.roiYear1Num !== null && metrics.roiYear1Num < 0 
+                    ? 'Focus: Customer Acquisition'
+                    : '12 months'}
+                </p>
               </div>
               
-              {/* ROI Status */}
+              {/* ROI Status - Using dynamic status */}
               <div className="mt-4 pt-4 border-t border-border/30">
                 <div className="flex items-center justify-between text-xs mb-2">
                   <span className="text-muted-foreground">
-                    {metrics.roiYear1Num !== null && metrics.roiYear1Num > 0 
-                      ? 'Positive ROI projected'
-                      : metrics.roiYear1Num !== null && metrics.roiYear1Num < 0
-                        ? 'Negative ROI - longer runway needed'
-                        : 'Calculating...'}
+                    {roiBenchmark.label}
                   </span>
-                  <Badge className={`text-[10px] ${
-                    metrics.roiYear1Num !== null && metrics.roiYear1Num > 50 
-                      ? 'bg-amber-500/10 text-amber-500 border-amber-500/30'
-                      : metrics.roiYear1Num !== null && metrics.roiYear1Num > 0
-                        ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30'
-                        : 'bg-red-500/10 text-red-500 border-red-500/30'
-                  }`}>
-                    {metrics.roiYear1Num !== null 
-                      ? (metrics.roiYear1Num > 50 ? 'Strong' : metrics.roiYear1Num > 0 ? 'Moderate' : 'Needs runway')
-                      : 'Pending'
-                    }
+                  <Badge 
+                    className={`text-[10px] ${roiStatus.bgColor} ${roiStatus.textColor} ${roiStatus.borderColor}`}
+                    title={roiBenchmark.tooltip}
+                  >
+                    {roiStatus.label}
                   </Badge>
                 </div>
                 {/* Progress bar - scale to max 200% for display */}
                 <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
                   <div 
                     className={`h-full rounded-full ${
-                      metrics.roiYear1Num !== null && metrics.roiYear1Num > 0 
-                        ? 'bg-gradient-to-r from-amber-500 to-amber-300'
-                        : 'bg-red-400/60'
+                      roiStatus.status === 'strong'
+                        ? 'bg-gradient-to-r from-green-500 to-green-300'
+                        : 'bg-gradient-to-r from-amber-500 to-amber-300'
                     }`}
                     style={{ width: `${Math.min(100, Math.max(5, Math.abs(metrics.roiYear1Num || 0) / 2))}%` }}
                   />
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-1">
-                  Includes MVP, marketing &amp; operational costs
+                  {metrics.roiYear1Num !== null && metrics.roiYear1Num < 0 
+                    ? 'Most SaaS businesses invest heavily in Year 1 for growth'
+                    : 'Includes MVP, marketing & operational costs'}
                 </p>
               </div>
             </CardContent>
