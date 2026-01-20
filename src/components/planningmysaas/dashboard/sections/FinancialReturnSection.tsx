@@ -11,6 +11,7 @@ import { DataSourceBadge, DataSourceType } from "@/components/planningmysaas/das
 import { BenchmarkSourceBadge } from "@/components/planningmysaas/dashboard/ui/BenchmarkSourceBadge";
 import { useBenchmarks } from "@/hooks/useBenchmarks";
 import InvestmentHighlights from "@/components/planningmysaas/dashboard/InvestmentHighlights";
+import { JCurveChart } from "@/components/planningmysaas/dashboard/JCurveChart";
 import {
   getROIBenchmarkBadge,
   getBreakEvenBenchmarkBadge,
@@ -356,7 +357,13 @@ const FinancialReturnSection = () => {
         </CardContent>
       </Card>
 
-      {/* Projection Scenarios - Horizontal Row */}
+      {/* J-Curve Investment Trajectory */}
+      <JCurveChart
+        mvpInvestment={metrics.mvpInvestment}
+        breakEvenMonths={metrics.breakEvenMonthsNum}
+        mrrMonth12={metrics.mrrMonth12Num}
+        marketingBudget={metrics.marketingBudgetMonthly}
+      />
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="p-1.5 rounded-lg bg-accent/10">
