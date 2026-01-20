@@ -69,8 +69,8 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
     formatter: (v) => formatMarketValue(String(v)),
   });
   
-  // ROI and Payback from useFinancialMetrics (same source as FinancialReturnSection)
-  const expectedROI = financialMetrics.roiYear1 || "...";
+  // LTV/CAC and Payback from useFinancialMetrics (same source as FinancialReturnSection)
+  const ltvCacRatio = financialMetrics.ltvCacRatio || "...";
   const paybackPeriod = financialMetrics.paybackPeriod 
     ? `${financialMetrics.paybackPeriod} mo` 
     : (financialMetrics.unitEconomics?.paybackPeriod || "...");
@@ -94,11 +94,11 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
     },
     { 
       icon: DollarSign, 
-      value: expectedROI, 
+      value: ltvCacRatio, 
       isLoading: false,
-      label: "Expected ROI",
-      sublabel: "Year 1",
-      tooltip: "Return on Investment - The projected percentage gain on your investment in the first year. Source: AI analysis based on projected revenue vs. total investment."
+      label: "LTV/CAC Ratio",
+      sublabel: "Unit Economics",
+      tooltip: "Lifetime Value to Customer Acquisition Cost ratio. A ratio above 3x indicates a healthy, sustainable business model. Source: AI unit economics analysis."
     },
     { 
       icon: Clock, 
