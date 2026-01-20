@@ -332,6 +332,8 @@ export interface ReportData {
   growth_intelligence_section: unknown | null;
   hero_score_section: unknown | null;
   summary_section: unknown | null;
+  // Market benchmarks from n8n research pipeline
+  benchmark_section: unknown | null;
   // Generated avatar URL
   icp_avatar_url: string | null;
 }
