@@ -70,10 +70,16 @@ const FinancialReturnSection = () => {
   const marketingEfficiency = calculateMarketingEfficiency(effectiveMarketingBudget, baselineMarketingBudget);
   const efficiencyBoostPercent = Math.round((marketingEfficiency - 1) * 100);
   
+  // Calculate total investment including first year marketing
+  const marketingYear1 = effectiveMarketingBudget * 12;
+  const totalInvestment = mvpInvestment + marketingYear1;
+  
   // Debug log to verify calculation flow
   console.log('[FinancialReturnSection] Calculated values:', {
     baselineMarketingBudget,
     effectiveMarketingBudget,
+    marketingYear1,
+    totalInvestment,
     marketingEfficiency,
     efficiencyBoostPercent,
     uaicodeTotal: marketingTotals.uaicodeTotal,
@@ -305,13 +311,18 @@ const FinancialReturnSection = () => {
                 <div className="flex items-center gap-1">
                   <span className="text-muted-foreground">Total Investment</span>
                   <InfoTooltip side="top" size="sm">
-                    Combined cost of MVP development and first-year marketing budget required to launch and grow the product.
+                    Combined cost of MVP development ({formatCurrency(mvpInvestment)}) plus first-year marketing budget ({formatCurrency(marketingYear1)}) required to launch and grow the product.
                   </InfoTooltip>
                 </div>
                 <Badge variant="outline" className="bg-accent/10 border-accent/30 text-accent">
-                  {formatCurrency(mvpInvestment)}
+                  {formatCurrency(totalInvestment)}
                 </Badge>
               </div>
+              {marketingYear1 > 0 && (
+                <div className="text-[10px] text-muted-foreground/70 text-right mt-1">
+                  MVP {formatCurrency(mvpInvestment)} + Marketing {formatCurrency(marketingYear1)}/yr
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
