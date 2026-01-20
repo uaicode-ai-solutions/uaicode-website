@@ -7,6 +7,7 @@ import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
 import { formatCurrency } from "@/lib/financialParsingUtils";
 import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
 import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
+import { DataSourceBadge, DataSourceType } from "@/components/planningmysaas/dashboard/ui/DataSourceBadge";
 import {
   AreaChart,
   Area,
@@ -57,46 +58,60 @@ const FinancialReturnSection = () => {
   const isROINegative = metrics.roiYear1Num !== null && metrics.roiYear1Num < -50;
   const isBreakEvenExtended = metrics.breakEvenMonthsNum !== null && metrics.breakEvenMonthsNum > 24;
 
-  const keyMetrics = [
+  const keyMetrics: {
+    icon: typeof Clock;
+    label: string;
+    value: string | undefined;
+    isLoading: boolean;
+    sublabel: string;
+    highlight: boolean;
+    tooltip: string;
+    warning: boolean;
+    dataSource: DataSourceType;
+  }[] = [
     {
       icon: Clock,
       label: "Break-even",
-      value: breakEvenLoading ? null : (breakEvenValue || metrics.breakEvenMonths),
+      value: breakEvenLoading ? undefined : (breakEvenValue || metrics.breakEvenMonths),
       isLoading: breakEvenLoading,
       sublabel: isBreakEvenExtended ? "Extended runway needed" : "Until investment payoff",
       highlight: true,
       tooltip: "The month when your cumulative revenue exceeds your total investment and operational costs.",
-      warning: isBreakEvenExtended
+      warning: isBreakEvenExtended,
+      dataSource: metrics.dataSources.breakEven,
     },
     {
       icon: TrendingUp,
       label: "Year 1 ROI",
-      value: roiLoading ? null : (roiValue || metrics.roiYear1),
+      value: roiLoading ? undefined : (roiValue || metrics.roiYear1),
       isLoading: roiLoading,
       sublabel: isROIVeryHigh ? "High estimate - verify assumptions" : isROINegative ? "Negative - longer runway needed" : "Return on investment",
       highlight: false,
       tooltip: "Return on Investment - The projected percentage gain on your investment in the first year.",
-      warning: isROIVeryHigh || isROINegative
+      warning: isROIVeryHigh || isROINegative,
+      dataSource: metrics.dataSources.roiYear1,
     },
     {
       icon: DollarSign,
       label: "Month 12 MRR",
-      value: mrrLoading ? null : (mrrValue || metrics.mrrMonth12),
+      value: mrrLoading ? undefined : (mrrValue || metrics.mrrMonth12),
       isLoading: mrrLoading,
       sublabel: "Monthly recurring revenue",
       highlight: false,
       tooltip: "Monthly Recurring Revenue - The predictable monthly revenue from subscriptions at month 12.",
-      warning: false
+      warning: false,
+      dataSource: metrics.dataSources.mrrMonth12,
     },
     {
       icon: Target,
       label: "Projected ARR",
-      value: arrLoading ? null : (arrValue || metrics.arrProjected),
+      value: arrLoading ? undefined : (arrValue || metrics.arrProjected),
       isLoading: arrLoading,
       sublabel: "Annual recurring revenue",
       highlight: false,
       tooltip: "Annual Recurring Revenue - The yearly value of your recurring subscriptions (MRR × 12).",
-      warning: false
+      warning: false,
+      dataSource: metrics.dataSources.arrProjected,
     },
   ];
 
@@ -126,14 +141,17 @@ const FinancialReturnSection = () => {
             className={`bg-card/50 border-border/30 transition-all duration-300 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/5 ${metric.highlight ? 'ring-1 ring-accent/30' : ''} ${metric.warning ? 'ring-1 ring-amber-500/30' : ''}`}
           >
             <CardContent className="p-4">
-              <div className="flex items-center gap-1.5 mb-2">
-                <div className={`p-1.5 rounded-lg ${metric.warning ? 'bg-amber-500/20' : metric.highlight ? 'bg-accent/20' : 'bg-muted/30'}`}>
-                  <metric.icon className={`h-3.5 w-3.5 ${metric.warning ? 'text-amber-500' : metric.highlight ? 'text-accent' : 'text-muted-foreground'}`} />
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <div className={`p-1.5 rounded-lg ${metric.warning ? 'bg-amber-500/20' : metric.highlight ? 'bg-accent/20' : 'bg-muted/30'}`}>
+                    <metric.icon className={`h-3.5 w-3.5 ${metric.warning ? 'text-amber-500' : metric.highlight ? 'text-accent' : 'text-muted-foreground'}`} />
+                  </div>
+                  <span className="text-xs text-muted-foreground">{metric.label}</span>
+                  <InfoTooltip side="top" size="sm">
+                    {metric.tooltip}
+                  </InfoTooltip>
                 </div>
-                <span className="text-xs text-muted-foreground">{metric.label}</span>
-                <InfoTooltip side="top" size="sm">
-                  {metric.tooltip}
-                </InfoTooltip>
+                <DataSourceBadge source={metric.dataSource} size="xs" />
               </div>
               <div className={`text-2xl font-bold ${metric.warning ? 'text-amber-500' : 'text-gradient-gold'}`}>
                 {metric.isLoading ? <InlineValueSkeleton size="lg" /> : metric.value}
