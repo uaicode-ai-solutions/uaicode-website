@@ -26,6 +26,8 @@ import {
   MoneyRange,
   PercentageRange,
 } from "@/lib/financialParsingUtils";
+import { debugLogger } from "@/lib/debugLogger";
+import { DataSourceType, DataSources, defaultDataSources } from "@/components/planningmysaas/dashboard/ui/DataSourceBadge";
 
 // ============================================
 // Types
@@ -83,6 +85,9 @@ export interface FinancialMetrics {
   
   // Unit Economics display
   unitEconomics: UnitEconomicsDisplay | null;
+  
+  // Data source tracking (NEW)
+  dataSources: DataSources;
 }
 
 export interface ProjectionDataPoint {
@@ -125,6 +130,12 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
   return useMemo(() => {
     const fallback = "...";
     
+    // Clear previous logs when processing new report
+    debugLogger.clearLogs();
+    
+    // Initialize data sources tracker
+    const dataSources: DataSources = { ...defaultDataSources };
+    
     // Extract JSONB sections
     const growthIntelligence = reportData?.growth_intelligence_section as Record<string, unknown> | null;
     const paidMediaIntelligence = reportData?.paid_media_intelligence_section as Record<string, unknown> | null;
@@ -146,9 +157,29 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const mrr12Months = smartExtractMRR(twelveMonthTargets);
     const mrr24Months = smartExtractMRR(twentyFourMonthTargets);
     
+    // Track MRR data source
+    if (mrr12Months) {
+      dataSources.mrrMonth12 = 'database';
+      debugLogger.logExtraction('mrr12Months', 'growth_targets.12_month', twelveMonthTargets, mrr12Months, true);
+    } else {
+      debugLogger.logFallback({
+        field: 'mrr12Months',
+        attemptedSource: 'growth_targets.12_month',
+        reason: 'smartExtractMRR returned null',
+        fallbackUsed: 'none (will show "...")',
+        finalValue: null,
+      });
+    }
+    
     // ARR values - smart extraction handles both text and object formats
     let arr12Months = smartExtractARR(twelveMonthTargets);
     let arr24Months = smartExtractARR(twentyFourMonthTargets);
+    
+    // Track ARR data source
+    if (arr12Months) {
+      dataSources.arrProjected = 'database';
+      debugLogger.logExtraction('arr12Months', 'growth_targets.12_month.arr', twelveMonthTargets, arr12Months, true);
+    }
     
     // If ARR not available, calculate from MRR × 12
     if (!arr12Months && mrr12Months) {
@@ -157,6 +188,14 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         max: mrr12Months.max * 12,
         avg: mrr12Months.avg * 12,
       };
+      dataSources.arrProjected = 'calculated';
+      debugLogger.logFallback({
+        field: 'arr12Months',
+        attemptedSource: 'growth_targets.12_month.arr',
+        reason: 'smartExtractARR returned null',
+        fallbackUsed: 'Calculated from MRR × 12',
+        finalValue: arr12Months,
+      });
     }
     if (!arr24Months && mrr24Months) {
       arr24Months = {
@@ -171,6 +210,12 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     let customers12Months = smartExtractCustomers(twelveMonthTargets);
     let customers24Months = smartExtractCustomers(twentyFourMonthTargets);
     
+    // Track customers data source
+    if (customers12Months) {
+      dataSources.customers12 = 'database';
+      debugLogger.logExtraction('customers12Months', 'growth_targets.12_month.customers', twelveMonthTargets, customers12Months, true);
+    }
+    
     // Fallback: estimate customers from MRR if not available (assume $150 avg ticket for SaaS B2B)
     const ESTIMATED_TICKET = 150;
     if (!customers12Months && mrr12Months && mrr12Months.avg > 0) {
@@ -179,6 +224,14 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
         max: Math.round(mrr12Months.max / ESTIMATED_TICKET),
         avg: Math.round(mrr12Months.avg / ESTIMATED_TICKET),
       };
+      dataSources.customers12 = 'estimated';
+      debugLogger.logFallback({
+        field: 'customers12Months',
+        attemptedSource: 'growth_targets.12_month.customers',
+        reason: 'smartExtractCustomers returned null',
+        fallbackUsed: `Estimated from MRR / $${ESTIMATED_TICKET} avg ticket`,
+        finalValue: customers12Months,
+      });
     }
     if (!customers6Months && mrr6Months && mrr6Months.avg > 0) {
       customers6Months = {
@@ -200,10 +253,24 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     let churn12Months = smartExtractChurn(twelveMonthTargets);
     let churn24Months = smartExtractChurn(twentyFourMonthTargets);
     
+    // Track churn data source
+    if (churn12Months) {
+      dataSources.churn12 = 'database';
+      debugLogger.logExtraction('churn12Months', 'growth_targets.12_month.churn', twelveMonthTargets, churn12Months, true);
+    }
+    
     // Fallback: use SaaS industry average if not available
     const SAAS_AVG_CHURN = { min: 3, max: 7, avg: 5 };
     if (!churn12Months) {
       churn12Months = SAAS_AVG_CHURN;
+      dataSources.churn12 = 'estimated';
+      debugLogger.logFallback({
+        field: 'churn12Months',
+        attemptedSource: 'growth_targets.12_month.churn',
+        reason: 'smartExtractChurn returned null',
+        fallbackUsed: 'SaaS industry average (5% monthly)',
+        finalValue: SAAS_AVG_CHURN,
+      });
     }
     if (!churn6Months) {
       churn6Months = SAAS_AVG_CHURN;
@@ -255,19 +322,56 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     const marketingBudgetStr = safeGet(budgetStrategy, 'recommended_marketing_budget_monthly', null) as string | null;
     let marketingBudgetMonthly = parseMoneyValue(marketingBudgetStr);
     
+    // Track marketing budget data source
+    if (marketingBudgetMonthly) {
+      dataSources.marketingBudget = 'database';
+      debugLogger.logExtraction('marketingBudgetMonthly', 'budget_strategy.recommended_marketing_budget_monthly', marketingBudgetStr, marketingBudgetMonthly, true);
+    }
+    
     // If not found, try text extraction from various fields
     if (!marketingBudgetMonthly) {
       const budgetText = JSON.stringify(budgetStrategy || {});
       marketingBudgetMonthly = extractMarketingBudgetFromText(budgetText);
+      if (marketingBudgetMonthly) {
+        dataSources.marketingBudget = 'database';
+      }
     }
     
     // Default marketing budget if none found (estimate 8-10% of MRR target)
     if (!marketingBudgetMonthly && mrr12Months) {
       marketingBudgetMonthly = Math.round(mrr12Months.avg * 0.10);
+      dataSources.marketingBudget = 'estimated';
+      debugLogger.logFallback({
+        field: 'marketingBudgetMonthly',
+        attemptedSource: 'budget_strategy.recommended_marketing_budget_monthly',
+        reason: 'parseMoneyValue returned null',
+        fallbackUsed: '10% of target MRR',
+        finalValue: marketingBudgetMonthly,
+      });
     }
     
     // Fallback to reasonable default
     const effectiveMarketingBudget = marketingBudgetMonthly || 5000;
+    
+    // Track target CAC data source
+    if (targetCac) {
+      dataSources.targetCac = 'database';
+      debugLogger.logExtraction('targetCac', 'performance_targets.target_cac', targetCacRaw, targetCac, true);
+    } else {
+      debugLogger.logFallback({
+        field: 'targetCac',
+        attemptedSource: 'performance_targets.target_cac',
+        reason: 'No CAC data found',
+        fallbackUsed: 'none (will show "...")',
+        finalValue: null,
+      });
+    }
+    
+    // Track LTV/CAC ratio data source
+    if (ltvCacRatioNum) {
+      dataSources.ltvCacRatio = 'database';
+      debugLogger.logExtraction('ltvCacRatioNum', 'performance_targets.ltv_cac_ratio_target', ltvCacRatioRaw, ltvCacRatioNum, true);
+    }
     
     // ============================================
     // Calculate Derived Metrics
@@ -277,6 +381,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
     let idealTicket: number | null = null;
     if (mrr12Months && customers12Months && customers12Months.avg > 0) {
       idealTicket = Math.round(mrr12Months.avg / customers12Months.avg);
+      dataSources.idealTicket = 'calculated';
     }
     
     // LTV calculation: ARPU × (1 / churn rate)
@@ -285,6 +390,7 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       const monthlyChurnDecimal = churn12Months.avg / 100;
       const avgLifetimeMonths = 1 / monthlyChurnDecimal;
       ltv = Math.round(idealTicket * avgLifetimeMonths);
+      dataSources.ltv = 'calculated';
     }
     
     // ============================================
@@ -296,16 +402,29 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       // Extract number from strings like "8 months" or "8-12 months"
       const match = paybackFromInvestment.match(/(\d+)/);
       paybackPeriod = match ? parseInt(match[1], 10) : null;
+      if (paybackPeriod) {
+        dataSources.paybackPeriod = 'database';
+        debugLogger.logExtraction('paybackPeriod', 'section_investment.payback_period', paybackFromInvestment, paybackPeriod, true);
+      }
     }
     // Fallback: calculate from CAC / ARPU
     if (!paybackPeriod && targetCac && idealTicket && idealTicket > 0) {
       paybackPeriod = Math.round(targetCac.avg / idealTicket);
+      dataSources.paybackPeriod = 'calculated';
+      debugLogger.logFallback({
+        field: 'paybackPeriod',
+        attemptedSource: 'section_investment.payback_period',
+        reason: 'No payback period in database',
+        fallbackUsed: 'Calculated from CAC / ARPU',
+        finalValue: paybackPeriod,
+      });
     }
     
     // LTV/CAC Calculated: LTV / CAC average (the real calculated value)
     let ltvCacCalculated: number | null = null;
     if (ltv && targetCac && targetCac.avg > 0) {
       ltvCacCalculated = Math.round((ltv / targetCac.avg) * 10) / 10; // 1 decimal place
+      dataSources.ltvCacCalculated = 'calculated';
     }
     
     // ============================================
@@ -467,6 +586,9 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       };
     }
     
+    // Print debug summary (only in development mode)
+    debugLogger.printSummary();
+    
     // ============================================
     // Return all metrics
     // ============================================
@@ -520,6 +642,9 @@ export function useFinancialMetrics(reportData: ReportData | null): FinancialMet
       financialScenarios,
       yearEvolution,
       unitEconomics,
+      
+      // Data source tracking (NEW)
+      dataSources,
     };
   }, [reportData]);
 }
