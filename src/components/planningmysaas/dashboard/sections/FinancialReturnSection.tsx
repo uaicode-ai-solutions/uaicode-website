@@ -201,6 +201,19 @@ const FinancialReturnSection = () => {
         </div>
       </div>
 
+      {/* Validation Warning Banner - Shows when projections were capped for realism */}
+      {metrics.wasAdjustedForRealism && (
+        <div className="flex items-center gap-2 text-sm bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-2">
+          <Shield className="h-4 w-4 text-amber-500" />
+          <span className="text-foreground/80">
+            <strong className="text-amber-500">Adjusted for market realism:</strong> Projections capped to reflect industry benchmarks for your market type.
+            <InfoTooltip side="top" size="sm" className="ml-1 inline-block">
+              AI-generated growth projections were compared against real-world SaaS benchmarks. Values exceeding market norms were adjusted to provide realistic expectations.
+            </InfoTooltip>
+          </span>
+        </div>
+      )}
+
       {/* Marketing Boost Badge - Shows when user has selected marketing services */}
       {marketingTotals.uaicodeTotal > 0 && efficiencyBoostPercent > 0 && (
         <div className="flex items-center gap-2 text-sm bg-accent/10 border border-accent/20 rounded-lg px-4 py-2">
