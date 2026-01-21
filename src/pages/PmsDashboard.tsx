@@ -46,6 +46,8 @@ import CompetitorsDifferentiationSection from "@/components/planningmysaas/dashb
 import MarketingIntelligenceSection from "@/components/planningmysaas/dashboard/sections/MarketingIntelligenceSection";
 import InvestmentSection from "@/components/planningmysaas/dashboard/sections/InvestmentSection";
 import FinancialReturnSection from "@/components/planningmysaas/dashboard/sections/FinancialReturnSection";
+import GrowthPotentialSection from "@/components/planningmysaas/dashboard/sections/GrowthPotentialSection";
+import ComparableSuccessesSection from "@/components/planningmysaas/dashboard/sections/ComparableSuccessesSection";
 import ExecutionPlanSection from "@/components/planningmysaas/dashboard/sections/ExecutionPlanSection";
 import WhyUaicodeSection from "@/components/planningmysaas/dashboard/sections/WhyUaicodeSection";
 import NextStepsSection from "@/components/planningmysaas/dashboard/sections/NextStepsSection";
@@ -517,6 +519,8 @@ const PmsDashboardContent = () => {
                   <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
                   <InvestmentSection />
                   <FinancialReturnSection />
+                  <GrowthPotentialSection />
+                  <ComparableSuccessesSection />
                   <ExecutionPlanSection />
                   <WhyUaicodeSection />
                   <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
