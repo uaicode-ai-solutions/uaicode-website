@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import { Database, Calculator, Sparkles, HelpCircle } from "lucide-react";
+import { Database, Calculator, Sparkles, HelpCircle, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type DataSourceType = 'database' | 'calculated' | 'estimated' | 'fallback';
+export type DataSourceType = 'database' | 'calculated' | 'estimated' | 'fallback' | 'benchmark';
 
 interface DataSourceBadgeProps {
   source: DataSourceType;
@@ -24,6 +24,13 @@ const sourceConfig: Record<DataSourceType, {
     icon: Database,
     colorClass: "bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30",
     tooltip: "This value comes directly from research data in the database.",
+  },
+  benchmark: {
+    label: "Benchmark",
+    shortLabel: "Bench",
+    icon: FlaskConical,
+    colorClass: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/30",
+    tooltip: "This value comes from market benchmark research (n8n pipeline).",
   },
   calculated: {
     label: "Calculated",
