@@ -1,4 +1,4 @@
-import { ChevronDown, TrendingUp, DollarSign, Clock, Sparkles } from "lucide-react";
+import { ChevronDown, TrendingUp, DollarSign, Clock, Sparkles, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
