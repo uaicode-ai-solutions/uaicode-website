@@ -101,6 +101,7 @@ export interface FinancialMetrics {
   // Validation warnings (NEW - for realistic projections)
   validationWarnings: string[];
   wasAdjustedForRealism: boolean;
+  discrepancyRatio: number | null; // How much raw AI values exceeded validated (e.g., 28x)
 }
 
 export interface ProjectionDataPoint {
@@ -322,9 +323,14 @@ export function useFinancialMetrics(
       };
     }
     
-    // Fallback: use churn based on effectiveMarketType (now uses priority chain)
-    // B2B SaaS: 0.4-0.6% monthly (5-7% annual) - sticky enterprise customers
-    // B2C SaaS: 5-8% monthly (50-60% annual) - consumer apps churn faster
+    // ============================================
+    // CHURN FALLBACK PRIORITY:
+    // 1. Database growth_targets churn (already extracted above)
+    // 2. Benchmark churn from n8n research (benchmark_section.churn_monthly_max)
+    // 3. Market-type based default
+    // ============================================
+    const benchmarkSectionForChurn = reportData?.benchmark_section as Record<string, unknown> | null;
+    const benchmarkChurnMonthly = benchmarkSectionForChurn?.churn_monthly_max as number | undefined;
     
     const getDefaultChurnByMarketType = (type: string): PercentageRange => {
       if (type === 'b2c' || type === 'consumer' || type.includes('b2c')) {
@@ -339,28 +345,41 @@ export function useFinancialMetrics(
     };
     
     const defaultChurn = getDefaultChurnByMarketType(effectiveMarketType);
-    console.log('[Financial] defaultChurn for', effectiveMarketType, ':', defaultChurn.avg, '%');
     
     if (!churn12Months) {
-      churn12Months = defaultChurn;
-      dataSources.churn12 = 'estimated';
-      debugLogger.logFallback({
-        field: 'churn12Months',
-        attemptedSource: 'growth_targets.12_month.churn',
-        reason: 'smartExtractChurn returned null',
-        fallbackUsed: `Market-type based (${effectiveMarketType}): ${defaultChurn.avg}% monthly`,
-        finalValue: defaultChurn,
-      });
+      // PRIORITY 2: Use benchmark churn if available
+      if (benchmarkChurnMonthly && benchmarkChurnMonthly > 0) {
+        churn12Months = { 
+          min: benchmarkChurnMonthly * 0.8, 
+          max: benchmarkChurnMonthly, 
+          avg: benchmarkChurnMonthly 
+        };
+        dataSources.churn12 = 'benchmark';
+        console.log('[Financial] ✅ Using BENCHMARK churn:', benchmarkChurnMonthly, '%');
+        debugLogger.logExtraction('churn12Months', 'benchmark_section.churn_monthly_max', benchmarkChurnMonthly, churn12Months, true);
+      } else {
+        // PRIORITY 3: Market-type based fallback
+        churn12Months = defaultChurn;
+        dataSources.churn12 = 'estimated';
+        console.log('[Financial] Using market-type churn for', effectiveMarketType, ':', defaultChurn.avg, '%');
+        debugLogger.logFallback({
+          field: 'churn12Months',
+          attemptedSource: 'growth_targets.12_month.churn + benchmark_section.churn_monthly_max',
+          reason: 'No churn data from database or benchmarks',
+          fallbackUsed: `Market-type based (${effectiveMarketType}): ${defaultChurn.avg}% monthly`,
+          finalValue: defaultChurn,
+        });
+      }
     }
     if (!churn6Months) {
-      churn6Months = defaultChurn;
+      churn6Months = churn12Months; // Use same value (already prioritized)
     }
     if (!churn24Months) {
       // Slightly lower for mature product (improved retention)
       churn24Months = { 
-        min: defaultChurn.min * 0.7, 
-        max: defaultChurn.max * 0.7, 
-        avg: defaultChurn.avg * 0.7 
+        min: churn12Months.min * 0.7, 
+        max: churn12Months.max * 0.7, 
+        avg: churn12Months.avg * 0.7 
       };
     }
     
@@ -474,118 +493,23 @@ export function useFinancialMetrics(
     const operationalCostPercent = mvpPriceCents > 5000000 ? 0.03 : 0.02; // 2-3%
     
     // ============================================
-    // Calculate Derived Metrics
+    // INITIAL Derived Metrics (will be recalculated after validation)
+    // These are PLACEHOLDERS - will be overwritten with validated values
     // ============================================
     
-    // Ideal Ticket (ARPU) - estimate from MRR / Customers
+    // Placeholder for ARPU - will be recalculated with validated MRR
     let idealTicket: number | null = null;
-    if (mrr12Months && customers12Months && customers12Months.avg > 0) {
-      idealTicket = Math.round(mrr12Months.avg / customers12Months.avg);
-      dataSources.idealTicket = 'calculated';
-    }
     
-    // LTV calculation: ARPU × (1 / churn rate)
+    // Placeholder for LTV - will be recalculated with validated ARPU
     let ltv: number | null = null;
-    if (idealTicket && churn12Months && churn12Months.avg > 0) {
-      const monthlyChurnDecimal = churn12Months.avg / 100;
-      const avgLifetimeMonths = 1 / monthlyChurnDecimal;
-      ltv = Math.round(idealTicket * avgLifetimeMonths);
-      dataSources.ltv = 'calculated';
-    }
     
-    // ============================================
-    // Payback Period: Prioritize database value, fallback to calculation
-    // ============================================
-    const paybackFromInvestment = safeGet(sectionInvestment, 'payback_period', null) as string | null;
+    // Placeholder for payback - will be recalculated with validated values
     let paybackPeriod: number | null = null;
-    if (paybackFromInvestment) {
-      // Extract number from strings like "8 months" or "8-12 months"
-      const match = paybackFromInvestment.match(/(\d+)/);
-      paybackPeriod = match ? parseInt(match[1], 10) : null;
-      if (paybackPeriod) {
-        dataSources.paybackPeriod = 'database';
-        debugLogger.logExtraction('paybackPeriod', 'section_investment.payback_period', paybackFromInvestment, paybackPeriod, true);
-      }
-    }
-    // Fallback: calculate from CAC / ARPU with margin consideration
-    if (!paybackPeriod && targetCac && idealTicket && idealTicket > 0) {
-      // Consider margin in payback calculation
-      const netMonthlyRevenue = idealTicket * marginPercent;
-      const calculatedPayback = Math.round(targetCac.avg / netMonthlyRevenue);
-      
-      // Use benchmark minimum payback based on effectiveMarketType
-      // B2B: 4-6 months minimum (longer sales cycle)
-      // B2C: 2-3 months minimum (faster acquisition, lower CAC)
-      const MIN_PAYBACK_BY_MARKET: Record<string, number> = {
-        b2b: 4,
-        enterprise: 6,
-        smb: 3,
-        b2c: 2,
-        consumer: 2,
-      };
-      const MIN_PAYBACK_MONTHS = MIN_PAYBACK_BY_MARKET[effectiveMarketType] || 
-        (effectiveMarketType.includes('b2c') ? 2 : 4);
-      
-      paybackPeriod = Math.max(calculatedPayback, MIN_PAYBACK_MONTHS);
-      
-      if (calculatedPayback < MIN_PAYBACK_MONTHS) {
-        console.warn(`[Financial] Payback ${calculatedPayback} months adjusted to ${MIN_PAYBACK_MONTHS} (${effectiveMarketType} minimum)`);
-      }
-      
-      dataSources.paybackPeriod = 'calculated';
-      debugLogger.logFallback({
-        field: 'paybackPeriod',
-        attemptedSource: 'section_investment.payback_period',
-        reason: 'No payback period in database',
-        fallbackUsed: `Calculated from CAC / (ARPU × margin) = $${targetCac.avg} / ($${idealTicket} × ${marginPercent}) = ${paybackPeriod} months (min: ${MIN_PAYBACK_MONTHS} for ${effectiveMarketType})`,
-        finalValue: paybackPeriod,
-      });
-    }
     
     // ============================================
-    // LTV/CAC Ratio: PRIORITIZE database target over calculated
+    // LTV/CAC placeholder - will be calculated after MRR validation
     // ============================================
     let ltvCacCalculated: number | null = null;
-    
-    // First check if we have a target from the database (this is the trusted value)
-    if (ltvCacRatioNum && ltvCacRatioNum > 0) {
-      ltvCacCalculated = ltvCacRatioNum;
-      dataSources.ltvCacCalculated = 'database';
-      debugLogger.logExtraction('ltvCacCalculated', 'performance_targets.ltv_cac_ratio_target', ltvCacRatioNum, ltvCacCalculated, true);
-    } 
-    // Fallback: calculate from LTV / CAC
-    else if (ltv && targetCac && targetCac.avg > 0) {
-      const calculated = Math.round((ltv / targetCac.avg) * 10) / 10; // 1 decimal place
-      
-      // Use benchmark max LTV/CAC based on effectiveMarketType
-      // B2B typical: 3-5:1 is healthy, 8:1+ is exceptional (needs verification)
-      // B2C typical: 2-4:1 is healthy, 6:1+ is exceptional
-      const MAX_LTV_CAC_BY_MARKET: Record<string, number> = {
-        b2b: 8.0,
-        enterprise: 10.0,
-        smb: 6.0,
-        b2c: 5.0,
-        consumer: 4.0,
-      };
-      const MAX_LTV_CAC = MAX_LTV_CAC_BY_MARKET[effectiveMarketType] || 
-        (effectiveMarketType.includes('b2c') ? 5.0 : 8.0);
-      
-      if (calculated > MAX_LTV_CAC) {
-        console.warn(`[Financial] LTV/CAC ${calculated.toFixed(1)}:1 capped at ${MAX_LTV_CAC}:1 (${effectiveMarketType} benchmark)`);
-        ltvCacCalculated = MAX_LTV_CAC;
-      } else {
-        ltvCacCalculated = calculated;
-      }
-      
-      dataSources.ltvCacCalculated = 'calculated';
-      debugLogger.logFallback({
-        field: 'ltvCacCalculated',
-        attemptedSource: 'performance_targets.ltv_cac_ratio_target',
-        reason: 'No LTV/CAC target in database',
-        fallbackUsed: `Calculated from LTV / CAC = $${ltv} / $${targetCac.avg} = ${ltvCacCalculated}:1 (max: ${MAX_LTV_CAC} for ${effectiveMarketType})`,
-        finalValue: ltvCacCalculated,
-      });
-    }
     
     // (marginPercent and operationalCostPercent already defined above)
     
@@ -672,6 +596,149 @@ export function useFinancialMetrics(
     
     if (wasAdjustedForRealism) {
       console.log('[Financial Metrics] 🔄 Projections ADJUSTED for market realism:', validationWarnings);
+    }
+    
+    // ============================================
+    // RECALCULATE UNIT ECONOMICS WITH VALIDATED VALUES
+    // This is the CRITICAL fix - use validated MRR, not raw AI projections
+    // ============================================
+    
+    // Get benchmark ARPU range if available
+    const benchmarkArpuRange = benchmarkSection?.arpu_range as { min?: number; max?: number } | undefined;
+    const benchmarkArpuMin = benchmarkArpuRange?.min || 5;
+    const benchmarkArpuMax = benchmarkArpuRange?.max || 200;
+    
+    // Calculate validated ARPU (idealTicket) from validated MRR
+    if (validatedMrr12 > 0) {
+      // Option 1: If we have customer data, use it with validated MRR
+      if (customers12Months && customers12Months.avg > 0) {
+        // Recalculate effective customers based on validated MRR
+        // If AI projected 1500 customers for $425K MRR = $283 ARPU
+        // But MRR is capped to $15K, we need fewer customers for same ARPU
+        // OR same customers with lower ARPU
+        
+        // Use benchmark ARPU range to estimate realistic customer count
+        const avgBenchmarkArpu = (benchmarkArpuMin + benchmarkArpuMax) / 2;
+        const estimatedCustomersFromValidatedMrr = Math.round(validatedMrr12 / avgBenchmarkArpu);
+        
+        // Use the lower of: estimated customers or original customers
+        const effectiveCustomers = Math.min(customers12Months.avg, estimatedCustomersFromValidatedMrr);
+        
+        // Calculate ARPU from validated MRR and effective customers
+        if (effectiveCustomers > 0) {
+          idealTicket = Math.round(validatedMrr12 / effectiveCustomers);
+        } else {
+          // Fallback to benchmark average
+          idealTicket = Math.round(avgBenchmarkArpu);
+        }
+      } else {
+        // No customer data - use benchmark ARPU average
+        idealTicket = Math.round((benchmarkArpuMin + benchmarkArpuMax) / 2);
+      }
+      
+      // Ensure ARPU is within reasonable bounds
+      if (idealTicket < benchmarkArpuMin) {
+        idealTicket = benchmarkArpuMin;
+      } else if (idealTicket > benchmarkArpuMax * 2) {
+        // Cap at 2x max benchmark (allow some flexibility for enterprise)
+        idealTicket = Math.round(benchmarkArpuMax * 2);
+      }
+      
+      dataSources.idealTicket = 'calculated';
+      console.log('[Financial] ✅ Validated ARPU:', {
+        validatedMrr12,
+        benchmarkArpuRange: { min: benchmarkArpuMin, max: benchmarkArpuMax },
+        idealTicket,
+      });
+    }
+    
+    // Calculate LTV using validated ARPU and benchmark churn
+    if (idealTicket && churn12Months && churn12Months.avg > 0) {
+      const monthlyChurnDecimal = churn12Months.avg / 100;
+      const avgLifetimeMonths = 1 / monthlyChurnDecimal;
+      ltv = Math.round(idealTicket * avgLifetimeMonths);
+      dataSources.ltv = 'calculated';
+      
+      console.log('[Financial] ✅ Validated LTV:', {
+        arpu: idealTicket,
+        churnMonthly: churn12Months.avg + '%',
+        lifetimeMonths: avgLifetimeMonths.toFixed(1),
+        ltv,
+      });
+    }
+    
+    // Calculate Payback Period using validated ARPU
+    // PRIORITY: 1. Benchmark break-even realistic, 2. Calculated, 3. Database
+    const benchmarkBreakEvenRealistic = dynamicBenchmarks.BREAK_EVEN_REALISTIC_MONTHS || 24;
+    const benchmarkBreakEvenMin = dynamicBenchmarks.BREAK_EVEN_MIN_MONTHS || 8;
+    
+    const paybackFromInvestment = safeGet(sectionInvestment, 'payback_period', null) as string | null;
+    
+    // First try to calculate from CAC/ARPU
+    if (targetCac && idealTicket && idealTicket > 0) {
+      const netMonthlyRevenue = idealTicket * marginPercent;
+      const calculatedPayback = Math.round(targetCac.avg / netMonthlyRevenue);
+      
+      // Apply benchmark floor
+      paybackPeriod = Math.max(calculatedPayback, benchmarkBreakEvenMin);
+      
+      // If calculated is much lower than benchmark realistic, prefer benchmark
+      if (calculatedPayback < benchmarkBreakEvenRealistic * 0.5) {
+        paybackPeriod = Math.max(paybackPeriod, Math.round(benchmarkBreakEvenRealistic * 0.75));
+        console.warn(`[Financial] Payback ${calculatedPayback} months adjusted to ${paybackPeriod} (benchmark realistic: ${benchmarkBreakEvenRealistic})`);
+      }
+      
+      dataSources.paybackPeriod = 'calculated';
+      console.log('[Financial] ✅ Validated Payback:', {
+        cac: targetCac.avg,
+        arpu: idealTicket,
+        netMonthlyRevenue,
+        calculatedPayback,
+        benchmarkMin: benchmarkBreakEvenMin,
+        benchmarkRealistic: benchmarkBreakEvenRealistic,
+        finalPayback: paybackPeriod,
+      });
+    } else if (paybackFromInvestment) {
+      // Fallback to database value if no CAC
+      const match = paybackFromInvestment.match(/(\d+)/);
+      const dbPayback = match ? parseInt(match[1], 10) : null;
+      if (dbPayback) {
+        // Still apply benchmark floor
+        paybackPeriod = Math.max(dbPayback, benchmarkBreakEvenMin);
+        dataSources.paybackPeriod = 'database';
+      }
+    }
+    
+    // Recalculate LTV/CAC with validated LTV
+    if (ltv && targetCac && targetCac.avg > 0) {
+      const calculated = Math.round((ltv / targetCac.avg) * 10) / 10;
+      
+      // B2C typically has lower LTV/CAC due to lower LTV
+      const MAX_LTV_CAC_BY_MARKET: Record<string, number> = {
+        b2b: 8.0,
+        enterprise: 10.0,
+        smb: 6.0,
+        b2c: 3.0, // Lower for B2C - reduced from 5.0
+        consumer: 2.5, // Very low for consumer apps
+      };
+      const MAX_LTV_CAC = MAX_LTV_CAC_BY_MARKET[effectiveMarketType] || 
+        (effectiveMarketType.includes('b2c') ? 3.0 : 8.0);
+      
+      if (calculated > MAX_LTV_CAC) {
+        console.warn(`[Financial] LTV/CAC ${calculated.toFixed(1)}:1 capped at ${MAX_LTV_CAC}:1 (${effectiveMarketType} benchmark)`);
+        ltvCacCalculated = MAX_LTV_CAC;
+      } else {
+        ltvCacCalculated = calculated;
+      }
+      
+      dataSources.ltvCacCalculated = 'calculated';
+      console.log('[Financial] ✅ Validated LTV/CAC:', {
+        ltv,
+        cac: targetCac.avg,
+        calculated,
+        maxAllowed: MAX_LTV_CAC,
+        final: ltvCacCalculated,
+      });
     }
     
     // ============================================
@@ -817,6 +884,11 @@ export function useFinancialMetrics(
       wasAdjusted: wasAdjustedForRealism,
     });
     
+    // Calculate discrepancy ratio for UI display
+    const discrepancyRatio = (mrr12Months?.avg && validatedMrr12 > 0) 
+      ? Math.round((mrr12Months.avg / validatedMrr12) * 10) / 10 
+      : null;
+    
     // ============================================
     // Return all metrics - USING VALIDATED VALUES
     // ============================================
@@ -877,6 +949,7 @@ export function useFinancialMetrics(
       // Validation info (NEW - for realistic projections)
       validationWarnings,
       wasAdjustedForRealism,
+      discrepancyRatio,
     };
   }, [reportData, marketTypeOverride]);
 }
