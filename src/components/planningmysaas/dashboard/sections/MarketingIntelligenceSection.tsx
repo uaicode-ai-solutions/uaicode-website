@@ -274,13 +274,12 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // ICP Display Data (Updated per requirements)
   // ============================================
   
-  // Name: Use persona.name from n8n data (e.g., "Michael Chen")
-  const icpDisplayName = getValue(
-    icpData?.persona?.name ||
-    (primaryPersona?.summary as unknown as Record<string, string>)?.persona_name ||
-    primaryPersona?.persona_name
+  // Name: Use static name matching the avatar (based on region + gender)
+  const icpDisplayName = getIcpDisplayName(
+    report?.target_audience,
+    report?.geographic_region
   );
-  // Generate initials from persona name (e.g., "MC" from "Michael Chen")
+  // Generate initials from static name (e.g., "MJ" from "Michael Johnson")
   const initials = getInitials(icpDisplayName);
   
   // ============================================
