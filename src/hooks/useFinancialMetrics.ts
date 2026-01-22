@@ -603,50 +603,48 @@ export function useFinancialMetrics(
     // This is the CRITICAL fix - use validated MRR, not raw AI projections
     // ============================================
     
-    // Get benchmark ARPU range if available
+    // Get benchmark ARPU values if available
+    // PRIORITY: 1. arpu_default (exact), 2. arpu_range average, 3. Calculated from MRR/customers
+    const benchmarkArpuDefault = benchmarkSection?.arpu_default as number | undefined;
     const benchmarkArpuRange = benchmarkSection?.arpu_range as { min?: number; max?: number } | undefined;
     const benchmarkArpuMin = benchmarkArpuRange?.min || 5;
     const benchmarkArpuMax = benchmarkArpuRange?.max || 200;
+    const avgBenchmarkArpu = benchmarkArpuDefault || ((benchmarkArpuMin + benchmarkArpuMax) / 2);
     
     // Calculate validated ARPU (idealTicket) from validated MRR
     if (validatedMrr12 > 0) {
-      // Option 1: If we have customer data, use it with validated MRR
-      if (customers12Months && customers12Months.avg > 0) {
-        // Recalculate effective customers based on validated MRR
-        // If AI projected 1500 customers for $425K MRR = $283 ARPU
-        // But MRR is capped to $15K, we need fewer customers for same ARPU
-        // OR same customers with lower ARPU
-        
-        // Use benchmark ARPU range to estimate realistic customer count
-        const avgBenchmarkArpu = (benchmarkArpuMin + benchmarkArpuMax) / 2;
+      // PRIORITY 1: Use benchmark arpu_default if available (most accurate)
+      if (benchmarkArpuDefault && benchmarkArpuDefault > 0) {
+        idealTicket = Math.round(benchmarkArpuDefault);
+        console.log('[Financial] ✅ Using benchmark arpu_default:', benchmarkArpuDefault);
+      }
+      // PRIORITY 2: If we have customer data, calculate from validated MRR
+      else if (customers12Months && customers12Months.avg > 0) {
         const estimatedCustomersFromValidatedMrr = Math.round(validatedMrr12 / avgBenchmarkArpu);
-        
-        // Use the lower of: estimated customers or original customers
         const effectiveCustomers = Math.min(customers12Months.avg, estimatedCustomersFromValidatedMrr);
         
-        // Calculate ARPU from validated MRR and effective customers
         if (effectiveCustomers > 0) {
           idealTicket = Math.round(validatedMrr12 / effectiveCustomers);
         } else {
-          // Fallback to benchmark average
           idealTicket = Math.round(avgBenchmarkArpu);
         }
-      } else {
-        // No customer data - use benchmark ARPU average
-        idealTicket = Math.round((benchmarkArpuMin + benchmarkArpuMax) / 2);
+      } 
+      // PRIORITY 3: Fallback to benchmark average
+      else {
+        idealTicket = Math.round(avgBenchmarkArpu);
       }
       
       // Ensure ARPU is within reasonable bounds
       if (idealTicket < benchmarkArpuMin) {
         idealTicket = benchmarkArpuMin;
       } else if (idealTicket > benchmarkArpuMax * 2) {
-        // Cap at 2x max benchmark (allow some flexibility for enterprise)
         idealTicket = Math.round(benchmarkArpuMax * 2);
       }
       
-      dataSources.idealTicket = 'calculated';
+      dataSources.idealTicket = benchmarkArpuDefault ? 'benchmark' : 'calculated';
       console.log('[Financial] ✅ Validated ARPU:', {
         validatedMrr12,
+        benchmarkArpuDefault,
         benchmarkArpuRange: { min: benchmarkArpuMin, max: benchmarkArpuMax },
         idealTicket,
       });
@@ -668,9 +666,23 @@ export function useFinancialMetrics(
     }
     
     // Calculate Payback Period using validated ARPU
-    // PRIORITY: 1. Benchmark break-even realistic, 2. Calculated, 3. Database
+    // PRIORITY: 1. Calculated from CAC/ARPU, 2. Database, 3. Benchmark defaults
     const benchmarkBreakEvenRealistic = dynamicBenchmarks.BREAK_EVEN_REALISTIC_MONTHS || 24;
     const benchmarkBreakEvenMin = dynamicBenchmarks.BREAK_EVEN_MIN_MONTHS || 8;
+    
+    // DYNAMIC PAYBACK FLOOR based on market type
+    // B2C/Consumer can have faster payback due to lower CAC and viral growth
+    const getPaybackFloor = (marketType: string, benchmarkMin: number): number => {
+      if (marketType.includes('b2c') || marketType.includes('consumer')) {
+        return Math.min(benchmarkMin, 6); // B2C: max floor of 6 months
+      }
+      if (marketType.includes('smb')) {
+        return Math.min(benchmarkMin, 8); // SMB: max floor of 8 months
+      }
+      return benchmarkMin; // B2B/Enterprise: use full benchmark
+    };
+    
+    const effectivePaybackFloor = getPaybackFloor(effectiveMarketType, benchmarkBreakEvenMin);
     
     const paybackFromInvestment = safeGet(sectionInvestment, 'payback_period', null) as string | null;
     
@@ -679,23 +691,30 @@ export function useFinancialMetrics(
       const netMonthlyRevenue = idealTicket * marginPercent;
       const calculatedPayback = Math.round(targetCac.avg / netMonthlyRevenue);
       
-      // Apply benchmark floor
-      paybackPeriod = Math.max(calculatedPayback, benchmarkBreakEvenMin);
+      // Apply market-appropriate floor
+      paybackPeriod = Math.max(calculatedPayback, effectivePaybackFloor);
       
-      // If calculated is much lower than benchmark realistic, prefer benchmark
-      if (calculatedPayback < benchmarkBreakEvenRealistic * 0.5) {
+      // CONDITIONAL ADJUSTMENT: Only apply aggressive 75% benchmark for B2B/Enterprise
+      const shouldApplyAggressiveAdjustment = 
+        !effectiveMarketType.includes('b2c') && 
+        !effectiveMarketType.includes('consumer') &&
+        !effectiveMarketType.includes('smb');
+      
+      if (shouldApplyAggressiveAdjustment && calculatedPayback < benchmarkBreakEvenRealistic * 0.5) {
         paybackPeriod = Math.max(paybackPeriod, Math.round(benchmarkBreakEvenRealistic * 0.75));
-        console.warn(`[Financial] Payback ${calculatedPayback} months adjusted to ${paybackPeriod} (benchmark realistic: ${benchmarkBreakEvenRealistic})`);
+        console.warn(`[Financial] Payback ${calculatedPayback} months adjusted to ${paybackPeriod} (B2B benchmark realistic: ${benchmarkBreakEvenRealistic})`);
       }
       
       dataSources.paybackPeriod = 'calculated';
       console.log('[Financial] ✅ Validated Payback:', {
+        marketType: effectiveMarketType,
         cac: targetCac.avg,
         arpu: idealTicket,
         netMonthlyRevenue,
         calculatedPayback,
-        benchmarkMin: benchmarkBreakEvenMin,
+        effectivePaybackFloor,
         benchmarkRealistic: benchmarkBreakEvenRealistic,
+        aggressiveAdjustment: shouldApplyAggressiveAdjustment,
         finalPayback: paybackPeriod,
       });
     } else if (paybackFromInvestment) {
@@ -703,8 +722,8 @@ export function useFinancialMetrics(
       const match = paybackFromInvestment.match(/(\d+)/);
       const dbPayback = match ? parseInt(match[1], 10) : null;
       if (dbPayback) {
-        // Still apply benchmark floor
-        paybackPeriod = Math.max(dbPayback, benchmarkBreakEvenMin);
+        // Apply market-appropriate floor
+        paybackPeriod = Math.max(dbPayback, effectivePaybackFloor);
         dataSources.paybackPeriod = 'database';
       }
     }
@@ -722,16 +741,21 @@ export function useFinancialMetrics(
         b2c: 6.0,         // B2C subscription apps (Netflix ~5x, Spotify ~4x)
         consumer: 4.0,    // Consumer apps with high churn
         healthcare: 6.0,  // Healthcare B2C can be higher due to sticky services
+        internal: 3.0,    // Internal tools typically lower
+        default: 6.0,     // Fallback for unknown market types
       };
       
       // Determine market type, checking for healthcare B2C specifically
       const isHealthcareB2C = effectiveMarketType.includes('b2c') && 
         (reportData?.opportunity_section as Record<string, unknown>)?.industry?.toString().toLowerCase().includes('health');
       
+      // Use cascading fallback: specific type -> b2c check -> default
       const MAX_LTV_CAC = isHealthcareB2C 
         ? 6.0 
         : (MAX_LTV_CAC_BY_MARKET[effectiveMarketType] || 
-          (effectiveMarketType.includes('b2c') ? 6.0 : 8.0));
+          (effectiveMarketType.includes('b2c') ? 6.0 : 
+           (effectiveMarketType.includes('smb') ? 5.0 : 
+            MAX_LTV_CAC_BY_MARKET.default)));
       
       if (calculated > MAX_LTV_CAC) {
         console.warn(`[Financial] LTV/CAC ${calculated.toFixed(1)}:1 capped at ${MAX_LTV_CAC}:1 (${effectiveMarketType} benchmark)`);
