@@ -351,8 +351,8 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     primaryPersona?.summary?.decision_timeframe
   );
 
-  // Responsibilities: From icp_intelligence_section.demographics.decision_authority
-  const responsibilities = getValue(
+  // Decision Authority: From icp_intelligence_section.demographics.decision_authority
+  const decisionAuthority = getValue(
     icpData?.demographics?.decision_authority
   );
 
@@ -518,11 +518,11 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
               </div>
             </div>
 
-            {/* Responsibilities */}
+            {/* Decision Authority */}
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Responsibilities</p>
+              <p className="text-sm font-medium text-muted-foreground mb-2">Decision Authority</p>
               <div className="p-3 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10">
-                <span className="text-sm text-foreground">{responsibilities}</span>
+                <span className="text-sm text-foreground">{decisionAuthority}</span>
               </div>
             </div>
 
