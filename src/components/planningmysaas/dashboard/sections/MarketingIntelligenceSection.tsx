@@ -543,9 +543,9 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                     key={i} 
                     className="flex items-center justify-between text-sm p-3 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10 hover:border-accent/30 transition-colors"
                   >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
-                      <span className="text-foreground truncate">{item.pain_point}</span>
+                    <div className="flex items-start gap-2 flex-1">
+                      <div className="h-2 w-2 rounded-full bg-amber-500 shrink-0 mt-1.5" />
+                      <span className="text-foreground">{item.pain_point}</span>
                     </div>
                     <Badge 
                       variant="outline" 
