@@ -367,9 +367,9 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     { 
       icon: DollarSign, 
       value: extractBudgetValue(primaryPersona?.summary?.budget_range), 
-      label: "Recommended Budget",
-      sublabel: "ICP Monthly Spend",
-      tooltip: "How much your Ideal Customer Profile (ICP) is willing to spend monthly on a SaaS solution like yours, based on their budget range and purchasing behavior.",
+      label: "Customer Budget",
+      sublabel: "Annual ICP Spend",
+      tooltip: "How much your Ideal Customer Profile (ICP) is willing to spend annually on SaaS solutions like yours, based on their budget range and purchasing behavior.",
       percent: budgetRange !== "..." ? 75 : 0
     },
     { 
