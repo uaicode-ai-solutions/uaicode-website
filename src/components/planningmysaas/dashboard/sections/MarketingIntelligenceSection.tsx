@@ -330,7 +330,8 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     return `https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/icp-avatars/${regionKey}-${genderKey}.png`;
   };
   
-  const avatarUrl = getStaticAvatarUrl(report?.geographic_region, report?.target_audience);
+  // Use gender from ICP research (persona.gender) for avatar selection
+  const avatarUrl = getStaticAvatarUrl(report?.geographic_region, icpData?.persona?.gender);
   
   // Role/Job Title: Use job_title from persona (e.g., "VP of Operations / Director of Business Technology")
   const icpRole = getValue(
