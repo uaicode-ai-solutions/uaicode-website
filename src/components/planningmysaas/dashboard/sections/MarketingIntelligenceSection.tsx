@@ -224,15 +224,14 @@ const extractCompanySize = (value: string | undefined | null): string => {
 const extractBudgetValue = (value: string | undefined | null): string => {
   if (!value?.trim()) return "...";
   
-  // Try to extract just the monetary range using regex
-  // Matches patterns like "$99-$299", "$99-299", "$1,000-$2,000"
-  const rangeMatch = value.match(/\$[\d,]+\s*[-–—]\s*\$?[\d,]+/);
+  // Try to extract monetary range with K/M/B suffixes (e.g., "$250K-$2M+")
+  const rangeMatch = value.match(/\$[\d,.]+[KMB]?\+?\s*[-–—]\s*\$?[\d,.]+[KMB]?\+?/i);
   if (rangeMatch) {
-    return rangeMatch[0].replace(/\s+/g, ""); // Remove any spaces
+    return rangeMatch[0].replace(/\s+/g, "");
   }
   
-  // Fallback: try to find first monetary value
-  const singleMatch = value.match(/\$[\d,]+/);
+  // Fallback: single value with suffix (e.g., "$250K+")
+  const singleMatch = value.match(/\$[\d,.]+[KMB]?\+?/i);
   if (singleMatch) {
     return singleMatch[0];
   }
@@ -241,90 +240,25 @@ const extractBudgetValue = (value: string | undefined | null): string => {
 };
 
 // Helper: calculate competitive position from data
-const getCompetitivePosition = (icpData: ICPIntelligenceSection | null): { value: string; percent: number } => {
-  if (!icpData?.aggregated_insights?.competitive_threats) {
-    return { value: "...", percent: 0 };
-  }
-  const threatsCount = icpData.aggregated_insights.competitive_threats.length;
-  if (threatsCount >= 5) return { value: "Top 30%", percent: 70 };
-  if (threatsCount >= 3) return { value: "Top 50%", percent: 50 };
-  if (threatsCount >= 1) return { value: "Top 70%", percent: 30 };
+// TODO: Será populado pelo fluxo n8n futuro
+const getCompetitivePosition = (_icpData: ICPIntelligenceSection | null): { value: string; percent: number } => {
   return { value: "...", percent: 0 };
 };
 
 // Helper: calculate expected ROAS from pain point intensity
-const getExpectedROAS = (icpData: ICPIntelligenceSection | null): { value: string; percent: number; industry: string } => {
-  // Try aggregated insights first
-  const painPoints = icpData?.aggregated_insights?.top_pain_points_all;
-  
-  // Fallback: Return a reasonable default ROAS based on industry benchmarks if no data
-  if (!painPoints || painPoints.length === 0) {
-    return { value: "3.2x", percent: 64, industry: "2.5x" };
-  }
-  
-  const avgIntensity = painPoints.reduce((acc, p) => {
-    const score = parseFloat(p.intensity_score?.replace("/10", "") || "7");
-    return acc + (isNaN(score) ? 7 : score);
-  }, 0) / painPoints.length;
-  
-  const roas = avgIntensity / 2.5;
-  const percent = Math.round(Math.min(100, (roas / 5) * 100));
-  
-  return { 
-    value: `${roas.toFixed(1)}x`, 
-    percent, 
-    industry: "2.5x" 
-  };
+// TODO: Será populado pelo fluxo n8n futuro
+const getExpectedROAS = (_icpData: ICPIntelligenceSection | null): { value: string; percent: number; industry: string } => {
+  return { value: "...", percent: 0, industry: "..." };
 };
 
-// Helper: extract roles from job_title field (format: "Role 1 / Role 2")
-const getJobTitleRoles = (jobTitle: string | undefined | null): string[] => {
-  if (!jobTitle) return [];
-  return jobTitle.split('/').map(role => role.trim()).filter(Boolean);
-};
-
-// Helper: generate initials from role name (max 2-3 letters)
-const getRoleInitials = (role: string): string => {
-  const words = role.split(' ').filter(w => w.length > 2);
-  if (words.length === 0) return role.substring(0, 2).toUpperCase();
-  return words.slice(0, 2).map(w => w[0].toUpperCase()).join('');
-};
-
-// Helper: extract decision makers - Card 1 fixed, Cards 2-3 from job_title
-const getDecisionMakers = (persona: ICPPersona | null): Array<{ role: string; initials: string; influence: string; percent: number }> => {
-  // Card 1: Always fixed as Owner/CEO
-  const ceo = { 
-    role: "Owner/CEO", 
-    initials: "CEO", 
-    influence: "Final decision", 
-    percent: 85 
-  };
-  
-  // Extract roles from job_title field
-  const jobTitle = persona?.summary?.job_title;
-  const roles = getJobTitleRoles(jobTitle);
-  
-  // Card 2: First role from job_title or fallback
-  const role2 = roles[0] || "Growth Lead";
-  const role2Initials = getRoleInitials(role2) || "GL";
-  const secondMaker = {
-    role: role2,
-    initials: role2Initials,
-    influence: "Key evaluator",
-    percent: 70
-  };
-  
-  // Card 3: Second role from job_title or fallback
-  const role3 = roles[1] || "Accountant";
-  const role3Initials = getRoleInitials(role3) || "ACC";
-  const thirdMaker = {
-    role: role3,
-    initials: role3Initials,
-    influence: "Budget input",
-    percent: 55
-  };
-  
-  return [ceo, secondMaker, thirdMaker];
+// Helper: extract decision makers
+// TODO: Será populado pelo fluxo n8n futuro
+const getDecisionMakers = (_persona: ICPPersona | null): Array<{ role: string; initials: string; influence: string; percent: number }> => {
+  return [
+    { role: "...", initials: "...", influence: "...", percent: 0 },
+    { role: "...", initials: "...", influence: "...", percent: 0 },
+    { role: "...", initials: "...", influence: "...", percent: 0 }
+  ];
 };
 
 const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntelligenceSectionProps) => {
@@ -351,12 +285,16 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // ICP Display Data (Updated per requirements)
   // ============================================
   
-  // Name: Generated from wizard's target_audience + geographic_region
-  const icpDisplayName = getIcpDisplayName(
-    report?.target_audience,
-    report?.geographic_region
+  // Name: Use job_title from persona (n8n data)
+  const icpDisplayName = getValue(
+    icpData?.persona?.job_title ||
+    primaryPersona?.job_title ||
+    primaryPersona?.summary?.job_title
   );
-  const initials = getInitials(icpDisplayName);
+  // Generate initials from job_title (e.g., "VP" from "VP of Operations")
+  const initials = icpDisplayName !== "..." 
+    ? icpDisplayName.split(/[\s\/]+/).slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("")
+    : "...";
   
   // ============================================
   // STATIC AVATAR URL - Pre-generated avatars
@@ -385,8 +323,12 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   
   const avatarUrl = getStaticAvatarUrl(report?.geographic_region, report?.target_audience);
   
-  // Role: Comes from summary.name (e.g., "Mid-Market Clinic Operations Director")
-  const icpRole = getValue(primaryPersona?.summary?.name || primaryPersona?.persona_name);
+  // Role: Use persona_name (e.g., "Michael Chen")
+  const icpRole = getValue(
+    primaryPersona?.persona_name ||
+    primaryPersona?.summary?.name ||
+    icpData?.persona?.persona_name
+  );
   
   // Industry Badge: First item from industry_focus
   const businessType = getValue(
