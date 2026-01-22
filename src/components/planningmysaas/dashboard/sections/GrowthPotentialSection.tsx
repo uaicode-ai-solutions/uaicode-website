@@ -40,13 +40,13 @@ const GrowthPotentialSection = () => {
   const marketType = report?.market_type || undefined;
   const metrics = useFinancialMetrics(reportData, marketType);
   
-  // Extract current values
-  const currentLtvCac = metrics.ltvCacRatioNum || metrics.ltvCacCalculated || 1.3;
+  // Extract current values - PRIORITIZE ltvCacCalculated for consistency
+  const currentLtvCac = metrics.ltvCacCalculated || metrics.ltvCacRatioNum || 3.0;
   const currentChurn = metrics.unitEconomics?.monthlyChurn 
-    ? parseFloat(String(metrics.unitEconomics.monthlyChurn)) 
-    : 5;
+    ? parseFloat(String(metrics.unitEconomics.monthlyChurn).replace('%', '')) 
+    : 7; // B2C benchmark fallback
   const currentPayback = metrics.paybackPeriod || 15;
-  const currentArpu = metrics.idealTicket || 25;
+  const currentArpu = metrics.idealTicket || 9; // B2C-consistent fallback
   const currentCac = metrics.targetCac?.avg || 150;
   
   // Target values based on market type benchmarks

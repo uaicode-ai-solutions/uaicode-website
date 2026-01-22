@@ -898,14 +898,17 @@ export function useFinancialMetrics(
       roiYear1: roiYear1Num !== null ? `${roiYear1Num}%` : fallback,
       mrrMonth12: validatedMrr12 > 0 ? formatCurrency(validatedMrr12) : fallback,
       arrProjected: validatedArr12 > 0 ? formatCurrency(validatedArr12) : fallback,
-      ltvCacRatio: ltvCacRatioNum ? `${ltvCacRatioNum}` : fallback,
+      // PRIORITIZE calculated LTV/CAC over raw DB value for consistency
+      ltvCacRatio: ltvCacCalculated 
+        ? `${ltvCacCalculated.toFixed(1)}x` 
+        : (ltvCacRatioNum ? `${ltvCacRatioNum}x` : fallback),
       
       // Numeric values - NOW USING VALIDATED VALUES
       breakEvenMonthsNum,
       roiYear1Num,
       mrrMonth12Num: validatedMrr12 > 0 ? validatedMrr12 : null,
       arrProjectedNum: validatedArr12 > 0 ? validatedArr12 : null,
-      ltvCacRatioNum,
+      ltvCacRatioNum: ltvCacCalculated || ltvCacRatioNum, // Prefer calculated
       ltvCacCalculated,
       
       // MRR Evolution

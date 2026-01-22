@@ -338,9 +338,13 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // Decision Timeframe: From summary.decision_timeframe, extract main value only
   const decisionTimeframe = extractMainValue(primaryPersona?.summary?.decision_timeframe);
 
-  // Preferred Pricing Model: From summary.preferred_pricing_model with fallback
+  // Preferred Pricing Model: Use price_intelligence_section for consistency with Marketing tab
+  const priceIntelligence = reportData?.price_intelligence_section as Record<string, unknown> | null;
+  const recommendedPricing = priceIntelligence?.recommended_pricing as Record<string, unknown> | null;
   const pricingModel = formatPricingModel(
-    primaryPersona?.summary?.preferred_pricing_model || "Subscription-based"
+    (recommendedPricing?.pricing_strategy as string) || 
+    primaryPersona?.summary?.preferred_pricing_model || 
+    "Tiered Subscription"
   );
 
   // Primary Goals: From summary.key_features, formatted
