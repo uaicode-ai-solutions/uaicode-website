@@ -240,14 +240,37 @@ const getExpectedROAS = (_icpData: ICPIntelligenceSection | null): { value: stri
   return { value: "...", percent: 0, industry: "..." };
 };
 
-// Helper: extract decision makers
-// TODO: Será populado pelo fluxo n8n futuro
-const getDecisionMakers = (_persona: ICPPersona | null): Array<{ role: string; initials: string; influence: string; percent: number }> => {
-  return [
-    { role: "...", initials: "...", influence: "...", percent: 0 },
-    { role: "...", initials: "...", influence: "...", percent: 0 },
-    { role: "...", initials: "...", influence: "...", percent: 0 }
-  ];
+// Helper: parse stakeholder string "Role Name (badge text)"
+const parseStakeholder = (text: string, index: number): { role: string; influence: string; percent: number } => {
+  if (!text || text.trim() === "") {
+    return { role: "...", influence: "...", percent: 0 };
+  }
+  
+  const match = text.match(/^(.+?)\s*\(([^)]+)\)/);
+  if (!match) {
+    return { role: text.trim(), influence: "Stakeholder", percent: Math.max(25, 90 - (index * 15)) };
+  }
+  
+  const role = match[1].trim();
+  // Capitalize first letter of influence badge
+  const influence = match[2].trim().charAt(0).toUpperCase() + match[2].trim().slice(1);
+  // Influence decreasing by position: 90%, 75%, 60%, 45%, 35%, 25%...
+  const percent = Math.max(25, 90 - (index * 15));
+  
+  return { role, influence, percent };
+};
+
+// Helper: get decision makers from stakeholders array
+const getDecisionMakers = (stakeholders: string[] | null | undefined): Array<{ role: string; influence: string; percent: number }> => {
+  if (!stakeholders || stakeholders.length === 0) {
+    return [
+      { role: "...", influence: "...", percent: 0 },
+      { role: "...", influence: "...", percent: 0 },
+      { role: "...", influence: "...", percent: 0 }
+    ];
+  }
+  
+  return stakeholders.map((s, i) => parseStakeholder(s, i));
 };
 
 const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntelligenceSectionProps) => {
@@ -370,7 +393,9 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // Calculate metrics
   const competitivePosition = getCompetitivePosition(icpData);
   const expectedROAS = getExpectedROAS(icpData);
-  const decisionMakers = getDecisionMakers(primaryPersona);
+  // Get stakeholders array from icp_intelligence_section.budget_timeline.stakeholders
+  const stakeholdersArray = icpData?.budget_timeline?.stakeholders as string[] | undefined;
+  const decisionMakers = getDecisionMakers(stakeholdersArray);
 
   // Marketing metrics for cards
   const marketingMetrics = [
@@ -409,8 +434,8 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     { icon: Calendar, label: "Decision Timeframe", value: decisionTimeframe }
   ];
 
-  // Decision maker icons
-  const decisionMakerIcons = [Crown, User, Shield];
+  // Decision maker icons - cycle through for any number of stakeholders
+  const decisionMakerIcons = [Crown, User, Shield, CreditCard, Building2, Target, Users, Megaphone];
 
   return (
     <section id="marketing-intelligence" className="space-y-6 animate-fade-in">
@@ -601,9 +626,9 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {decisionMakers.map((dm, i) => {
-              const IconComponent = decisionMakerIcons[i];
+              const IconComponent = decisionMakerIcons[i % decisionMakerIcons.length];
               return (
                 <div 
                   key={i} 
