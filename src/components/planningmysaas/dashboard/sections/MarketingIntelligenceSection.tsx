@@ -220,38 +220,12 @@ const extractCompanySize = (value: string | undefined | null): string => {
   return extracted.length > 20 ? extracted.slice(0, 17) + '...' : extracted;
 };
 
-// Helper: Extract minimum monthly budget from annual range
-// e.g., "$250K-$2M+" → $250K/12 = "$20.8K"
-const extractMinMonthlyBudget = (value: string | undefined | null): string => {
-  if (!value?.trim()) return "...";
-  
-  // Extract first monetary value (minimum of range)
-  const match = value.match(/\$([\d,.]+)([KMB])?/i);
-  if (!match) return "...";
-  
-  // Parse the numeric value
-  let amount = parseFloat(match[1].replace(/,/g, ""));
-  if (isNaN(amount)) return "...";
-  
-  // Apply suffix multiplier
-  const suffix = match[2]?.toUpperCase();
-  if (suffix === "K") amount *= 1_000;
-  else if (suffix === "M") amount *= 1_000_000;
-  else if (suffix === "B") amount *= 1_000_000_000;
-  
-  // Divide by 12 to get monthly
-  const monthly = amount / 12;
-  
-  // Format with appropriate suffix
-  if (monthly >= 1_000_000_000) {
-    return `$${(monthly / 1_000_000_000).toFixed(1).replace(/\.0$/, "")}B`;
-  } else if (monthly >= 1_000_000) {
-    return `$${(monthly / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  } else if (monthly >= 1_000) {
-    return `$${(monthly / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  } else {
-    return `$${Math.round(monthly)}`;
-  }
+// Helper: Extract minimum monthly budget
+// TODO: Aguardando fluxo n8n para calcular valor correto
+// O campo budget_range atual ($250K-$2M+) representa o orçamento TOTAL 
+// de TI da empresa, não o preço específico do produto
+const extractMinMonthlyBudget = (_value: string | undefined | null): string => {
+  return "...";
 };
 
 // Helper: calculate competitive position from data
