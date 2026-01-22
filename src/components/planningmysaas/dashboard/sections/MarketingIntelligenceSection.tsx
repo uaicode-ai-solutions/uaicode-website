@@ -137,12 +137,43 @@ const getLocationDisplay = (region: string | null | undefined): string => {
   return REGION_DISPLAY_MAP[lowerRegion] || region.charAt(0).toUpperCase() + region.slice(1);
 };
 
-// Helper: Format pricing model (capitalize first letter)
-const formatPricingModel = (value: string | undefined | null): string => {
-  if (!value?.trim()) return "...";
-  const main = value.split(";")[0].trim();
-  if (main.length === 0) return "...";
-  return main.charAt(0).toUpperCase() + main.slice(1);
+// Helper: Extract pricing model NAME from potentially long strategy text
+const extractPricingModelName = (strategy: string | undefined | null, fallbackModel: string | undefined | null): string => {
+  // Try fallback first if it's short and valid
+  if (fallbackModel && String(fallbackModel).length <= 25) {
+    const fb = String(fallbackModel).trim();
+    if (fb && !['null', 'undefined', ''].includes(fb.toLowerCase())) {
+      return fb.split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ');
+    }
+  }
+  
+  if (!strategy) return "Tiered Subscription";
+  const str = String(strategy).trim();
+  if (!str || ['null', 'undefined'].includes(str.toLowerCase())) return "Tiered Subscription";
+  
+  // If it's already a short name, capitalize and return
+  if (str.length <= 25) {
+    return str.split(' ')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+  }
+  
+  // Extract model name from long text using keywords
+  const lowerStr = str.toLowerCase();
+  if (lowerStr.includes('freemium')) return 'Freemium';
+  if (lowerStr.includes('tiered')) return 'Tiered Pricing';
+  if (lowerStr.includes('subscription')) return 'Subscription';
+  if (lowerStr.includes('usage-based') || lowerStr.includes('usage based')) return 'Usage-Based';
+  if (lowerStr.includes('per-user') || lowerStr.includes('per user')) return 'Per-User';
+  if (lowerStr.includes('flat rate') || lowerStr.includes('flat-rate')) return 'Flat Rate';
+  if (lowerStr.includes('value-based') || lowerStr.includes('value based')) return 'Value-Based';
+  
+  // Fallback: extract first 2-3 words
+  const words = str.split(/[\s,.-]+/).filter(w => w.length > 0).slice(0, 3);
+  const extracted = words.join(' ');
+  return extracted.length > 25 ? extracted.slice(0, 22) + '...' : extracted;
 };
 
 // Helper: Extract budget value - only the monetary range (e.g., "$99-$299")
@@ -341,10 +372,9 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // Preferred Pricing Model: Use price_intelligence_section for consistency with Marketing tab
   const priceIntelligence = reportData?.price_intelligence_section as Record<string, unknown> | null;
   const recommendedPricing = priceIntelligence?.recommended_pricing as Record<string, unknown> | null;
-  const pricingModel = formatPricingModel(
-    (recommendedPricing?.pricing_strategy as string) || 
-    primaryPersona?.summary?.preferred_pricing_model || 
-    "Tiered Subscription"
+  const pricingModel = extractPricingModelName(
+    recommendedPricing?.pricing_strategy as string,
+    primaryPersona?.summary?.preferred_pricing_model
   );
 
   // Primary Goals: From summary.key_features, formatted
