@@ -171,6 +171,9 @@ export interface ICPPainPoint {
   pain_point: string;
   intensity_score: string;
   urgency_level: "high" | "medium" | "low";
+  // n8n compatibility fields
+  context?: string;
+  rank?: number;
 }
 
 export interface ICPBuyingBehavior {
@@ -204,6 +207,11 @@ export interface ICPPersona {
   competitive_alternatives: string[];
   feature_priorities: string[];
   summary: ICPPersonaSummary;
+  // n8n compatibility fields
+  geographic_region?: string;
+  tech_savviness?: number;
+  responsibilities?: string[];
+  gender?: string;
 }
 
 export interface ICPAggregatedInsights {
@@ -230,6 +238,52 @@ export interface ICPIntelligenceSection {
   aggregated_insights: ICPAggregatedInsights;
   market_insights: ICPMarketInsights;
   citations?: string[];
+  // n8n metadata fields
+  data_source?: string;
+  generated_at?: string;
+  confidence_score?: string;
+  // Legacy compatibility fields (n8n sends duplicated flat structure)
+  persona?: {
+    name?: string;
+    persona_name?: string;
+    role?: string;
+    job_title?: string;
+    tech_savviness?: number;
+    responsibilities?: string[];
+    gender?: string;
+  };
+  demographics?: {
+    company_size?: string;
+    income_or_company_size?: string;
+    industry?: string;
+    location?: string;
+    geographic_region?: string;
+    decision_authority?: string;
+    growth_phase?: string;
+  };
+  pain_points?: Array<{
+    pain_point: string;
+    intensity_score: string;
+    urgency_level: string;
+    context?: string;
+    rank?: number;
+  }>;
+  buying_triggers?: string[];
+  preferred_channels?: {
+    research?: string[];
+    social?: string[];
+    events?: string[];
+  };
+  messaging_hooks?: {
+    value_propositions?: string[];
+    terminology?: string[];
+    objections?: string[];
+  };
+  budget_timeline?: {
+    typical_budget?: string;
+    decision_timeline?: string;
+    stakeholders?: string[];
+  };
 }
 
 // ==========================================
