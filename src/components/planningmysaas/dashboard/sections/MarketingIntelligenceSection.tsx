@@ -324,30 +324,31 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   );
   
   // ============================================
-  // COMPANY PROFILE DATA (from summary)
+  // COMPANY PROFILE DATA (from icp_intelligence_section)
   // ============================================
   
-  // Company Size: Extract short label from potentially long text
-  const companySize = extractCompanySize(primaryPersona?.summary?.company_size);
+  // Industry: From wizard's industry field
+  const industry = getValue(report?.industry);
+
+  // Company Size: From icp_intelligence_section.demographics.company_size
+  const companySize = getValue(
+    icpData?.demographics?.company_size ||
+    primaryPersona?.summary?.company_size
+  );
+
+  // Location: From icp_intelligence_section.demographics.location
+  const location = getValue(
+    icpData?.demographics?.location ||
+    report?.geographic_region
+  );
 
   // Budget Range: Full value from summary.budget_range
   const budgetRange = getValue(primaryPersona?.summary?.budget_range);
 
-  // Industry: From summary.industry_focus
-  const industry = getValue(primaryPersona?.summary?.industry_focus);
-
-  // Location: From wizard's geographic_region
-  const location = getLocationDisplay(report?.geographic_region);
-
-  // Decision Timeframe: From summary.decision_timeframe, extract main value only
-  const decisionTimeframe = extractMainValue(primaryPersona?.summary?.decision_timeframe);
-
-  // Preferred Pricing Model: Use price_intelligence_section for consistency with Marketing tab
-  const priceIntelligence = reportData?.price_intelligence_section as Record<string, unknown> | null;
-  const recommendedPricing = priceIntelligence?.recommended_pricing as Record<string, unknown> | null;
-  const pricingModel = extractPricingModelName(
-    recommendedPricing?.pricing_strategy as string,
-    primaryPersona?.summary?.preferred_pricing_model
+  // Decision Timeframe: Full text from icp_intelligence_section.budget_timeline.decision_timeline
+  const decisionTimeframe = getValue(
+    icpData?.budget_timeline?.decision_timeline ||
+    primaryPersona?.summary?.decision_timeframe
   );
 
   // Pain Points: From icp_intelligence_section.pain_points (array directly)
@@ -394,12 +395,13 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     },
   ];
 
-  // Company profile demographics - reduced to 4 items (Location & Decision Timeframe moved to ICP card)
+  // Company profile demographics - 5 items with new order
   const demographics = [
-    { icon: Users, label: "Company Size", value: companySize },
-    { icon: DollarSign, label: "Budget Range", value: budgetRange },
     { icon: Building2, label: "Industry", value: industry },
-    { icon: CreditCard, label: "Pricing Model", value: pricingModel }
+    { icon: Users, label: "Company Size", value: companySize },
+    { icon: MapPin, label: "Location", value: location },
+    { icon: DollarSign, label: "Budget Range", value: budgetRange },
+    { icon: Calendar, label: "Decision Timeframe", value: decisionTimeframe }
   ];
 
   // Decision maker icons
@@ -511,28 +513,6 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
               </div>
             </div>
 
-            {/* Location & Decision Timeframe - horizontal layout */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/50 hover:border-accent/20 transition-colors">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500/15 to-amber-400/5">
-                    <MapPin className="h-3.5 w-3.5 text-amber-500" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">Location</span>
-                </div>
-                <span className="text-sm font-medium text-foreground">{location}</span>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/50 hover:border-accent/20 transition-colors">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500/15 to-amber-400/5">
-                    <Calendar className="h-3.5 w-3.5 text-amber-500" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">Decision Timeframe</span>
-                </div>
-                <span className="text-sm font-medium text-foreground">{decisionTimeframe}</span>
-              </div>
-            </div>
 
             {/* Pain Points */}
             <div>
