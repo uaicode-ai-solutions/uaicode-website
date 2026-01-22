@@ -274,16 +274,14 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // ICP Display Data (Updated per requirements)
   // ============================================
   
-  // Name: Use job_title from persona (n8n data)
+  // Name: Use persona.name from n8n data (e.g., "Michael Chen")
   const icpDisplayName = getValue(
-    icpData?.persona?.job_title ||
-    primaryPersona?.job_title ||
-    primaryPersona?.summary?.job_title
+    icpData?.persona?.name ||
+    (primaryPersona?.summary as unknown as Record<string, string>)?.persona_name ||
+    primaryPersona?.persona_name
   );
-  // Generate initials from job_title (e.g., "VP" from "VP of Operations")
-  const initials = icpDisplayName !== "..." 
-    ? icpDisplayName.split(/[\s\/]+/).slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("")
-    : "...";
+  // Generate initials from persona name (e.g., "MC" from "Michael Chen")
+  const initials = getInitials(icpDisplayName);
   
   // ============================================
   // STATIC AVATAR URL - Pre-generated avatars
@@ -312,17 +310,18 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   
   const avatarUrl = getStaticAvatarUrl(report?.geographic_region, report?.target_audience);
   
-  // Role: Use persona_name (e.g., "Michael Chen")
+  // Role/Job Title: Use job_title from persona (e.g., "VP of Operations / Director of Business Technology")
   const icpRole = getValue(
-    primaryPersona?.persona_name ||
-    primaryPersona?.summary?.name ||
-    icpData?.persona?.persona_name
+    icpData?.persona?.job_title ||
+    primaryPersona?.job_title ||
+    primaryPersona?.summary?.job_title
   );
   
-  // Industry Badge: First item from industry_focus
+  // Industry Badge: From wizard industry (e.g., "Healthcare") with fallbacks
   const businessType = getValue(
-    primaryPersona?.summary?.industry_focus?.split(",")[0]?.trim() ||
-    primaryPersona?.industry_focus?.split(",")[0]?.trim()
+    report?.industry ||
+    (icpData?.persona as unknown as Record<string, Record<string, string>>)?.demographics?.industry ||
+    primaryPersona?.summary?.industry_focus?.split(",")[0]?.trim()
   );
   
   // ============================================
