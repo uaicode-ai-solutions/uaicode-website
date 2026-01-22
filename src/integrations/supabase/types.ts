@@ -330,15 +330,7 @@ export type Database = {
           updated_at?: string
           wizard_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "tb_pms_reports_wizard_id_fkey"
-            columns: ["wizard_id"]
-            isOneToOne: false
-            referencedRelation: "tb_pms_wizard"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       tb_pms_users: {
         Row: {
