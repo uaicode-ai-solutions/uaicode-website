@@ -350,11 +350,16 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     primaryPersona?.summary?.preferred_pricing_model
   );
 
-  // Primary Goals: From summary.key_features, formatted
-  const keyFeatures = primaryPersona?.summary?.key_features || [];
-  const displayGoals = keyFeatures.length > 0 
-    ? keyFeatures.slice(0, 3).map(formatFeatureName)
-    : ["...", "...", "..."];
+  // Pain Points: From icp_intelligence_section.pain_points (array directly)
+  interface PainPointItem {
+    pain_point: string;
+    urgency_level: string;
+    intensity_score?: string;
+  }
+  const painPointsData = (icpData?.pain_points || []) as PainPointItem[];
+  const displayPainPoints = painPointsData.length > 0 
+    ? painPointsData.slice(0, 3)
+    : [{ pain_point: "...", urgency_level: "medium" }];
 
   // Calculate metrics
   const competitivePosition = getCompetitivePosition(icpData);
@@ -529,17 +534,25 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
               </div>
             </div>
 
-            {/* Key Features */}
+            {/* Pain Points */}
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-3">Key Features</p>
+              <p className="text-sm font-medium text-muted-foreground mb-3">Pain Points</p>
               <div className="space-y-2">
-                {displayGoals.map((goal, i) => (
+                {displayPainPoints.map((item, i) => (
                   <div 
                     key={i} 
-                    className="flex items-center gap-2 text-sm p-3 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10 hover:border-accent/30 transition-colors"
+                    className="flex items-center justify-between text-sm p-3 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10 hover:border-accent/30 transition-colors"
                   >
-                    <div className="h-2 w-2 rounded-full bg-amber-500" />
-                    <span className="text-foreground">{goal}</span>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
+                      <span className="text-foreground truncate">{item.pain_point}</span>
+                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className="ml-2 shrink-0 text-xs bg-amber-500/10 border-amber-500/30 text-amber-400 capitalize"
+                    >
+                      {item.urgency_level}
+                    </Badge>
                   </div>
                 ))}
               </div>
