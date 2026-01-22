@@ -175,6 +175,39 @@ const extractPricingModelName = (strategy: string | undefined | null, fallbackMo
   const extracted = words.join(' ');
   return extracted.length > 25 ? extracted.slice(0, 22) + '...' : extracted;
 };
+// Helper: Extract company size from potentially long text
+const extractCompanySize = (value: string | undefined | null): string => {
+  if (!value?.trim()) return "SMB";
+  const str = String(value).trim();
+  
+  // If already short, capitalize and return
+  if (str.length <= 20) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+  
+  // Extract employee count patterns: "10-50", "50-200", "1-10", etc.
+  const employeeMatch = str.match(/(\d{1,4}\s*[-–]\s*\d{1,4})\s*(employees?)?/i);
+  if (employeeMatch) {
+    return employeeMatch[1].replace(/\s+/g, '') + " employees";
+  }
+  
+  // Look for keywords
+  const lowerStr = str.toLowerCase();
+  if (lowerStr.includes('enterprise')) return 'Enterprise';
+  if (lowerStr.includes('large')) return 'Large Business';
+  if (lowerStr.includes('mid-market') || lowerStr.includes('midmarket')) return 'Mid-Market';
+  if (lowerStr.includes('small') && lowerStr.includes('medium')) return 'SMB';
+  if (lowerStr.includes('smb')) return 'SMB';
+  if (lowerStr.includes('startup')) return 'Startup';
+  if (lowerStr.includes('solopreneur') || lowerStr.includes('individual')) return 'Solopreneur';
+  if (lowerStr.includes('small')) return 'Small Business';
+  if (lowerStr.includes('medium')) return 'Medium Business';
+  
+  // Fallback: first 2-3 words max 20 chars
+  const words = str.split(/[\s,.-]+/).filter(w => w.length > 0).slice(0, 3);
+  const extracted = words.join(' ');
+  return extracted.length > 20 ? extracted.slice(0, 17) + '...' : extracted;
+};
 
 // Helper: Extract budget value - only the monetary range (e.g., "$99-$299")
 const extractBudgetValue = (value: string | undefined | null): string => {
@@ -354,8 +387,8 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // COMPANY PROFILE DATA (from summary)
   // ============================================
   
-  // Company Size: Full value from summary.company_size
-  const companySize = getValue(primaryPersona?.summary?.company_size);
+  // Company Size: Extract short label from potentially long text
+  const companySize = extractCompanySize(primaryPersona?.summary?.company_size);
 
   // Budget Range: Full value from summary.budget_range
   const budgetRange = getValue(primaryPersona?.summary?.budget_range);
