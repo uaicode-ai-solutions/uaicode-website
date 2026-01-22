@@ -605,7 +605,7 @@ export function useFinancialMetrics(
     
     // Get benchmark ARPU values if available
     // PRIORITY: 1. arpu_default (exact), 2. arpu_range average, 3. Calculated from MRR/customers
-    const benchmarkArpuDefault = benchmarkSection?.arpu_default as number | undefined;
+    const benchmarkArpuDefault = benchmarkSection?.default_arpu as number | undefined;
     const benchmarkArpuRange = benchmarkSection?.arpu_range as { min?: number; max?: number } | undefined;
     const benchmarkArpuMin = benchmarkArpuRange?.min || 5;
     const benchmarkArpuMax = benchmarkArpuRange?.max || 200;
@@ -616,7 +616,7 @@ export function useFinancialMetrics(
       // PRIORITY 1: Use benchmark arpu_default if available (most accurate)
       if (benchmarkArpuDefault && benchmarkArpuDefault > 0) {
         idealTicket = Math.round(benchmarkArpuDefault);
-        console.log('[Financial] ✅ Using benchmark arpu_default:', benchmarkArpuDefault);
+        console.log('[Financial] ✅ Using benchmark default_arpu:', benchmarkArpuDefault);
       }
       // PRIORITY 2: If we have customer data, calculate from validated MRR
       else if (customers12Months && customers12Months.avg > 0) {
