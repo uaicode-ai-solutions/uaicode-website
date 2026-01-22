@@ -351,6 +351,11 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     primaryPersona?.summary?.decision_timeframe
   );
 
+  // Responsibilities: From icp_intelligence_section.demographics.decision_authority
+  const responsibilities = getValue(
+    icpData?.demographics?.decision_authority
+  );
+
   // Pain Points: From icp_intelligence_section.pain_points (array directly)
   interface PainPointItem {
     pain_point: string;
@@ -513,6 +518,13 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
               </div>
             </div>
 
+            {/* Responsibilities */}
+            <div>
+              <p className="text-sm font-medium text-muted-foreground mb-2">Responsibilities</p>
+              <div className="p-3 rounded-xl bg-gradient-to-b from-card/80 to-card/40 border border-accent/10">
+                <span className="text-sm text-foreground">{responsibilities}</span>
+              </div>
+            </div>
 
             {/* Pain Points */}
             <div>
