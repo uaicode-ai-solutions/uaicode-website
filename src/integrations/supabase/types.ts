@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      tb_pms_discount_strategy: {
+        Row: {
+          bonus_support_days: number | null
+          created_at: string | null
+          description: string | null
+          discount_id: string
+          discount_name: string
+          discount_percent: number
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+          validity_hours: number | null
+        }
+        Insert: {
+          bonus_support_days?: number | null
+          created_at?: string | null
+          description?: string | null
+          discount_id: string
+          discount_name: string
+          discount_percent: number
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          validity_hours?: number | null
+        }
+        Update: {
+          bonus_support_days?: number | null
+          created_at?: string | null
+          description?: string | null
+          discount_id?: string
+          discount_name?: string
+          discount_percent?: number
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          validity_hours?: number | null
+        }
+        Relationships: []
+      }
       tb_pms_mkt_tier: {
         Row: {
           ad_spend_fee_percent: number | null
