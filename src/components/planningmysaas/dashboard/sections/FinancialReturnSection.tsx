@@ -33,7 +33,8 @@ const FinancialReturnSection = () => {
   // Extract key values with safe defaults
   const breakEvenMonths = metrics.breakEvenMonthsNum || 48;
   const roiYear1 = metrics.roiYear1Num || 0;
-  const ltvCacRatioNum = metrics.ltvCacRatioNum || metrics.ltvCacCalculated || 3;
+  // PRIORITIZE ltvCacCalculated for consistency across all Report sections
+  const ltvCacRatioNum = metrics.ltvCacCalculated || metrics.ltvCacRatioNum || 3;
   const paybackMonths = metrics.paybackPeriod || 6;
   const mrrMonth12 = metrics.mrrMonth12Num || 0;
   const arrYear1 = metrics.arrProjectedNum || 0;
@@ -46,7 +47,8 @@ const FinancialReturnSection = () => {
   const rawGrowthPercent = arrYear1 > 0 ? Math.round(((arrYear3 - arrYear1) / arrYear1) * 100) : 0;
   const growthPercent = Math.min(rawGrowthPercent, 900);
   const wasGrowthCapped = rawGrowthPercent > 900;
-  const arpu = metrics.idealTicket || 99;
+  // Use B2C-consistent fallback for ARPU
+  const arpu = metrics.idealTicket || 9;
   const ltv = metrics.ltv || 0;
   const mvpInvestment = metrics.mvpInvestment || 0;
   

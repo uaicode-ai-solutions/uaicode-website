@@ -70,7 +70,10 @@ const ReportHero = ({ projectName, onScheduleCall, onExploreReport }: ReportHero
   });
   
   // LTV/CAC and Payback from useFinancialMetrics (same source as FinancialReturnSection)
-  const ltvCacRatio = financialMetrics.ltvCacRatio || "...";
+  // PRIORITIZE ltvCacCalculated for consistency across all Report sections
+  const ltvCacRatio = financialMetrics.ltvCacCalculated 
+    ? `${financialMetrics.ltvCacCalculated.toFixed(1)}x`
+    : (financialMetrics.ltvCacRatio || "...");
   const paybackPeriod = financialMetrics.paybackPeriod 
     ? `${financialMetrics.paybackPeriod} mo` 
     : (financialMetrics.unitEconomics?.paybackPeriod || "...");
