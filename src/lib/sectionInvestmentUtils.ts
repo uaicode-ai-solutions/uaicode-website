@@ -9,7 +9,26 @@ import { safeNumber } from "@/lib/financialParsingUtils";
 // Section Investment Types
 // ==========================================
 
-export interface DiscountStrategy {
+// NEW: Individual discount item from tb_pms_discount_strategy
+export interface DiscountItem {
+  name: string;
+  percent: number;
+  price_cents: number;
+  validity_hours: number | null;
+  bonus_support_days: number;
+}
+
+// NEW: Map of discounts by discount_id (new n8n format)
+export interface DiscountStrategyMap {
+  flash_24h: DiscountItem;
+  week: DiscountItem;
+  month: DiscountItem;
+  bundle: DiscountItem;
+  best_current?: string;
+}
+
+// LEGACY: Old flat format (for backward compatibility)
+export interface DiscountStrategyLegacy {
   discount_24h_percent: number;
   discount_7d_percent: number;
   discount_30d_percent: number;
@@ -26,12 +45,20 @@ export interface DiscountStrategy {
   savings_vs_traditional_24h_percent: number;
 }
 
+// Support both old keys (front_cents) and new keys (frontend)
 export interface InvestmentBreakdownJson {
-  front_cents: number;
-  back_cents: number;
-  integrations_cents: number;
-  infra_cents: number;
-  testing_cents: number;
+  // New n8n keys
+  frontend?: number;
+  backend?: number;
+  integrations?: number;
+  infra?: number;
+  testing?: number;
+  // Legacy keys
+  front_cents?: number;
+  back_cents?: number;
+  integrations_cents?: number;
+  infra_cents?: number;
+  testing_cents?: number;
 }
 
 export interface SectionInvestment {
@@ -54,7 +81,8 @@ export interface SectionInvestment {
   delivery_weeks_uaicode_max: number;
   delivery_weeks_traditional_min: number;
   delivery_weeks_traditional_max: number;
-  discount_strategy: DiscountStrategy;
+  // Union type: supports both new DiscountStrategyMap and legacy flat format
+  discount_strategy: DiscountStrategyMap | DiscountStrategyLegacy;
 }
 
 // ==========================================
@@ -96,8 +124,8 @@ export function formatDeliveryWeeks(min: number, max: number): string {
 }
 
 /**
- * Gets investment breakdown from section_investment JSONB only (no legacy fallbacks)
- * Uses safeNumber to handle scientific notation strings from Supabase
+ * Gets investment breakdown from section_investment JSONB
+ * Supports both new keys (frontend, backend) and legacy keys (front_cents, back_cents)
  */
 export function getInvestmentBreakdown(
   _reportData: ReportData | null | undefined,
@@ -110,15 +138,16 @@ export function getInvestmentBreakdown(
   infra: number | null;
   testing: number | null;
 } {
-  // Use section_investment data exclusively
   if (sectionInvestment?.investment_breakdown) {
-    // Use safeNumber to handle scientific notation strings from JSONB
+    const breakdown = sectionInvestment.investment_breakdown;
     const onePaymentValue = safeNumber(sectionInvestment.investment_one_payment_cents, 0);
-    const frontendValue = safeNumber(sectionInvestment.investment_breakdown.front_cents, 0);
-    const backendValue = safeNumber(sectionInvestment.investment_breakdown.back_cents, 0);
-    const integrationsValue = safeNumber(sectionInvestment.investment_breakdown.integrations_cents, 0);
-    const infraValue = safeNumber(sectionInvestment.investment_breakdown.infra_cents, 0);
-    const testingValue = safeNumber(sectionInvestment.investment_breakdown.testing_cents, 0);
+    
+    // Support both new keys and legacy keys
+    const frontendValue = safeNumber(breakdown.frontend ?? breakdown.front_cents, 0);
+    const backendValue = safeNumber(breakdown.backend ?? breakdown.back_cents, 0);
+    const integrationsValue = safeNumber(breakdown.integrations ?? breakdown.integrations_cents, 0);
+    const infraValue = safeNumber(breakdown.infra ?? breakdown.infra_cents, 0);
+    const testingValue = safeNumber(breakdown.testing ?? breakdown.testing_cents, 0);
     
     return {
       onePayment: onePaymentValue > 0 ? onePaymentValue : null,
@@ -130,7 +159,6 @@ export function getInvestmentBreakdown(
     };
   }
 
-  // Return nulls if no section_investment data
   return {
     onePayment: null,
     frontend: null,
@@ -188,57 +216,130 @@ export function getPricingComparison(
 }
 
 /**
- * Gets discount strategy with defaults
- * Uses safeNumber to handle scientific notation strings from Supabase
+ * Type guard to check if discount_strategy is the new DiscountStrategyMap format
+ */
+function isDiscountStrategyMap(ds: DiscountStrategyMap | DiscountStrategyLegacy): ds is DiscountStrategyMap {
+  return (ds as DiscountStrategyMap).flash_24h !== undefined;
+}
+
+/**
+ * Gets discount strategy normalized to DiscountStrategyMap format
+ * Supports both new n8n format and legacy flat format
  */
 export function getDiscountStrategy(
   sectionInvestment: SectionInvestment | null,
   mvpPriceCents: number
-): DiscountStrategy {
-  // Handle scientific notation for mvpPriceCents
+): DiscountStrategyMap {
   const safeMvpPriceCents = safeNumber(mvpPriceCents, 0);
   
-  // If we have discount_strategy from JSON, use it with safeNumber for all _cents fields
   if (sectionInvestment?.discount_strategy) {
     const ds = sectionInvestment.discount_strategy;
+    
+    // NEW FORMAT: Already has flash_24h, week, month, bundle as objects
+    if (isDiscountStrategyMap(ds)) {
+      return {
+        flash_24h: {
+          name: ds.flash_24h.name || "Flash Deal 24h",
+          percent: safeNumber(ds.flash_24h.percent, 25),
+          price_cents: safeNumber(ds.flash_24h.price_cents, 0),
+          validity_hours: ds.flash_24h.validity_hours ?? 24,
+          bonus_support_days: safeNumber(ds.flash_24h.bonus_support_days, 15),
+        },
+        week: {
+          name: ds.week.name || "First Week Special",
+          percent: safeNumber(ds.week.percent, 15),
+          price_cents: safeNumber(ds.week.price_cents, 0),
+          validity_hours: ds.week.validity_hours ?? 168,
+          bonus_support_days: safeNumber(ds.week.bonus_support_days, 7),
+        },
+        month: {
+          name: ds.month.name || "First Month Offer",
+          percent: safeNumber(ds.month.percent, 10),
+          price_cents: safeNumber(ds.month.price_cents, 0),
+          validity_hours: ds.month.validity_hours ?? 720,
+          bonus_support_days: safeNumber(ds.month.bonus_support_days, 0),
+        },
+        bundle: {
+          name: ds.bundle.name || "MVP + Marketing Bundle",
+          percent: safeNumber(ds.bundle.percent, 30),
+          price_cents: safeNumber(ds.bundle.price_cents, 0),
+          validity_hours: ds.bundle.validity_hours,
+          bonus_support_days: safeNumber(ds.bundle.bonus_support_days, 30),
+        },
+        best_current: ds.best_current,
+      };
+    }
+    
+    // LEGACY FORMAT: Convert flat keys to new structure
+    const legacy = ds as DiscountStrategyLegacy;
     return {
-      discount_24h_percent: safeNumber(ds.discount_24h_percent, 20),
-      discount_7d_percent: safeNumber(ds.discount_7d_percent, 15),
-      discount_30d_percent: safeNumber(ds.discount_30d_percent, 10),
-      bundle_discount_percent: safeNumber(ds.bundle_discount_percent, 25),
-      price_24h_cents: safeNumber(ds.price_24h_cents, 0),
-      price_7d_cents: safeNumber(ds.price_7d_cents, 0),
-      price_30d_cents: safeNumber(ds.price_30d_cents, 0),
-      bundle_price_cents: safeNumber(ds.bundle_price_cents, 0),
-      savings_24h_cents: safeNumber(ds.savings_24h_cents, 0),
-      savings_7d_cents: safeNumber(ds.savings_7d_cents, 0),
-      savings_30d_cents: safeNumber(ds.savings_30d_cents, 0),
-      savings_bundle_cents: safeNumber(ds.savings_bundle_cents, 0),
-      savings_vs_traditional_24h_cents: safeNumber(ds.savings_vs_traditional_24h_cents, 0),
-      savings_vs_traditional_24h_percent: safeNumber(ds.savings_vs_traditional_24h_percent, 0),
+      flash_24h: {
+        name: "Flash Deal 24h",
+        percent: safeNumber(legacy.discount_24h_percent, 25),
+        price_cents: safeNumber(legacy.price_24h_cents, 0),
+        validity_hours: 24,
+        bonus_support_days: 15,
+      },
+      week: {
+        name: "First Week Special",
+        percent: safeNumber(legacy.discount_7d_percent, 15),
+        price_cents: safeNumber(legacy.price_7d_cents, 0),
+        validity_hours: 168,
+        bonus_support_days: 7,
+      },
+      month: {
+        name: "First Month Offer",
+        percent: safeNumber(legacy.discount_30d_percent, 10),
+        price_cents: safeNumber(legacy.price_30d_cents, 0),
+        validity_hours: 720,
+        bonus_support_days: 0,
+      },
+      bundle: {
+        name: "MVP + Marketing Bundle",
+        percent: safeNumber(legacy.bundle_discount_percent, 30),
+        price_cents: safeNumber(legacy.bundle_price_cents, 0),
+        validity_hours: null,
+        bonus_support_days: 30,
+      },
     };
   }
 
-  // Fallback to calculated defaults (10%, 15%, 20%, 25% bundle)
-  const price10 = Math.round(safeMvpPriceCents * 0.90);
-  const price15 = Math.round(safeMvpPriceCents * 0.85);
-  const price20 = Math.round(safeMvpPriceCents * 0.80);
-  const bundle = Math.round(safeMvpPriceCents * 0.75);
-
+  // FALLBACK: Calculate defaults when no discount_strategy exists
   return {
-    discount_24h_percent: 20,
-    discount_7d_percent: 15,
-    discount_30d_percent: 10,
-    bundle_discount_percent: 25,
-    price_24h_cents: price20,
-    price_7d_cents: price15,
-    price_30d_cents: price10,
-    bundle_price_cents: bundle,
-    savings_24h_cents: safeMvpPriceCents - price20,
-    savings_7d_cents: safeMvpPriceCents - price15,
-    savings_30d_cents: safeMvpPriceCents - price10,
-    savings_bundle_cents: safeMvpPriceCents - bundle,
-    savings_vs_traditional_24h_cents: 0,
-    savings_vs_traditional_24h_percent: 0,
+    flash_24h: {
+      name: "Flash Deal 24h",
+      percent: 25,
+      price_cents: Math.round(safeMvpPriceCents * 0.75),
+      validity_hours: 24,
+      bonus_support_days: 15,
+    },
+    week: {
+      name: "First Week Special",
+      percent: 15,
+      price_cents: Math.round(safeMvpPriceCents * 0.85),
+      validity_hours: 168,
+      bonus_support_days: 7,
+    },
+    month: {
+      name: "First Month Offer",
+      percent: 10,
+      price_cents: Math.round(safeMvpPriceCents * 0.90),
+      validity_hours: 720,
+      bonus_support_days: 0,
+    },
+    bundle: {
+      name: "MVP + Marketing Bundle",
+      percent: 30,
+      price_cents: Math.round(safeMvpPriceCents * 0.70),
+      validity_hours: null,
+      bonus_support_days: 30,
+    },
   };
+}
+
+/**
+ * Helper to calculate savings for a discount
+ */
+export function getDiscountSavings(basePrice: number, discountItem: DiscountItem): number {
+  return basePrice - discountItem.price_cents;
 }

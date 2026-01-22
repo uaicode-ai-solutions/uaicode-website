@@ -39,7 +39,7 @@ import KyleConsultantDialog from "../KyleConsultantDialog";
 import KyleChatDialog from "../KyleChatDialog";
 import KyleAvatar from "@/components/chat/KyleAvatar";
 import EmailContactDialog from "@/components/chat/EmailContactDialog";
-import { getSectionInvestment, getDiscountStrategy } from "@/lib/sectionInvestmentUtils";
+import { getSectionInvestment, getDiscountStrategy, getDiscountSavings } from "@/lib/sectionInvestmentUtils";
 import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
 import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
 import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
@@ -216,24 +216,24 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
   const suggestedPaidMedia = calculateSuggestedPaidMedia(userBudget, marketingTotals.uaicodeTotal);
   const suggestedPaidMediaDollars = suggestedPaidMedia / 100;
   
-  // MVP Development - use 30d discount from strategy (fallback 10%)
-  const MVP_DEV_DISCOUNT_PERCENT = discountStrategy.discount_30d_percent;
-  const mvpDevDiscountedPrice = discountStrategy.price_30d_cents > 0 
-    ? discountStrategy.price_30d_cents / 100 
+  // MVP Development - use month discount from strategy (fallback 10%)
+  const MVP_DEV_DISCOUNT_PERCENT = discountStrategy.month.percent;
+  const mvpDevDiscountedPrice = discountStrategy.month.price_cents > 0 
+    ? discountStrategy.month.price_cents / 100 
     : Math.round(mvpPrice * (1 - MVP_DEV_DISCOUNT_PERCENT / 100));
-  const mvpDevSavings = discountStrategy.savings_30d_cents > 0 
-    ? discountStrategy.savings_30d_cents / 100 
+  const mvpDevSavings = discountStrategy.month.price_cents > 0 
+    ? getDiscountSavings(mvpPriceCents, discountStrategy.month) / 100 
     : Math.round(mvpPrice * MVP_DEV_DISCOUNT_PERCENT / 100);
   
-  // MVP + Marketing - use bundle discount from strategy (fallback 15%)
-  const MVP_MARKETING_DISCOUNT_PERCENT = discountStrategy.bundle_discount_percent > 0 
-    ? discountStrategy.bundle_discount_percent 
-    : 15;
-  const mvpMarketingDiscountedPrice = discountStrategy.bundle_price_cents > 0 
-    ? discountStrategy.bundle_price_cents / 100 
+  // MVP + Marketing - use bundle discount from strategy (fallback 30%)
+  const MVP_MARKETING_DISCOUNT_PERCENT = discountStrategy.bundle.percent > 0 
+    ? discountStrategy.bundle.percent 
+    : 30;
+  const mvpMarketingDiscountedPrice = discountStrategy.bundle.price_cents > 0 
+    ? discountStrategy.bundle.price_cents / 100 
     : Math.round(mvpPrice * (1 - MVP_MARKETING_DISCOUNT_PERCENT / 100));
-  const mvpMarketingSavings = discountStrategy.savings_bundle_cents > 0 
-    ? discountStrategy.savings_bundle_cents / 100 
+  const mvpMarketingSavings = discountStrategy.bundle.price_cents > 0 
+    ? getDiscountSavings(mvpPriceCents, discountStrategy.bundle) / 100 
     : Math.round(mvpPrice * MVP_MARKETING_DISCOUNT_PERCENT / 100);
   
   // Annual marketing contract (12 months)
@@ -387,11 +387,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   {formatCurrency(mvpPrice)}
                 </p>
                 <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">
-                  -{discountStrategy.discount_24h_percent}%
+                  -{discountStrategy.flash_24h.percent}%
                 </Badge>
               </div>
               <div className="text-4xl font-bold text-gradient-gold">
-                {formatCurrency(discountStrategy.price_24h_cents / 100)}
+                {formatCurrency(discountStrategy.flash_24h.price_cents / 100)}
               </div>
               <p className="text-xs text-muted-foreground mt-1 font-medium">
                 Today Only - Maximum Discount!
@@ -402,15 +402,15 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             <div className="grid grid-cols-2 gap-2 mb-4">
               <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
                 <p className="text-lg font-bold text-green-400">
-                  {formatCurrency(discountStrategy.savings_24h_cents / 100)}
+                  {formatCurrency(getDiscountSavings(mvpPriceCents, discountStrategy.flash_24h) / 100)}
                 </p>
                 <p className="text-[10px] text-green-400/80">You Save</p>
               </div>
               <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 text-center">
                 <p className="text-lg font-bold text-gradient-gold">
-                  {discountStrategy.savings_vs_traditional_24h_percent}%
+                  {discountStrategy.flash_24h.percent}%
                 </p>
-                <p className="text-[10px] text-muted-foreground">vs Traditional</p>
+                <p className="text-[10px] text-muted-foreground">OFF Today</p>
               </div>
             </div>
 
@@ -566,11 +566,11 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
                   {formatCurrency(mvpPrice + marketingAnnualUaicode)}
                 </p>
                 <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">
-                  -{discountStrategy.bundle_discount_percent}% on MVP
+                  -{discountStrategy.bundle.percent}% on MVP
                 </Badge>
               </div>
               <div className="text-4xl font-bold text-gradient-gold">
-                {formatCurrency((discountStrategy.bundle_price_cents / 100) + marketingAnnualUaicode)}
+                {formatCurrency((discountStrategy.bundle.price_cents / 100) + marketingAnnualUaicode)}
               </div>
               <p className="text-xs text-muted-foreground mt-1 font-medium">
                 MVP + Full Marketing Team Included
@@ -581,13 +581,13 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
             <div className="grid grid-cols-2 gap-2 mb-4">
               <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
                 <p className="text-lg font-bold text-green-400">
-                  {formatCurrency(discountStrategy.savings_bundle_cents / 100)}
+                  {formatCurrency(getDiscountSavings(mvpPriceCents, discountStrategy.bundle) / 100)}
                 </p>
                 <p className="text-[10px] text-green-400/80">MVP Savings</p>
               </div>
               <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 text-center">
                 <p className="text-lg font-bold text-gradient-gold">
-                  30%
+                  {discountStrategy.bundle.percent}%
                 </p>
                 <p className="text-[10px] text-muted-foreground">Max Discount</p>
               </div>
@@ -607,7 +607,7 @@ const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionPro
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-foreground/80 flex items-center gap-1">
-                  Save {formatCurrency(discountStrategy.savings_bundle_cents / 100)} on development
+                  Save {formatCurrency(getDiscountSavings(mvpPriceCents, discountStrategy.bundle) / 100)} on development
                   <InfoTooltip term="Development Savings">
                     Direct savings compared to purchasing MVP at regular price. Calculated based on your project scope.
                   </InfoTooltip>
