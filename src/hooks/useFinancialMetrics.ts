@@ -713,16 +713,25 @@ export function useFinancialMetrics(
     if (ltv && targetCac && targetCac.avg > 0) {
       const calculated = Math.round((ltv / targetCac.avg) * 10) / 10;
       
-      // B2C typically has lower LTV/CAC due to lower LTV
+      // B2C typically has lower LTV/CAC due to lower LTV and higher churn
+      // These are REALISTIC market caps - not aspirational targets
       const MAX_LTV_CAC_BY_MARKET: Record<string, number> = {
-        b2b: 8.0,
-        enterprise: 10.0,
-        smb: 6.0,
-        b2c: 3.0, // Lower for B2C - reduced from 5.0
-        consumer: 2.5, // Very low for consumer apps
+        b2b: 8.0,        // Enterprise B2B with long contracts
+        enterprise: 10.0, // Large enterprise deals
+        smb: 5.0,         // SMB has moderate retention
+        b2c: 6.0,         // B2C subscription apps (Netflix ~5x, Spotify ~4x)
+        consumer: 4.0,    // Consumer apps with high churn
+        healthcare: 6.0,  // Healthcare B2C can be higher due to sticky services
       };
-      const MAX_LTV_CAC = MAX_LTV_CAC_BY_MARKET[effectiveMarketType] || 
-        (effectiveMarketType.includes('b2c') ? 3.0 : 8.0);
+      
+      // Determine market type, checking for healthcare B2C specifically
+      const isHealthcareB2C = effectiveMarketType.includes('b2c') && 
+        (reportData?.opportunity_section as Record<string, unknown>)?.industry?.toString().toLowerCase().includes('health');
+      
+      const MAX_LTV_CAC = isHealthcareB2C 
+        ? 6.0 
+        : (MAX_LTV_CAC_BY_MARKET[effectiveMarketType] || 
+          (effectiveMarketType.includes('b2c') ? 6.0 : 8.0));
       
       if (calculated > MAX_LTV_CAC) {
         console.warn(`[Financial] LTV/CAC ${calculated.toFixed(1)}:1 capped at ${MAX_LTV_CAC}:1 (${effectiveMarketType} benchmark)`);

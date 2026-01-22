@@ -322,6 +322,7 @@ const GrowthPotentialSection = () => {
               currentLtv={metrics.ltv || 0}
               currentLtvCac={currentLtvCac}
               currentPayback={currentPayback}
+              marketType={marketType}
             />
           </div>
         )}

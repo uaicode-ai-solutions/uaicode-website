@@ -27,6 +27,7 @@ interface WhatIfScenariosProps {
   currentLtv: number;
   currentLtvCac: number;
   currentPayback: number;
+  marketType?: string; // Added for market-specific caps
 }
 
 const WhatIfScenarios = ({
@@ -36,6 +37,7 @@ const WhatIfScenarios = ({
   currentLtv,
   currentLtvCac,
   currentPayback,
+  marketType = 'b2b',
 }: WhatIfScenariosProps) => {
   // Slider states - initialized to current values
   const [arpu, setArpu] = useState(currentArpu);
@@ -59,13 +61,21 @@ const WhatIfScenarios = ({
     };
   }, [arpu, churn, cac]);
 
-  // Determine status based on metrics
+  // Determine status based on metrics with market-type awareness
   const getStatus = () => {
     const { ltvCac, payback } = simulatedMetrics;
-    if (ltvCac >= 3 && payback <= 12) {
+    
+    // Market-specific healthy thresholds
+    const isB2C = marketType?.toLowerCase().includes('b2c') || marketType?.toLowerCase().includes('consumer');
+    const healthyLtvCac = isB2C ? 4.0 : 3.0; // B2C can have higher due to lower CAC
+    const excellentLtvCac = isB2C ? 5.0 : 4.0;
+    const healthyPayback = isB2C ? 6 : 12; // B2C needs faster payback
+    const excellentPayback = isB2C ? 4 : 8;
+    
+    if (ltvCac >= excellentLtvCac && payback <= excellentPayback) {
       return { label: "Excellent", color: "text-green-400", bgColor: "bg-green-500/10", borderColor: "border-green-500/30", icon: "🚀" };
     }
-    if (ltvCac >= 2 && payback <= 18) {
+    if (ltvCac >= healthyLtvCac && payback <= healthyPayback) {
       return { label: "Healthy", color: "text-accent", bgColor: "bg-accent/10", borderColor: "border-accent/30", icon: "✓" };
     }
     return { label: "Monitor", color: "text-amber-500", bgColor: "bg-amber-500/10", borderColor: "border-amber-500/30", icon: "⚠" };
@@ -73,17 +83,23 @@ const WhatIfScenarios = ({
 
   const status = getStatus();
 
-  // Calculate improvement tips
+  // Calculate improvement tips with market-type awareness
   const getImprovementTip = () => {
     const { ltvCac, payback } = simulatedMetrics;
-    if (ltvCac < 3 && payback > 12) {
+    const isB2C = marketType?.toLowerCase().includes('b2c') || marketType?.toLowerCase().includes('consumer');
+    const healthyLtvCac = isB2C ? 4.0 : 3.0;
+    const healthyPayback = isB2C ? 6 : 12;
+    
+    if (ltvCac < healthyLtvCac && payback > healthyPayback) {
       return "Reduce churn or increase ARPU to reach healthy unit economics.";
     }
-    if (ltvCac < 3) {
-      return `Increase ARPU by $${Math.ceil((3 * cac - simulatedMetrics.ltv) / simulatedMetrics.lifetimeMonths)} to achieve 3x LTV/CAC.`;
+    if (ltvCac < healthyLtvCac) {
+      const neededArpuIncrease = Math.ceil((healthyLtvCac * cac - simulatedMetrics.ltv) / simulatedMetrics.lifetimeMonths);
+      return `Increase ARPU by $${neededArpuIncrease} to achieve ${healthyLtvCac}x LTV/CAC.`;
     }
-    if (payback > 12) {
-      return `Reduce CAC by ${Math.round((1 - (arpu * 12) / cac) * 100)}% for 12-month payback.`;
+    if (payback > healthyPayback) {
+      const neededCacReduction = Math.round((1 - (arpu * healthyPayback) / cac) * 100);
+      return `Reduce CAC by ${neededCacReduction}% for ${healthyPayback}-month payback.`;
     }
     return "Your simulated metrics are investor-ready!";
   };
