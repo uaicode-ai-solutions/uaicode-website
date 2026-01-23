@@ -115,50 +115,142 @@ export interface OpportunityRisk {
 }
 
 export interface OpportunitySection {
-  // Market size values (from n8n)
+  // === MARKET SIZE (Display Values) ===
   tam_value: string;
   sam_value: string;
   som_value: string;
   tam_description?: string;
   sam_description?: string;
   som_description?: string;
+  tam_source?: string;
+  tam_growth_rate?: string;
+  sam_geographic_focus?: string;
+  sam_addressable_percentage?: string;
+  som_capture_percentage?: string;
+  som_timeframe?: string;
   
-  // Growth metrics
+  // === MARKET SIZE (Numeric for Calculations) ===
+  tam_value_numeric?: number;
+  sam_value_numeric?: number;
+  som_value_numeric?: number;
+  tam_growth_rate_numeric?: number;
+  sam_addressable_percentage_numeric?: number;
+  som_capture_percentage_numeric?: number;
+  
+  // === MARKET SIZE INSIGHTS ===
+  market_size_insights?: {
+    hierarchy_valid: boolean;
+    sam_to_tam_ratio: number | null;
+    som_to_sam_ratio: number | null;
+    market_size_tier: 'massive' | 'large' | 'medium' | 'small';
+  };
+  
+  // === DEMAND SIGNALS (Display) ===
+  monthly_searches?: string;
+  search_trend?: string;
   market_growth_rate: string;
-  projected_growth?: string;
+  trends_score?: string;
+  
+  // === DEMAND SIGNALS (Numeric) ===
+  monthly_searches_numeric?: number;
+  market_growth_rate_numeric?: number;
+  trends_score_numeric?: number;
+  
+  // === DEMAND EVIDENCE ===
+  demand_evidence?: {
+    online_reviews?: {
+      volume: string;
+      volume_numeric?: number;
+      sentiment: string;
+    };
+    forum_discussions?: {
+      volume: string;
+      volume_numeric?: number;
+      engagement: string;
+    };
+    social_mentions?: {
+      monthly: string;
+      monthly_numeric?: number;
+      trend: string;
+    };
+    job_postings?: {
+      monthly: string;
+      monthly_numeric?: number;
+      growth: string;
+    };
+  };
+  
+  // === CUSTOMER PAIN POINTS (Enhanced) ===
+  customer_pain_points?: Array<{
+    rank?: number;
+    pain_point: string;
+    intensity_score: string;
+    intensity_numeric?: number;  // Pre-parsed 0-100 scale
+    market_evidence: string;
+  }>;
+  
+  // === PAIN POINTS STATISTICS ===
+  pain_points_statistics?: {
+    count: number;
+    average_intensity: number;
+    max_intensity: number;
+    high_intensity_count: number;
+  };
+  
+  // === TIMING ANALYSIS ===
   market_maturity?: string;
   current_trajectory?: string;
-  
-  // Timing and opportunity
-  opportunity_timeframe?: string;
+  projected_growth?: string;
+  projected_growth_numeric?: number;
+  saturation_level?: string;
+  saturation_level_numeric?: number;
   optimal_window?: string;
   launch_reasoning?: string;
+  opportunity_timeframe?: string;
+  saturation_risk?: string;
   opportunity_justification?: string;
   
-  // Risk and saturation
-  saturation_level?: string;
-  saturation_risk?: string;
+  // === RISK FACTORS ===
   risk_factors?: string[];
   
-  // Trends
-  trends_score?: string;
-  search_trend?: string;
-  monthly_searches?: string;
+  // === MACRO TRENDS (Enhanced) ===
   macro_trends?: Array<{
     trend: string;
     impact: string;
     strength: string;
-    evidence: string;
+    strength_numeric?: number;  // Pre-parsed 0-100 scale
+    evidence?: string;
   }>;
   
-  // Pain points
-  customer_pain_points?: Array<{
-    pain_point: string;
-    intensity_score: string;
-    market_evidence: string;
-  }>;
+  // === TIMING INSIGHTS ===
+  timing_insights?: {
+    favorable_trends_count: number;
+    average_trend_strength: number;
+    risk_factors_count: number;
+  };
   
-  // Legacy compatibility
+  // === METADATA ===
+  data_source?: string;
+  parser_version?: string;
+  analysis_timestamp?: string;
+  
+  // === DATA QUALITY ===
+  data_quality?: {
+    reliability_score: number;
+    completeness: {
+      market_size: boolean;
+      demand_signals: boolean;
+      pain_points: boolean;
+      macro_trends: boolean;
+      timing: boolean;
+    };
+    validation: {
+      hierarchy_valid: boolean;
+      all_numerics_parsed: boolean;
+    };
+  };
+  
+  // === LEGACY COMPATIBILITY ===
   highlights?: OpportunityHighlight[];
   risks?: OpportunityRisk[];
 }
