@@ -55,8 +55,9 @@ export function extractAveragePrice(priceString: string | undefined | null): num
     return parseFloat(numStr);
   });
   
-  // Filter out very small values (usage-based like $0.18/request)
-  const validPrices = prices.filter(p => p >= 1);
+  // Filter out very small fractional values (usage-based like $0.18/request)
+  // BUT keep $0 (represents free tier in a range like "$0-$99")
+  const validPrices = prices.filter(p => p === 0 || p >= 1);
   if (validPrices.length === 0) return 0;
   
   // Calculate AVERAGE for more representative positioning
