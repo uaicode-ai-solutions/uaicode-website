@@ -32,21 +32,41 @@ export interface CompetitiveAnalysisSectionData {
   processing_status: string;
 }
 
-// Extract numeric price from string like "$29/month" or "Free"
-export function extractPrice(priceString: string | undefined | null): number {
+// Extract AVERAGE price from range string like "$29-$99/month" or "Free"
+// This provides a more representative value for market positioning
+export function extractAveragePrice(priceString: string | undefined | null): number {
   if (!priceString) return 0;
   
   const lowerPrice = priceString.toLowerCase();
-  if (lowerPrice.includes('free') || lowerPrice === '$0') return 0;
   
-  // Match prices like $29, $29.99, $0.18
-  const match = priceString.match(/\$(\d+(?:\.\d+)?)/);
-  if (!match) return 0;
+  // Handle free tiers
+  if (lowerPrice === 'free' || lowerPrice === '$0') return 0;
   
-  const price = parseFloat(match[1]);
-  // Ignore very small prices like $0.18/request - treat as usage-based
-  return price < 1 ? 0 : Math.round(price);
+  // If it says "Free tier available" without numeric prices, return 0
+  if (lowerPrice.includes('free tier') && !priceString.match(/\$\d/)) return 0;
+  
+  // Extract ALL monetary values from the string (handles $29-$99, $29, $1,299, etc.)
+  const allMatches = priceString.match(/\$(\d+(?:,\d{3})*(?:\.\d+)?)/g);
+  if (!allMatches || allMatches.length === 0) return 0;
+  
+  // Parse all values
+  const prices = allMatches.map(m => {
+    const numStr = m.replace('$', '').replace(/,/g, '');
+    return parseFloat(numStr);
+  });
+  
+  // Filter out very small values (usage-based like $0.18/request)
+  const validPrices = prices.filter(p => p >= 1);
+  if (validPrices.length === 0) return 0;
+  
+  // Calculate AVERAGE for more representative positioning
+  const average = validPrices.reduce((sum, p) => sum + p, 0) / validPrices.length;
+  
+  return Math.round(average);
 }
+
+// Alias for backwards compatibility - now uses average
+export const extractPrice = extractAveragePrice;
 
 // Convert competitors object to sorted array
 export function parseCompetitorsFromAPI(data: Record<string, CompetitorFromAPI> | null | undefined): CompetitorFromAPI[] {
@@ -116,7 +136,9 @@ export function transformCompetitorToUI(competitor: CompetitorFromAPI): Competit
   return {
     name: getCompetitorDisplayName(competitor),
     description: getCompetitorDescription(competitor),
-    price: extractPrice(competitor.saas_app_base_price),
+    // Prioritize price_range (has full range for average), fallback to base_price
+    price: extractAveragePrice(competitor.saas_app_price_range) || 
+           extractAveragePrice(competitor.saas_app_base_price),
     priceModel: formatPricingType(competitor.saas_app_pricing_type),
     website: competitor.company_website || '',
     features: competitor.saas_app_features || [],
