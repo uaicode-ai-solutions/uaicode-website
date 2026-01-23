@@ -45,22 +45,28 @@ const cleanCitations = (text: string): string => {
     .trim();
 };
 
-// Map strength to numeric value
-const strengthToValue = (strength: string): number => {
-  const lower = strength?.toLowerCase() || "";
+// Macro trend type from API (enhanced with numeric fields from n8n)
+interface MacroTrend {
+  trend: string;
+  impact: string;
+  strength: string;
+  strength_numeric?: number;  // Pre-parsed 0-100 scale from n8n
+  evidence?: string;
+}
+
+// Get strength value - prefer pre-parsed numeric value from n8n workflow
+const getStrengthValue = (trend: MacroTrend): number => {
+  // Priority 1: Use pre-parsed numeric value (already 0-100 scale)
+  if (typeof trend.strength_numeric === 'number') {
+    return trend.strength_numeric;
+  }
+  // Priority 2: Fallback to parsing string
+  const lower = trend.strength?.toLowerCase() || "";
   if (lower.includes("strong") || lower.includes("high")) return 90;
   if (lower.includes("medium") || lower.includes("moderate")) return 60;
   if (lower.includes("weak") || lower.includes("low")) return 30;
   return 50;
 };
-
-// Macro trend type from API
-interface MacroTrend {
-  trend: string;
-  impact: string;
-  strength: string;
-  evidence: string;
-}
 
 const MacroTrendsSection = () => {
   const { reportData } = useReportContext();
@@ -81,19 +87,22 @@ const MacroTrendsSection = () => {
   // Favorable: strong impact strength (>=90)
   // Challenging: medium or weak strength (<90) - represents trends requiring more effort
   const positiveTrends = trendsArray.filter(
-    t => strengthToValue(t.strength) >= 90
+    t => getStrengthValue(t) >= 90
   ).length;
   const negativeTrends = trendsArray.filter(
-    t => strengthToValue(t.strength) < 90
+    t => getStrengthValue(t) < 90
   ).length;
 
   // Create chart data - NO padding points to avoid artificial decay
-  const chartData = trendsArray.map((trend, index) => ({
-    name: `T${index + 1}`,
-    positive: trend.impact?.toLowerCase().includes("positive") ? strengthToValue(trend.strength) : 0,
-    negative: trend.impact?.toLowerCase().includes("negative") ? strengthToValue(trend.strength) : 0,
-    trend: trend.trend,
-  }));
+  const chartData = trendsArray.map((trend, index) => {
+    const strengthValue = getStrengthValue(trend);
+    return {
+      name: `T${index + 1}`,
+      positive: trend.impact?.toLowerCase().includes("positive") ? strengthValue : 0,
+      negative: trend.impact?.toLowerCase().includes("negative") ? strengthValue : 0,
+      trend: trend.trend,
+    };
+  });
 
   // Show loading skeleton
   if (isLoading) {
@@ -290,7 +299,7 @@ const MacroTrendsSection = () => {
       <div className="grid md:grid-cols-2 gap-4">
         {trendsArray.map((trend, index) => {
           const isPositive = trend.impact?.toLowerCase().includes("positive");
-          const strengthValue = strengthToValue(trend.strength);
+          const strengthValue = getStrengthValue(trend);
 
           return (
             <Card key={index} className={`border-border/30 hover:border-accent/30 transition-colors ${

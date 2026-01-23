@@ -24,10 +24,24 @@ const cleanCitations = (text: string): string => {
     .trim();
 };
 
-// Parse intensity score like "9/10" to number
-const parseIntensity = (score: string): number => {
-  if (!score) return 0;
-  const match = score.match(/(\d+)/);
+// Pain point type from API (enhanced with numeric fields from n8n)
+interface PainPoint {
+  rank?: number;
+  pain_point: string;
+  intensity_score: string;
+  intensity_numeric?: number;  // Pre-parsed 0-100 scale from n8n
+  market_evidence: string;
+}
+
+// Get intensity - prefer pre-parsed numeric value from n8n workflow
+const getIntensity = (point: PainPoint): number => {
+  // Priority 1: Use pre-parsed numeric value (0-100 scale, divide by 10 for display)
+  if (typeof point.intensity_numeric === 'number') {
+    return Math.round(point.intensity_numeric / 10);  // Convert 85 → 8.5 → 9
+  }
+  // Priority 2: Fallback to parsing string
+  if (!point.intensity_score) return 0;
+  const match = point.intensity_score.match(/(\d+)/);
   return match ? parseInt(match[1], 10) : 0;
 };
 
@@ -50,13 +64,6 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-// Pain point type from API
-interface PainPoint {
-  pain_point: string;
-  intensity_score: string;
-  market_evidence: string;
-}
-
 const CustomerPainPointsSection = () => {
   const { reportData } = useReportContext();
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
@@ -70,13 +77,13 @@ const CustomerPainPointsSection = () => {
 
   const painPointsArray = painPoints || [];
 
-  // Transform data for chart
+  // Transform data for chart - use getIntensity which prefers numeric values
   const chartData = painPointsArray.map((point, index) => ({
     name: `#${index + 1}`,
     fullName: point.pain_point,
-    intensity: parseIntensity(point.intensity_score),
+    intensity: getIntensity(point),
     evidence: cleanCitations(point.market_evidence),
-    index: index + 1,
+    index: point.rank || index + 1,
   }));
 
   // Sort by intensity descending
