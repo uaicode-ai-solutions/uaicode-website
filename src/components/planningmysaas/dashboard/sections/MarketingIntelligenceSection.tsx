@@ -297,13 +297,32 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // ICP Display Data (Updated per requirements)
   // ============================================
   
-  // Name: Use static name matching the avatar (based on region + gender)
-  const icpDisplayName = getIcpDisplayName(
-    report?.target_audience,
-    report?.geographic_region
+  // Name: Use persona.name from ICP research (e.g., "Sarah Mitchell")
+  const icpDisplayName = getValue(
+    icpData?.persona?.name ||
+    (icpData?.persona as any)?.persona_name ||
+    primaryPersona?.persona_name
   );
-  // Generate initials from static name (e.g., "MJ" from "Michael Johnson")
+  // Generate initials from the name (e.g., "SM" from "Sarah Mitchell")
   const initials = getInitials(icpDisplayName);
+  
+  // Gender: From persona.gender (e.g., "female")
+  const personaGender = getValue(
+    icpData?.persona?.gender ||
+    (primaryPersona as any)?.gender
+  );
+
+  // Age Range: From persona.age_range (e.g., "35-45")
+  const personaAgeRange = getValue(
+    icpData?.persona?.age_range ||
+    (primaryPersona as any)?.age_range
+  );
+
+  // Persona Summary: From persona.persona_summary
+  const personaSummary = getValue(
+    icpData?.persona?.persona_summary ||
+    (primaryPersona as any)?.persona_summary
+  );
   
   // ============================================
   // STATIC AVATAR URL - Pre-generated avatars
@@ -524,7 +543,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
           </CardHeader>
           <CardContent className="space-y-5">
             {/* Avatar and Name */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-start gap-4">
               <Avatar className="h-16 w-16 ring-2 ring-amber-500/30 ring-offset-2 ring-offset-background">
                 <AvatarImage 
                   src={avatarUrl} 
@@ -535,14 +554,34 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <div>
+              <div className="flex-1">
                 <h3 className="text-xl font-semibold text-foreground">{icpDisplayName}</h3>
                 <p className="text-sm text-muted-foreground">{icpRole}</p>
-                <Badge variant="outline" className="mt-1 bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs">
-                  {businessType}
-                </Badge>
+                {/* Gender + Age Range + Industry badges */}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {personaGender !== "..." && (
+                    <Badge variant="outline" className="bg-muted/10 border-border/30 text-foreground text-xs capitalize">
+                      {personaGender}
+                    </Badge>
+                  )}
+                  {personaAgeRange !== "..." && (
+                    <Badge variant="outline" className="bg-muted/10 border-border/30 text-foreground text-xs">
+                      {personaAgeRange} years
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="bg-amber-500/10 border-amber-500/20 text-amber-500 text-xs">
+                    {businessType}
+                  </Badge>
+                </div>
               </div>
             </div>
+
+            {/* Persona Summary */}
+            {personaSummary !== "..." && (
+              <div className="p-3 rounded-xl bg-muted/10 border border-border/20">
+                <p className="text-sm text-muted-foreground italic">"{personaSummary}"</p>
+              </div>
+            )}
 
             {/* Decision Authority */}
             <div>
