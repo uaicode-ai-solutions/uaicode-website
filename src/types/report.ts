@@ -439,6 +439,7 @@ export interface GrowthIntelligenceSection {
   assumptions?: unknown;
   
   // Pre-calculated financial metrics from n8n v1.7.0+
+  // v1.8.0+: Includes consolidated unit economics (arpu_used, ltv_used, cac_used, etc.)
   financial_metrics?: {
     mrr_month_6: number;
     mrr_month_12: number;
@@ -460,10 +461,12 @@ export interface GrowthIntelligenceSection {
     break_even_months: number;
     payback_months: number;
     ltv_cac_ratio: number;
+    // Consolidated from unit_economics_used (v1.8.0+)
     arpu_used: number;
     monthly_churn_used: number;
     ltv_used: number;
     cac_used: number;
+    ltv_cac_ratio_target: number;  // Added in v1.8.0
   };
   
   customer_metrics?: {
@@ -508,6 +511,10 @@ export interface GrowthIntelligenceSection {
   
   citations?: string[];
   
+  /** 
+   * @deprecated Use financial_metrics instead (consolidated in v1.8.0+)
+   * Kept for backward compatibility with reports generated before v1.8.0
+   */
   unit_economics_used?: {
     arpu: number;
     monthly_churn: number;
