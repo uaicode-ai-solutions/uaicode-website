@@ -478,11 +478,15 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   );
   
   // Get competitor count from competitive_analysis_section
-  const competitiveData = parseJsonField<{ competitors?: unknown[] } | null>(
+  // Competitors are stored as object with keys: competitor_1, competitor_2, etc.
+  const competitiveData = parseJsonField<{ competitors?: Record<string, unknown> } | null>(
     reportData?.competitive_analysis_section,
     null
   );
-  const competitorCount = competitiveData?.competitors?.length || 0;
+  // Count competitor keys (competitor_1, competitor_2, etc.) from the object
+  const competitorCount = competitiveData?.competitors 
+    ? Object.keys(competitiveData.competitors).filter(k => k.startsWith('competitor_')).length 
+    : 0;
   
   // Calculate metrics using real data
   const competitivePosition = getCompetitivePosition(paidMediaData, competitorCount);
