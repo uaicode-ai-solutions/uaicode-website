@@ -3,8 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { FallbackSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 import {
   RadialBarChart,
   RadialBar,
@@ -16,18 +14,13 @@ const RiskFactorsSection = () => {
   const { reportData } = useReportContext();
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   
-  // Use smart fallback for risk factors - skip if data already exists
+  // Check for risk_factors directly
   const rawRiskFactors = opportunityData?.risk_factors;
-  const hasValidRisks = Array.isArray(rawRiskFactors) && rawRiskFactors.length > 0;
-  const { value: riskFactors, isLoading } = useSmartFallbackField<string[]>({
-    fieldPath: "opportunity_section.risk_factors",
-    currentValue: rawRiskFactors,
-    skipFallback: hasValidRisks, // Skip fallback if we already have data
-  });
-
-  const riskFactorsArray = riskFactors || [];
-
-  // Calculate risk score based on number of risks (inverted - more risks = lower score)
+  
+  // Normalize to string array for display
+  const riskFactorsArray: string[] = Array.isArray(rawRiskFactors) ? rawRiskFactors : [];
+  
+  const hasValidRisks = riskFactorsArray.length > 0;
   const riskCount = riskFactorsArray.length;
   const riskScore = Math.max(0, 100 - (riskCount * 12)); // Each risk reduces score by ~12
 
@@ -48,35 +41,6 @@ const RiskFactorsSection = () => {
     if (score >= 40) return "Elevated";
     return "High Risk";
   };
-
-  // Show loading skeleton
-  if (isLoading) {
-    return (
-      <section id="risk-factors" className="space-y-6 animate-fade-in">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-accent/10">
-            <Shield className="h-5 w-5 text-accent" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Risk Factors</h2>
-            <p className="text-sm text-muted-foreground">Loading risk factors...</p>
-          </div>
-        </div>
-        <div className="grid lg:grid-cols-3 gap-6">
-          <Card className="bg-card/50 border-border/30">
-            <CardContent className="p-6">
-              <CardContentSkeleton lines={4} />
-            </CardContent>
-          </Card>
-          <Card className="bg-card/50 border-border/30 lg:col-span-2">
-            <CardContent className="p-6">
-              <CardContentSkeleton lines={5} />
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    );
-  }
 
   if (riskFactorsArray.length === 0) {
     return null;

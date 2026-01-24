@@ -242,11 +242,17 @@ const DemandSignalsSection = () => {
   const jobPostingsRaw = extractValue(rawData?.job_postings);
   const onlineReviewsRaw = extractValue(rawData?.online_reviews);
   
-  // Get market growth rate from opportunity_section if available
+  // Get market growth rate from opportunity_section - prefer numeric value
+  const marketGrowthRateNumeric = opportunityData?.market_growth_rate_numeric as number | null;
   const marketGrowthRate = opportunityData?.market_growth_rate as string | null || null;
 
   const hasSearchTrendData = searchTrend !== "...";
   const trendConfig = getTrendConfig(searchTrend, hasSearchTrendData);
+  
+  // Use numeric growth rate from database if available
+  const actualGrowthRate = marketGrowthRateNumeric !== null 
+    ? marketGrowthRateNumeric / 100  // Convert 18.5 to 0.185
+    : trendConfig.growthRate;
 
   // Calculate base values - use 0 if no data (shows "..." in display)
   const hasSearchData = monthlySearches !== "...";
@@ -319,7 +325,7 @@ const DemandSignalsSection = () => {
   
   const projectionData = generateMonthlyProjection(
     searchesBaseValue, 
-    trendConfig.growthRate,
+    actualGrowthRate,
     forumsValue,
     jobsValue,
     reviewsValue
@@ -566,13 +572,15 @@ const DemandSignalsSection = () => {
 
           <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground border-t border-border/30 pt-3">
             <span>Growth Rate: <span className={`font-medium ${trendConfig.color}`}>
-              {trendConfig.growthRate !== null 
-                ? `${trendConfig.growthRate > 0 ? '+' : ''}${(trendConfig.growthRate * 100).toFixed(0)}% annually`
-                : "..."}
+              {marketGrowthRateNumeric !== null 
+                ? `+${marketGrowthRateNumeric.toFixed(1)}% annually`
+                : (actualGrowthRate !== null 
+                    ? `${actualGrowthRate > 0 ? '+' : ''}${(actualGrowthRate * 100).toFixed(0)}% annually`
+                    : "...")}
             </span></span>
             <span>•</span>
             <span>Year 5 Projection: <span className="font-medium text-gradient-gold">
-              {trendConfig.growthRate !== null && searchesBaseValue > 0
+              {actualGrowthRate !== null && searchesBaseValue > 0
                 ? `${formatChartNumber(projectionData[projectionData.length - 1]?.searches || 0)} /month`
                 : "..."}
             </span></span>

@@ -3,46 +3,50 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { parseJsonField, parseScoreField } from "@/lib/reportDataUtils";
 import { OpportunitySection } from "@/types/report";
 
 const TimingAnalysisSection = () => {
-  const { report, reportData } = useReportContext();
+  const { reportData } = useReportContext();
   
-  // UNIFIED: Get macro trends from opportunity_section (primary source)
+  // Read from opportunity_section (primary source) instead of report?.timing_analysis
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
+  
+  // Get macro trends directly from opportunity_section
   const macroTrendsFromOpportunity = opportunityData?.macro_trends || [];
   
-  // Parse timing analysis from report or use null
-  const timingScore = parseScoreField(report?.timing_score, 0);
-  const rawTimingAnalysis = parseJsonField<any>(report?.timing_analysis, null);
+  // Extract timing data from opportunity_section
+  const trendsScoreNumeric = opportunityData?.trends_score_numeric as number | null;
+  const trendsScore = opportunityData?.trends_score as string | null;
+  const launchReasoning = opportunityData?.launch_reasoning as string | null;
+  const optimalWindow = opportunityData?.optimal_window as string | null;
+  const saturationRisk = opportunityData?.saturation_risk as string | null;
+  const opportunityTimeframe = opportunityData?.opportunity_timeframe as string | null;
   
-  // Direct value extraction - no smart fallback
-  const timingScoreValue = timingScore || rawTimingAnalysis?.score || null;
-  const verdictValue = rawTimingAnalysis?.verdict || null;
+  // Calculate timing score - prefer numeric value
+  const timingScoreValue = trendsScoreNumeric ?? (trendsScore ? parseInt(trendsScore.match(/(\d+)/)?.[1] || "0") : null);
   
-  // Build the timing analysis object with proper structure - null if no data
-  const timingAnalysis = rawTimingAnalysis ? {
+  // Build timing analysis from opportunity_section data
+  const timingAnalysis = {
     timingScore: timingScoreValue ?? 0,
-    verdict: verdictValue ?? "...",
-    // UNIFIED: Use opportunity_section macro_trends if available
-    macroTrends: macroTrendsFromOpportunity.length > 0 
-      ? macroTrendsFromOpportunity.map(mt => ({
-          trend: mt.trend,
-          impact: mt.impact,
-          relevance: mt.strength === "Strong" ? "high" : mt.strength === "Medium" ? "medium" : "low"
-        }))
-      : rawTimingAnalysis.macroTrends || [],
+    verdict: launchReasoning ?? null,
+    macroTrends: macroTrendsFromOpportunity.map(mt => ({
+      trend: mt.trend,
+      impact: mt.impact,
+      relevance: mt.strength === "Strong" ? "high" : mt.strength === "Moderate" ? "medium" : "low"
+    })),
     windowOfOpportunity: {
-      opens: rawTimingAnalysis.windowOfOpportunity?.opens || "...",
-      closes: rawTimingAnalysis.windowOfOpportunity?.closes || "...",
-      reason: rawTimingAnalysis.windowOfOpportunity?.reason || "..."
+      opens: optimalWindow ? "Now" : "...",
+      closes: saturationRisk || opportunityTimeframe || "...",
+      reason: launchReasoning || "..."
     },
     firstMoverAdvantage: {
-      score: rawTimingAnalysis.firstMoverAdvantage?.score || 0,
-      benefits: rawTimingAnalysis.firstMoverAdvantage?.benefits || rawTimingAnalysis.firstMoverAdvantage || []
+      score: timingScoreValue ?? 0,
+      benefits: [] as string[]
     }
-  } : null;
+  };
+  
+  // Check if we have any real data
+  const hasAnyData = timingScoreValue !== null || launchReasoning !== null || macroTrendsFromOpportunity.length > 0;
 
   // Helper for timing badge based on score
   const getTimingBadge = (score: number | null) => {
@@ -70,7 +74,7 @@ const TimingAnalysisSection = () => {
   };
   
   // Early return if no data
-  if (!rawTimingAnalysis && !timingScoreValue) {
+  if (!hasAnyData) {
     return (
       <section id="timing-analysis" className="space-y-6 animate-fade-in">
         <div className="flex items-center gap-3">

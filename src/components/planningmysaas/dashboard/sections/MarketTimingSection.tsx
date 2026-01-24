@@ -27,6 +27,7 @@ const trajectoryToScore = (trajectory: string | undefined): number => {
   if (!trajectory) return 0;
   const lower = trajectory.toLowerCase();
   if (lower.includes("accelerat") || lower.includes("rapid")) return 95;
+  if (lower.includes("rising")) return 85;
   if (lower.includes("steady") || lower.includes("growing")) return 75;
   if (lower.includes("slow") || lower.includes("maturing")) return 50;
   if (lower.includes("declin") || lower.includes("saturate")) return 25;
@@ -38,9 +39,11 @@ const maturityToScore = (maturity: string | undefined): number => {
   if (!maturity) return 0;
   const lower = maturity.toLowerCase();
   if (lower.includes("emerging") || lower.includes("nascent")) return 90;
+  if (lower.includes("growing")) return 85;
   if (lower.includes("growth") || lower.includes("expanding")) return 80;
-  if (lower.includes("mature") || lower.includes("established")) return 50;
-  if (lower.includes("declining") || lower.includes("saturated")) return 30;
+  if (lower.includes("maturing") || lower.includes("established")) return 60;
+  if (lower.includes("mature") || lower.includes("saturated")) return 40;
+  if (lower.includes("declining")) return 20;
   return 0;
 };
 
@@ -48,9 +51,12 @@ const maturityToScore = (maturity: string | undefined): number => {
 const saturationToScore = (saturation: string | undefined): number => {
   if (!saturation) return 0;
   const lower = saturation.toLowerCase();
-  if (lower.includes("low") || lower.includes("minimal")) return 90;
+  if (lower.includes("very low") || lower.includes("minimal")) return 95;
+  if (lower === "low" || lower.includes("low saturation")) return 90;
+  if (lower.includes("low")) return 85;
   if (lower.includes("moderate") || lower.includes("medium")) return 60;
-  if (lower.includes("high") || lower.includes("saturated")) return 30;
+  if (lower.includes("high")) return 35;
+  if (lower.includes("very high") || lower.includes("saturated")) return 15;
   return 0;
 };
 
