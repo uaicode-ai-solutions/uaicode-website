@@ -123,6 +123,10 @@ export interface YearEvolutionData {
   year: string;
   arr: string;
   mrr: string;
+  // Numeric values from n8n v1.7.0+
+  arrNumeric?: number;
+  mrrNumeric?: number;
+  customers?: number;
 }
 
 export interface UnitEconomicsDisplay {
@@ -187,8 +191,23 @@ export function useFinancialMetrics(
     const financialMetricsDirect = safeGet(growthIntelligence, 'financial_metrics', null) as Record<string, unknown> | null;
     const unitEconomicsFromN8n = safeGet(growthIntelligence, 'unit_economics_used', null) as Record<string, unknown> | null;
     
+    // NOVO: Extrair campos pré-calculados do n8n v1.7.0+
+    const projectionDataFromDb = safeGet(growthIntelligence, 'projection_data', null) as ProjectionDataPoint[] | null;
+    const financialScenariosFromDb = safeGet(growthIntelligence, 'financial_scenarios', null) as FinancialScenario[] | null;
+    const yearEvolutionFromDb = safeGet(growthIntelligence, 'year_evolution', null) as YearEvolutionData[] | null;
+    
     if (financialMetricsDirect) {
       console.log('[Financial] ✅ Found pre-calculated financial_metrics from n8n:', Object.keys(financialMetricsDirect));
+    }
+    
+    if (projectionDataFromDb && projectionDataFromDb.length > 0) {
+      console.log('[Financial] ✅ Using projection_data from database (n8n v1.7.0+):', projectionDataFromDb.length, 'months');
+    }
+    if (financialScenariosFromDb && financialScenariosFromDb.length > 0) {
+      console.log('[Financial] ✅ Using financial_scenarios from database (n8n v1.7.0+):', financialScenariosFromDb.length, 'scenarios');
+    }
+    if (yearEvolutionFromDb && yearEvolutionFromDb.length > 0) {
+      console.log('[Financial] ✅ Using year_evolution from database (n8n v1.7.0+):', yearEvolutionFromDb.length, 'years');
     }
     
     // Support both new format (6_month/12_month/24_month) and legacy format (six_month_targets/etc)
@@ -847,10 +866,15 @@ export function useFinancialMetrics(
     }
     
     // ============================================
-    // Generate Projection Data (12 months) - VALIDATED
+    // Generate Projection Data - PRIORIZA BANCO (n8n v1.7.0+)
     // ============================================
     let projectionData: ProjectionDataPoint[] = [];
-    if (validatedMrr12 > 0 && mvpInvestment) {
+    if (projectionDataFromDb && projectionDataFromDb.length > 0) {
+      // Usar dados pré-calculados do banco
+      projectionData = projectionDataFromDb;
+      dataSources.projectionData = 'database';
+    } else if (validatedMrr12 > 0 && mvpInvestment) {
+      // Fallback: calcular localmente
       projectionData = generateValidatedProjections(
         validatedMrr6,
         validatedMrr12,
@@ -859,13 +883,19 @@ export function useFinancialMetrics(
         marginPercent,
         12
       );
+      dataSources.projectionData = 'calculated';
     }
     
     // ============================================
-    // Generate Financial Scenarios - VALIDATED
+    // Generate Financial Scenarios - PRIORIZA BANCO (n8n v1.7.0+)
     // ============================================
-    const financialScenarios: FinancialScenario[] = [];
-    if (validatedMrr12 > 0 && mvpInvestment) {
+    let financialScenarios: FinancialScenario[] = [];
+    if (financialScenariosFromDb && financialScenariosFromDb.length > 0) {
+      // Usar cenários pré-calculados do banco
+      financialScenarios = financialScenariosFromDb;
+      dataSources.financialScenarios = 'database';
+    } else if (validatedMrr12 > 0 && mvpInvestment) {
+      // Fallback: calcular localmente
       const scenarios = generateValidatedScenarios(
         validatedMrr12,
         mvpInvestment,
@@ -896,51 +926,68 @@ export function useFinancialMetrics(
         breakEven: scenarios.optimistic.breakEven,
         probability: scenarios.optimistic.probability,
       });
+      
+      dataSources.financialScenarios = 'calculated';
     }
     
     // ============================================
-    // Generate Year Evolution Data - VALIDATED VALUES
+    // Generate Year Evolution Data - PRIORIZA BANCO (n8n v1.7.0+)
     // ============================================
-    const yearEvolution: YearEvolutionData[] = [];
+    let yearEvolution: YearEvolutionData[] = [];
     
-    // Use VALIDATED ARR values (MRR × 12, capped by benchmarks)
-    const validatedArr12 = validatedMrr12 * 12;
-    const validatedArr24 = validatedMrr24 * 12;
-    
-    // Year 1
-    yearEvolution.push({
-      year: "Year 1",
-      arr: validatedArr12 > 0 ? formatCurrency(validatedArr12) : fallback,
-      mrr: validatedMrr12 > 0 ? `${formatCurrency(validatedMrr12)} MRR` : `${fallback} MRR`,
-    });
-    
-    // Year 2 - using validated values
-    yearEvolution.push({
-      year: "Year 2",
-      arr: validatedArr24 > 0 ? formatCurrency(validatedArr24) : fallback,
-      mrr: validatedMrr24 > 0 ? `${formatCurrency(validatedMrr24)} MRR` : `${fallback} MRR`,
-    });
-    
-    // Year 3 - Project based on Year 2 with growth
-    // Use market growth rate from report, with more conservative 25% fallback
-    const marketGrowthRateStr = safeGet(opportunitySection, 'market_growth_rate', null) as string | null;
-    const marketGrowth = parsePercentageRange(marketGrowthRateStr);
-    const growthMultiplier = marketGrowth ? 1 + (marketGrowth.avg / 100) : 1.25; // Default 25% growth (conservative)
-    
-    if (validatedMrr24 > 0) {
-      const arr36 = validatedArr24 * growthMultiplier;
-      const mrr36 = validatedMrr24 * growthMultiplier;
-      yearEvolution.push({
-        year: "Year 3",
-        arr: formatCurrency(arr36),
-        mrr: `${formatCurrency(mrr36)} MRR`,
-      });
+    if (yearEvolutionFromDb && yearEvolutionFromDb.length > 0) {
+      // Usar dados pré-calculados do banco
+      yearEvolution = yearEvolutionFromDb;
+      dataSources.yearEvolution = 'database';
     } else {
+      // Fallback: calcular localmente
+      // Use VALIDATED ARR values (MRR × 12, capped by benchmarks)
+      const validatedArr12 = validatedMrr12 * 12;
+      const validatedArr24 = validatedMrr24 * 12;
+      
+      // Year 1
       yearEvolution.push({
-        year: "Year 3",
-        arr: fallback,
-        mrr: `${fallback} MRR`,
+        year: "Year 1",
+        arr: validatedArr12 > 0 ? formatCurrency(validatedArr12) : fallback,
+        mrr: validatedMrr12 > 0 ? `${formatCurrency(validatedMrr12)} MRR` : `${fallback} MRR`,
+        arrNumeric: validatedArr12,
+        mrrNumeric: validatedMrr12,
       });
+      
+      // Year 2 - using validated values
+      yearEvolution.push({
+        year: "Year 2",
+        arr: validatedArr24 > 0 ? formatCurrency(validatedArr24) : fallback,
+        mrr: validatedMrr24 > 0 ? `${formatCurrency(validatedMrr24)} MRR` : `${fallback} MRR`,
+        arrNumeric: validatedArr24,
+        mrrNumeric: validatedMrr24,
+      });
+      
+      // Year 3 - Project based on Year 2 with growth
+      // Use market growth rate from report, with more conservative 25% fallback
+      const marketGrowthRateStr = safeGet(opportunitySection, 'market_growth_rate', null) as string | null;
+      const marketGrowth = parsePercentageRange(marketGrowthRateStr);
+      const growthMultiplier = marketGrowth ? 1 + (marketGrowth.avg / 100) : 1.25; // Default 25% growth (conservative)
+      
+      if (validatedMrr24 > 0) {
+        const arr36 = validatedArr24 * growthMultiplier;
+        const mrr36 = validatedMrr24 * growthMultiplier;
+        yearEvolution.push({
+          year: "Year 3",
+          arr: formatCurrency(arr36),
+          mrr: `${formatCurrency(mrr36)} MRR`,
+          arrNumeric: arr36,
+          mrrNumeric: mrr36,
+        });
+      } else {
+        yearEvolution.push({
+          year: "Year 3",
+          arr: fallback,
+          mrr: `${fallback} MRR`,
+        });
+      }
+      
+      dataSources.yearEvolution = 'calculated';
     }
     
     // ============================================
@@ -979,7 +1026,7 @@ export function useFinancialMetrics(
         mrr6: validatedMrr6, 
         mrr12: validatedMrr12, 
         mrr24: validatedMrr24,
-        arr12: validatedArr12,
+        arr12: validatedMrr12 * 12,
       },
       caps: { 
         mrr6Max: dynamicBenchmarks.MRR_MONTH_6_MAX, 
@@ -994,6 +1041,9 @@ export function useFinancialMetrics(
       ? Math.round((mrr12Months.avg / validatedMrr12) * 10) / 10 
       : null;
     
+    // Calculate validated ARR for return object
+    const validatedArrForReturn = validatedMrr12 * 12;
+    
     // ============================================
     // Return all metrics - USING VALIDATED VALUES
     // ============================================
@@ -1002,7 +1052,7 @@ export function useFinancialMetrics(
       breakEvenMonths: breakEvenMonthsNum ? `${breakEvenMonthsNum} months` : fallback,
       roiYear1: roiYear1Num !== null ? `${roiYear1Num}%` : fallback,
       mrrMonth12: validatedMrr12 > 0 ? formatCurrency(validatedMrr12) : fallback,
-      arrProjected: validatedArr12 > 0 ? formatCurrency(validatedArr12) : fallback,
+      arrProjected: validatedArrForReturn > 0 ? formatCurrency(validatedArrForReturn) : fallback,
       // PRIORITIZE calculated LTV/CAC over raw DB value for consistency
       ltvCacRatio: ltvCacCalculated 
         ? `${ltvCacCalculated.toFixed(1)}x` 
@@ -1012,7 +1062,7 @@ export function useFinancialMetrics(
       breakEvenMonthsNum,
       roiYear1Num,
       mrrMonth12Num: validatedMrr12 > 0 ? validatedMrr12 : null,
-      arrProjectedNum: validatedArr12 > 0 ? validatedArr12 : null,
+      arrProjectedNum: validatedArrForReturn > 0 ? validatedArrForReturn : null,
       ltvCacRatioNum: ltvCacCalculated || ltvCacRatioNum, // Prefer calculated
       ltvCacCalculated,
       
