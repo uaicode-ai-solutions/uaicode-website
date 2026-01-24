@@ -243,16 +243,35 @@ const DemandSignalsSection = () => {
   const onlineReviewsRaw = extractValue(rawData?.online_reviews);
   
   // Get market growth rate from opportunity_section - prefer numeric value
-  const marketGrowthRateNumeric = opportunityData?.market_growth_rate_numeric as number | null;
-  const marketGrowthRate = opportunityData?.market_growth_rate as string | null || null;
+  // NOTE: Supabase JSONB can come as number | string | undefined depending on source/mapping.
+  const marketGrowthRateNumericRaw = (opportunityData as unknown as Record<string, unknown> | null)?.[
+    "market_growth_rate_numeric"
+  ];
+  const marketGrowthRateNumeric = (() => {
+    if (typeof marketGrowthRateNumericRaw === "number" && Number.isFinite(marketGrowthRateNumericRaw)) {
+      return marketGrowthRateNumericRaw;
+    }
+    if (typeof marketGrowthRateNumericRaw === "string") {
+      const parsed = Number(marketGrowthRateNumericRaw);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+  })();
+
+  const marketGrowthRate = (opportunityData?.market_growth_rate as string | null) || null;
 
   const hasSearchTrendData = searchTrend !== "...";
   const trendConfig = getTrendConfig(searchTrend, hasSearchTrendData);
   
   // Use numeric growth rate from database if available
-  const actualGrowthRate = marketGrowthRateNumeric !== null 
+  const actualGrowthRate: number | null = marketGrowthRateNumeric !== null 
     ? marketGrowthRateNumeric / 100  // Convert 18.5 to 0.185
-    : trendConfig.growthRate;
+    : (trendConfig.growthRate ?? null);
+
+  // Chart needs a safe numeric growthRate (avoid NaN/undefined)
+  const chartGrowthRate = typeof actualGrowthRate === "number" && Number.isFinite(actualGrowthRate)
+    ? actualGrowthRate
+    : 0;
 
   // Calculate base values - use 0 if no data (shows "..." in display)
   const hasSearchData = monthlySearches !== "...";
@@ -325,7 +344,7 @@ const DemandSignalsSection = () => {
   
   const projectionData = generateMonthlyProjection(
     searchesBaseValue, 
-    actualGrowthRate,
+    chartGrowthRate,
     forumsValue,
     jobsValue,
     reviewsValue
@@ -572,10 +591,10 @@ const DemandSignalsSection = () => {
 
           <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground border-t border-border/30 pt-3">
             <span>Growth Rate: <span className={`font-medium ${trendConfig.color}`}>
-              {marketGrowthRateNumeric !== null 
+              {marketGrowthRateNumeric !== null
                 ? `+${marketGrowthRateNumeric.toFixed(1)}% annually`
-                : (actualGrowthRate !== null 
-                    ? `${actualGrowthRate > 0 ? '+' : ''}${(actualGrowthRate * 100).toFixed(0)}% annually`
+                : (typeof actualGrowthRate === "number" && Number.isFinite(actualGrowthRate)
+                    ? `${actualGrowthRate > 0 ? "+" : ""}${(actualGrowthRate * 100).toFixed(0)}% annually`
                     : "...")}
             </span></span>
             <span>•</span>
