@@ -32,9 +32,7 @@ import {
   generateValidatedProjections,
   generateValidatedScenarios,
   MARKET_BENCHMARKS,
-  getBenchmarks,
 } from "@/lib/financialValidationUtils";
-import { useBenchmarks } from "@/hooks/useBenchmarks";
 import { debugLogger } from "@/lib/debugLogger";
 import { DataSourceType, DataSources, defaultDataSources } from "@/components/planningmysaas/dashboard/ui/DataSourceBadge";
 
@@ -162,22 +160,14 @@ export function useFinancialMetrics(
     const paidMediaIntelligence = reportData?.paid_media_intelligence_section as Record<string, unknown> | null;
     const sectionInvestment = reportData?.section_investment as Record<string, unknown> | null;
     const opportunitySection = reportData?.opportunity_section as Record<string, unknown> | null;
-    const benchmarkSectionRaw = reportData?.benchmark_section as Record<string, unknown> | null;
     
     // ============================================
-    // EFFECTIVE MARKET TYPE - Priority chain:
-    // 1. marketTypeOverride (from wizard data)
-    // 2. benchmark_section.market_context.market_type (from n8n research)
-    // 3. Fallback to 'b2b'
+    // EFFECTIVE MARKET TYPE - Source: wizard data or fallback
+    // NOTE: benchmark_section is internal to n8n workflows, not used in frontend
     // ============================================
-    const benchmarkMarketType = (benchmarkSectionRaw?.market_context as Record<string, unknown>)?.market_type as string | undefined;
-    const effectiveMarketType = (
-      marketTypeOverride?.toLowerCase() ||
-      benchmarkMarketType?.toLowerCase() ||
-      'b2b'
-    );
+    const effectiveMarketType = marketTypeOverride?.toLowerCase() || 'b2b';
     
-    console.log('[Financial] effectiveMarketType:', effectiveMarketType, '(override:', marketTypeOverride, ', benchmark:', benchmarkMarketType, ')');
+    console.log('[Financial] effectiveMarketType:', effectiveMarketType);
     
     // ============================================
     // Extract Growth Targets (handles both new and legacy key formats)
@@ -377,9 +367,7 @@ export function useFinancialMetrics(
     // 2. Benchmark churn from n8n research (benchmark_section.churn_monthly_max)
     // 3. Market-type based default
     // ============================================
-    const benchmarkSectionForChurn = reportData?.benchmark_section as Record<string, unknown> | null;
-    const benchmarkChurnMonthly = benchmarkSectionForChurn?.churn_monthly_max as number | undefined;
-    
+    // Churn defaults by market type (benchmark_section is internal to n8n)
     const getDefaultChurnByMarketType = (type: string): PercentageRange => {
       if (type === 'b2c' || type === 'consumer' || type.includes('b2c')) {
         // B2C healthcare/wellness: 5-10% monthly = 50-80% annual
@@ -395,29 +383,17 @@ export function useFinancialMetrics(
     const defaultChurn = getDefaultChurnByMarketType(effectiveMarketType);
     
     if (!churn12Months) {
-      // PRIORITY 2: Use benchmark churn if available
-      if (benchmarkChurnMonthly && benchmarkChurnMonthly > 0) {
-        churn12Months = { 
-          min: benchmarkChurnMonthly * 0.8, 
-          max: benchmarkChurnMonthly, 
-          avg: benchmarkChurnMonthly 
-        };
-        dataSources.churn12 = 'benchmark';
-        console.log('[Financial] ✅ Using BENCHMARK churn:', benchmarkChurnMonthly, '%');
-        debugLogger.logExtraction('churn12Months', 'benchmark_section.churn_monthly_max', benchmarkChurnMonthly, churn12Months, true);
-      } else {
-        // PRIORITY 3: Market-type based fallback
-        churn12Months = defaultChurn;
-        dataSources.churn12 = 'estimated';
-        console.log('[Financial] Using market-type churn for', effectiveMarketType, ':', defaultChurn.avg, '%');
-        debugLogger.logFallback({
-          field: 'churn12Months',
-          attemptedSource: 'growth_targets.12_month.churn + benchmark_section.churn_monthly_max',
-          reason: 'No churn data from database or benchmarks',
-          fallbackUsed: `Market-type based (${effectiveMarketType}): ${defaultChurn.avg}% monthly`,
-          finalValue: defaultChurn,
-        });
-      }
+      // Use market-type based fallback (n8n churn is extracted later if available)
+      churn12Months = defaultChurn;
+      dataSources.churn12 = 'estimated';
+      console.log('[Financial] Using market-type churn for', effectiveMarketType, ':', defaultChurn.avg, '%');
+      debugLogger.logFallback({
+        field: 'churn12Months',
+        attemptedSource: 'growth_targets.12_month.churn',
+        reason: 'No churn data from database',
+        fallbackUsed: `Market-type based (${effectiveMarketType}): ${defaultChurn.avg}% monthly`,
+        finalValue: defaultChurn,
+      });
     }
     if (!churn6Months) {
       churn6Months = churn12Months; // Use same value (already prioritized)
@@ -595,62 +571,13 @@ export function useFinancialMetrics(
     
     // ============================================
     // REALISTIC Break-even & ROI Calculation
-    // Uses new validation layer for market-realistic projections
-    // Now uses DYNAMIC BENCHMARKS from n8n research when available
+    // Uses static MARKET_BENCHMARKS for validation
+    // NOTE: Dynamic benchmark_section is internal to n8n workflows only
     // ============================================
     
-    // Use effectiveMarketType already computed at start of hook
-    // benchmarkSectionRaw already extracted at start
-    const benchmarkSection = benchmarkSectionRaw;
-    
-    // Normalize benchmark keys from snake_case (database) to UPPER_CASE (internal)
-    let dynamicBenchmarks = MARKET_BENCHMARKS;
-    if (benchmarkSection && typeof benchmarkSection === 'object') {
-      const bs = benchmarkSection as Record<string, unknown>;
-      
-      // Check if this is valid n8n research data
-      if (typeof bs.mrr_month_6_max === 'number' || typeof bs.mrr_month_12_max === 'number') {
-        dynamicBenchmarks = {
-          ...MARKET_BENCHMARKS,
-          // MRR Caps - use research values
-          MRR_MONTH_6_MAX: (bs.mrr_month_6_max as number) || MARKET_BENCHMARKS.MRR_MONTH_6_MAX,
-          MRR_MONTH_12_MAX: (bs.mrr_month_12_max as number) || MARKET_BENCHMARKS.MRR_MONTH_12_MAX,
-          MRR_MONTH_24_MAX: (bs.mrr_month_24_max as number) || MARKET_BENCHMARKS.MRR_MONTH_24_MAX,
-          // ARR Caps
-          ARR_YEAR_1_MAX: (bs.arr_year_1_max as number) || MARKET_BENCHMARKS.ARR_YEAR_1_MAX,
-          ARR_YEAR_2_MAX: (bs.arr_year_2_max as number) || MARKET_BENCHMARKS.ARR_YEAR_2_MAX,
-          // Conversion rates
-          USER_TO_PAYING_CONVERSION: (bs.user_to_paying_conversion as number) || MARKET_BENCHMARKS.USER_TO_PAYING_CONVERSION,
-          // Growth constraints
-          MAX_MONTHLY_GROWTH_RATE: (bs.max_monthly_growth as number) || MARKET_BENCHMARKS.MAX_MONTHLY_GROWTH_RATE,
-          // ROI constraints
-          ROI_YEAR_1_MIN: (bs.roi_year_1_min as number) ?? MARKET_BENCHMARKS.ROI_YEAR_1_MIN,
-          ROI_YEAR_1_MAX: (bs.roi_year_1_max as number) ?? MARKET_BENCHMARKS.ROI_YEAR_1_MAX,
-          ROI_YEAR_1_REALISTIC_MAX: (bs.roi_year_1_realistic as number) ?? MARKET_BENCHMARKS.ROI_YEAR_1_REALISTIC_MAX,
-          // Break-even
-          BREAK_EVEN_MIN_MONTHS: (bs.break_even_min_months as number) || MARKET_BENCHMARKS.BREAK_EVEN_MIN_MONTHS,
-          BREAK_EVEN_REALISTIC_MONTHS: (bs.break_even_realistic_months as number) || MARKET_BENCHMARKS.BREAK_EVEN_REALISTIC_MONTHS,
-          // Churn
-          CHURN_REALISTIC_MONTHLY: (bs.churn_monthly_max as number) || MARKET_BENCHMARKS.CHURN_REALISTIC_MONTHLY,
-          CHURN_MAX_MONTHLY: (bs.churn_monthly_max as number) || MARKET_BENCHMARKS.CHURN_MAX_MONTHLY,
-        };
-        
-        console.log('[Financial Metrics] ✅ Using DYNAMIC benchmarks from n8n research:', {
-          source: 'benchmark_section',
-          sourceCount: Array.isArray(bs.sources) ? bs.sources.length : 0,
-          confidence: bs.confidence || 'medium',
-          caps: {
-            MRR_MONTH_6_MAX: dynamicBenchmarks.MRR_MONTH_6_MAX,
-            MRR_MONTH_12_MAX: dynamicBenchmarks.MRR_MONTH_12_MAX,
-            MRR_MONTH_24_MAX: dynamicBenchmarks.MRR_MONTH_24_MAX,
-          }
-        });
-      } else {
-        console.log('[Financial Metrics] ⚠️ benchmark_section exists but missing required fields, using defaults');
-      }
-    } else {
-      console.log('[Financial Metrics] ℹ️ No benchmark_section, using static market benchmarks for:', effectiveMarketType);
-    }
+    // Use static market benchmarks - all dynamic caps are applied by n8n before saving to DB
+    const dynamicBenchmarks = MARKET_BENCHMARKS;
+    console.log('[Financial Metrics] ℹ️ Using static MARKET_BENCHMARKS for:', effectiveMarketType);
     
     // Run full validation pipeline on MRR projections with dynamic benchmarks
     const validatedFinancials = validateFinancialProjections(
@@ -715,57 +642,47 @@ export function useFinancialMetrics(
       console.log('[Financial] ✅ Using ARPU from financial_metrics:', arpuFromN8n);
     }
     
-    // Get benchmark ARPU values if available
-    const benchmarkArpuDefault = benchmarkSection?.default_arpu as number | undefined;
-    const benchmarkArpuRange = benchmarkSection?.arpu_range as { min?: number; max?: number } | undefined;
-    const benchmarkArpuMin = benchmarkArpuRange?.min || 5;
-    const benchmarkArpuMax = benchmarkArpuRange?.max || 200;
-    const avgBenchmarkArpu = benchmarkArpuDefault || ((benchmarkArpuMin + benchmarkArpuMax) / 2);
+    // Static ARPU bounds (benchmark_section is internal to n8n)
+    const defaultArpuMin = 5;
+    const defaultArpuMax = 200;
+    const avgDefaultArpu = (defaultArpuMin + defaultArpuMax) / 2; // $102.50
     
     // Calculate validated ARPU (idealTicket) from validated MRR
     if (validatedMrr12 > 0) {
-      // PRIORITY 1: Use n8n pre-calculated ARPU if available (from unit_economics_used)
+      // PRIORITY 1: Use n8n pre-calculated ARPU if available
       if (arpuFromN8n && arpuFromN8n > 0) {
         idealTicket = Math.round(arpuFromN8n);
         dataSources.idealTicket = 'database';
         console.log('[Financial] ✅ Using N8N pre-calculated ARPU:', arpuFromN8n);
       }
-      // PRIORITY 2: Use benchmark arpu_default if available
-      else if (benchmarkArpuDefault && benchmarkArpuDefault > 0) {
-        idealTicket = Math.round(benchmarkArpuDefault);
-        dataSources.idealTicket = 'benchmark';
-        console.log('[Financial] ✅ Using benchmark default_arpu:', benchmarkArpuDefault);
-      }
-      // PRIORITY 3: If we have customer data, calculate from validated MRR
+      // PRIORITY 2: If we have customer data, calculate from validated MRR
       else if (customers12Months && customers12Months.avg > 0) {
-        const estimatedCustomersFromValidatedMrr = Math.round(validatedMrr12 / avgBenchmarkArpu);
+        const estimatedCustomersFromValidatedMrr = Math.round(validatedMrr12 / avgDefaultArpu);
         const effectiveCustomers = Math.min(customers12Months.avg, estimatedCustomersFromValidatedMrr);
         
         if (effectiveCustomers > 0) {
           idealTicket = Math.round(validatedMrr12 / effectiveCustomers);
         } else {
-          idealTicket = Math.round(avgBenchmarkArpu);
+          idealTicket = Math.round(avgDefaultArpu);
         }
         dataSources.idealTicket = 'calculated';
       } 
-      // PRIORITY 4: Fallback to benchmark average
+      // PRIORITY 3: Fallback to default average
       else {
-        idealTicket = Math.round(avgBenchmarkArpu);
+        idealTicket = Math.round(avgDefaultArpu);
         dataSources.idealTicket = 'estimated';
       }
       
       // Ensure ARPU is within reasonable bounds
-      if (idealTicket < benchmarkArpuMin) {
-        idealTicket = benchmarkArpuMin;
-      } else if (idealTicket > benchmarkArpuMax * 2) {
-        idealTicket = Math.round(benchmarkArpuMax * 2);
+      if (idealTicket < defaultArpuMin) {
+        idealTicket = defaultArpuMin;
+      } else if (idealTicket > defaultArpuMax * 2) {
+        idealTicket = Math.round(defaultArpuMax * 2);
       }
       
       console.log('[Financial] ✅ Validated ARPU:', {
         validatedMrr12,
         arpuFromN8n,
-        benchmarkArpuDefault,
-        benchmarkArpuRange: { min: benchmarkArpuMin, max: benchmarkArpuMax },
         idealTicket,
         source: dataSources.idealTicket,
       });
