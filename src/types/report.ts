@@ -343,6 +343,8 @@ export interface ICPIntelligenceSection {
     tech_savviness?: number;
     responsibilities?: string[];
     gender?: string;
+    age_range?: string;
+    persona_summary?: string;
   };
   demographics?: {
     company_size?: string;
