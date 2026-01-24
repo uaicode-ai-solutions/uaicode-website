@@ -81,8 +81,11 @@ const CustomerPainPointsSection = () => {
   // Sort by intensity descending
   chartData.sort((a, b) => b.intensity - a.intensity);
 
-  // Calculate average intensity
-  const avgIntensity = chartData.length > 0
+  // Check if we have valid intensity data (at least one point with intensity > 0)
+  const hasValidIntensityData = chartData.some(p => p.intensity > 0);
+
+  // Calculate average intensity - use 0 for chart, "..." for display when no valid data
+  const avgIntensityValue = chartData.length > 0
     ? Math.round(chartData.reduce((sum, p) => sum + p.intensity, 0) / chartData.length * 10) / 10
     : 0;
 
@@ -128,7 +131,9 @@ const CustomerPainPointsSection = () => {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Avg:</span>
-                <span className="text-lg font-bold text-accent">{avgIntensity}/10</span>
+                <span className="text-lg font-bold text-accent">
+                  {hasValidIntensityData ? `${avgIntensityValue}/10` : "..."}
+                </span>
               </div>
             </div>
 
@@ -220,7 +225,7 @@ const CustomerPainPointsSection = () => {
                   </InfoTooltip>
                 </span>
                 <span className="font-bold text-accent">
-                  {chartData.length > 0 ? `${chartData[0].intensity}/10` : "-"}
+                  {chartData.length > 0 && hasValidIntensityData ? `${chartData[0].intensity}/10` : "..."}
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
@@ -230,7 +235,9 @@ const CustomerPainPointsSection = () => {
                     Mean severity across all pain points. Higher averages suggest strong market demand.
                   </InfoTooltip>
                 </span>
-                <span className="font-bold text-foreground">{avgIntensity}/10</span>
+                <span className="font-bold text-foreground">
+                  {hasValidIntensityData ? `${avgIntensityValue}/10` : "..."}
+                </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -240,7 +247,7 @@ const CustomerPainPointsSection = () => {
                   </InfoTooltip>
                 </span>
                 <span className="font-bold text-foreground">
-                  {chartData.filter(p => p.intensity >= 8).length}
+                  {hasValidIntensityData ? chartData.filter(p => p.intensity >= 8).length : "..."}
                 </span>
               </div>
             </div>

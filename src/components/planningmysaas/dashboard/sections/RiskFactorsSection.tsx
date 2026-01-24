@@ -20,16 +20,20 @@ const RiskFactorsSection = () => {
   // Normalize to string array for display
   const riskFactorsArray: string[] = Array.isArray(rawRiskFactors) ? rawRiskFactors : [];
   
-  const hasValidRisks = riskFactorsArray.length > 0;
+  // Validate that we have valid risk data (non-empty strings)
+  const hasValidRiskData = riskFactorsArray.length > 0 && 
+    riskFactorsArray.some(r => typeof r === 'string' && r.trim().length > 0);
+  
   const riskCount = riskFactorsArray.length;
-  const riskScore = Math.max(0, 100 - (riskCount * 12)); // Each risk reduces score by ~12
+  // Calculate score only if we have valid data, otherwise 0 for chart
+  const riskScoreValue = hasValidRiskData ? Math.max(0, 100 - (riskCount * 12)) : 0;
 
   // Data for radial bar chart - plot riskScore directly (Safety Score)
-  // This makes the visual arc match the displayed number (76 = 76% arc)
+  // Chart uses 0 when no valid data (empty arc)
   const chartData = [
     {
       name: "Safety Score",
-      value: riskScore, // Plot safety score directly (higher = better = more filled)
+      value: riskScoreValue, // Plot safety score directly (higher = better = more filled)
       fill: "url(#riskBarGradient)",
     },
   ];
@@ -122,7 +126,9 @@ const RiskFactorsSection = () => {
 
               {/* Center content - number only */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-5xl font-bold text-gradient-gold">{riskScore}</span>
+                <span className="text-5xl font-bold text-gradient-gold">
+                  {hasValidRiskData ? riskScoreValue : "..."}
+                </span>
               </div>
             </div>
 
@@ -134,7 +140,7 @@ const RiskFactorsSection = () => {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20">
                 <Shield className="h-4 w-4 text-accent" />
                 <span className="text-sm font-medium text-foreground">
-                  {getRiskLevel(riskScore)}
+                  {hasValidRiskData ? getRiskLevel(riskScoreValue) : "..."}
                 </span>
               </div>
             </div>
@@ -148,7 +154,9 @@ const RiskFactorsSection = () => {
                     Total number of potential challenges identified in market analysis.
                   </InfoTooltip>
                 </span>
-                <span className="font-bold text-amber-500">{riskCount}</span>
+                <span className="font-bold text-amber-500">
+                  {hasValidRiskData ? riskCount : "..."}
+                </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -158,7 +166,9 @@ const RiskFactorsSection = () => {
                   </InfoTooltip>
                 </span>
                 <span className="font-bold text-foreground">
-                  {riskCount <= 3 ? "Manageable" : riskCount <= 5 ? "Monitor" : "Critical"}
+                  {hasValidRiskData 
+                    ? (riskCount <= 3 ? "Manageable" : riskCount <= 5 ? "Monitor" : "Critical")
+                    : "..."}
                 </span>
               </div>
             </div>

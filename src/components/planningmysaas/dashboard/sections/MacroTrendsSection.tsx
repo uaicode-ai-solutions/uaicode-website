@@ -55,7 +55,7 @@ interface MacroTrend {
 // Get strength value - prefer pre-parsed numeric value from n8n workflow
 const getStrengthValue = (trend: MacroTrend): number => {
   // Priority 1: Use pre-parsed numeric value (already 0-100 scale)
-  if (typeof trend.strength_numeric === 'number') {
+  if (typeof trend.strength_numeric === 'number' && Number.isFinite(trend.strength_numeric)) {
     return trend.strength_numeric;
   }
   // Priority 2: Fallback to parsing string
@@ -63,7 +63,8 @@ const getStrengthValue = (trend: MacroTrend): number => {
   if (lower.includes("strong") || lower.includes("high")) return 90;
   if (lower.includes("medium") || lower.includes("moderate")) return 60;
   if (lower.includes("weak") || lower.includes("low")) return 30;
-  return 50;
+  // Return 0 when no valid data (chart shows zero, display shows "...")
+  return 0;
 };
 
 const MacroTrendsSection = () => {
@@ -80,8 +81,11 @@ const MacroTrendsSection = () => {
     t => getStrengthValue(t) >= 90
   ).length;
   const negativeTrends = trendsArray.filter(
-    t => getStrengthValue(t) < 90
+    t => getStrengthValue(t) < 90 && getStrengthValue(t) > 0
   ).length;
+
+  // Check if we have valid strength data (at least one trend with strength > 0)
+  const hasValidStrengthData = trendsArray.some(t => getStrengthValue(t) > 0);
 
   // Create chart data - NO padding points to avoid artificial decay
   const chartData = trendsArray.map((trend, index) => {
@@ -146,7 +150,9 @@ const MacroTrendsSection = () => {
                     Trends that create opportunities for your product in the market.
                   </InfoTooltip>
                 </span>
-                <span className="font-bold text-accent">{positiveTrends}</span>
+                <span className="font-bold text-accent">
+                  {hasValidStrengthData ? positiveTrends : "..."}
+                </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -155,7 +161,9 @@ const MacroTrendsSection = () => {
                     Trends that may pose challenges or require strategic adaptation.
                   </InfoTooltip>
                 </span>
-                <span className="font-bold text-foreground">{negativeTrends}</span>
+                <span className="font-bold text-foreground">
+                  {hasValidStrengthData ? negativeTrends : "..."}
+                </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -165,7 +173,9 @@ const MacroTrendsSection = () => {
                   </InfoTooltip>
                 </span>
                 <span className="font-bold text-accent">
-                  {trendsArray.length > 0 ? Math.round((positiveTrends / trendsArray.length) * 100) : 0}%
+                  {hasValidStrengthData && trendsArray.length > 0 
+                    ? `${Math.round((positiveTrends / trendsArray.length) * 100)}%` 
+                    : "..."}
                 </span>
               </div>
             </div>
