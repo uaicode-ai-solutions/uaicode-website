@@ -456,22 +456,60 @@ export function useFinancialMetrics(
       targetCac = extractCACFromText(targetCacRaw);
     }
     
-    // LTV/CAC Ratio - handle both number and string formats
-    const ltvCacRatioRaw = safeGet(performanceTargets, 'ltv_cac_ratio_target', null);
+    // ============================================
+    // LTV/CAC RATIO EXTRACTION - PRIORITY ORDER:
+    // 1. n8n financial_metrics.ltv_cac_ratio (pre-validated v1.7.0+)
+    // 2. paid_media performance_targets.ltv_cac_ratio_target (legacy)
+    // 3. Local calculation (fallback)
+    // ============================================
     let ltvCacRatioNum: number | null = null;
-    if (typeof ltvCacRatioRaw === 'number' && ltvCacRatioRaw > 0) {
-      // If it's a plain number (e.g., 3.5), use it directly
-      ltvCacRatioNum = ltvCacRatioRaw;
-    } else if (typeof ltvCacRatioRaw === 'string') {
-      // Try extractRatioFromText first
-      ltvCacRatioNum = extractRatioFromText(ltvCacRatioRaw);
-      // Fallback: try parsing formats like "3.5x" or just "3.5"
-      if (ltvCacRatioNum === null) {
-        const match = ltvCacRatioRaw.match(/(\d+\.?\d*)/);
-        if (match) ltvCacRatioNum = parseFloat(match[1]);
+    let ltvCacFromN8n: number | null = null;
+    
+    // PRIORITY 1: n8n v1.7.0+ financial_metrics.ltv_cac_ratio
+    const ltvCacN8nRaw = sanitizeNumericValue(financialMetricsDirect?.ltv_cac_ratio, null);
+    if (typeof ltvCacN8nRaw === 'number' && ltvCacN8nRaw > 0) {
+      ltvCacFromN8n = ltvCacN8nRaw;
+      ltvCacRatioNum = ltvCacN8nRaw;
+      dataSources.ltvCacRatio = 'database';
+      console.log('[Financial] ✅ Using ltv_cac_ratio from n8n financial_metrics:', ltvCacFromN8n);
+    }
+    
+    // PRIORITY 2: paid_media performance_targets (legacy)
+    if (!ltvCacRatioNum) {
+      const ltvCacRatioRaw = safeGet(performanceTargets, 'ltv_cac_ratio_target', null);
+      if (typeof ltvCacRatioRaw === 'number' && ltvCacRatioRaw > 0) {
+        ltvCacRatioNum = ltvCacRatioRaw;
+        dataSources.ltvCacRatio = 'database';
+        debugLogger.logExtraction('ltvCacRatioNum', 'performance_targets.ltv_cac_ratio_target', ltvCacRatioRaw, ltvCacRatioNum, true);
+      } else if (typeof ltvCacRatioRaw === 'string') {
+        // Try extractRatioFromText first
+        ltvCacRatioNum = extractRatioFromText(ltvCacRatioRaw);
+        // Fallback: try parsing formats like "3.5x" or just "3.5"
+        if (ltvCacRatioNum === null) {
+          const match = ltvCacRatioRaw.match(/(\d+\.?\d*)/);
+          if (match) ltvCacRatioNum = parseFloat(match[1]);
+        }
+        if (ltvCacRatioNum) {
+          dataSources.ltvCacRatio = 'database';
+          debugLogger.logExtraction('ltvCacRatioNum', 'performance_targets.ltv_cac_ratio_target', ltvCacRatioRaw, ltvCacRatioNum, true);
+        }
       }
     }
     
+    // Track if no LTV/CAC found from database
+    if (!ltvCacRatioNum) {
+      debugLogger.logFallback({
+        field: 'ltvCacRatioNum',
+        attemptedSource: 'financial_metrics.ltv_cac_ratio OR performance_targets.ltv_cac_ratio_target',
+        reason: 'No LTV/CAC ratio found in database',
+        fallbackUsed: 'local calculation',
+        finalValue: null,
+      });
+    }
+    
+    // ============================================
+    // MARKETING BUDGET EXTRACTION
+    // ============================================
     // Marketing budget - try to extract from budget strategy text
     const marketingBudgetStr = safeGet(budgetStrategy, 'recommended_marketing_budget_monthly', null) as string | null;
     let marketingBudgetMonthly = parseMoneyValue(marketingBudgetStr);
@@ -520,13 +558,7 @@ export function useFinancialMetrics(
         finalValue: null,
       });
     }
-    
-    // Track LTV/CAC ratio data source
-    if (ltvCacRatioNum) {
-      dataSources.ltvCacRatio = 'database';
-      debugLogger.logExtraction('ltvCacRatioNum', 'performance_targets.ltv_cac_ratio_target', ltvCacRatioRaw, ltvCacRatioNum, true);
-    }
-    
+
     // ============================================
     // Extract margin and operational cost from report (more realistic values)
     // MOVED UP: needed for payback calculation
@@ -820,7 +852,13 @@ export function useFinancialMetrics(
     }
     
     // Recalculate LTV/CAC with validated LTV
-    if (ltv && targetCac && targetCac.avg > 0) {
+    // SKIP recalculation if we have a pre-validated value from n8n
+    if (ltvCacFromN8n && ltvCacFromN8n > 0) {
+      // Use n8n pre-calculated value directly (already validated in pipeline)
+      ltvCacCalculated = ltvCacFromN8n;
+      dataSources.ltvCacCalculated = 'database';
+      console.log('[Financial] ✅ Using PRE-VALIDATED LTV/CAC from n8n:', ltvCacFromN8n);
+    } else if (ltv && targetCac && targetCac.avg > 0) {
       const calculated = Math.round((ltv / targetCac.avg) * 10) / 10;
       
       // B2C typically has lower LTV/CAC due to lower LTV and higher churn
@@ -856,7 +894,7 @@ export function useFinancialMetrics(
       }
       
       dataSources.ltvCacCalculated = 'calculated';
-      console.log('[Financial] ✅ Validated LTV/CAC:', {
+      console.log('[Financial] ✅ Validated LTV/CAC (local calc):', {
         ltv,
         cac: targetCac.avg,
         calculated,
