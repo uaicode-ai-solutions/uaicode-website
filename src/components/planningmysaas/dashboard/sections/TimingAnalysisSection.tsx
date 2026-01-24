@@ -3,40 +3,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
-import { parseJsonField, parseScoreField, emptyStates } from "@/lib/reportDataUtils";
-import { TimingAnalysis, OpportunitySection } from "@/types/report";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
+import { parseJsonField, parseScoreField } from "@/lib/reportDataUtils";
+import { OpportunitySection } from "@/types/report";
 
 const TimingAnalysisSection = () => {
-  const { report, reportData, reportId } = useReportContext();
-  const wizardId = reportData?.wizard_id;
+  const { report, reportData } = useReportContext();
   
   // UNIFIED: Get macro trends from opportunity_section (primary source)
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   const macroTrendsFromOpportunity = opportunityData?.macro_trends || [];
   
-  // Parse timing analysis from report or use empty state
+  // Parse timing analysis from report or use null
   const timingScore = parseScoreField(report?.timing_score, 0);
   const rawTimingAnalysis = parseJsonField<any>(report?.timing_analysis, null);
   
-  // Smart fallback for timing score
-  const { value: fallbackTimingScore, isLoading: timingScoreLoading } = useSmartFallbackField<number>({
-    fieldPath: "timing_analysis.timingScore",
-    currentValue: timingScore || rawTimingAnalysis?.score,
-  });
+  // Direct value extraction - no smart fallback
+  const timingScoreValue = timingScore || rawTimingAnalysis?.score || null;
+  const verdictValue = rawTimingAnalysis?.verdict || null;
   
-  // Smart fallback for verdict
-  const { value: fallbackVerdict, isLoading: verdictLoading } = useSmartFallbackField<string>({
-    fieldPath: "timing_analysis.verdict",
-    currentValue: rawTimingAnalysis?.verdict,
-  });
-  
-  // Build the timing analysis object with proper structure
-  // Use opportunity_section macro_trends as primary source
+  // Build the timing analysis object with proper structure - null if no data
   const timingAnalysis = rawTimingAnalysis ? {
-    timingScore: fallbackTimingScore ?? timingScore ?? rawTimingAnalysis.score ?? 0,
-    verdict: fallbackVerdict ?? rawTimingAnalysis.verdict ?? "Analysis pending...",
+    timingScore: timingScoreValue ?? 0,
+    verdict: verdictValue ?? "...",
     // UNIFIED: Use opportunity_section macro_trends if available
     macroTrends: macroTrendsFromOpportunity.length > 0 
       ? macroTrendsFromOpportunity.map(mt => ({
@@ -45,12 +33,27 @@ const TimingAnalysisSection = () => {
           relevance: mt.strength === "Strong" ? "high" : mt.strength === "Medium" ? "medium" : "low"
         }))
       : rawTimingAnalysis.macroTrends || [],
-    windowOfOpportunity: rawTimingAnalysis.windowOfOpportunity || { opens: "Now", closes: "TBD", reason: "" },
+    windowOfOpportunity: {
+      opens: rawTimingAnalysis.windowOfOpportunity?.opens || "...",
+      closes: rawTimingAnalysis.windowOfOpportunity?.closes || "...",
+      reason: rawTimingAnalysis.windowOfOpportunity?.reason || "..."
+    },
     firstMoverAdvantage: {
-      score: rawTimingAnalysis.firstMoverAdvantage?.score || parseScoreField(report?.first_mover_score, 0),
+      score: rawTimingAnalysis.firstMoverAdvantage?.score || 0,
       benefits: rawTimingAnalysis.firstMoverAdvantage?.benefits || rawTimingAnalysis.firstMoverAdvantage || []
     }
-  } : emptyStates.timingAnalysis;
+  } : null;
+
+  // Helper for timing badge based on score
+  const getTimingBadge = (score: number | null) => {
+    if (score === null || score === 0) return { text: "...", color: "bg-muted/10 text-muted-foreground border-border/30" };
+    if (score >= 80) return { text: "Excellent Timing", color: "bg-green-500/10 text-green-400 border-green-500/20" };
+    if (score >= 60) return { text: "Good Timing", color: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" };
+    if (score >= 40) return { text: "Fair Timing", color: "bg-orange-500/10 text-orange-400 border-orange-500/20" };
+    return { text: "Poor Timing", color: "bg-red-500/10 text-red-400 border-red-500/20" };
+  };
+
+  const timingBadge = getTimingBadge(timingAnalysis?.timingScore ?? null);
 
   const getRelevanceColor = (relevance: string) => {
     switch (relevance?.toLowerCase()) {
@@ -67,7 +70,7 @@ const TimingAnalysisSection = () => {
   };
   
   // Early return if no data
-  if (!rawTimingAnalysis) {
+  if (!rawTimingAnalysis && !timingScoreValue) {
     return (
       <section id="timing-analysis" className="space-y-6 animate-fade-in">
         <div className="flex items-center gap-3">
@@ -109,32 +112,26 @@ const TimingAnalysisSection = () => {
             <div className="relative">
               <div className="w-28 h-28 rounded-full bg-muted/20 border-4 border-accent/30 flex items-center justify-center">
                 <div className="text-center">
-                  {timingScoreLoading ? (
-                    <InlineValueSkeleton size="xl" />
-                  ) : (
-                    <span className={`text-3xl font-bold ${getScoreColor(timingAnalysis.timingScore)}`}>
-                      {timingAnalysis.timingScore}
-                    </span>
-                  )}
+                  <span className={`text-3xl font-bold ${getScoreColor(timingAnalysis?.timingScore ?? 0)}`}>
+                    {timingAnalysis?.timingScore ?? "--"}
+                  </span>
                   <p className="text-xs text-muted-foreground">/100</p>
                 </div>
               </div>
-              <div className="absolute -top-1 -right-1 p-1.5 rounded-full bg-green-500">
-                <Zap className="h-3.5 w-3.5 text-white" />
-              </div>
+              {timingAnalysis?.timingScore && timingAnalysis.timingScore > 0 && (
+                <div className="absolute -top-1 -right-1 p-1.5 rounded-full bg-green-500">
+                  <Zap className="h-3.5 w-3.5 text-white" />
+                </div>
+              )}
             </div>
             
             {/* Verdict */}
             <div className="flex-1 text-center md:text-left">
-              <Badge className="bg-green-500/10 text-green-400 border-green-500/20 mb-2">
-                Excellent Timing
+              <Badge className={timingBadge.color + " mb-2"}>
+                {timingBadge.text}
               </Badge>
               <p className="text-lg text-foreground">
-                {verdictLoading ? (
-                  <InlineValueSkeleton size="lg" className="w-64" />
-                ) : (
-                  timingAnalysis.verdict
-                )}
+                {timingAnalysis?.verdict ?? "..."}
               </p>
             </div>
           </div>
@@ -155,25 +152,30 @@ const TimingAnalysisSection = () => {
             </div>
             
             <div className="space-y-3">
-              {timingAnalysis.macroTrends.map((trend, index) => (
-                <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-medium text-foreground flex-1">{trend.trend}</p>
-                    <Badge className={`${getRelevanceColor(trend.relevance)} text-xs`}>
-                      {trend.relevance}
-                    </Badge>
+              {(timingAnalysis?.macroTrends || []).length > 0 ? (
+                timingAnalysis?.macroTrends.map((trend, index) => (
+                  <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-medium text-foreground flex-1">{trend.trend}</p>
+                      <Badge className={`${getRelevanceColor(trend.relevance)} text-xs`}>
+                        {trend.relevance || "..."}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <TrendingUp className="h-3.5 w-3.5 text-green-400" />
+                      <span className="text-xs text-green-400 font-medium">{trend.impact || "..."}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <TrendingUp className="h-3.5 w-3.5 text-green-400" />
-                    <span className="text-xs text-green-400 font-medium">{trend.impact}</span>
-                  </div>
+                ))
+              ) : (
+                <div className="p-3 rounded-lg bg-muted/10 border border-border/30 text-center">
+                  <p className="text-sm text-muted-foreground">...</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Window of Opportunity Card */}
         <Card className="bg-card/50 border-border/30">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
@@ -188,18 +190,18 @@ const TimingAnalysisSection = () => {
               <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/20">
                 <div>
                   <p className="text-xs text-muted-foreground">Opens</p>
-                  <p className="text-lg font-bold text-green-400">{timingAnalysis.windowOfOpportunity.opens}</p>
+                  <p className="text-lg font-bold text-green-400">{timingAnalysis?.windowOfOpportunity?.opens ?? "..."}</p>
                 </div>
                 <div className="h-8 w-px bg-border/50" />
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground">Closes</p>
-                  <p className="text-lg font-bold text-orange-400">{timingAnalysis.windowOfOpportunity.closes}</p>
+                  <p className="text-lg font-bold text-orange-400">{timingAnalysis?.windowOfOpportunity?.closes ?? "..."}</p>
                 </div>
               </div>
               
               <div className="p-3 rounded-lg bg-muted/10 border border-border/30">
                 <p className="text-xs text-muted-foreground mb-1">Why this window?</p>
-                <p className="text-sm text-foreground">{timingAnalysis.windowOfOpportunity.reason}</p>
+                <p className="text-sm text-foreground">{timingAnalysis?.windowOfOpportunity?.reason ?? "..."}</p>
               </div>
 
               {/* Timeline Visual */}
@@ -235,19 +237,25 @@ const TimingAnalysisSection = () => {
                 Benefits of entering the market before competitors
               </InfoTooltip>
               <Badge className="bg-accent/10 text-accent border-accent/20 ml-auto">
-                Score: {timingAnalysis.firstMoverAdvantage.score}/100
+                Score: {timingAnalysis?.firstMoverAdvantage?.score ?? "--"}/100
               </Badge>
             </div>
           
           <div className="grid md:grid-cols-3 gap-4">
-            {timingAnalysis.firstMoverAdvantage.benefits.map((benefit, index) => (
-              <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30 text-center">
-                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-2">
-                  <span className="text-sm font-bold text-accent">{index + 1}</span>
+            {(timingAnalysis?.firstMoverAdvantage?.benefits || []).length > 0 ? (
+              timingAnalysis?.firstMoverAdvantage.benefits.map((benefit, index) => (
+                <div key={index} className="p-3 rounded-lg bg-muted/10 border border-border/30 text-center">
+                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-2">
+                    <span className="text-sm font-bold text-accent">{index + 1}</span>
+                  </div>
+                  <p className="text-sm text-foreground">{benefit}</p>
                 </div>
-                <p className="text-sm text-foreground">{benefit}</p>
+              ))
+            ) : (
+              <div className="col-span-3 p-3 rounded-lg bg-muted/10 border border-border/30 text-center">
+                <p className="text-sm text-muted-foreground">...</p>
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
@@ -258,11 +266,19 @@ const TimingAnalysisSection = () => {
           <div className="p-1.5 rounded-lg bg-green-500/20 flex-shrink-0">
             <CheckCircle2 className="h-4 w-4 text-green-400" />
           </div>
-          <p className="text-sm text-foreground/90">
-            With a timing score of {timingScoreLoading ? <InlineValueSkeleton size="sm" /> : timingAnalysis.timingScore}/100, market conditions are highly favorable. 
-            The window of opportunity is open now and will begin closing in {timingAnalysis.windowOfOpportunity.closes}. 
-            Acting now provides significant first-mover advantages.
-          </p>
+          {timingAnalysis?.timingScore && timingAnalysis.timingScore > 0 ? (
+            <p className="text-sm text-foreground/90">
+              With a timing score of {timingAnalysis.timingScore}/100, market conditions are 
+              {timingAnalysis.timingScore >= 80 ? " highly" : timingAnalysis.timingScore >= 60 ? "" : " moderately"} favorable.
+              {timingAnalysis.windowOfOpportunity?.closes && timingAnalysis.windowOfOpportunity.closes !== "..." && 
+                ` The window of opportunity is open now and will begin closing in ${timingAnalysis.windowOfOpportunity.closes}.`}
+              {" "}Acting now provides significant first-mover advantages.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Timing analysis data not yet available. Data will appear once the market research is complete.
+            </p>
+          )}
         </div>
       </div>
     </section>

@@ -24,9 +24,12 @@ const seasonalVariation: Record<string, number> = {
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// Helper to get trend icon and color
-const getTrendConfig = (trend: string) => {
-  const normalizedTrend = (trend || "").toLowerCase();
+// Helper to get trend icon and color - returns null growthRate if no data
+const getTrendConfig = (trend: string, hasData: boolean = true) => {
+  if (!hasData || !trend || trend === "...") {
+    return { color: "text-muted-foreground", bgColor: "bg-muted/20", label: "...", growthRate: null };
+  }
+  const normalizedTrend = trend.toLowerCase();
   if (normalizedTrend.includes("increas") || normalizedTrend.includes("grow") || normalizedTrend.includes("up")) {
     return { color: "text-gradient-gold", bgColor: "bg-amber-500/20", label: "Increasing", growthRate: 0.18 };
   }
@@ -83,12 +86,12 @@ const formatSearchVolume = (value: string): string => {
   return `${num} /month`;
 };
 
-// Extract numeric value from search volume for chart
+// Extract numeric value from search volume for chart - returns 0 if no data
 const extractNumericValue = (value: string): number => {
-  if (!value || value === "..." || value === "N/A") return 1000000; // Default 1M
+  if (!value || value === "..." || value === "N/A") return 0;
   
   const numMatch = value.match(/[\d.]+/);
-  if (!numMatch) return 1000000;
+  if (!numMatch) return 0;
   
   const num = parseFloat(numMatch[0]);
   const lowerValue = value.toLowerCase();
@@ -238,8 +241,12 @@ const DemandSignalsSection = () => {
   const forumDiscussionsRaw = extractValue(rawData?.forum_discussions);
   const jobPostingsRaw = extractValue(rawData?.job_postings);
   const onlineReviewsRaw = extractValue(rawData?.online_reviews);
+  
+  // Get market growth rate from opportunity_section if available
+  const marketGrowthRate = opportunityData?.market_growth_rate as string | null || null;
 
-  const trendConfig = getTrendConfig(searchTrend);
+  const hasSearchTrendData = searchTrend !== "...";
+  const trendConfig = getTrendConfig(searchTrend, hasSearchTrendData);
 
   // Calculate base values - use 0 if no data (shows "..." in display)
   const hasSearchData = monthlySearches !== "...";
@@ -558,9 +565,17 @@ const DemandSignalsSection = () => {
           </div>
 
           <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground border-t border-border/30 pt-3">
-            <span>Growth Rate: <span className={`font-medium ${trendConfig.color}`}>{trendConfig.growthRate > 0 ? '+' : ''}{(trendConfig.growthRate * 100).toFixed(0)}% annually</span></span>
+            <span>Growth Rate: <span className={`font-medium ${trendConfig.color}`}>
+              {trendConfig.growthRate !== null 
+                ? `${trendConfig.growthRate > 0 ? '+' : ''}${(trendConfig.growthRate * 100).toFixed(0)}% annually`
+                : "..."}
+            </span></span>
             <span>•</span>
-            <span>Year 5 Projection: <span className="font-medium text-gradient-gold">{formatChartNumber(projectionData[projectionData.length - 1]?.searches || 0)} /month</span></span>
+            <span>Year 5 Projection: <span className="font-medium text-gradient-gold">
+              {trendConfig.growthRate !== null && searchesBaseValue > 0
+                ? `${formatChartNumber(projectionData[projectionData.length - 1]?.searches || 0)} /month`
+                : "..."}
+            </span></span>
           </div>
         </CardContent>
       </Card>

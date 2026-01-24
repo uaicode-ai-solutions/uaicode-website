@@ -22,36 +22,36 @@ const parseScore = (value: string | undefined): number => {
   return match ? parseInt(match[1], 10) : 0;
 };
 
-// Map trajectory to score
+// Map trajectory to score - returns 0 if no data
 const trajectoryToScore = (trajectory: string | undefined): number => {
-  if (!trajectory) return 50;
+  if (!trajectory) return 0;
   const lower = trajectory.toLowerCase();
   if (lower.includes("accelerat") || lower.includes("rapid")) return 95;
   if (lower.includes("steady") || lower.includes("growing")) return 75;
   if (lower.includes("slow") || lower.includes("maturing")) return 50;
   if (lower.includes("declin") || lower.includes("saturate")) return 25;
-  return 60;
+  return 0;
 };
 
-// Map maturity to score
+// Map maturity to score - returns 0 if no data
 const maturityToScore = (maturity: string | undefined): number => {
-  if (!maturity) return 50;
+  if (!maturity) return 0;
   const lower = maturity.toLowerCase();
   if (lower.includes("emerging") || lower.includes("nascent")) return 90;
   if (lower.includes("growth") || lower.includes("expanding")) return 80;
   if (lower.includes("mature") || lower.includes("established")) return 50;
   if (lower.includes("declining") || lower.includes("saturated")) return 30;
-  return 60;
+  return 0;
 };
 
-// Map saturation level to score (inverse - lower saturation = higher score)
+// Map saturation level to score (inverse - lower saturation = higher score) - returns 0 if no data
 const saturationToScore = (saturation: string | undefined): number => {
-  if (!saturation) return 70;
+  if (!saturation) return 0;
   const lower = saturation.toLowerCase();
   if (lower.includes("low") || lower.includes("minimal")) return 90;
   if (lower.includes("moderate") || lower.includes("medium")) return 60;
   if (lower.includes("high") || lower.includes("saturated")) return 30;
-  return 60;
+  return 0;
 };
 
 const MarketTimingSection = () => {
@@ -72,8 +72,11 @@ const MarketTimingSection = () => {
   const maturityScore = maturityToScore(marketMaturityValue);
   const saturationScore = saturationToScore(saturationLevelValue);
 
-  // Calculate window score based on optimal_window presence
-  const windowScore = optimalWindowValue ? 85 : 60;
+  // Calculate window score based on optimal_window presence - 0 if no data
+  const windowScore = optimalWindowValue ? 85 : 0;
+
+  // Check if we have any real data
+  const hasAnyData = trendsScore > 0 || trajectoryScore > 0 || maturityScore > 0 || windowScore > 0 || saturationScore > 0;
 
   // Data for radar chart with descriptions for tooltips
   const radarData = [
@@ -124,10 +127,10 @@ const MarketTimingSection = () => {
     return null;
   };
 
-  // Calculate overall timing score
-  const overallScore = Math.round(
-    (trendsScore + trajectoryScore + maturityScore + windowScore + saturationScore) / 5
-  );
+  // Calculate overall timing score - null if no data
+  const overallScore = hasAnyData 
+    ? Math.round((trendsScore + trajectoryScore + maturityScore + windowScore + saturationScore) / 5)
+    : null;
 
   // Indicator data for the 5 score circles with icons
   const indicatorData: { name: string; score: number; description: string; icon: LucideIcon }[] = [
@@ -197,7 +200,7 @@ const MarketTimingSection = () => {
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-1">
-                  <span className="text-2xl font-bold text-accent">{overallScore}</span>
+                  <span className="text-2xl font-bold text-accent">{overallScore !== null ? overallScore : "--"}</span>
                   <span className="text-sm text-muted-foreground">/100</span>
                   <InfoTooltip side="left" size="sm">
                     Overall Timing Score is the average of all 5 timing metrics: Trends, Trajectory, 
