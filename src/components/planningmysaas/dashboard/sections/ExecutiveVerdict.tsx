@@ -9,9 +9,13 @@ import { useReportContext } from "@/contexts/ReportContext";
 import { SummarySection } from "@/types/report";
 import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
 import { FallbackSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
+import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
 
 const ExecutiveVerdict = () => {
   const { report, reportData } = useReportContext();
+  
+  // Get validated financial metrics for syncing with summary text
+  const financialMetrics = useFinancialMetrics(reportData, report?.market_type);
   
   // Get summary data from summary_section JSONB (prefer over legacy fields)
   const summaryData = reportData?.summary_section as SummarySection | null;
@@ -30,8 +34,44 @@ const ExecutiveVerdict = () => {
     currentValue: rawVerdictSummary,
   });
 
+  // Sync metrics in summary text with validated financial data to prevent contradictions
+  const syncMetricsInText = (text: string): string => {
+    if (!text) return text;
+    
+    let synced = text;
+    
+    // Replace LTV/CAC mentions with validated value from financial hook
+    const ltvCacReal = financialMetrics.ltvCacCalculated || financialMetrics.ltvCacRatioNum;
+    if (ltvCacReal && ltvCacReal > 0) {
+      // Match patterns like "LTV/CAC of 4.5x", "LTV/CAC ratio of 4.5", "LTV:CAC of 4.5x"
+      synced = synced.replace(
+        /LTV[\/:]CAC(?:\s+ratio)?\s+(?:of\s+)?[\d.]+x?/gi,
+        `LTV/CAC ratio of ${ltvCacReal.toFixed(1)}x`
+      );
+    }
+    
+    // Replace payback period mentions with validated value
+    const paybackReal = financialMetrics.paybackPeriod;
+    if (paybackReal && paybackReal > 0) {
+      // Match patterns like "payback period of 3 months", "3-month payback"
+      synced = synced.replace(
+        /payback(?:\s+period)?\s+(?:of\s+)?(\d+)[-\s]?months?/gi,
+        `payback period of ${paybackReal} months`
+      );
+      synced = synced.replace(
+        /(\d+)[-\s]?month\s+payback/gi,
+        `${paybackReal}-month payback`
+      );
+    }
+    
+    return synced;
+  };
+
+  // Apply metric sync to verdict summary
+  const syncedVerdictSummary = syncMetricsInText(verdictSummary || "");
+
   // Parse executive summary into bullet points for better readability
-  const summaryParagraphs = (verdictSummary || "").split('\n\n').filter(p => p.trim());
+  const summaryParagraphs = syncedVerdictSummary.split('\n\n').filter(p => p.trim());
 
   return (
     <section id="executive-verdict" className="space-y-6 animate-fade-in">
