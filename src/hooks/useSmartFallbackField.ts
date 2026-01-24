@@ -29,12 +29,16 @@ export interface UseSmartFallbackFieldReturn<T> {
 /**
  * Hook that intelligently fetches fallback data when a field is empty.
  * Uses the fallbackAgent from ReportContext to call the pms-smart-fallback edge function.
+ * 
+ * NOMENCLATURA:
+ * - wizardId: UUID de tb_pms_wizard (do contexto)
+ * - pmsReportId: UUID de tb_pms_reports (para operações de fallback)
  */
 export function useSmartFallbackField<T = unknown>(
   options: UseSmartFallbackFieldOptions<T>
 ): UseSmartFallbackFieldReturn<T> {
   const { fieldPath, currentValue, formatter, skipFallback = false } = options;
-  const { fallbackAgent, reportId, report, refreshReportData } = useReportContext();
+  const { fallbackAgent, wizardId, pmsReportId, report, refreshReportData } = useReportContext();
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -45,16 +49,13 @@ export function useSmartFallbackField<T = unknown>(
 
   // Determine if current value needs fallback
   const needsFallback = !skipFallback && requiresFallback(currentValue);
-  
-  // Get wizard ID from report
-  const wizardId = report?.id;
 
   const doRequestFallback = useCallback(async () => {
-    if (!fallbackAgent || !reportId || !wizardId) {
+    if (!fallbackAgent || !wizardId || !pmsReportId) {
       console.log(`[SmartFallback] Missing deps for ${fieldPath}:`, { 
         hasAgent: !!fallbackAgent, 
-        reportId, 
-        wizardId 
+        wizardId, 
+        pmsReportId 
       });
       return;
     }
@@ -73,7 +74,7 @@ export function useSmartFallbackField<T = unknown>(
       
       const response = await fallbackAgent.requestFallback({
         wizardId,
-        reportId,
+        reportId: pmsReportId, // Edge function expects reportId param
         fieldPath,
       });
 
@@ -108,20 +109,20 @@ export function useSmartFallbackField<T = unknown>(
         setIsLoading(false);
       }
     }
-  }, [fallbackAgent, reportId, wizardId, fieldPath, formatter, refreshReportData]);
+  }, [fallbackAgent, wizardId, pmsReportId, fieldPath, formatter, refreshReportData]);
 
   // Auto-trigger fallback when needed
   useEffect(() => {
     mountedRef.current = true;
     
-    if (needsFallback && !requestedRef.current && fallbackAgent && reportId && wizardId) {
+    if (needsFallback && !requestedRef.current && fallbackAgent && wizardId && pmsReportId) {
       doRequestFallback();
     }
 
     return () => {
       mountedRef.current = false;
     };
-  }, [needsFallback, fallbackAgent, reportId, wizardId, doRequestFallback]);
+  }, [needsFallback, fallbackAgent, wizardId, pmsReportId, doRequestFallback]);
 
   // Reset request flag when field path changes
   useEffect(() => {
@@ -168,8 +169,7 @@ export function useSmartFallbackFields(
   hasAnyError: boolean;
   results: Map<string, { value: unknown; isLoading: boolean; isFallback: boolean }>;
 } {
-  const { fallbackAgent, reportId, report, refreshReportData } = useReportContext();
-  const wizardId = report?.id;
+  const { fallbackAgent, wizardId, pmsReportId, refreshReportData } = useReportContext();
   
   const [loadingFields, setLoadingFields] = useState<Set<string>>(new Set());
   const [fallbackValues, setFallbackValues] = useState<Map<string, unknown>>(new Map());
@@ -177,7 +177,7 @@ export function useSmartFallbackFields(
   const requestedFieldsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!fallbackAgent || !reportId || !wizardId) return;
+    if (!fallbackAgent || !wizardId || !pmsReportId) return;
 
     const fieldsNeedingFallback = fields.filter(f => 
       !f.skipFallback && 
@@ -191,10 +191,10 @@ export function useSmartFallbackFields(
     fieldsNeedingFallback.forEach(f => requestedFieldsRef.current.add(f.fieldPath));
     setLoadingFields(prev => new Set([...prev, ...fieldsNeedingFallback.map(f => f.fieldPath)]));
 
-    // Batch request
+    // Batch request - edge function expects reportId param
     const params = fieldsNeedingFallback.map(f => ({
       wizardId,
-      reportId,
+      reportId: pmsReportId,
       fieldPath: f.fieldPath,
     }));
 
@@ -226,7 +226,7 @@ export function useSmartFallbackFields(
         refreshReportData();
       }
     });
-  }, [fallbackAgent, reportId, wizardId, fields, fallbackValues, errors, refreshReportData]);
+  }, [fallbackAgent, wizardId, pmsReportId, fields, fallbackValues, errors, refreshReportData]);
 
   const results = new Map<string, { value: unknown; isLoading: boolean; isFallback: boolean }>();
   

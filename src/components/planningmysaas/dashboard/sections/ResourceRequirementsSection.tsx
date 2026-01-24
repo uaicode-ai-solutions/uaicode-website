@@ -20,8 +20,8 @@ interface ResourceRequirementsData {
 }
 
 const ResourceRequirementsSection = () => {
-  const { report, reportData, reportId } = useReportContext();
-  const wizardId = reportData?.wizard_id;
+  const { report, reportData, wizardId } = useReportContext();
+  const wizardIdFromData = reportData?.wizard_id;
   
   // Parse resource requirements from report
   const rawResourceRequirements = parseJsonField<ResourceRequirementsData>(report?.resource_requirements, null);

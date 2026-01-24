@@ -6,12 +6,24 @@ import { MarketingTotals } from "@/hooks/useMarketingTiers";
 import { useFallbackAgent, UseFallbackAgentReturn } from "@/hooks/useFallbackAgent";
 import { useQueryClient } from "@tanstack/react-query";
 
+/**
+ * NOMENCLATURA PADRÃO:
+ * 
+ * wizardId - UUID do registro em tb_pms_wizard (PK)
+ *            É o ID usado na URL: /dashboard/:wizardId
+ * 
+ * pmsReportId - UUID do registro em tb_pms_reports (PK)
+ *               Derivado de reportData.id após o fetch
+ */
 interface ReportContextType {
   report: ReportRow | null | undefined;
   reportData: ReportData | null | undefined;
   isLoading: boolean;
   error: Error | null;
-  reportId: string | undefined;
+  /** UUID from tb_pms_wizard - used in URL */
+  wizardId: string | undefined;
+  /** UUID from tb_pms_reports - use for polling status */
+  pmsReportId: string | undefined;
   // Marketing selection state (shared between InvestmentSection and NextStepsSection)
   selectedMarketingIds: string[];
   setSelectedMarketingIds: (ids: string[]) => void;
@@ -26,14 +38,17 @@ interface ReportContextType {
 const ReportContext = createContext<ReportContextType | undefined>(undefined);
 
 interface ReportProviderProps {
-  reportId: string | undefined;
+  wizardId: string | undefined;
   children: ReactNode;
 }
 
-export const ReportProvider = ({ reportId, children }: ReportProviderProps) => {
+export const ReportProvider = ({ wizardId, children }: ReportProviderProps) => {
   const queryClient = useQueryClient();
-  const { data: report, isLoading: isLoadingWizard, error: wizardError } = useReport(reportId);
-  const { data: reportData, isLoading: isLoadingReport, error: reportError } = useReportData(reportId);
+  const { data: report, isLoading: isLoadingWizard, error: wizardError } = useReport(wizardId);
+  const { data: reportData, isLoading: isLoadingReport, error: reportError } = useReportData(wizardId);
+
+  // Extract the actual tb_pms_reports.id for polling/status checks
+  const pmsReportId = reportData?.id;
 
   // Initialize fallback agent
   const fallbackAgent = useFallbackAgent();
@@ -54,12 +69,12 @@ export const ReportProvider = ({ reportId, children }: ReportProviderProps) => {
 
   // Function to refresh report data after fallback agent updates
   const refreshReportData = useCallback(async () => {
-    if (reportId) {
-      // Invalidate both report queries to refetch fresh data
-      await queryClient.invalidateQueries({ queryKey: ["report", reportId] });
-      await queryClient.invalidateQueries({ queryKey: ["reportData", reportId] });
+    if (wizardId) {
+      // Invalidate both queries with the new standardized keys
+      await queryClient.invalidateQueries({ queryKey: ["wizard", wizardId] });
+      await queryClient.invalidateQueries({ queryKey: ["pms-report-data", wizardId] });
     }
-  }, [reportId, queryClient]);
+  }, [wizardId, queryClient]);
 
   return (
     <ReportContext.Provider
@@ -68,7 +83,8 @@ export const ReportProvider = ({ reportId, children }: ReportProviderProps) => {
         reportData,
         isLoading: isLoadingWizard || isLoadingReport,
         error: (wizardError || reportError) as Error | null,
-        reportId,
+        wizardId,
+        pmsReportId,
         selectedMarketingIds,
         setSelectedMarketingIds,
         marketingTotals,

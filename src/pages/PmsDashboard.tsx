@@ -59,15 +59,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const PmsDashboardContent = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  // URL param is the wizard_id (tb_pms_wizard.id), not tb_pms_reports.id
+  const { id: wizardId } = useParams<{ id: string }>();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("report");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   
-  // Get report data from context for quality check
-  const { reportData } = useReportContext();
+  // Get report data from context - pmsReportId is tb_pms_reports.id
+  const { reportData, pmsReportId } = useReportContext();
   
   // Check data quality (memoized to avoid recalculating on every render)
   const dataQualityIssues = useMemo(() => {
@@ -75,8 +76,9 @@ const PmsDashboardContent = () => {
   }, [reportData]);
 
   // Poll for report status changes in tb_pms_reports
-  const pollReportStatus = async (reportId: string) => {
-    console.log("📊 Starting polling for report status...");
+  // IMPORTANT: pmsReportId is the actual ID from tb_pms_reports (NOT wizard_id)
+  const pollReportStatus = async (pmsReportIdToPoll: string) => {
+    console.log("📊 Starting polling for pmsReportId:", pmsReportIdToPoll);
     
     const maxAttempts = 60; // 5 minutes (5s interval)
     let attempts = 0;
@@ -96,11 +98,11 @@ const PmsDashboardContent = () => {
       }
 
       try {
-        // Poll tb_pms_reports for status by report_id
+        // Poll tb_pms_reports for status by its primary key (id)
         const { data: reportStatus, error } = await supabase
           .from("tb_pms_reports")
           .select("status")
-          .eq("id", reportId)
+          .eq("id", pmsReportIdToPoll)
           .single();
 
         if (error) throw error;
@@ -149,10 +151,10 @@ const PmsDashboardContent = () => {
 
   // Regenerate report handler - calls pms-trigger-n8n-report
   const handleRegenerateReport = async () => {
-    if (!id) return;
+    if (!wizardId) return;
     
     setIsRegenerating(true);
-    console.log("🔄 Starting report regeneration via n8n...");
+    console.log("🔄 Starting report regeneration for wizardId:", wizardId);
 
     // Show toast immediately
     toast({
@@ -161,9 +163,9 @@ const PmsDashboardContent = () => {
     });
     
     try {
-      // Call the new edge function that triggers n8n
+      // Call the edge function - pass wizard_id (not tb_pms_reports.id)
       const { data, error } = await supabase.functions.invoke('pms-trigger-n8n-report', {
-        body: { wizard_id: id }
+        body: { wizard_id: wizardId }
       });
 
       if (error) {
@@ -205,8 +207,8 @@ const PmsDashboardContent = () => {
     }
   };
 
-  // Use database data
-  const { data: report, isLoading, error } = useReport(id);
+  // Use database data - fetch wizard by wizardId
+  const { data: report, isLoading, error } = useReport(wizardId);
 
   const handleLogout = () => {
     navigate("/planningmysaas/login");
@@ -239,10 +241,10 @@ const PmsDashboardContent = () => {
 
   // Redirect if no report found after loading
   useEffect(() => {
-    if (!isLoading && !report && id) {
+    if (!isLoading && !report && wizardId) {
       navigate("/planningmysaas/reports");
     }
-  }, [isLoading, report, id, navigate]);
+  }, [isLoading, report, wizardId, navigate]);
 
   // Get project name from database
   const projectName = report?.saas_name || "Untitled Project";
@@ -575,7 +577,7 @@ const PmsDashboard = () => {
   if (!id) return null;
 
   return (
-    <ReportProvider reportId={id}>
+    <ReportProvider wizardId={id}>
       <PmsDashboardContent />
     </ReportProvider>
   );
