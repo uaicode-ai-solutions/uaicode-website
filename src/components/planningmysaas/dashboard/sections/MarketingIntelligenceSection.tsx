@@ -370,8 +370,11 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
   // COMPANY PROFILE DATA (from icp_intelligence_section)
   // ============================================
   
-  // Industry: From wizard's industry field
-  const industry = getValue(report?.industry);
+  // Industry: From ICP research demographics.industry with wizard fallback
+  const industry = getValue(
+    icpData?.demographics?.industry ||
+    report?.industry
+  );
 
   // Company Size: From icp_intelligence_section.demographics.company_size
   const companySize = getValue(
