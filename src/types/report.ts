@@ -424,22 +424,61 @@ export interface GrowthIntelligenceSection {
 // ==========================================
 
 export interface PaidMediaIntelligenceSection {
-  performance_targets: {
-    target_cac: string;                    // "$60-100"
-    ltv_cac_ratio_target: string;          // "3:1"
-    target_roas?: string;                  // "3-4x"
-    cpc_benchmark?: string;                // "$2-5"
+  performance_targets?: {
+    target_cac?: string;                    // "$231"
+    ltv_cac_ratio_target?: string;          // "4.5:1"
+    target_roas?: string;                   // "3.0x"
+    cpc_benchmark?: string;                 // "$3.08"
+    ctr_benchmark?: string;                 // "2.0%"
+    conversion_rate_benchmark?: string;     // "3.5%"
   };
-  budget_strategy: {
-    recommended_marketing_budget_monthly: string;  // "$12,000"
-    channel_allocation?: Record<string, string>;   // { "Google Ads": "40%", "Meta Ads": "30%" }
+  budget_strategy?: {
+    recommended_marketing_budget_monthly?: string;  // "$12,000"
+    budget_rationale?: string;
+    channel_allocation?: Record<string, string>;
+    scaling_triggers?: string[];
   };
   channel_recommendations?: Array<{
-    channel: string;
-    priority: string;
-    expected_cac: string;
-    notes: string;
+    channel?: string;
+    priority?: string;
+    expected_cac?: string;
+    monthly_budget?: string;                // "$1.2K"
+    notes?: string;
   }>;
+  competitive_positioning?: {
+    market_gaps_to_exploit?: string[];
+    messaging_angles?: string[];
+    differentiation_hooks?: string[];
+  };
+  ninety_day_plan?: {
+    phase_1?: {
+      focus?: string;
+      channels?: string[];
+      budget_allocation?: string;
+      kpis?: string[];
+    };
+    phase_2?: {
+      focus?: string;
+      channels?: string[];
+      budget_allocation?: string;
+      kpis?: string[];
+    };
+    phase_3?: {
+      focus?: string;
+      channels?: string[];
+      budget_allocation?: string;
+      kpis?: string[];
+    };
+  };
+  _metadata?: {
+    citations?: string[];
+    citations_count?: number;
+    raw_values?: {
+      target_cac?: number;
+      ltv_cac_ratio?: number;
+      budget_monthly?: number;
+    };
+  };
 }
 
 // ==========================================
