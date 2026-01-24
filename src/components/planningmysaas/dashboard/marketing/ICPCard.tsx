@@ -4,46 +4,101 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField } from "@/lib/reportDataUtils";
+import { ICPIntelligenceSection } from "@/types/report";
+
+const getInitials = (name: string | undefined | null): string => {
+  if (!name || name === "...") return "?";
+  return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+};
 
 const ICPCard = () => {
-  const persona = {
-    name: "Maria Santos",
-    initials: "MS",
-    age: 42,
-    role: "CEO & Founder",
-    business: "Health Product Store"
+  const { reportData } = useReportContext();
+
+  // Parse ICP from database
+  const icpData = parseJsonField<ICPIntelligenceSection | null>(
+    reportData?.icp_intelligence_section,
+    null
+  );
+
+  const hasData = !!icpData?.persona || !!icpData?.demographics || !!icpData?.pain_points?.length;
+
+  // Persona
+  const persona = hasData ? {
+    name: icpData?.persona?.persona_name || icpData?.persona?.name || "...",
+    initials: getInitials(icpData?.persona?.persona_name || icpData?.persona?.name),
+    role: icpData?.persona?.job_title || icpData?.persona?.role || "...",
+    business: icpData?.demographics?.industry || "..."
+  } : {
+    name: "...",
+    initials: "?",
+    role: "...",
+    business: "..."
   };
 
-  const demographics = [
-    { icon: Users, label: "10-50 employees" },
-    { icon: TrendingUp, label: "$500K-$5M revenue" },
-    { icon: Building2, label: "Health & Wellness" },
-    { icon: MapPin, label: "US & LATAM" },
-    { icon: Calendar, label: "Growth phase" },
-  ];
+  // Demographics - map from database or fallback
+  const demographics = hasData && icpData?.demographics ? [
+    { icon: Users, label: icpData.demographics.company_size || icpData.demographics.income_or_company_size || "..." },
+    { icon: TrendingUp, label: icpData.demographics.growth_phase || "..." },
+    { icon: Building2, label: icpData.demographics.industry || "..." },
+    { icon: MapPin, label: icpData.demographics.geographic_region || icpData.demographics.location || "..." },
+    { icon: Calendar, label: icpData.demographics.decision_authority || "..." },
+  ] : [];
 
-  const goals = ["Scale operations", "Beat big platforms", "Build loyalty"];
-  
-  const painPoints = [
-    { pain: "Losing sales to platforms", severity: 90 },
-    { pain: "Manual inventory (3+ hrs/day)", severity: 85 },
-    { pain: "No integrated delivery", severity: 65 },
-    { pain: "Complex compliance docs", severity: 60 },
-  ];
+  // Goals from messaging hooks value propositions
+  const goals = hasData && icpData?.messaging_hooks?.value_propositions?.length
+    ? icpData.messaging_hooks.value_propositions.slice(0, 3)
+    : [];
 
-  const triggers = ["Hiring staff", "2nd location", "Seasonal spike", "Competitor online"];
+  // Pain points with severity
+  const painPoints = hasData && icpData?.pain_points?.length
+    ? icpData.pain_points.slice(0, 3).map(p => ({
+        pain: p.pain_point,
+        severity: parseInt(String(p.intensity_score)) || 50
+      }))
+    : [];
 
-  const channels = [
-    { icon: Linkedin, name: "LinkedIn", detail: "B2B groups" },
-    { icon: Instagram, name: "Instagram", detail: "Business hashtags" },
-    { icon: Calendar, name: "Trade Shows", detail: "NRA Show, Expo" },
-  ];
+  // Buying triggers
+  const triggers = hasData && icpData?.buying_triggers?.length
+    ? icpData.buying_triggers.slice(0, 4)
+    : [];
 
-  const messages = [
-    "Save 10+ hrs/week on inventory",
-    "Compete on delivery speed",
-    "One-click compliance",
-  ];
+  // Preferred channels - flatten the object structure
+  const channelIconMap: Record<string, typeof Linkedin> = {
+    linkedin: Linkedin,
+    instagram: Instagram,
+    events: Calendar,
+    trade_shows: Calendar,
+    research: MessageSquare,
+    social: Instagram,
+  };
+
+  const flattenChannels = (): string[] => {
+    if (!hasData || !icpData?.preferred_channels) return [];
+    const allChannels: string[] = [];
+    if (icpData.preferred_channels.research?.length) {
+      allChannels.push(...icpData.preferred_channels.research.slice(0, 1));
+    }
+    if (icpData.preferred_channels.social?.length) {
+      allChannels.push(...icpData.preferred_channels.social.slice(0, 1));
+    }
+    if (icpData.preferred_channels.events?.length) {
+      allChannels.push(...icpData.preferred_channels.events.slice(0, 1));
+    }
+    return allChannels.slice(0, 3);
+  };
+
+  const channels = flattenChannels().map(ch => ({
+    icon: channelIconMap[ch.toLowerCase().replace(/\s+/g, '_')] || MessageSquare,
+    name: ch,
+    detail: ""
+  }));
+
+  // Messaging hooks
+  const messages = hasData && icpData?.messaging_hooks?.value_propositions?.length
+    ? icpData.messaging_hooks.value_propositions.slice(0, 3)
+    : [];
 
   return (
     <section id="icp-section" className="space-y-6 animate-fade-in">
@@ -87,26 +142,34 @@ const ICPCard = () => {
             {/* Demographics Grid */}
             <div className="mb-4">
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Demographics</span>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {demographics.map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/10 border border-border/20">
-                    <item.icon className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                    <span className="text-xs text-foreground truncate">{item.label}</span>
-                  </div>
-                ))}
-              </div>
+              {demographics.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {demographics.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/10 border border-border/20">
+                      <item.icon className="h-3.5 w-3.5 text-accent flex-shrink-0" />
+                      <span className="text-xs text-foreground truncate">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground text-sm py-4">...</div>
+              )}
             </div>
 
             {/* Goals */}
             <div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Goals</span>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {goals.map((goal, i) => (
-                  <Badge key={i} variant="secondary" className="text-xs bg-accent/10 text-foreground border-accent/20">
-                    {goal}
-                  </Badge>
-                ))}
-              </div>
+              {goals.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {goals.map((goal, i) => (
+                    <Badge key={i} variant="secondary" className="text-xs bg-accent/10 text-foreground border-accent/20">
+                      {goal}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground text-sm py-2">...</div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -117,25 +180,29 @@ const ICPCard = () => {
             {/* Pain Points */}
             <div className="mb-4">
               <div className="flex items-center gap-1 mb-2">
-                <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
+                <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Pain Points</span>
               </div>
-              <div className="space-y-2">
-                {painPoints.slice(0, 3).map((item, i) => (
-                  <div key={i} className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-foreground">{item.pain}</span>
-                      <span className={`text-[10px] font-bold ${item.severity >= 80 ? 'text-red-400' : 'text-amber-400'}`}>
-                        {item.severity}%
-                      </span>
+              {painPoints.length > 0 ? (
+                <div className="space-y-2">
+                  {painPoints.map((item, i) => (
+                    <div key={i} className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-foreground">{item.pain}</span>
+                        <span className={`text-[10px] font-bold ${item.severity >= 80 ? 'text-destructive' : 'text-warning'}`}>
+                          {item.severity}%
+                        </span>
+                      </div>
+                      <Progress 
+                        value={item.severity} 
+                        className={`h-1 ${item.severity >= 80 ? '[&>div]:bg-destructive' : '[&>div]:bg-warning'}`} 
+                      />
                     </div>
-                    <Progress 
-                      value={item.severity} 
-                      className={`h-1 ${item.severity >= 80 ? '[&>div]:bg-red-400' : '[&>div]:bg-amber-400'}`} 
-                    />
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground text-sm py-2">...</div>
+              )}
             </div>
 
             {/* Buying Triggers + Channels inline */}
@@ -144,21 +211,29 @@ const ICPCard = () => {
                 <Zap className="h-3.5 w-3.5 text-accent" />
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Triggers & Channels</span>
               </div>
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {triggers.slice(0, 3).map((trigger, i) => (
-                  <Badge key={i} variant="outline" className="text-[10px] border-accent/20 text-accent">
-                    {trigger}
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                {channels.map((ch, i) => (
-                  <div key={i} className="flex items-center gap-1 px-2 py-1 rounded bg-muted/10 border border-border/20">
-                    <ch.icon className="h-3 w-3 text-accent" />
-                    <span className="text-[10px] text-foreground">{ch.name}</span>
-                  </div>
-                ))}
-              </div>
+              {triggers.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {triggers.map((trigger, i) => (
+                    <Badge key={i} variant="outline" className="text-[10px] border-accent/20 text-accent">
+                      {trigger}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground text-sm py-1">...</div>
+              )}
+              {channels.length > 0 ? (
+                <div className="flex items-center gap-2">
+                  {channels.map((ch, i) => (
+                    <div key={i} className="flex items-center gap-1 px-2 py-1 rounded bg-muted/10 border border-border/20">
+                      <ch.icon className="h-3 w-3 text-accent" />
+                      <span className="text-[10px] text-foreground">{ch.name}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground text-sm py-1">...</div>
+              )}
             </div>
 
             {/* Messaging That Converts - Integrated */}
@@ -167,13 +242,17 @@ const ICPCard = () => {
                 <MessageSquare className="h-3.5 w-3.5 text-accent" />
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Messaging Hooks</span>
               </div>
-              <div className="space-y-1.5">
-                {messages.map((msg, i) => (
-                  <div key={i} className="p-2 rounded-lg bg-muted/10 border border-border/20">
-                    <p className="text-xs text-foreground">"{msg}"</p>
-                  </div>
-                ))}
-              </div>
+              {messages.length > 0 ? (
+                <div className="space-y-1.5">
+                  {messages.map((msg, i) => (
+                    <div key={i} className="p-2 rounded-lg bg-muted/10 border border-border/20">
+                      <p className="text-xs text-foreground">"{msg}"</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground text-sm py-2">...</div>
+              )}
             </div>
           </CardContent>
         </Card>
