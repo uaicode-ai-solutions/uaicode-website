@@ -809,8 +809,14 @@ export function useFinancialMetrics(
     
     const paybackFromInvestment = safeGet(sectionInvestment, 'payback_period', null) as string | null;
     
-    // First try to calculate from CAC/ARPU
-    if (targetCac && idealTicket && idealTicket > 0) {
+    // PRIORITY 1: Use n8n pre-calculated payback if available (already validated in pipeline)
+    if (paybackFromN8n && paybackFromN8n > 0) {
+      paybackPeriod = paybackFromN8n;
+      dataSources.paybackPeriod = 'database';
+      console.log('[Financial] ✅ Using PRE-VALIDATED payback_months from n8n:', paybackFromN8n);
+    }
+    // PRIORITY 2: Calculate from CAC/ARPU
+    else if (targetCac && idealTicket && idealTicket > 0) {
       const netMonthlyRevenue = idealTicket * marginPercent;
       const calculatedPayback = Math.round(targetCac.avg / netMonthlyRevenue);
       
@@ -840,8 +846,9 @@ export function useFinancialMetrics(
         aggressiveAdjustment: shouldApplyAggressiveAdjustment,
         finalPayback: paybackPeriod,
       });
-    } else if (paybackFromInvestment) {
-      // Fallback to database value if no CAC
+    }
+    // PRIORITY 3: Fallback to database section_investment value
+    else if (paybackFromInvestment) {
       const match = paybackFromInvestment.match(/(\d+)/);
       const dbPayback = match ? parseInt(match[1], 10) : null;
       if (dbPayback) {
