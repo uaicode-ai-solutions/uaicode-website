@@ -704,13 +704,30 @@ export function useFinancialMetrics(
     // ============================================
     
     // ============================================
-    // ARPU EXTRACTION - PRIORITY ORDER:
-    // 1. Pre-calculated from n8n unit_economics_used.arpu (most accurate)
-    // 2. Benchmark default_arpu
-    // 3. Calculated from MRR/customers
+    // ARPU EXTRACTION - PRIORITY ORDER (v1.8.0+ CONSOLIDATION):
+    // 1. Pre-calculated from n8n financial_metrics.arpu_used (v1.8.0+)
+    // 2. FALLBACK: Legacy unit_economics_used.arpu (v1.7.x and earlier)
+    // 3. Benchmark default_arpu
+    // 4. Calculated from MRR/customers
     // ============================================
-    const arpuFromN8n = sanitizeNumericValue(unitEconomicsFromN8n?.arpu, null) as number | null;
-    const ltvFromN8n = sanitizeNumericValue(unitEconomicsFromN8n?.ltv, null) as number | null;
+    // v1.8.0+: ARPU consolidated into financial_metrics
+    const arpuFromFinancialMetrics = sanitizeNumericValue(financialMetricsDirect?.arpu_used, null) as number | null;
+    const ltvFromFinancialMetrics = sanitizeNumericValue(financialMetricsDirect?.ltv_used, null) as number | null;
+    const cacFromFinancialMetrics = sanitizeNumericValue(financialMetricsDirect?.cac_used, null) as number | null;
+    const churnFromFinancialMetrics = sanitizeNumericValue(financialMetricsDirect?.monthly_churn_used, null) as number | null;
+    const ltvCacTargetFromFinancialMetrics = sanitizeNumericValue(financialMetricsDirect?.ltv_cac_ratio_target, null) as number | null;
+    
+    // Legacy fallback for older reports (v1.7.x and earlier)
+    const arpuFromLegacy = sanitizeNumericValue(unitEconomicsFromN8n?.arpu, null) as number | null;
+    const ltvFromLegacy = sanitizeNumericValue(unitEconomicsFromN8n?.ltv, null) as number | null;
+    
+    // Consolidated values: prefer v1.8.0+ financial_metrics, fallback to legacy
+    const arpuFromN8n = arpuFromFinancialMetrics ?? arpuFromLegacy;
+    const ltvFromN8n = ltvFromFinancialMetrics ?? ltvFromLegacy;
+    
+    // Log which source is being used
+    const dataSourceVersion = arpuFromFinancialMetrics ? 'financial_metrics (v1.8.0+)' : (arpuFromLegacy ? 'unit_economics_used (legacy)' : 'none');
+    console.log('[Financial] Unit economics data source:', dataSourceVersion);
     
     // Get benchmark ARPU values if available
     const benchmarkArpuDefault = benchmarkSection?.default_arpu as number | undefined;
