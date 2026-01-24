@@ -4,6 +4,10 @@ import { DollarSign, CheckCircle, Star, Zap, Crown, TrendingUp } from "lucide-re
 import { competitorAnalysisData } from "@/lib/competitorAnalysisMockData";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, LabelList } from "recharts";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField } from "@/lib/reportDataUtils";
+import { PriceIntelligenceSection } from "@/types/report";
+import { CompetitiveAnalysisSectionData, extractAveragePrice } from "@/lib/competitiveAnalysisUtils";
 
 const tierIcons: Record<string, React.ElementType> = {
   "Starter": Zap,
@@ -20,14 +24,90 @@ const getBarColor = (position: string) => {
   }
 };
 
+// Helper: Determine price position based on value vs average
+const getPricePosition = (price: number, avgPrice: number): string => {
+  if (price > avgPrice * 1.2) return "Premium";
+  if (price < avgPrice * 0.8) return "Budget";
+  return "Mid-market";
+};
+
+// Helper: Capitalize first letter
+const capitalize = (str: string): string =>
+  str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+
 const PricingCards = () => {
+  const { reportData } = useReportContext();
   const { pricingDiagnosis, pricingActionPlan } = competitorAnalysisData;
 
-  const priceChartData = pricingDiagnosis.priceMap.map(comp => ({
-    name: comp.competitor.split(" ")[0],
-    price: parseInt(comp.price.replace(/[^0-9]/g, "")) || 0,
-    position: comp.position,
-  }));
+  // Parse price intelligence from database (tb_pms_reports.price_intelligence_section)
+  const priceData = parseJsonField<PriceIntelligenceSection | null>(
+    reportData?.price_intelligence_section,
+    null
+  );
+
+  // Parse competitive analysis for price map chart
+  const competitiveData = parseJsonField<CompetitiveAnalysisSectionData | null>(
+    reportData?.competitive_analysis_section,
+    null
+  );
+
+  // Check if we have real data from n8n
+  const hasRealData = priceData?.recommended_tiers && priceData.recommended_tiers.length > 0;
+
+  // ===== TRANSFORM TIERS =====
+  const tiers = hasRealData
+    ? priceData.recommended_tiers.map(tier => ({
+        name: tier.name,
+        price: `$${tier.price_monthly}`,
+        features: tier.features,
+        targetCustomer: tier.target_segment,
+        expectedConversion: `${tier.expected_distribution_percent}%`,
+        recommended: tier.recommended,
+      }))
+    : pricingActionPlan.tiers;
+
+  // ===== RECOMMENDED MODEL =====
+  const recommendedModel = hasRealData
+    ? capitalize(priceData.recommended_model)
+    : pricingActionPlan.recommendedModel;
+
+  // ===== PRICE MAP CHART (from competitors) =====
+  const avgPrice = priceData?.market_overview?.market_average_price || 45;
+  
+  const priceChartData = competitiveData?.competitors
+    ? Object.values(competitiveData.competitors)
+        .slice(0, 6)
+        .map(comp => ({
+          name: (comp.company_name || "Unknown").split(" ")[0],
+          price: extractAveragePrice(comp.saas_app_base_price),
+          position: getPricePosition(
+            extractAveragePrice(comp.saas_app_base_price),
+            avgPrice
+          ),
+        }))
+    : pricingDiagnosis.priceMap.map(comp => ({
+        name: comp.competitor.split(" ")[0],
+        price: parseInt(comp.price.replace(/[^0-9]/g, "")) || 0,
+        position: comp.position,
+      }));
+
+  // ===== PRICING GAPS (from market gaps) =====
+  const gaps = competitiveData?.market_gaps_identified
+    ? competitiveData.market_gaps_identified.slice(0, 3).map((gap, idx) => ({
+        range: gap,
+        priority: idx === 0 ? "high" : idx === 1 ? "medium" : "low",
+      }))
+    : pricingDiagnosis.gaps;
+
+  // ===== ELASTICITY =====
+  const elasticity = hasRealData && priceData.market_overview?.price_elasticity
+    ? {
+        assessment: capitalize(priceData.market_overview.price_elasticity.sensitivity),
+        insight: `Sweet spot at $${priceData.market_overview.price_elasticity.sweet_spot}/mo. ` +
+          `Users tolerate up to ${priceData.market_overview.price_elasticity.increase_tolerance}% increases. ` +
+          `Value drivers: ${priceData.market_overview.price_elasticity.value_drivers?.slice(0, 2).join(", ") || "N/A"}.`,
+      }
+    : pricingDiagnosis.elasticity;
 
   return (
     <section className="space-y-6 animate-fade-in">
@@ -54,10 +134,10 @@ const PricingCards = () => {
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-foreground text-sm">Recommended Pricing</h3>
-              <Badge className="bg-accent text-accent-foreground text-xs">{pricingActionPlan.recommendedModel}</Badge>
+              <Badge className="bg-accent text-accent-foreground text-xs">{recommendedModel}</Badge>
             </div>
             <div className="space-y-3">
-              {pricingActionPlan.tiers.map((tier, idx) => {
+              {tiers.map((tier, idx) => {
                 const TierIcon = tierIcons[tier.name] || Star;
                 return (
                   <div 
@@ -169,7 +249,7 @@ const PricingCards = () => {
                 Opportunities
               </h3>
               <div className="space-y-2">
-                {pricingDiagnosis.gaps.map((gap, idx) => (
+                {gaps.map((gap, idx) => (
                   <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-muted/10 border border-border/20">
                     <div className="flex items-center gap-2">
                       <Badge className={`text-[9px] ${
@@ -190,10 +270,10 @@ const PricingCards = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-muted-foreground">Price Elasticity</span>
                   <Badge variant="outline" className="text-[9px] border-accent/20 text-accent">
-                    {pricingDiagnosis.elasticity.assessment}
+                    {elasticity.assessment}
                   </Badge>
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{pricingDiagnosis.elasticity.insight}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{elasticity.insight}</p>
               </div>
             </div>
           </CardContent>
