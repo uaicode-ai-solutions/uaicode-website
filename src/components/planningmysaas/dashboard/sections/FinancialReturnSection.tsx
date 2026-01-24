@@ -97,29 +97,37 @@ const FinancialReturnSection = () => {
     uaicodeTotal: marketingTotals.uaicodeTotal,
   });
 
-  // Scenario data for cards and chart
+  // Scenario data - USE DATABASE VALUES from metrics.financialScenarios
+  const dbScenarios = metrics.financialScenarios || [];
+  const conservativeDb = dbScenarios.find(s => s.name === 'Conservative');
+  const baseDb = dbScenarios.find(s => s.name === 'Base');
+  const optimisticDb = dbScenarios.find(s => s.name === 'Optimistic');
+  
+  // Check if we have valid database scenarios
+  const hasDbScenarios = dbScenarios.length > 0;
+
   const scenarios = [
     {
       name: "Conservative" as const,
       icon: Shield,
-      probability: "25%",
+      probability: conservativeDb?.probability ?? "25%",
       probNum: 25,
-      mrrMonth12: Math.round(mrrMonth12 * 0.7),
-      breakEvenMonths: Math.min(60, Math.round(breakEvenMonths * 1.3)),
-      arr: Math.round(arrYear1 * 0.7),
+      mrrMonth12: conservativeDb?.mrrMonth12 ?? null,
+      breakEvenMonths: conservativeDb?.breakEven ?? null,
+      arr: conservativeDb?.arrYear1 ?? null,
       color: "text-slate-400",
       bgColor: "bg-slate-500/10",
       borderColor: "border-slate-500/20",
       progressColor: "bg-slate-400",
     },
     {
-      name: "Realistic" as const,
+      name: "Realistic" as const, // UI name for "Base" from DB
       icon: Target,
-      probability: "50%",
+      probability: baseDb?.probability ?? "50%",
       probNum: 50,
-      mrrMonth12: mrrMonth12,
-      breakEvenMonths: breakEvenMonths,
-      arr: arrYear1,
+      mrrMonth12: baseDb?.mrrMonth12 ?? null,
+      breakEvenMonths: baseDb?.breakEven ?? null,
+      arr: baseDb?.arrYear1 ?? null,
       color: "text-amber-500",
       bgColor: "bg-amber-500/10",
       borderColor: "border-amber-500/30",
@@ -129,11 +137,11 @@ const FinancialReturnSection = () => {
     {
       name: "Optimistic" as const,
       icon: Rocket,
-      probability: "25%",
+      probability: optimisticDb?.probability ?? "25%",
       probNum: 25,
-      mrrMonth12: Math.round(mrrMonth12 * 1.5),
-      breakEvenMonths: Math.max(12, Math.round(breakEvenMonths * 0.65)),
-      arr: Math.round(arrYear1 * 1.5),
+      mrrMonth12: optimisticDb?.mrrMonth12 ?? null,
+      breakEvenMonths: optimisticDb?.breakEven ?? null,
+      arr: optimisticDb?.arrYear1 ?? null,
       color: "text-green-500",
       bgColor: "bg-green-500/10",
       borderColor: "border-green-500/20",
@@ -141,13 +149,15 @@ const FinancialReturnSection = () => {
     },
   ];
 
-  // Prepare scenarios for JCurveChart
-  const chartScenarios = scenarios.map((s) => ({
-    name: s.name,
-    mrrMonth12: s.mrrMonth12,
-    breakEvenMonths: s.breakEvenMonths,
-    probability: s.probability,
-  }));
+  // Prepare scenarios for JCurveChart - filter out scenarios with null values
+  const chartScenarios = scenarios
+    .filter(s => s.mrrMonth12 !== null && s.breakEvenMonths !== null)
+    .map((s) => ({
+      name: s.name,
+      mrrMonth12: s.mrrMonth12!,
+      breakEvenMonths: s.breakEvenMonths!,
+      probability: s.probability,
+    }));
 
   // Calculate additional metrics for the "How it works" explanation - no fallbacks
   const churnMonthly = metrics.unitEconomics?.monthlyChurn 
@@ -476,7 +486,7 @@ const FinancialReturnSection = () => {
                       </InfoTooltip>
                     </div>
                     <span className={`font-medium ${scenario.highlighted ? 'text-gradient-gold' : 'text-foreground'}`}>
-                      {formatCurrency(scenario.mrrMonth12)}
+                      {scenario.mrrMonth12 !== null ? formatCurrency(scenario.mrrMonth12) : "..."}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -487,7 +497,7 @@ const FinancialReturnSection = () => {
                       </InfoTooltip>
                     </div>
                     <span className="font-medium text-foreground">
-                      {scenario.breakEvenMonths} months
+                      {scenario.breakEvenMonths !== null ? `${scenario.breakEvenMonths} months` : "..."}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -498,7 +508,7 @@ const FinancialReturnSection = () => {
                       </InfoTooltip>
                     </div>
                     <span className="font-medium text-foreground">
-                      {formatCurrency(scenario.arr)}
+                      {scenario.arr !== null ? formatCurrency(scenario.arr) : "..."}
                     </span>
                   </div>
                 </div>
