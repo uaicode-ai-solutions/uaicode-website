@@ -25,6 +25,23 @@ const TimingAnalysisSection = () => {
   // Calculate timing score - prefer numeric value
   const timingScoreValue = trendsScoreNumeric ?? (trendsScore ? parseInt(trendsScore.match(/(\d+)/)?.[1] || "0") : null);
   
+  // Extract timeframe from saturation_risk text (e.g., "2028-2030" or "24 months")
+  const extractTimeframe = (text: string | null): string | null => {
+    if (!text) return null;
+    // Match year ranges like "2028-2030" or "2028–2030"
+    const yearRangeMatch = text.match(/\d{4}[-–]\d{4}/);
+    if (yearRangeMatch) return yearRangeMatch[0];
+    // Match single years like "by 2028"
+    const singleYearMatch = text.match(/(?:by\s+)?(\d{4})/i);
+    if (singleYearMatch) return singleYearMatch[1];
+    // Match month periods like "24 months" or "18-24 months"
+    const monthMatch = text.match(/(\d+[-–]?\d*)\s*months?/i);
+    if (monthMatch) return `${monthMatch[1]} months`;
+    return null;
+  };
+  
+  const saturationTimeframe = extractTimeframe(saturationRisk);
+  
   // Build timing analysis from opportunity_section data
   const timingAnalysis = {
     timingScore: timingScoreValue ?? 0,
@@ -36,8 +53,9 @@ const TimingAnalysisSection = () => {
     })),
     windowOfOpportunity: {
       opens: optimalWindow ? "Now" : "...",
-      closes: saturationRisk || opportunityTimeframe || "...",
-      reason: launchReasoning || "..."
+      closes: saturationTimeframe || opportunityTimeframe || "24+ months",
+      reason: launchReasoning || "...",
+      fullSaturationRisk: saturationRisk // Keep full text for tooltip
     },
     firstMoverAdvantage: {
       score: timingScoreValue ?? 0,
