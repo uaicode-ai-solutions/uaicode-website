@@ -220,24 +220,82 @@ const extractCompanySize = (value: string | undefined | null): string => {
   return extracted.length > 20 ? extracted.slice(0, 17) + '...' : extracted;
 };
 
-// Helper: Extract minimum monthly budget
-// TODO: Aguardando fluxo n8n para calcular valor correto
-// O campo budget_range atual ($250K-$2M+) representa o orçamento TOTAL 
-// de TI da empresa, não o preço específico do produto
-const extractMinMonthlyBudget = (_value: string | undefined | null): string => {
+// Helper: Extract minimum monthly budget from typical_budget field
+// Source: icp_intelligence_section.budget_timeline.typical_budget (e.g., "$25-$60/month")
+const extractMinMonthlyBudget = (typicalBudget: string | undefined | null): string => {
+  if (!typicalBudget?.trim()) return "...";
+  const str = String(typicalBudget).trim();
+  
+  // Match patterns like "$25-$60/month", "$25/month", "$25-60"
+  const match = str.match(/\$?([\d,]+(?:\.\d+)?)/);
+  if (match) {
+    const value = parseFloat(match[1].replace(/,/g, ''));
+    if (!isNaN(value) && value > 0) {
+      return `$${Math.round(value)}`;
+    }
+  }
   return "...";
 };
 
-// Helper: calculate competitive position from data
-// TODO: Será populado pelo fluxo n8n futuro
-const getCompetitivePosition = (_icpData: ICPIntelligenceSection | null): { value: string; percent: number } => {
+// Helper: calculate competitive position from paid_media data
+// Source: paid_media_intelligence_section.performance_targets (ROAS, target_cac, etc.)
+const getCompetitivePosition = (
+  paidMediaData: Record<string, unknown> | null,
+  competitorCount: number
+): { value: string; percent: number } => {
+  if (!paidMediaData) return { value: "...", percent: 0 };
+  
+  // Try to extract from market_gaps_identified or competitive_position field
+  const performanceTargets = paidMediaData?.performance_targets as Record<string, unknown> | null;
+  const marketGaps = performanceTargets?.market_gaps_identified as unknown[] | null;
+  
+  if (marketGaps && marketGaps.length > 0) {
+    // More gaps = more opportunities = stronger position
+    if (marketGaps.length >= 3) return { value: "Strong", percent: 75 };
+    if (marketGaps.length >= 2) return { value: "Moderate", percent: 50 };
+    return { value: "Emerging", percent: 30 };
+  }
+  
+  // Fallback: Use competitor count
+  if (competitorCount > 0) {
+    if (competitorCount <= 3) return { value: "Less Crowded", percent: 70 };
+    if (competitorCount <= 5) return { value: "Moderate", percent: 50 };
+    return { value: "Crowded", percent: 30 };
+  }
+  
   return { value: "...", percent: 0 };
 };
 
-// Helper: calculate expected ROAS from pain point intensity
-// TODO: Será populado pelo fluxo n8n futuro
-const getExpectedROAS = (_icpData: ICPIntelligenceSection | null): { value: string; percent: number; industry: string } => {
-  return { value: "...", percent: 0, industry: "..." };
+// Helper: calculate expected ROAS from paid_media_intelligence_section
+// Source: paid_media_intelligence_section.performance_targets.target_roas
+const getExpectedROAS = (
+  paidMediaData: Record<string, unknown> | null,
+  industry: string
+): { value: string; percent: number; industry: string } => {
+  if (!paidMediaData) return { value: "...", percent: 0, industry: industry || "..." };
+  
+  const performanceTargets = paidMediaData?.performance_targets as Record<string, unknown> | null;
+  const targetRoasRaw = performanceTargets?.target_roas;
+  
+  if (targetRoasRaw) {
+    const roasStr = String(targetRoasRaw).trim();
+    // Extract numeric value from "3.0x" or "3.0"
+    const match = roasStr.match(/([\d.]+)/);
+    if (match) {
+      const roasValue = parseFloat(match[1]);
+      if (!isNaN(roasValue) && roasValue > 0) {
+        // ROAS 3x = 75%, 4x+ = 90%, 2x = 50%, 1x = 25%
+        const percent = Math.min(100, Math.round((roasValue / 4) * 100));
+        return { 
+          value: `${roasValue.toFixed(1)}x`, 
+          percent, 
+          industry: industry || "..." 
+        };
+      }
+    }
+  }
+  
+  return { value: "...", percent: 0, industry: industry || "..." };
 };
 
 // Helper: parse stakeholder string "Role Name (badge text)"
@@ -413,12 +471,29 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     ? painPointsData.slice(0, 3)
     : [{ pain_point: "...", urgency_level: "medium" }];
 
-  // Calculate metrics
-  const competitivePosition = getCompetitivePosition(icpData);
-  const expectedROAS = getExpectedROAS(icpData);
+  // Get paid_media data for metrics calculation
+  const paidMediaData = parseJsonField<Record<string, unknown> | null>(
+    reportData?.paid_media_intelligence_section,
+    null
+  );
+  
+  // Get competitor count from competitive_analysis_section
+  const competitiveData = parseJsonField<{ competitors?: unknown[] } | null>(
+    reportData?.competitive_analysis_section,
+    null
+  );
+  const competitorCount = competitiveData?.competitors?.length || 0;
+  
+  // Calculate metrics using real data
+  const competitivePosition = getCompetitivePosition(paidMediaData, competitorCount);
+  const expectedROAS = getExpectedROAS(paidMediaData, report?.industry || "...");
+  
   // Get stakeholders array from icp_intelligence_section.budget_timeline.stakeholders
   const stakeholdersArray = icpData?.budget_timeline?.stakeholders as string[] | undefined;
   const decisionMakers = getDecisionMakers(stakeholdersArray);
+  
+  // Get typical_budget from icp_intelligence_section for Min Monthly Budget
+  const typicalBudget = icpData?.budget_timeline?.typical_budget as string | undefined;
 
   // Marketing metrics for cards
   const marketingMetrics = [
@@ -432,11 +507,11 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     },
     { 
       icon: DollarSign, 
-      value: extractMinMonthlyBudget(primaryPersona?.summary?.budget_range), 
+      value: extractMinMonthlyBudget(typicalBudget), 
       label: "Min Monthly Budget",
       sublabel: "Monthly ICP Spend",
-      tooltip: "Minimum monthly budget your Ideal Customer Profile (ICP) allocates for SaaS solutions like yours. Calculated by dividing the annual budget minimum by 12.",
-      percent: extractMinMonthlyBudget(primaryPersona?.summary?.budget_range) !== "..." ? 75 : 0
+      tooltip: "Minimum monthly budget your Ideal Customer Profile (ICP) allocates for SaaS solutions like yours. Extracted from ICP research data.",
+      percent: extractMinMonthlyBudget(typicalBudget) !== "..." ? 75 : 0
     },
     { 
       icon: TrendingUp, 

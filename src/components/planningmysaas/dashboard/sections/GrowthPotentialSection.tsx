@@ -40,14 +40,14 @@ const GrowthPotentialSection = () => {
   const marketType = report?.market_type || undefined;
   const metrics = useFinancialMetrics(reportData, marketType);
   
-  // Extract current values - PRIORITIZE ltvCacCalculated for consistency
-  const currentLtvCac = metrics.ltvCacCalculated || metrics.ltvCacRatioNum || 3.0;
+  // Extract current values - NO FALLBACKS, use null when missing
+  const currentLtvCac = metrics.ltvCacCalculated ?? metrics.ltvCacRatioNum ?? null;
   const currentChurn = metrics.unitEconomics?.monthlyChurn 
     ? parseFloat(String(metrics.unitEconomics.monthlyChurn).replace('%', '')) 
-    : 7; // B2C benchmark fallback
-  const currentPayback = metrics.paybackPeriod || 15;
-  const currentArpu = metrics.idealTicket || 9; // B2C-consistent fallback
-  const currentCac = metrics.targetCac?.avg || 150;
+    : null;
+  const currentPayback = metrics.paybackPeriod ?? null;
+  const currentArpu = metrics.idealTicket ?? null;
+  const currentCac = metrics.targetCac?.avg ?? null;
   
   // Target values based on market type benchmarks
   const isB2B = marketType?.toLowerCase()?.includes('b2b');
@@ -55,19 +55,20 @@ const GrowthPotentialSection = () => {
   const targetChurn = isB2B ? 2.0 : 4.0;
   const targetPayback = isB2B ? 12 : 8;
   
-  // Calculate progress percentages
-  const ltvCacProgress = Math.min(100, (currentLtvCac / targetLtvCac) * 100);
-  const churnProgress = Math.min(100, (targetChurn / currentChurn) * 100);
-  const paybackProgress = Math.min(100, (targetPayback / currentPayback) * 100);
+  // Calculate progress percentages - use 0 when data missing
+  const ltvCacProgress = currentLtvCac !== null ? Math.min(100, (currentLtvCac / targetLtvCac) * 100) : 0;
+  const churnProgress = currentChurn !== null ? Math.min(100, (targetChurn / currentChurn) * 100) : 0;
+  const paybackProgress = currentPayback !== null ? Math.min(100, (targetPayback / currentPayback) * 100) : 0;
   
-  // Average progress for big number
-  const avgProgress = Math.round((ltvCacProgress + churnProgress + paybackProgress) / 3);
+  // Average progress for big number - only count metrics with data
+  const validMetrics = [ltvCacProgress, churnProgress, paybackProgress].filter(p => p > 0);
+  const avgProgress = validMetrics.length > 0 ? Math.round(validMetrics.reduce((a, b) => a + b, 0) / validMetrics.length) : 0;
   
-  // Metrics data
+  // Metrics data - show "..." when data missing
   const metricsData: MetricProgress[] = [
     {
       label: "LTV/CAC Ratio",
-      current: `${currentLtvCac.toFixed(1)}x`,
+      current: currentLtvCac !== null ? `${currentLtvCac.toFixed(1)}x` : "...",
       target: `${targetLtvCac.toFixed(1)}x`,
       progress: ltvCacProgress,
       tooltip: "Lifetime Value to Customer Acquisition Cost. Target 3x+ for sustainable growth.",
@@ -75,7 +76,7 @@ const GrowthPotentialSection = () => {
     },
     {
       label: "Monthly Churn",
-      current: `${currentChurn.toFixed(1)}%`,
+      current: currentChurn !== null ? `${currentChurn.toFixed(1)}%` : "...",
       target: `${targetChurn.toFixed(1)}%`,
       progress: churnProgress,
       tooltip: "Percentage of customers lost monthly. Lower is better for long-term growth.",
@@ -83,7 +84,7 @@ const GrowthPotentialSection = () => {
     },
     {
       label: "Payback Period",
-      current: `${Math.round(currentPayback)}mo`,
+      current: currentPayback !== null ? `${Math.round(currentPayback)}mo` : "...",
       target: `${targetPayback}mo`,
       progress: paybackProgress,
       tooltip: "Months to recover customer acquisition cost. Shorter payback means faster reinvestment.",
@@ -91,24 +92,28 @@ const GrowthPotentialSection = () => {
     },
   ];
   
-  // Quick wins calculations - based on real impact formulas
+  // Quick wins calculations - based on real impact formulas, show "..." when data missing
   const quickWins = [
     {
       icon: Users,
       action: "Reduce churn by 2%",
-      result: `LTV increases by ${Math.round((1 / ((currentChurn - 2) / 100) - 1 / (currentChurn / 100)) / (1 / (currentChurn / 100)) * 100)}%`,
+      result: currentChurn !== null && currentChurn > 2
+        ? `LTV increases by ${Math.round((1 / ((currentChurn - 2) / 100) - 1 / (currentChurn / 100)) / (1 / (currentChurn / 100)) * 100)}%`
+        : "LTV increases by ...%",
       index: 1,
     },
     {
       icon: DollarSign,
-      action: `Increase ARPU by $${Math.round(currentArpu * 0.2)}`,
-      result: `Payback drops by ${Math.round(currentPayback * 0.15)} months`,
+      action: currentArpu !== null ? `Increase ARPU by $${Math.round(currentArpu * 0.2)}` : "Increase ARPU by ...",
+      result: currentPayback !== null ? `Payback drops by ${Math.round(currentPayback * 0.15)} months` : "Payback drops by ... months",
       index: 2,
     },
     {
       icon: Zap,
       action: "Optimize CAC by 15%",
-      result: `LTV/CAC reaches ${((metrics.ltv || 0) / (currentCac * 0.85)).toFixed(1)}x`,
+      result: metrics.ltv && currentCac !== null 
+        ? `LTV/CAC reaches ${(metrics.ltv / (currentCac * 0.85)).toFixed(1)}x`
+        : "LTV/CAC reaches ...x",
       index: 3,
     },
   ];
@@ -217,8 +222,8 @@ const GrowthPotentialSection = () => {
                     Healthy LTV/CAC is 3x or higher for sustainable growth.
                   </InfoTooltip>
                 </span>
-                <span className={`font-bold ${currentLtvCac >= 3 ? 'text-accent' : 'text-foreground'}`}>
-                  {currentLtvCac >= 3 ? '✓ Healthy' : '⚠ Monitor'}
+                <span className={`font-bold ${currentLtvCac !== null && currentLtvCac >= 3 ? 'text-accent' : 'text-foreground'}`}>
+                  {currentLtvCac !== null ? (currentLtvCac >= 3 ? '✓ Healthy' : '⚠ Monitor') : '...'}
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
@@ -228,8 +233,8 @@ const GrowthPotentialSection = () => {
                     Target churn rate for your market segment.
                   </InfoTooltip>
                 </span>
-                <span className={`font-bold ${currentChurn <= targetChurn ? 'text-accent' : 'text-foreground'}`}>
-                  {currentChurn <= targetChurn ? '✓ On Track' : '⚠ Improve'}
+                <span className={`font-bold ${currentChurn !== null && currentChurn <= targetChurn ? 'text-accent' : 'text-foreground'}`}>
+                  {currentChurn !== null ? (currentChurn <= targetChurn ? '✓ On Track' : '⚠ Improve') : '...'}
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/10">
@@ -239,8 +244,8 @@ const GrowthPotentialSection = () => {
                     Shorter payback periods allow faster reinvestment in growth.
                   </InfoTooltip>
                 </span>
-                <span className={`font-bold ${currentPayback <= targetPayback ? 'text-accent' : 'text-foreground'}`}>
-                  {currentPayback <= targetPayback ? '✓ Fast' : '⚠ Slow'}
+                <span className={`font-bold ${currentPayback !== null && currentPayback <= targetPayback ? 'text-accent' : 'text-foreground'}`}>
+                  {currentPayback !== null ? (currentPayback <= targetPayback ? '✓ Fast' : '⚠ Slow') : '...'}
                 </span>
               </div>
             </div>

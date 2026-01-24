@@ -22,14 +22,15 @@ const ComparableSuccessesSection = () => {
   const marketType = report?.market_type || undefined;
   const metrics = useFinancialMetrics(reportData, marketType);
   
-  // Get TAM for positioning
+  // Get TAM for positioning - no fallback, use "..." when missing
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
-  const tamValue = opportunityData?.tam_value || "$10B";
+  const tamValue = opportunityData?.tam_value || "...";
   
-  // Parse TAM to determine market size tier
-  const getTamSize = (tam: string): 'small' | 'medium' | 'large' => {
+  // Parse TAM to determine market size tier - return null when data missing
+  const getTamSize = (tam: string): 'small' | 'medium' | 'large' | null => {
+    if (tam === "..." || !tam) return null;
     const numMatch = tam.match(/([\d.]+)/);
-    if (!numMatch) return 'medium';
+    if (!numMatch) return null;
     const num = parseFloat(numMatch[1]);
     const isBillion = tam.toLowerCase().includes('b');
     const value = isBillion ? num * 1000 : num;
@@ -45,8 +46,9 @@ const ComparableSuccessesSection = () => {
   const isB2B = marketType?.toLowerCase()?.includes('b2b');
   const industry = report?.industry || 'technology';
   
-  // Calculate user's position percentile
+  // Calculate user's position percentile - return 0 when data missing
   const getPositionPercentile = () => {
+    if (tamSize === null) return 0;
     let basePercentile = tamSize === 'large' ? 75 : tamSize === 'medium' ? 50 : 25;
     if (ltvCacRatio >= 3) basePercentile += 15;
     else if (ltvCacRatio >= 2) basePercentile += 5;
@@ -56,24 +58,24 @@ const ComparableSuccessesSection = () => {
   
   const positionPercentile = getPositionPercentile();
   
-  // Success rate for big number
-  const successRate = tamSize === 'large' ? 78 : tamSize === 'medium' ? 65 : 52;
+  // Success rate for big number - 0 when data missing
+  const successRate = tamSize === 'large' ? 78 : tamSize === 'medium' ? 65 : tamSize === 'small' ? 52 : 0;
   
-  // Stats for the summary card
+  // Stats for the summary card - show "..." when data missing
   const stats = [
     {
       label: 'Market Size',
-      value: tamSize === 'large' ? '> $10B' : tamSize === 'medium' ? '$1B-$10B' : '< $1B',
+      value: tamSize === 'large' ? '> $10B' : tamSize === 'medium' ? '$1B-$10B' : tamSize === 'small' ? '< $1B' : '...',
       tooltip: 'Total Addressable Market size determines growth ceiling.',
     },
     {
       label: 'Position',
-      value: `Top ${100 - positionPercentile}%`,
+      value: positionPercentile > 0 ? `Top ${100 - positionPercentile}%` : '...',
       tooltip: 'How your opportunity ranks vs. similar early-stage SaaS.',
     },
     {
       label: 'Success Rate',
-      value: `${successRate}%`,
+      value: successRate > 0 ? `${successRate}%` : '...',
       tooltip: 'Percentage of similar companies reaching profitability within 4 years.',
     },
   ];
@@ -192,7 +194,7 @@ const ComparableSuccessesSection = () => {
             {/* Big number */}
             <div className="text-center mb-6">
               <div className="text-5xl font-bold text-gradient-gold mb-1">
-                {successRate}%
+                {successRate > 0 ? `${successRate}%` : "..."}
               </div>
               <div className="text-sm text-muted-foreground">Success Rate</div>
             </div>

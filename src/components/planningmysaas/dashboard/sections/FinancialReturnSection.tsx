@@ -30,26 +30,26 @@ const FinancialReturnSection = () => {
   // Get all financial metrics from hook
   const metrics = useFinancialMetrics(reportData, marketType);
 
-  // Extract key values with safe defaults
-  const breakEvenMonths = metrics.breakEvenMonthsNum || 48;
-  const roiYear1 = metrics.roiYear1Num || 0;
+  // Extract key values - NO FALLBACKS, use "..." for display when null
+  const breakEvenMonths = metrics.breakEvenMonthsNum;
+  const roiYear1 = metrics.roiYear1Num;
   // PRIORITIZE ltvCacCalculated for consistency across all Report sections
-  const ltvCacRatioNum = metrics.ltvCacCalculated || metrics.ltvCacRatioNum || 3;
-  const paybackMonths = metrics.paybackPeriod || 6;
-  const mrrMonth12 = metrics.mrrMonth12Num || 0;
-  const arrYear1 = metrics.arrProjectedNum || 0;
-  // Calculate raw ARR Year 3 and apply realistic cap
+  const ltvCacRatioNum = metrics.ltvCacCalculated ?? metrics.ltvCacRatioNum;
+  const paybackMonths = metrics.paybackPeriod;
+  const mrrMonth12 = metrics.mrrMonth12Num ?? 0;
+  const arrYear1 = metrics.arrProjectedNum ?? 0;
+  // Calculate raw ARR Year 3 only if data exists
   const rawArrYear3 = metrics.arr24Months ? metrics.arr24Months.avg * 1.5 : (arrYear1 ? arrYear1 * 2.54 : 0);
   const maxGrowthMultiple = 10; // 900% max growth - realistic for high-growth SaaS
-  const arrYear3 = Math.min(rawArrYear3, arrYear1 * maxGrowthMultiple);
+  const arrYear3 = arrYear1 > 0 ? Math.min(rawArrYear3, arrYear1 * maxGrowthMultiple) : 0;
   
-  // Calculate growth percentage with 900% hard cap
+  // Calculate growth percentage only if data exists
   const rawGrowthPercent = arrYear1 > 0 ? Math.round(((arrYear3 - arrYear1) / arrYear1) * 100) : 0;
   const growthPercent = Math.min(rawGrowthPercent, 900);
   const wasGrowthCapped = rawGrowthPercent > 900;
-  // Use B2C-consistent fallback for ARPU
-  const arpu = metrics.idealTicket || 9;
-  const ltv = metrics.ltv || 0;
+  // ARPU and LTV from database - no fallbacks
+  const arpu = metrics.idealTicket;
+  const ltv = metrics.ltv ?? 0;
   const mvpInvestment = metrics.mvpInvestment || 0;
   
   // Fixed baseline for comparison = minimum marketing package
@@ -141,44 +141,44 @@ const FinancialReturnSection = () => {
     probability: s.probability,
   }));
 
-  // Calculate additional metrics for the "How it works" explanation
+  // Calculate additional metrics for the "How it works" explanation - no fallbacks
   const churnMonthly = metrics.unitEconomics?.monthlyChurn 
     ? parseFloat(String(metrics.unitEconomics.monthlyChurn)) 
-    : 5; // fallback 5%
-  const ltvMonths = Math.round(1 / (churnMonthly / 100)) || 24;
-  const cac = metrics.targetCac?.avg || 150;
-  const profitMonths = Math.max(0, ltvMonths - paybackMonths);
+    : null;
+  const ltvMonths = churnMonthly && churnMonthly > 0 ? Math.round(1 / (churnMonthly / 100)) : null;
+  const cac = metrics.targetCac?.avg ?? null;
+  const profitMonths = ltvMonths !== null && paybackMonths !== null ? Math.max(0, ltvMonths - paybackMonths) : null;
 
-  // Unit economics data with tooltips
+  // Unit economics data with tooltips - show "..." when data missing
   const unitEconomicsData = [
     {
       label: "ARPU",
-      value: formatCurrency(arpu),
+      value: arpu !== null ? formatCurrency(arpu) : "...",
       sublabel: "/month",
       icon: DollarSign,
       tooltip: "Average Revenue Per User - the monthly recurring revenue you receive from each customer.",
     },
     {
       label: "Payback",
-      value: `${paybackMonths}`,
+      value: paybackMonths !== null ? `${paybackMonths}` : "...",
       sublabel: "months",
       icon: Clock,
       tooltip: "Time in months to recover the cost of acquiring one customer through subscription revenue.",
     },
     {
       label: "LTV",
-      value: formatCurrency(ltv),
+      value: ltv > 0 ? formatCurrency(ltv) : "...",
       sublabel: "lifetime",
       icon: TrendingUp,
       tooltip: "Lifetime Value - total revenue expected from a customer throughout their relationship.",
     },
     {
       label: "LTV/CAC",
-      value: `${ltvCacRatioNum.toFixed(1)}x`,
-      sublabel: ltvCacRatioNum >= 3 ? "healthy" : "monitor",
-      sublabelType: ltvCacRatioNum >= 3 ? "success" : "warning",
+      value: ltvCacRatioNum !== null ? `${ltvCacRatioNum.toFixed(1)}x` : "...",
+      sublabel: ltvCacRatioNum !== null && ltvCacRatioNum >= 3 ? "healthy" : "monitor",
+      sublabelType: ltvCacRatioNum !== null && ltvCacRatioNum >= 3 ? "success" : "warning",
       icon: Zap,
-      highlight: ltvCacRatioNum >= 3,
+      highlight: ltvCacRatioNum !== null && ltvCacRatioNum >= 3,
       tooltip: "Ratio comparing customer value to acquisition cost. Above 3x indicates healthy unit economics.",
     },
   ] as const;
@@ -254,7 +254,7 @@ const FinancialReturnSection = () => {
             {/* Big Number - Break-even */}
             <div className="text-center mb-6">
               <div className="text-5xl font-bold text-gradient-gold mb-1">
-                {breakEvenMonths}
+                {breakEvenMonths !== null ? breakEvenMonths : "..."}
               </div>
               <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
                 <span>Months to Profitability</span>
@@ -267,7 +267,7 @@ const FinancialReturnSection = () => {
             {/* Stats - Reordered: LTV/CAC first (strongest indicator) */}
             <div className="space-y-3">
               {/* LTV/CAC - Primary indicator (usually positive) */}
-              <div className={`flex items-center justify-between p-3 rounded-lg ${ltvCacRatioNum >= 3 ? 'bg-accent/10 border-accent/30' : 'bg-accent/5 border-accent/10'} border`}>
+              <div className={`flex items-center justify-between p-3 rounded-lg ${ltvCacRatioNum !== null && ltvCacRatioNum >= 3 ? 'bg-accent/10 border-accent/30' : 'bg-accent/5 border-accent/10'} border`}>
                 <div className="flex items-center gap-1">
                   <span className="text-sm text-muted-foreground">LTV/CAC Ratio</span>
                   <InfoTooltip side="top" size="sm">
@@ -275,10 +275,10 @@ const FinancialReturnSection = () => {
                   </InfoTooltip>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`font-bold ${ltvCacRatioNum >= 3 ? 'text-accent' : 'text-foreground'}`}>
-                    {ltvCacRatioNum.toFixed(1)}x
+                  <span className={`font-bold ${ltvCacRatioNum !== null && ltvCacRatioNum >= 3 ? 'text-accent' : 'text-foreground'}`}>
+                    {ltvCacRatioNum !== null ? `${ltvCacRatioNum.toFixed(1)}x` : "..."}
                   </span>
-                  {ltvCacRatioNum >= 3 && (
+                  {ltvCacRatioNum !== null && ltvCacRatioNum >= 3 && (
                     <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-accent/10 border-accent/30 text-accent">
                       ✓ healthy
                     </Badge>
@@ -294,7 +294,7 @@ const FinancialReturnSection = () => {
                     Time in months to recover the cost of acquiring one customer through subscription revenue.
                   </InfoTooltip>
                 </div>
-                <span className="font-bold text-foreground">{paybackMonths}mo</span>
+                <span className="font-bold text-foreground">{paybackMonths !== null ? `${paybackMonths}mo` : "..."}</span>
               </div>
               
               {/* ROI Year 1 - With educational context */}
@@ -304,15 +304,15 @@ const FinancialReturnSection = () => {
                     <span className="text-sm text-muted-foreground">ROI Year 1</span>
                     <InfoTooltip side="top" size="sm">
                       Year 1 ROI in SaaS is typically negative due to upfront investment (the "J-Curve"). 
-                      Your break-even in {breakEvenMonths} months indicates healthy trajectory. 
+                      {breakEvenMonths !== null ? ` Your break-even in ${breakEvenMonths} months indicates healthy trajectory.` : ''} 
                       Focus on LTV/CAC ratio as the key viability indicator.
                     </InfoTooltip>
                   </div>
-                  <span className={`font-bold ${roiYear1 >= 0 ? 'text-accent' : 'text-amber-500'}`}>
-                    {roiYear1 >= 0 ? '+' : ''}{roiYear1}%
+                  <span className={`font-bold ${roiYear1 !== null && roiYear1 >= 0 ? 'text-accent' : 'text-amber-500'}`}>
+                    {roiYear1 !== null ? `${roiYear1 >= 0 ? '+' : ''}${roiYear1}%` : "..."}
                   </span>
                 </div>
-                {roiYear1 < 0 && (
+                {roiYear1 !== null && roiYear1 < 0 && (
                   <div className="flex items-center gap-1 text-[10px] text-amber-500/70 mt-1.5">
                     <Clock className="h-3 w-3" />
                     <span>Investment phase – typical for Year 1</span>
@@ -346,14 +346,13 @@ const FinancialReturnSection = () => {
         </div>
 
         {/* J-Curve Educational Banner - Below chart for context */}
-        {roiYear1 < 0 && (
+        {roiYear1 !== null && roiYear1 < 0 && (
           <div className="flex items-start gap-3 text-sm text-amber-600/80 bg-amber-500/5 border border-amber-500/20 rounded-lg p-4">
             <TrendingUp className="h-5 w-5 mt-0.5 flex-shrink-0 text-amber-500" />
             <div>
               <strong className="text-amber-500">J-Curve expected:</strong>{' '}
               <span className="text-muted-foreground">
-                Initial investment phase is typical for SaaS. Your {ltvCacRatioNum.toFixed(1)}x LTV/CAC 
-                indicates strong long-term viability.
+                Initial investment phase is typical for SaaS. {ltvCacRatioNum !== null ? `Your ${ltvCacRatioNum.toFixed(1)}x LTV/CAC indicates strong long-term viability.` : ''}
               </span>
             </div>
           </div>
