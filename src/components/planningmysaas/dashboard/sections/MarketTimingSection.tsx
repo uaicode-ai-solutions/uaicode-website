@@ -14,8 +14,6 @@ import {
   Tooltip as RechartsTooltip,
 } from "recharts";
 import { LucideIcon } from "lucide-react";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 // Parse score value like "92/100" or "85" to number
 const parseScore = (value: string | undefined): number => {
@@ -60,39 +58,13 @@ const MarketTimingSection = () => {
   const { reportData } = useReportContext();
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
 
-  // Apply smart fallback for timing fields
-  const { value: trendsScoreValue, isLoading: trendsLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.trends_score",
-    currentValue: opportunityData?.trends_score,
-  });
-  
-  const { value: currentTrajectoryValue, isLoading: trajectoryLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.current_trajectory",
-    currentValue: opportunityData?.current_trajectory,
-  });
-  
-  const { value: marketMaturityValue, isLoading: maturityLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.market_maturity",
-    currentValue: opportunityData?.market_maturity,
-  });
-  
-  const { value: saturationLevelValue, isLoading: saturationLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.saturation_level",
-    currentValue: opportunityData?.saturation_level,
-  });
-  
-  const { value: optimalWindowValue, isLoading: windowLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.optimal_window",
-    currentValue: opportunityData?.optimal_window,
-  });
-  
-  const { value: opportunityTimeframeValue, isLoading: timeframeLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.opportunity_timeframe",
-    currentValue: opportunityData?.opportunity_timeframe,
-  });
-
-  // Aggregate loading state
-  const isAnyLoading = trendsLoading || trajectoryLoading || maturityLoading || saturationLoading || windowLoading || timeframeLoading;
+  // Direct value extraction with "..." fallback - no smart fallback calls
+  const trendsScoreValue = opportunityData?.trends_score || null;
+  const currentTrajectoryValue = opportunityData?.current_trajectory || null;
+  const marketMaturityValue = opportunityData?.market_maturity || null;
+  const saturationLevelValue = opportunityData?.saturation_level || null;
+  const optimalWindowValue = opportunityData?.optimal_window || null;
+  const opportunityTimeframeValue = opportunityData?.opportunity_timeframe || null;
 
   // Extract timing metrics with fallback values
   const trendsScore = parseScore(trendsScoreValue);
@@ -289,8 +261,8 @@ const MarketTimingSection = () => {
                     The ideal time frame to enter the market based on current conditions and trends.
                   </InfoTooltip>
                 </div>
-              <p className="text-sm text-foreground leading-relaxed capitalize">
-                  {windowLoading ? <InlineValueSkeleton /> : (optimalWindowValue || "To be determined based on market analysis")}
+                <p className="text-sm text-foreground leading-relaxed capitalize">
+                  {optimalWindowValue || "..."}
                 </p>
               </div>
               
@@ -306,7 +278,7 @@ const MarketTimingSection = () => {
                   </InfoTooltip>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed capitalize">
-                  {trajectoryLoading ? <InlineValueSkeleton /> : (currentTrajectoryValue || "Analyzing market trajectory...")}
+                  {currentTrajectoryValue || "..."}
                 </p>
               </div>
               
@@ -322,7 +294,7 @@ const MarketTimingSection = () => {
                   </InfoTooltip>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed capitalize">
-                  {maturityLoading ? <InlineValueSkeleton /> : (marketMaturityValue || "Analyzing market maturity...")}
+                  {marketMaturityValue || "..."}
                 </p>
               </div>
 
@@ -338,7 +310,7 @@ const MarketTimingSection = () => {
                   </InfoTooltip>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed capitalize">
-                  {timeframeLoading ? <InlineValueSkeleton /> : (opportunityTimeframeValue || "Analyzing opportunity timeframe...")}
+                  {opportunityTimeframeValue || "..."}
                 </p>
               </div>
             </div>

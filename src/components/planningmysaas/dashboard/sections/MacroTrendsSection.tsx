@@ -4,8 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { FallbackSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 import {
   BarChart,
   Bar,
@@ -72,16 +70,8 @@ const MacroTrendsSection = () => {
   const { reportData } = useReportContext();
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   
-  // Use smart fallback for macro trends - skip if data already exists
-  const rawMacroTrends = opportunityData?.macro_trends;
-  const hasValidTrends = Array.isArray(rawMacroTrends) && rawMacroTrends.length > 0;
-  const { value: macroTrends, isLoading } = useSmartFallbackField<MacroTrend[]>({
-    fieldPath: "opportunity_section.macro_trends",
-    currentValue: rawMacroTrends,
-    skipFallback: hasValidTrends, // Skip fallback if we already have data
-  });
-
-  const trendsArray = macroTrends || [];
+  // Direct value extraction - no smart fallback
+  const trendsArray = opportunityData?.macro_trends || [];
 
   // Count favorable (strong trends) vs challenging (medium/weak trends)
   // Favorable: strong impact strength (>=90)
@@ -104,35 +94,7 @@ const MacroTrendsSection = () => {
     };
   });
 
-  // Show loading skeleton
-  if (isLoading) {
-    return (
-      <section id="macro-trends" className="space-y-6 animate-fade-in">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-accent/10">
-            <Activity className="h-5 w-5 text-accent" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Macro Trends</h2>
-            <p className="text-sm text-muted-foreground">Loading trends...</p>
-          </div>
-        </div>
-        <div className="grid lg:grid-cols-3 gap-6">
-          <Card className="bg-card/50 border-border/30">
-            <CardContent className="p-6">
-              <CardContentSkeleton lines={4} />
-            </CardContent>
-          </Card>
-          <Card className="bg-card/50 border-border/30 lg:col-span-2">
-            <CardContent className="p-6">
-              <CardContentSkeleton lines={5} />
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    );
-  }
-
+  // Return null if no data
   if (trendsArray.length === 0) {
     return null;
   }
