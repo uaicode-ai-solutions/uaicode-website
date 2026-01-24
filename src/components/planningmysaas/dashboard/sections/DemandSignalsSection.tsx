@@ -5,8 +5,6 @@ import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
 import { Badge } from "@/components/ui/badge";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 // Seasonal variation percentages by month (based on holidays and business cycles)
 const seasonalVariation: Record<string, number> = {
@@ -229,64 +227,39 @@ const countAvailableSignals = (signals: { value: string }[]): number => {
 };
 
 const DemandSignalsSection = () => {
-  const { reportData, reportId } = useReportContext();
-  const wizardId = reportData?.wizard_id;
+  const { reportData } = useReportContext();
 
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   const rawData = opportunityData as unknown as Record<string, unknown> | null;
   
-  const { value: monthlySearchesFallback, isLoading: searchesLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.monthly_searches",
-    currentValue: opportunityData?.monthly_searches,
-  });
-  
-  const { value: searchTrendFallback, isLoading: trendLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.search_trend",
-    currentValue: opportunityData?.search_trend,
-  });
-
-  // Apply smart fallback for forum_discussions, job_postings, online_reviews
-  const { value: forumDiscussionsFallback, isLoading: forumsLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.forum_discussions",
-    currentValue: rawData?.forum_discussions as string | undefined,
-  });
-  
-  const { value: jobPostingsFallback, isLoading: jobsLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.job_postings",
-    currentValue: rawData?.job_postings as string | undefined,
-  });
-  
-  const { value: onlineReviewsFallback, isLoading: reviewsLoading } = useSmartFallbackField({
-    fieldPath: "opportunity_section.online_reviews",
-    currentValue: rawData?.online_reviews as string | undefined,
-  });
-  
-  const monthlySearches = monthlySearchesFallback || "...";
-  const searchTrend = searchTrendFallback || "...";
-  const forumDiscussionsRaw = extractValue(forumDiscussionsFallback || rawData?.forum_discussions);
-  const jobPostingsRaw = extractValue(jobPostingsFallback || rawData?.job_postings);
-  const onlineReviewsRaw = extractValue(onlineReviewsFallback || rawData?.online_reviews);
+  // Direct value extraction with "..." fallback - no smart fallback calls
+  const monthlySearches = opportunityData?.monthly_searches || "...";
+  const searchTrend = opportunityData?.search_trend || "...";
+  const forumDiscussionsRaw = extractValue(rawData?.forum_discussions);
+  const jobPostingsRaw = extractValue(rawData?.job_postings);
+  const onlineReviewsRaw = extractValue(rawData?.online_reviews);
 
   const trendConfig = getTrendConfig(searchTrend);
 
-  // Calculate base values and fallbacks BEFORE defining demandSignals
-  const searchesBaseValue = extractNumericValue(monthlySearches);
+  // Calculate base values - use 0 if no data (shows "..." in display)
+  const hasSearchData = monthlySearches !== "...";
+  const searchesBaseValue = hasSearchData ? extractNumericValue(monthlySearches) : 0;
   const somValue = extractNumericValue(opportunityData?.som_value || "0");
   
-  // Extract raw numeric values
+  // Extract raw numeric values - show "..." if no data
   const forumsRawValue = extractSignalNumericValue(forumDiscussionsRaw);
   const jobsRawValue = extractSignalNumericValue(jobPostingsRaw);
   const reviewsRawValue = extractSignalNumericValue(onlineReviewsRaw);
   
-  // Generate fallback values when data is missing
-  const forumsValue = forumsRawValue || generateFallbackValue(searchesBaseValue, somValue, 'forums');
-  const jobsValue = jobsRawValue || generateFallbackValue(searchesBaseValue, somValue, 'jobs');
-  const reviewsValue = reviewsRawValue || generateFallbackValue(searchesBaseValue, somValue, 'reviews');
+  // No more estimated values - show actual data or 0
+  const forumsValue = forumsRawValue || 0;
+  const jobsValue = jobsRawValue || 0;
+  const reviewsValue = reviewsRawValue || 0;
   
-  // Track which values are estimated
-  const isForumsEstimated = !forumsRawValue;
-  const isJobsEstimated = !jobsRawValue;
-  const isReviewsEstimated = !reviewsRawValue;
+  // Track if we have actual data
+  const hasForumsData = forumsRawValue > 0;
+  const hasJobsData = jobsRawValue > 0;
+  const hasReviewsData = reviewsRawValue > 0;
 
   // Format signal values for display
   const formatSignalValue = (value: number): string => {
@@ -299,10 +272,9 @@ const DemandSignalsSection = () => {
     {
       key: "searches",
       label: "Monthly Searches",
-      value: formatSearchVolume(monthlySearches),
+      value: hasSearchData ? formatSearchVolume(monthlySearches) : "...",
       icon: Search,
       description: "Estimated monthly search volume for related keywords",
-      isEstimated: false,
     },
     {
       key: "trend",
@@ -310,31 +282,27 @@ const DemandSignalsSection = () => {
       value: searchTrend !== "..." ? trendConfig.label : "...",
       icon: TrendingUp,
       description: "Direction of search interest over time",
-      isEstimated: false,
     },
     {
       key: "forums",
       label: "Forum Discussions",
-      value: formatSignalValue(forumsValue),
+      value: hasForumsData ? formatSignalValue(forumsValue) : "...",
       icon: MessageSquare,
       description: "Active discussions in relevant online communities",
-      isEstimated: isForumsEstimated,
     },
     {
       key: "jobs",
       label: "Job Postings",
-      value: formatSignalValue(jobsValue),
+      value: hasJobsData ? formatSignalValue(jobsValue) : "...",
       icon: Briefcase,
       description: "Related job listings indicating market activity",
-      isEstimated: isJobsEstimated,
     },
     {
       key: "reviews",
       label: "Online Reviews",
-      value: formatSignalValue(reviewsValue),
+      value: hasReviewsData ? formatSignalValue(reviewsValue) : "...",
       icon: Star,
       description: "Customer reviews for competing products",
-      isEstimated: isReviewsEstimated,
     },
   ];
 
@@ -432,20 +400,11 @@ const DemandSignalsSection = () => {
                   <p className="text-xs text-muted-foreground mb-1">{signal.label}</p>
                   <p className="text-2xl font-bold text-foreground">
                     {signal.value}
-                    {signal.isEstimated && (
-                      <span className="text-xs text-muted-foreground ml-1">*</span>
-                    )}
                   </p>
                   
-                  {signal.isEstimated ? (
-                    <p className="text-[9px] text-amber-500/70 mt-2">
-                      Estimated based on market data
-                    </p>
-                  ) : (
-                    <p className="text-[10px] text-muted-foreground mt-2 line-clamp-2">
-                      {signal.description}
-                    </p>
-                  )}
+                  <p className="text-[10px] text-muted-foreground mt-2 line-clamp-2">
+                    {signal.description}
+                  </p>
                 </CardContent>
               </Card>
             );

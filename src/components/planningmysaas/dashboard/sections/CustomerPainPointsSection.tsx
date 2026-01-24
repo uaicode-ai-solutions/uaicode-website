@@ -3,8 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { OpportunitySection } from "@/types/report";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { FallbackSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 import {
   BarChart,
   Bar,
@@ -68,14 +66,8 @@ const CustomerPainPointsSection = () => {
   const { reportData } = useReportContext();
   const opportunityData = reportData?.opportunity_section as OpportunitySection | null;
   
-  // Use smart fallback for pain points
-  const rawPainPoints = opportunityData?.customer_pain_points;
-  const { value: painPoints, isLoading } = useSmartFallbackField<PainPoint[]>({
-    fieldPath: "opportunity_section.customer_pain_points",
-    currentValue: rawPainPoints,
-  });
-
-  const painPointsArray = painPoints || [];
+  // Direct value extraction - no smart fallback
+  const painPointsArray = opportunityData?.customer_pain_points || [];
 
   // Transform data for chart - use getIntensity which prefers numeric values
   const chartData = painPointsArray.map((point, index) => ({
@@ -99,35 +91,7 @@ const CustomerPainPointsSection = () => {
     return 0.4 + (intensity / 10) * 0.6; // Range: 0.4 to 1.0
   };
 
-  // Show loading skeleton
-  if (isLoading) {
-    return (
-      <section id="customer-pain-points" className="space-y-6 animate-fade-in">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-accent/10">
-            <Flame className="h-5 w-5 text-accent" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Customer Pain Points</h2>
-            <p className="text-sm text-muted-foreground">Loading pain points...</p>
-          </div>
-        </div>
-        <div className="grid lg:grid-cols-3 gap-6">
-          <Card className="bg-card/50 border-border/30 lg:col-span-2">
-            <CardContent className="p-6">
-              <CardContentSkeleton lines={5} />
-            </CardContent>
-          </Card>
-          <Card className="bg-card/50 border-border/30">
-            <CardContent className="p-6">
-              <CardContentSkeleton lines={4} />
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    );
-  }
-
+  // Return null if no data
   if (painPointsArray.length === 0) {
     return null;
   }
