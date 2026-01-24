@@ -511,17 +511,6 @@ export interface GrowthIntelligenceSection {
   
   citations?: string[];
   
-  /** 
-   * @deprecated Use financial_metrics instead (consolidated in v1.8.0+)
-   * Kept for backward compatibility with reports generated before v1.8.0
-   */
-  unit_economics_used?: {
-    arpu: number;
-    monthly_churn: number;
-    ltv: number;
-    max_cac: number;
-    ltv_cac_ratio_target: number;
-  };
   
   benchmark_comparison?: {
     mrr_6_vs_benchmark: string;
