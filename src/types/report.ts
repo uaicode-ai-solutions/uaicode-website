@@ -463,6 +463,110 @@ export interface SummarySection {
   generated_at?: string;      // Timestamp de quando foi gerado
 }
 
+// ==========================================
+// Price Intelligence Section (from Perplexity research via n8n)
+// ==========================================
+
+export interface PriceIntelligenceUnitEconomics {
+  recommended_arpu: number;
+  weighted_arpu: number;
+  ltv: number;
+  lifetime_months: number;
+  monthly_churn: number;
+  annual_churn: number;
+  ltv_cac_ratio_target: number;
+  max_cac: number;
+  payback_months: number;
+  gross_margin_target: number;
+  data_sources: {
+    arpu: string;
+    churn: string;
+    ltv: string;
+    ltv_cac: string;
+  };
+}
+
+export interface PriceIntelligencePricingModel {
+  model: string;
+  market_share: number;
+  trend: 'growing' | 'stable' | 'declining';
+  best_for: string;
+}
+
+export interface PriceIntelligenceMarketOverview {
+  market_average_price: number;
+  price_range_observed: { min: number; max: number };
+  pricing_models: PriceIntelligencePricingModel[];
+  price_elasticity: {
+    sensitivity: 'low' | 'medium' | 'high';
+    floor: number;
+    ceiling: number;
+    sweet_spot: number;
+    increase_tolerance: number;
+    value_drivers: string[];
+  };
+  annual_vs_monthly: {
+    typical_discount: number;
+    discount_range: { min: number; max: number };
+    annual_adoption_rate: number;
+  };
+  conversion_benchmarks: {
+    trial_to_paid: number;
+    freemium_to_paid: number;
+    visitor_to_trial: number;
+  };
+}
+
+export interface PriceIntelligenceTier {
+  name: string;
+  price_monthly: number;
+  price_annually: number;
+  features: string[];
+  expected_distribution_percent: number;
+  target_segment: string;
+  recommended: boolean;
+}
+
+export interface PriceIntelligenceFreemiumStrategy {
+  recommended: boolean;
+  conversion_target: number;
+  free_features: string[];
+  upgrade_triggers: string[];
+  limitations: string[];
+}
+
+export interface PriceIntelligenceTrialStrategy {
+  duration_days: number;
+  require_credit_card: boolean;
+  expected_conversion: number;
+  tactics: string[];
+}
+
+export interface PriceIntelligenceSection {
+  unit_economics: PriceIntelligenceUnitEconomics;
+  market_overview: PriceIntelligenceMarketOverview;
+  recommended_tiers: PriceIntelligenceTier[];
+  recommended_model: string;
+  price_positioning: 'Value Leader' | 'Market Parity' | 'Premium';
+  freemium_strategy: PriceIntelligenceFreemiumStrategy;
+  trial_strategy: PriceIntelligenceTrialStrategy;
+  annual_discount_recommended: number;
+  research_data?: {
+    perplexity_arpu?: { min: number; max: number; median: number };
+    perplexity_churn?: { low: number; typical: number; high: number };
+    competitor_prices?: { min: number; max: number; avg: number };
+    icp_budget?: { min: number; max: number; mid: number };
+  };
+  _metadata?: {
+    calculated_at: string;
+    calculator_version: string;
+    input_completeness: number;
+    data_sources: { primary: string; enrichment: string[] };
+    citations: string[];
+    citations_count: number;
+  };
+}
+
 // Report data from tb_pms_reports table (simplified - legacy columns removed)
 export interface ReportData {
   id: string;
