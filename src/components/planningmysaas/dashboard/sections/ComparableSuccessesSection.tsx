@@ -40,7 +40,7 @@ const ComparableSuccessesSection = () => {
   };
   
   const tamSize = getTamSize(tamValue);
-  const ltvCacRatio = metrics.ltvCacRatioNum || metrics.ltvCacCalculated || 1.3;
+  const ltvCacRatio = metrics.ltvCacRatioNum ?? metrics.ltvCacCalculated ?? null;
   
   // Industry statistics based on market type
   const isB2B = marketType?.toLowerCase()?.includes('b2b');
@@ -48,7 +48,7 @@ const ComparableSuccessesSection = () => {
   
   // Calculate user's position percentile - return 0 when data missing
   const getPositionPercentile = () => {
-    if (tamSize === null) return 0;
+    if (tamSize === null || ltvCacRatio === null) return 0;
     let basePercentile = tamSize === 'large' ? 75 : tamSize === 'medium' ? 50 : 25;
     if (ltvCacRatio >= 3) basePercentile += 15;
     else if (ltvCacRatio >= 2) basePercentile += 5;
@@ -94,9 +94,11 @@ const ComparableSuccessesSection = () => {
     {
       icon: Target,
       title: 'Similar Stage',
-      description: ltvCacRatio >= 1.5
+      description: ltvCacRatio !== null && ltvCacRatio >= 1.5
         ? `Early-stage SaaS with LTV/CAC above ${Math.floor(ltvCacRatio)}x have 3x higher success rate than average.`
-        : `Companies that improved LTV/CAC from ${ltvCacRatio.toFixed(1)}x to 3x saw 2.5x valuation increase.`,
+        : ltvCacRatio !== null
+          ? `Companies that improved LTV/CAC from ${ltvCacRatio.toFixed(1)}x to 3x saw 2.5x valuation increase.`
+          : `Companies that improved LTV/CAC to 3x saw 2.5x valuation increase.`,
       source: 'SaaS Metrics Report',
       index: 2,
     },
