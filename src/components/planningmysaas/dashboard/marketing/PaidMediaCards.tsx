@@ -83,12 +83,31 @@ const PaidMediaCards = () => {
       }))
     : [];
 
-  // Timeline - static structure with dynamic status
+  // Timeline - dynamic from ninety_day_plan with "..." fallback
+  const ninetyDayPlan = paidMediaData?.ninety_day_plan;
+  
   const timeline = [
-    { week: "Week 1-2", milestone: "Setup & Launch", status: "active", kpi: "Tracking live" },
-    { week: "Week 3-4", milestone: "Initial Optimization", status: "pending", kpi: "First data" },
-    { week: "Week 5-8", milestone: "Scale Winners", status: "pending", kpi: "2x budget" },
-    { week: "Week 9-12", milestone: "Full Optimization", status: "pending", kpi: "3.5x ROAS" },
+    { 
+      week: "Days 1-30", 
+      milestone: ninetyDayPlan?.phase_1?.focus || "...", 
+      status: "active" as const, 
+      kpi: ninetyDayPlan?.phase_1?.kpis?.[0] || "...",
+      channels: ninetyDayPlan?.phase_1?.channels || []
+    },
+    { 
+      week: "Days 31-60", 
+      milestone: ninetyDayPlan?.phase_2?.focus || "...", 
+      status: "pending" as const, 
+      kpi: ninetyDayPlan?.phase_2?.kpis?.[0] || "...",
+      channels: ninetyDayPlan?.phase_2?.channels || []
+    },
+    { 
+      week: "Days 61-90", 
+      milestone: ninetyDayPlan?.phase_3?.focus || "...", 
+      status: "pending" as const, 
+      kpi: ninetyDayPlan?.phase_3?.kpis?.[0] || "...",
+      channels: ninetyDayPlan?.phase_3?.channels || []
+    },
   ];
 
   return (
@@ -107,7 +126,19 @@ const PaidMediaCards = () => {
           </div>
           <p className="text-sm text-muted-foreground">Competitor analysis and recommended budget allocation</p>
         </div>
-        <Badge className="bg-accent text-accent-foreground text-xs">{totalBudget}/mo</Badge>
+        <div className="flex items-center gap-2">
+          <Badge className="bg-accent text-accent-foreground text-xs">{totalBudget}/mo</Badge>
+          {paidMediaData?.performance_targets?.ctr_benchmark && (
+            <Badge variant="outline" className="text-[10px] border-border/30">
+              CTR: {paidMediaData.performance_targets.ctr_benchmark}
+            </Badge>
+          )}
+          {paidMediaData?.performance_targets?.conversion_rate_benchmark && (
+            <Badge variant="outline" className="text-[10px] border-border/30">
+              CVR: {paidMediaData.performance_targets.conversion_rate_benchmark}
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* 2-Column Layout - Consolidated */}
@@ -210,7 +241,11 @@ const PaidMediaCards = () => {
                             style={{ backgroundColor: COLORS[idx % COLORS.length] }}
                           />
                           <span className="text-[10px] text-foreground truncate">{channel.name}</span>
-                          <span className="text-[10px] font-bold text-accent ml-auto">{channel.value}%</span>
+                          <span className="text-[10px] font-bold text-accent ml-auto">
+                            {paidMediaData?.channel_recommendations?.find(
+                              c => c.channel === channel.name
+                            )?.monthly_budget || `${channel.value}%`}
+                          </span>
                         </div>
                       ))}
                     </div>
