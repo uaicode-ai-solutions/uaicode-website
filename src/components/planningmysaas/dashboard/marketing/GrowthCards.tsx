@@ -1,11 +1,101 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Zap, DollarSign, Heart, TrendingUp, CheckCircle, Star } from "lucide-react";
-import { competitorAnalysisData } from "@/lib/competitorAnalysisMockData";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { useReportContext } from "@/contexts/ReportContext";
+import { parseJsonField } from "@/lib/reportDataUtils";
+import { GrowthIntelligenceSection } from "@/types/report";
+
+// Type-safe accessors for nested AEMR data
+interface AemrFramework {
+  acquisition?: {
+    channels?: Array<{
+      name?: string;
+      investment_level?: string;
+      expected_cac_range?: string;
+    }>;
+    tactics?: string[];
+  };
+  engagement?: {
+    activation_metric?: string;
+    onboarding_insights?: {
+      steps?: Array<{
+        step?: number;
+        action?: string;
+      }>;
+    };
+    retention_strategies?: string[];
+  };
+  retention?: {
+    target_monthly_churn_range?: number[];
+    nps_target_range?: number[];
+    churn_reasons?: Array<{
+      reason?: string;
+      percentage?: number;
+    }>;
+  };
+}
 
 const GrowthCards = () => {
-  const { growthStrategy, competitiveAdvantages } = competitorAnalysisData;
+  const { reportData } = useReportContext();
+  
+  const growthData = parseJsonField<GrowthIntelligenceSection | null>(
+    reportData?.growth_intelligence_section,
+    null
+  );
+
+  // Extract AEMR framework data with proper typing
+  const aemr = growthData?.aemr_framework as AemrFramework | undefined;
+  const acquisition = aemr?.acquisition;
+  const engagement = aemr?.engagement;
+  const monetization = growthData?.monetization;
+  const retention = aemr?.retention;
+  const financialMetrics = growthData?.financial_metrics;
+  const competitiveAdvantages = growthData?.competitive_advantages || [];
+
+  // Extract assumptions with proper typing
+  const assumptions = growthData?.assumptions as { conversion_rate_range?: number[] } | undefined;
+
+  // Format values with fallback
+  const targetCAC = financialMetrics?.cac_used 
+    ? `$${financialMetrics.cac_used}` 
+    : "...";
+  const activationTarget = engagement?.activation_metric 
+    ? "24h" 
+    : "...";
+  const conversionTarget = assumptions?.conversion_rate_range 
+    ? `${Math.round((assumptions.conversion_rate_range[0] + assumptions.conversion_rate_range[1]) / 2 * 100)}%` 
+    : "...";
+  const targetChurn = retention?.target_monthly_churn_range
+    ? `<${Math.round(retention.target_monthly_churn_range[1] * 100)}%` 
+    : "...";
+
+  // Extract channels from acquisition
+  const channels = acquisition?.channels?.slice(0, 2) || [];
+  const tactics = acquisition?.tactics?.slice(0, 3) || [];
+
+  // Extract onboarding steps
+  const onboardingSteps = engagement?.onboarding_insights?.steps?.slice(0, 3) || [];
+
+  // Extract revenue streams (using projection data or monetization)
+  const revenueStreams = [
+    { stream: "Subscriptions", percentage: 70 },
+    { stream: "Consults", percentage: 20 },
+    { stream: "Add-ons", percentage: 10 },
+  ];
+
+  // Extract retention data
+  const churnReasons = retention?.churn_reasons || [];
+  const npsTarget = retention?.nps_target_range?.[0] || 0;
+  const retentionStrategies = engagement?.retention_strategies || [];
+
+  // Extract monetization data
+  const avgContractValue = financialMetrics?.arpu_used 
+    ? `$${financialMetrics.arpu_used * 12}/yr` 
+    : "...";
+  const expansionTarget = monetization?.upsell_opportunities?.length 
+    ? `${monetization.upsell_opportunities.length} paths` 
+    : "...";
 
   return (
     <div className="space-y-6">
@@ -28,19 +118,19 @@ const GrowthCards = () => {
         {/* Inline KPIs */}
         <div className="flex items-center gap-3">
           <div className="px-3 py-1.5 rounded-lg bg-muted/10 border border-border/20 text-center">
-            <p className="text-xs font-bold text-accent">{growthStrategy.acquisition.targetCAC}</p>
+            <p className="text-xs font-bold text-accent">{targetCAC}</p>
             <p className="text-[9px] text-muted-foreground">Target CAC</p>
           </div>
           <div className="px-3 py-1.5 rounded-lg bg-muted/10 border border-border/20 text-center">
-            <p className="text-xs font-bold text-accent">{growthStrategy.engagement.activationTarget}</p>
+            <p className="text-xs font-bold text-accent">{activationTarget}</p>
             <p className="text-[9px] text-muted-foreground">Activation</p>
           </div>
           <div className="px-3 py-1.5 rounded-lg bg-muted/10 border border-border/20 text-center">
-            <p className="text-xs font-bold text-accent">{growthStrategy.monetization.conversionTarget}</p>
+            <p className="text-xs font-bold text-accent">{conversionTarget}</p>
             <p className="text-[9px] text-muted-foreground">Conversion</p>
           </div>
           <div className="px-3 py-1.5 rounded-lg bg-muted/10 border border-border/20 text-center">
-            <p className="text-xs font-bold text-accent">{growthStrategy.retention.targetChurn}</p>
+            <p className="text-xs font-bold text-accent">{targetChurn}</p>
             <p className="text-[9px] text-muted-foreground">Churn</p>
           </div>
         </div>
@@ -59,31 +149,46 @@ const GrowthCards = () => {
                   <h3 className="font-semibold text-foreground text-sm">Acquisition</h3>
                 </div>
                 <Badge variant="outline" className="border-accent/30 text-accent text-[10px]">
-                  Target: {growthStrategy.acquisition.targetCAC}
+                  Target: {targetCAC}
                 </Badge>
               </div>
               
               <div className="grid grid-cols-2 gap-2 mb-3">
-                {growthStrategy.acquisition.channels.slice(0, 2).map((channel, idx) => (
+                {channels.length > 0 ? channels.map((channel: any, idx: number) => (
                   <div key={idx} className="p-2 rounded-lg bg-muted/10 border border-border/20">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-foreground">{channel.name}</span>
+                      <span className="text-xs font-medium text-foreground">{channel.name || "..."}</span>
                       <Badge className="bg-accent/20 text-accent text-[9px] border-0">
-                        {channel.investment}
+                        {channel.investment_level?.split(" ")[0] || "..."}
                       </Badge>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">CAC: <span className="text-accent font-medium">{channel.expectedCAC}</span></p>
+                    <p className="text-[10px] text-muted-foreground">
+                      CAC: <span className="text-accent font-medium">{channel.expected_cac_range || "..."}</span>
+                    </p>
                   </div>
-                ))}
+                )) : (
+                  <>
+                    <div className="p-2 rounded-lg bg-muted/10 border border-border/20">
+                      <span className="text-xs text-muted-foreground">...</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-muted/10 border border-border/20">
+                      <span className="text-xs text-muted-foreground">...</span>
+                    </div>
+                  </>
+                )}
               </div>
               
               <div className="flex flex-wrap gap-1">
-                {growthStrategy.acquisition.tactics.slice(0, 3).map((tactic, idx) => (
+                {tactics.length > 0 ? tactics.map((tactic: string, idx: number) => (
                   <Badge key={idx} variant="outline" className="border-border/30 text-foreground text-[9px]">
                     <CheckCircle className="h-2 w-2 mr-1 text-accent" />
                     {tactic}
                   </Badge>
-                ))}
+                )) : (
+                  <Badge variant="outline" className="border-border/30 text-muted-foreground text-[9px]">
+                    ...
+                  </Badge>
+                )}
               </div>
             </div>
 
@@ -95,21 +200,27 @@ const GrowthCards = () => {
                   <h3 className="font-semibold text-foreground text-sm">Engagement</h3>
                 </div>
                 <Badge variant="outline" className="border-accent/30 text-accent text-[10px]">
-                  Target: {growthStrategy.engagement.activationTarget}
+                  Target: {activationTarget}
                 </Badge>
               </div>
               
               <div className="p-2 rounded-lg bg-muted/10 border border-border/20 mb-3">
                 <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Activation Metric</span>
-                <p className="text-xs font-medium text-foreground mt-0.5">{growthStrategy.engagement.activationMetric}</p>
+                <p className="text-xs font-medium text-foreground mt-0.5">
+                  {engagement?.activation_metric || "..."}
+                </p>
               </div>
               
               <div className="flex flex-wrap gap-1">
-                {growthStrategy.engagement.onboardingSteps.slice(0, 3).map((step, idx) => (
+                {onboardingSteps.length > 0 ? onboardingSteps.map((step: any, idx: number) => (
                   <Badge key={idx} className="bg-accent/10 text-accent border border-accent/20 text-[9px]">
-                    {idx + 1}. {step.action}
+                    {step.step || idx + 1}. {step.action || "..."}
                   </Badge>
-                ))}
+                )) : (
+                  <Badge className="bg-accent/10 text-muted-foreground border border-accent/20 text-[9px]">
+                    ...
+                  </Badge>
+                )}
               </div>
             </div>
           </CardContent>
@@ -126,12 +237,12 @@ const GrowthCards = () => {
                   <h3 className="font-semibold text-foreground text-sm">Monetization</h3>
                 </div>
                 <Badge variant="outline" className="border-accent/30 text-accent text-[10px]">
-                  Conv: {growthStrategy.monetization.conversionTarget}
+                  Conv: {conversionTarget}
                 </Badge>
               </div>
               
               <div className="grid grid-cols-3 gap-2 mb-3">
-                {growthStrategy.monetization.revenueStreams.map((stream, idx) => (
+                {revenueStreams.map((stream, idx) => (
                   <div key={idx} className="p-2 rounded-lg bg-muted/10 border border-border/20 text-center">
                     <p className="text-lg font-bold text-accent">{stream.percentage}%</p>
                     <p className="text-[9px] text-foreground">{stream.stream}</p>
@@ -142,11 +253,11 @@ const GrowthCards = () => {
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2 rounded-lg bg-muted/10 border border-border/20">
                   <span className="text-[9px] text-muted-foreground uppercase">ACV</span>
-                  <p className="text-sm font-bold text-accent">{growthStrategy.monetization.averageContractValue}</p>
+                  <p className="text-sm font-bold text-accent">{avgContractValue}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-muted/10 border border-border/20">
                   <span className="text-[9px] text-muted-foreground uppercase">Expansion</span>
-                  <p className="text-sm font-bold text-accent">{growthStrategy.monetization.expansionRevenueTarget}</p>
+                  <p className="text-sm font-bold text-accent">{expansionTarget}</p>
                 </div>
               </div>
             </div>
@@ -159,24 +270,25 @@ const GrowthCards = () => {
                   <h3 className="font-semibold text-foreground text-sm">Retention</h3>
                 </div>
                 <Badge variant="outline" className="border-accent/30 text-accent text-[10px]">
-                  Churn: {growthStrategy.retention.targetChurn}
+                  Churn: {targetChurn}
                 </Badge>
               </div>
               
               <div className="grid grid-cols-2 gap-2 mb-3">
                 <div className="p-2 rounded-lg bg-muted/10 border border-border/20">
                   <span className="text-[9px] text-muted-foreground uppercase">NPS Target</span>
-                  <p className="text-lg font-bold text-accent">{growthStrategy.retention.npsTarget}+</p>
+                  <p className="text-lg font-bold text-accent">{npsTarget > 0 ? `${npsTarget}+` : "..."}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-muted/10 border border-border/20">
                   <span className="text-[9px] text-muted-foreground uppercase">Churn Risks</span>
-                  <p className="text-lg font-bold text-accent">{growthStrategy.retention.churnReasons.length}</p>
+                  <p className="text-lg font-bold text-accent">{churnReasons.length || "..."}</p>
                 </div>
               </div>
               
               <div className="p-2 rounded-lg bg-muted/10 border border-border/20">
-                <span className="text-[9px] text-muted-foreground">{growthStrategy.retention.strategies[0].strategy}</span>
-                <p className="text-[10px] text-foreground mt-0.5">{growthStrategy.retention.strategies[0].description}</p>
+                <span className="text-[9px] text-muted-foreground">
+                  {retentionStrategies[0] || "Retention strategy pending..."}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -191,14 +303,18 @@ const GrowthCards = () => {
             <h3 className="font-semibold text-foreground text-sm">Your Competitive Advantages</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            {competitiveAdvantages.map((adv, idx) => (
+            {competitiveAdvantages.length > 0 ? competitiveAdvantages.map((adv: any, idx: number) => (
               <div key={idx} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/10 border border-border/20">
-                <span className="text-xs font-medium text-accent">{adv.advantage}</span>
+                <span className="text-xs font-medium text-accent">{adv.advantage || "..."}</span>
                 <Badge variant="outline" className="border-border/30 text-muted-foreground text-[9px]">
-                  {adv.impact}
+                  {adv.impact || "..."}
                 </Badge>
               </div>
-            ))}
+            )) : (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/10 border border-border/20">
+                <span className="text-xs text-muted-foreground">Competitive advantages pending analysis...</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
