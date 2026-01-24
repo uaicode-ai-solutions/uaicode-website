@@ -94,6 +94,10 @@ export interface DataSources {
   ltvCacCalculated: DataSourceType;
   marketingBudget: DataSourceType;
   idealTicket: DataSourceType;
+  // New fields from n8n v1.7.0+
+  projectionData: DataSourceType;
+  financialScenarios: DataSourceType;
+  yearEvolution: DataSourceType;
 }
 
 export const defaultDataSources: DataSources = {
@@ -110,4 +114,8 @@ export const defaultDataSources: DataSources = {
   ltvCacCalculated: 'calculated',
   marketingBudget: 'estimated',
   idealTicket: 'calculated',
+  // New fields from n8n v1.7.0+
+  projectionData: 'calculated',
+  financialScenarios: 'calculated',
+  yearEvolution: 'calculated',
 };

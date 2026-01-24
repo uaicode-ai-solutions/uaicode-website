@@ -396,26 +396,155 @@ export interface GrowthTargetMetrics {
   gross_margins?: string;         // "40-50%"
 }
 
+// New format from n8n v1.7.0+ with _raw numeric data
+export interface GrowthTargetPeriod extends GrowthTargetMetrics {
+  notes?: string;
+  _raw?: {
+    customer_min?: number;
+    customer_max?: number;
+    mrr_min?: number;
+    mrr_max?: number;
+    arr_min?: number;
+    arr_max?: number;
+    activation_min?: number;
+    activation_max?: number;
+  };
+}
+
 export interface GrowthIntelligenceSection {
-  growth_targets: {
+  growth_targets?: {
     // Legacy format (for backwards compatibility)
     six_month_targets?: GrowthTargetMetrics;
     twelve_month_targets?: GrowthTargetMetrics;
     twenty_four_month_targets?: GrowthTargetMetrics;
     // New format from n8n (numeric keys)
-    "6_month"?: GrowthTargetMetrics;
-    "12_month"?: GrowthTargetMetrics;
-    "24_month"?: GrowthTargetMetrics;
+    "6_month"?: GrowthTargetPeriod;
+    "12_month"?: GrowthTargetPeriod;
+    "24_month"?: GrowthTargetPeriod;
   };
   monetization?: {
     pricing_strategy: string;
+    recommended_model?: string;
     upsell_opportunities?: string[];
   };
   engagement?: {
+    activation_metric?: string;
     onboarding_insights?: {
       time_to_value_target: string;
+      steps?: Array<{ step: number; action: string; timing: string }>;
     };
     retention_strategies?: string[];
+  };
+  aemr_framework?: unknown;
+  assumptions?: unknown;
+  
+  // Pre-calculated financial metrics from n8n v1.7.0+
+  financial_metrics?: {
+    mrr_month_6: number;
+    mrr_month_12: number;
+    mrr_month_24: number;
+    arr_year_1: number;
+    arr_year_2: number;
+    mrr_month_6_formatted: string;
+    mrr_month_12_formatted: string;
+    mrr_month_24_formatted: string;
+    arr_year_1_formatted: string;
+    arr_year_2_formatted: string;
+    growth_rate_6_to_12: number;
+    growth_rate_12_to_24: number;
+    customer_growth_y2: number;
+    roi_year_1: number;
+    roi_year_2: number;
+    roi_year_1_formatted: string;
+    roi_year_2_formatted: string;
+    break_even_months: number;
+    payback_months: number;
+    ltv_cac_ratio: number;
+    arpu_used: number;
+    monthly_churn_used: number;
+    ltv_used: number;
+    cac_used: number;
+  };
+  
+  customer_metrics?: {
+    customers_month_6: number;
+    customers_month_12: number;
+    customers_month_24: number;
+    customer_growth_rate_y2: number;
+  };
+  
+  // Pre-generated projection data from n8n v1.7.0+
+  projection_data?: Array<{
+    month: string;
+    revenue: number;
+    costs: number;
+    cumulative: number;
+  }>;
+  
+  // Pre-generated scenarios from n8n v1.7.0+
+  financial_scenarios?: Array<{
+    name: string;
+    mrrMonth12: number;
+    arrYear1: number;
+    breakEven: number;
+    probability: string;
+  }>;
+  
+  // Pre-generated year evolution from n8n v1.7.0+
+  year_evolution?: Array<{
+    year: string;
+    arr: string;
+    arrNumeric: number;
+    mrr: string;
+    mrrNumeric: number;
+    customers: number;
+  }>;
+  
+  competitive_advantages?: Array<{
+    advantage: string;
+    competitor_gap: string;
+    impact: string;
+  }>;
+  
+  citations?: string[];
+  
+  unit_economics_used?: {
+    arpu: number;
+    monthly_churn: number;
+    ltv: number;
+    max_cac: number;
+    ltv_cac_ratio_target: number;
+  };
+  
+  benchmark_comparison?: {
+    mrr_6_vs_benchmark: string;
+    mrr_12_vs_benchmark: string;
+    mrr_24_vs_benchmark: string;
+    arr_y1_vs_benchmark: string;
+    arr_y2_vs_benchmark: string;
+    benchmarks_used: Record<string, number>;
+  };
+  
+  _metadata?: {
+    parsed_at: string;
+    parser_version: string;
+    perplexity_model: string;
+    input_arpu: number;
+    validation_passed: boolean;
+    missing_fields: string[];
+    raw_inputs_echo: Record<string, unknown>;
+    calculator_version: string;
+    calculated_at: string;
+    investment_used: number;
+    marketing_budget_monthly: number;
+  };
+  
+  _validation?: {
+    was_adjusted: boolean;
+    warnings: string[];
+    validation_passed: boolean;
+    benchmark_source: string;
+    benchmark_confidence: string;
   };
 }
 
