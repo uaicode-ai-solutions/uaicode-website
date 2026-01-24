@@ -133,12 +133,17 @@ const planColors: Record<string, string> = {
 
 /**
  * Calculate weeks for a phase based on total project weeks and phase percentage
+ * Returns "..." if total weeks are not available
  */
 const calculatePhaseWeeks = (
-  totalMinWeeks: number,
-  totalMaxWeeks: number,
+  totalMinWeeks: number | null,
+  totalMaxWeeks: number | null,
   percentage: number
 ): string => {
+  if (totalMinWeeks === null || totalMaxWeeks === null) {
+    return "...";
+  }
+  
   const minWeeks = Math.max(1, Math.round(totalMinWeeks * percentage));
   const maxWeeks = Math.max(minWeeks, Math.round(totalMaxWeeks * percentage));
   
@@ -179,29 +184,42 @@ const ExecutionPlanSection = () => {
     currentValue: sectionInvestment?.mvp_tier || undefined,
   });
   
-  // Use fallback values or defaults
-  const totalMinWeeks = minWeeksFallback ? parseInt(minWeeksFallback) : (sectionInvestment?.delivery_weeks_uaicode_min ?? 9);
-  const totalMaxWeeks = maxWeeksFallback ? parseInt(maxWeeksFallback) : (sectionInvestment?.delivery_weeks_uaicode_max ?? 13);
+  // Use fallback values - show "..." if no data available instead of hardcoded defaults
+  const hasMinWeeksData = sectionInvestment?.delivery_weeks_uaicode_min != null || minWeeksFallback;
+  const hasMaxWeeksData = sectionInvestment?.delivery_weeks_uaicode_max != null || maxWeeksFallback;
+  
+  const totalMinWeeks = hasMinWeeksData
+    ? (minWeeksFallback ? parseInt(minWeeksFallback) : sectionInvestment!.delivery_weeks_uaicode_min!)
+    : null;
+  const totalMaxWeeks = hasMaxWeeksData
+    ? (maxWeeksFallback ? parseInt(maxWeeksFallback) : sectionInvestment!.delivery_weeks_uaicode_max!)
+    : null;
+  
   const mvpTier = ((mvpTierFallback || sectionInvestment?.mvp_tier)?.toLowerCase() as "starter" | "growth" | "enterprise") ?? "growth";
   
   // Get traditional weeks for comparison
-  const traditionalMinWeeks = sectionInvestment?.delivery_weeks_traditional_min ?? 26;
-  const traditionalMaxWeeks = sectionInvestment?.delivery_weeks_traditional_max ?? 51;
+  const traditionalMinWeeks = sectionInvestment?.delivery_weeks_traditional_min ?? null;
+  const traditionalMaxWeeks = sectionInvestment?.delivery_weeks_traditional_max ?? null;
   
-  // Calculate "faster" percentage using average of min/max
-  const avgUaicodeWeeks = (totalMinWeeks + totalMaxWeeks) / 2;
-  const avgTraditionalWeeks = (traditionalMinWeeks + traditionalMaxWeeks) / 2;
-  const fasterPercent = Math.round(((avgTraditionalWeeks - avgUaicodeWeeks) / avgTraditionalWeeks) * 100);
+  // Calculate "faster" percentage using average of min/max - only if both values exist
+  const hasValidComparison = totalMinWeeks !== null && totalMaxWeeks !== null && 
+                             traditionalMinWeeks !== null && traditionalMaxWeeks !== null;
+  const fasterPercent = hasValidComparison
+    ? Math.round((((traditionalMinWeeks + traditionalMaxWeeks) / 2 - (totalMinWeeks + totalMaxWeeks) / 2) / 
+                  ((traditionalMinWeeks + traditionalMaxWeeks) / 2)) * 100)
+    : null;
   
   // Loading state
   const isLoading = minWeeksLoading || maxWeeksLoading || mvpTierLoading;
   
-  // Total time display
+  // Total time display - show "..." when data is missing
   const totalTimeDisplay = isLoading 
     ? null 
-    : totalMinWeeks === totalMaxWeeks 
-      ? `${totalMinWeeks} weeks` 
-      : `${totalMinWeeks}-${totalMaxWeeks} weeks`;
+    : (totalMinWeeks === null || totalMaxWeeks === null)
+      ? "..."
+      : totalMinWeeks === totalMaxWeeks 
+        ? `${totalMinWeeks} weeks` 
+        : `${totalMinWeeks}-${totalMaxWeeks} weeks`;
 
   return (
     <section id="execution-plan" className="space-y-6 animate-fade-in">
@@ -388,7 +406,8 @@ const ExecutionPlanSection = () => {
               </div>
               <Badge variant="outline" className="border-green-500/30 text-green-400 gap-1.5">
                 <Zap className="h-3 w-3" />
-                {isLoading ? <InlineValueSkeleton size="sm" /> : `${fasterPercent}% faster than traditional agencies`}
+                {isLoading ? <InlineValueSkeleton size="sm" /> : 
+                  fasterPercent !== null ? `${fasterPercent}% faster than traditional agencies` : "..."}
               </Badge>
             </div>
           </div>
