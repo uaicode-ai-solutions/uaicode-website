@@ -833,126 +833,43 @@ export function useFinancialMetrics(
     // ============================================
     // Generate Projection Data - PRIORIZA BANCO (n8n v1.7.0+)
     // ============================================
+    // Projection Data - SOMENTE do banco, NÃO inventa cálculos
     let projectionData: ProjectionDataPoint[] = [];
     if (projectionDataFromDb && projectionDataFromDb.length > 0) {
-      // Usar dados pré-calculados do banco
       projectionData = projectionDataFromDb;
       dataSources.projectionData = 'database';
-    } else if (validatedMrr12 > 0 && mvpInvestment) {
-      // Fallback: calcular localmente
-      projectionData = generateValidatedProjections(
-        validatedMrr6,
-        validatedMrr12,
-        mvpInvestment,
-        effectiveMarketingBudget,
-        marginPercent,
-        12
-      );
-      dataSources.projectionData = 'calculated';
+    } else {
+      // Sem dados no banco = array vazio (UI mostra "...")
+      projectionData = [];
+      dataSources.projectionData = 'fallback';
     }
     
     // ============================================
     // Generate Financial Scenarios - PRIORIZA BANCO (n8n v1.7.0+)
     // ============================================
+    // Financial Scenarios - SOMENTE do banco, NÃO inventa cálculos
     let financialScenarios: FinancialScenario[] = [];
     if (financialScenariosFromDb && financialScenariosFromDb.length > 0) {
-      // Usar cenários pré-calculados do banco
       financialScenarios = financialScenariosFromDb;
       dataSources.financialScenarios = 'database';
-    } else if (validatedMrr12 > 0 && mvpInvestment) {
-      // Fallback: calcular localmente
-      const scenarios = generateValidatedScenarios(
-        validatedMrr12,
-        mvpInvestment,
-        effectiveMarketingBudget,
-        marginPercent
-      );
-      
-      financialScenarios.push({
-        name: "Conservative",
-        mrrMonth12: scenarios.conservative.mrr12,
-        arrYear1: scenarios.conservative.arr12,
-        breakEven: scenarios.conservative.breakEven,
-        probability: scenarios.conservative.probability,
-      });
-      
-      financialScenarios.push({
-        name: "Realistic",
-        mrrMonth12: scenarios.realistic.mrr12,
-        arrYear1: scenarios.realistic.arr12,
-        breakEven: scenarios.realistic.breakEven,
-        probability: scenarios.realistic.probability,
-      });
-      
-      financialScenarios.push({
-        name: "Optimistic",
-        mrrMonth12: scenarios.optimistic.mrr12,
-        arrYear1: scenarios.optimistic.arr12,
-        breakEven: scenarios.optimistic.breakEven,
-        probability: scenarios.optimistic.probability,
-      });
-      
-      dataSources.financialScenarios = 'calculated';
+    } else {
+      // Sem dados no banco = array vazio (UI mostra "...")
+      financialScenarios = [];
+      dataSources.financialScenarios = 'fallback';
     }
     
     // ============================================
     // Generate Year Evolution Data - PRIORIZA BANCO (n8n v1.7.0+)
     // ============================================
+    // Year Evolution - SOMENTE do banco, NÃO inventa cálculos
     let yearEvolution: YearEvolutionData[] = [];
-    
     if (yearEvolutionFromDb && yearEvolutionFromDb.length > 0) {
-      // Usar dados pré-calculados do banco
       yearEvolution = yearEvolutionFromDb;
       dataSources.yearEvolution = 'database';
     } else {
-      // Fallback: calcular localmente
-      // Use VALIDATED ARR values (MRR × 12, capped by benchmarks)
-      const validatedArr12 = validatedMrr12 * 12;
-      const validatedArr24 = validatedMrr24 * 12;
-      
-      // Year 1
-      yearEvolution.push({
-        year: "Year 1",
-        arr: validatedArr12 > 0 ? formatCurrency(validatedArr12) : fallback,
-        mrr: validatedMrr12 > 0 ? `${formatCurrency(validatedMrr12)} MRR` : `${fallback} MRR`,
-        arrNumeric: validatedArr12,
-        mrrNumeric: validatedMrr12,
-      });
-      
-      // Year 2 - using validated values
-      yearEvolution.push({
-        year: "Year 2",
-        arr: validatedArr24 > 0 ? formatCurrency(validatedArr24) : fallback,
-        mrr: validatedMrr24 > 0 ? `${formatCurrency(validatedMrr24)} MRR` : `${fallback} MRR`,
-        arrNumeric: validatedArr24,
-        mrrNumeric: validatedMrr24,
-      });
-      
-      // Year 3 - Project based on Year 2 with growth
-      // Use market growth rate from report, with more conservative 25% fallback
-      const marketGrowthRateStr = safeGet(opportunitySection, 'market_growth_rate', null) as string | null;
-      const marketGrowth = parsePercentageRange(marketGrowthRateStr);
-      const growthMultiplier = marketGrowth ? 1 + (marketGrowth.avg / 100) : 1.25; // Default 25% growth (conservative)
-      
-      if (validatedMrr24 > 0) {
-        const arr36 = validatedArr24 * growthMultiplier;
-        const mrr36 = validatedMrr24 * growthMultiplier;
-        yearEvolution.push({
-          year: "Year 3",
-          arr: formatCurrency(arr36),
-          mrr: `${formatCurrency(mrr36)} MRR`,
-          arrNumeric: arr36,
-          mrrNumeric: mrr36,
-        });
-      } else {
-        yearEvolution.push({
-          year: "Year 3",
-          arr: fallback,
-          mrr: `${fallback} MRR`,
-        });
-      }
-      
-      dataSources.yearEvolution = 'calculated';
+      // Sem dados no banco = array vazio (UI mostra "...")
+      yearEvolution = [];
+      dataSources.yearEvolution = 'fallback';
     }
     
     // ============================================

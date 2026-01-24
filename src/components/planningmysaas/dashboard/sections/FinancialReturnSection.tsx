@@ -39,27 +39,22 @@ const FinancialReturnSection = () => {
   const mrrMonth12 = metrics.mrrMonth12Num ?? 0;
   const arrYear1 = metrics.arrProjectedNum ?? 0;
   
-  // Calculate ARR Year 3 - prioritize yearEvolution data from hook
-  // yearEvolution contains Year 1, Year 2, Year 3 with arrNumeric values
+  // Year Evolution - usar DIRETAMENTE do banco, SEM cálculos inventados
   const yearEvolution = metrics.yearEvolution;
-  const arrYear2FromEvolution = yearEvolution?.find(y => y.year === 'Year 2')?.arrNumeric;
-  const arr24MonthsAvg = metrics.arr24Months?.avg;
   
-  // Year 3 calculation: Use Year 2 data with 25% additional growth, or fallback to Year 1 * 2.54
-  const rawArrYear3 = arrYear2FromEvolution && arrYear2FromEvolution > 0
-    ? arrYear2FromEvolution * 1.25  // 25% growth from Y2 to Y3
-    : (arr24MonthsAvg && arr24MonthsAvg > 0 
-        ? arr24MonthsAvg * 1.25 
-        : (arrYear1 > 0 ? arrYear1 * 2.54 : 0));
+  // Buscar valores diretamente do yearEvolution (vem do banco)
+  const year1Data = yearEvolution?.find(y => y.year === 'Year 1');
+  const year3Data = yearEvolution?.find(y => y.year === 'Year 3');
   
-  const maxGrowthMultiple = 10; // 900% max growth - realistic for high-growth SaaS
-  const arrYear3 = arrYear1 > 0 && rawArrYear3 > 0 ? Math.min(rawArrYear3, arrYear1 * maxGrowthMultiple) : 0;
+  // Valores diretos do banco - SEM multiplicadores inventados
+  const arrYear1FromDb = year1Data?.arrNumeric ?? null;
+  const arrYear3FromDb = year3Data?.arrNumeric ?? null;
   
-  // Calculate growth percentage only if BOTH values are valid and Year3 > Year1
-  const hasValidGrowthData = arrYear1 > 0 && arrYear3 > arrYear1;
-  const rawGrowthPercent = hasValidGrowthData ? Math.round(((arrYear3 - arrYear1) / arrYear1) * 100) : null;
-  const growthPercent = rawGrowthPercent !== null ? Math.min(rawGrowthPercent, 900) : null;
-  const wasGrowthCapped = rawGrowthPercent !== null && rawGrowthPercent > 900;
+  // Growth: só calcular se AMBOS existem no banco
+  const hasValidGrowthData = arrYear1FromDb !== null && arrYear3FromDb !== null && arrYear1FromDb > 0;
+  const growthPercent = hasValidGrowthData 
+    ? Math.round(((arrYear3FromDb! - arrYear1FromDb) / arrYear1FromDb) * 100)
+    : null;
   // ARPU and LTV from database - no fallbacks
   const arpu = metrics.idealTicket;
   const ltv = metrics.ltv ?? 0;
@@ -423,14 +418,9 @@ const FinancialReturnSection = () => {
             </div>
             <div className="text-[10px] text-muted-foreground mt-1">
               {hasValidGrowthData 
-                ? `${formatCurrency(arrYear1)} → ${formatCurrency(arrYear3)}`
-                : "Data pending..."}
+                ? `${formatCurrency(arrYear1FromDb!)} → ${formatCurrency(arrYear3FromDb!)}`
+                : "..."}
             </div>
-            {wasGrowthCapped && (
-              <div className="text-[9px] text-amber-500/70 mt-1">
-                Adjusted for market realism
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
