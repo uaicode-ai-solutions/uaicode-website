@@ -12,7 +12,8 @@ import {
   Zap,
   Clock,
   TrendingUp,
-  Sparkles
+  Sparkles,
+  BarChart3
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,12 +40,12 @@ const WhatIfScenarios = ({
   currentPayback,
   marketType = 'b2b',
 }: WhatIfScenariosProps) => {
-  // Slider states - initialized to current values
-  const [arpu, setArpu] = useState(currentArpu);
-  const [churn, setChurn] = useState(currentChurn);
-  const [cac, setCac] = useState(currentCac);
+  // Slider states - initialized to current values (use safe defaults for useState)
+  const [arpu, setArpu] = useState(currentArpu || 50);
+  const [churn, setChurn] = useState(currentChurn || 5);
+  const [cac, setCac] = useState(currentCac || 100);
 
-  // Calculate metrics based on slider values
+  // Calculate metrics based on slider values - MUST be before any early returns
   const simulatedMetrics = useMemo(() => {
     // LTV = ARPU * (1 / monthly_churn_rate)
     // If churn is 5%, lifetime is 1/0.05 = 20 months
@@ -60,6 +61,22 @@ const WhatIfScenarios = ({
       lifetimeMonths,
     };
   }, [arpu, churn, cac]);
+
+  // Validate required data - show empty state if unit economics are missing
+  const hasRequiredData = currentArpu != null && currentArpu > 0 &&
+                          currentChurn != null && currentChurn > 0 &&
+                          currentCac != null && currentCac > 0;
+
+  // Show empty state if required data is missing
+  if (!hasRequiredData) {
+    return (
+      <div className="p-6 text-center text-muted-foreground">
+        <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-50" />
+        <p className="text-sm">Simulation requires complete unit economics data</p>
+        <p className="text-xs mt-1 opacity-70">ARPU, Churn, and CAC values are needed</p>
+      </div>
+    );
+  }
 
   // Determine status based on metrics with market-type awareness
   const getStatus = () => {

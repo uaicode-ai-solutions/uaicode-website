@@ -46,12 +46,13 @@ const FinancialReturnSection = () => {
   const year1Data = yearEvolution?.find(y => y.year === 'Year 1');
   const year3Data = yearEvolution?.find(y => y.year === 'Year 3');
   
-  // Valores diretos do banco - SEM multiplicadores inventados
-  const arrYear1FromDb = year1Data?.arrNumeric ?? null;
-  const arrYear3FromDb = year3Data?.arrNumeric ?? null;
+  // Valores diretos do banco - usar Number() para parsear notação científica (e.g. "1.2e+06")
+  const arrYear1FromDb = year1Data?.arrNumeric != null ? Number(year1Data.arrNumeric) : null;
+  const arrYear3FromDb = year3Data?.arrNumeric != null ? Number(year3Data.arrNumeric) : null;
   
-  // Growth: só calcular se AMBOS existem no banco
-  const hasValidGrowthData = arrYear1FromDb !== null && arrYear3FromDb !== null && arrYear1FromDb > 0;
+  // Growth: só calcular se AMBOS existem no banco e são números válidos
+  const hasValidGrowthData = arrYear1FromDb !== null && arrYear3FromDb !== null && 
+                             !isNaN(arrYear1FromDb) && !isNaN(arrYear3FromDb) && arrYear1FromDb > 0;
   const growthPercent = hasValidGrowthData 
     ? Math.round(((arrYear3FromDb! - arrYear1FromDb) / arrYear1FromDb) * 100)
     : null;
