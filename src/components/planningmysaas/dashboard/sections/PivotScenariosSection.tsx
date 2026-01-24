@@ -15,8 +15,8 @@ interface PivotScenariosData {
 }
 
 const PivotScenariosSection = () => {
-  const { report, reportData, reportId } = useReportContext();
-  const wizardId = reportData?.wizard_id;
+  const { report, reportData, wizardId } = useReportContext();
+  const wizardIdFromData = reportData?.wizard_id;
   
   // Parse pivot scenarios from report
   const rawPivotScenarios = parseJsonField<PivotScenariosData>(report?.pivot_scenarios, null);

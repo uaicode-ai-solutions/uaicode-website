@@ -22,8 +22,8 @@ interface SuccessMetricsData {
 }
 
 const SuccessMetricsSection = () => {
-  const { report, reportData, reportId } = useReportContext();
-  const wizardId = reportData?.wizard_id;
+  const { report, reportData, wizardId } = useReportContext();
+  const wizardIdFromData = reportData?.wizard_id;
   
   // Parse success metrics from report
   const rawSuccessMetrics = parseJsonField<SuccessMetricsData>(report?.success_metrics, null);

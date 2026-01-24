@@ -2,9 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ReportData } from "@/types/report";
 
+/**
+ * Fetches report data from tb_pms_reports by wizard_id
+ * 
+ * @param wizardId - UUID from tb_pms_wizard (NOT tb_pms_reports.id)
+ * @returns The most recent report data for this wizard
+ */
 export const useReportData = (wizardId: string | undefined) => {
   const query = useQuery({
-    queryKey: ["report-data", wizardId],
+    queryKey: ["pms-report-data", wizardId],
     queryFn: async (): Promise<ReportData | null> => {
       if (!wizardId) return null;
 

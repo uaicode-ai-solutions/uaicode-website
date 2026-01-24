@@ -111,8 +111,8 @@ interface NextStepsSectionProps {
 }
 
 const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionProps) => {
-  const { report, reportData, marketingTotals, reportId } = useReportContext();
-  const wizardId = reportData?.wizard_id;
+  const { report, reportData, marketingTotals, wizardId } = useReportContext();
+  const wizardIdFromData = reportData?.wizard_id;
   
   // Parse data from report
   const nextSteps = parseJsonField<NextSteps>(report?.next_steps, {

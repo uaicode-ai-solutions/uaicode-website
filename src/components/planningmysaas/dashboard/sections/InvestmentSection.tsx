@@ -24,8 +24,8 @@ import {
 } from "recharts";
 
 const InvestmentSection = () => {
-  const { report, reportData, selectedMarketingIds, setSelectedMarketingIds, marketingTotals, setMarketingTotals, reportId } = useReportContext();
-  const wizardId = reportData?.wizard_id;
+  const { report, reportData, selectedMarketingIds, setSelectedMarketingIds, marketingTotals, setMarketingTotals, wizardId } = useReportContext();
+  const wizardIdFromData = reportData?.wizard_id;
   const selectedFeatures = report?.selected_features || [];
   const { tier, pricing, featureCounts, isLoading: tierLoading } = useMvpTier(selectedFeatures);
   const { services, isLoading: marketingLoading } = useMarketingTiers();

@@ -153,8 +153,8 @@ const calculatePhaseWeeks = (
 // ==========================================
 
 const ExecutionPlanSection = () => {
-  const { reportData, reportId } = useReportContext();
-  const wizardId = reportData?.wizard_id;
+  const { reportData, wizardId } = useReportContext();
+  const wizardIdFromData = reportData?.wizard_id;
   
   // Get section_investment data for delivery weeks
   const sectionInvestment = getSectionInvestment(reportData);
