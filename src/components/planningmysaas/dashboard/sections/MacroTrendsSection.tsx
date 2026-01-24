@@ -23,7 +23,7 @@ const getBarOpacity = (value: number): number => {
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    const value = data.positive || data.negative;
+    const value = data.positive || data.negative || data.neutral;
     return (
       <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-w-xs">
         <p className="font-medium text-foreground text-sm mb-1">{data.trend}</p>
@@ -90,10 +90,12 @@ const MacroTrendsSection = () => {
   // Create chart data - NO padding points to avoid artificial decay
   const chartData = trendsArray.map((trend, index) => {
     const strengthValue = getStrengthValue(trend);
+    const impactLower = trend.impact?.toLowerCase() || "";
     return {
       name: `T${index + 1}`,
-      positive: trend.impact?.toLowerCase().includes("positive") ? strengthValue : 0,
-      negative: trend.impact?.toLowerCase().includes("negative") ? strengthValue : 0,
+      positive: impactLower.includes("positive") ? strengthValue : 0,
+      negative: impactLower.includes("negative") ? strengthValue : 0,
+      neutral: impactLower.includes("neutral") ? strengthValue : 0,
       trend: trend.trend,
     };
   });
@@ -215,6 +217,12 @@ const MacroTrendsSection = () => {
                       <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.6} />
                       <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3} />
                     </linearGradient>
+                    {/* Gradient for neutral bars - blue/slate tones */}
+                    <linearGradient id="trendBarNeutral" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#94A3B8" />
+                      <stop offset="50%" stopColor="#64748B" />
+                      <stop offset="100%" stopColor="#475569" />
+                    </linearGradient>
                   </defs>
                   <XAxis 
                     dataKey="name" 
@@ -257,6 +265,19 @@ const MacroTrendsSection = () => {
                         key={`cell-neg-${index}`}
                         fill="url(#trendBarNegative)"
                         fillOpacity={getBarOpacity(entry.negative)}
+                      />
+                    ))}
+                  </Bar>
+                  <Bar
+                    dataKey="neutral"
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={40}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell
+                        key={`cell-neutral-${index}`}
+                        fill="url(#trendBarNeutral)"
+                        fillOpacity={getBarOpacity(entry.neutral)}
                       />
                     ))}
                   </Bar>
