@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
-  Download, 
+  Plus, 
   FileText, 
   Palette,
   ChevronLeft,
@@ -212,8 +212,11 @@ const PmsDashboardContent = () => {
   // Get project name from database
   const projectName = report?.saas_name || "Untitled Project";
 
-  const handleDownloadPDF = () => {
-    console.log("Downloading Launch Plan PDF...");
+  const handleNewReport = () => {
+    // Clear saved wizard data to ensure all fields are empty
+    localStorage.removeItem("pms-wizard-data");
+    // Navigate to wizard step 1
+    navigate("/planningmysaas/wizard");
   };
 
   const handleScheduleCall = () => {
@@ -346,11 +349,11 @@ const PmsDashboardContent = () => {
               </Button>
 
               <Button
-                onClick={handleDownloadPDF}
+                onClick={handleNewReport}
                 className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
               >
-                <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Download PDF</span>
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">New Report</span>
               </Button>
 
               {/* Share Dropdown */}
@@ -499,7 +502,7 @@ const PmsDashboardContent = () => {
                   <ComparableSuccessesSection />
                   <ExecutionPlanSection />
                   <WhyUaicodeSection />
-                  <NextStepsSection onScheduleCall={handleScheduleCall} onDownloadPDF={handleDownloadPDF} />
+                  <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
                   <ScheduleCallSection projectName={projectName} />
                 </div>
             )}
