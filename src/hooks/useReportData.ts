@@ -32,15 +32,27 @@ export const useReportData = (wizardId: string | undefined) => {
     enabled: !!wizardId,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
-    // Poll every 5 seconds until status is "Created" (report complete)
+    // Poll every 5 seconds until status is terminal (success or failure)
     refetchInterval: (query) => {
       const data = query.state.data as ReportData | null;
       const status = data?.status;
-      // Stop polling when report is complete or failed
-      if (!status || status === "Created" || status === "completed" || status === "failed" || status === "error") {
+      
+      // Terminal statuses - stop polling
+      const isTerminal = 
+        status === "Created" || 
+        status === "completed" || 
+        status === "failed" || 
+        status === "error" ||
+        (status && status.toLowerCase().includes("fail"));
+      
+      if (isTerminal) {
+        console.log("[useReportData] Terminal status reached:", status);
         return false;
       }
-      return 5000; // Continue polling every 5 seconds
+      
+      // Continue polling: no data yet OR in-progress status
+      console.log("[useReportData] Polling continues, current status:", status || "no record yet");
+      return 5000;
     },
   });
 

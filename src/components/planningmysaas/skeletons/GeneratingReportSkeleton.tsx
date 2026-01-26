@@ -1,4 +1,4 @@
-import { Loader2, DollarSign, Target, BarChart3, TrendingUp, Users, Tag, Megaphone, Rocket, FileText, Trophy, CheckCircle2 } from "lucide-react";
+import { Loader2, DollarSign, Target, BarChart3, TrendingUp, Users, Tag, Megaphone, Rocket, FileText, Trophy, CheckCircle2, XCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface GeneratingReportSkeletonProps {
@@ -35,6 +35,16 @@ const parseCurrentStep = (status: string | undefined): number => {
 };
 
 /**
+ * Parse failed step number from status string
+ * Status format: "Step X Name - Fail" or "Step X - Fail"
+ */
+const parseFailedStep = (status: string | undefined): number | null => {
+  if (!status) return null;
+  const match = status.match(/Step (\d+).*Fail/i);
+  return match ? parseInt(match[1]) : null;
+};
+
+/**
  * Get estimated remaining time based on current step
  */
 const getEstimatedTime = (currentStep: number): string => {
@@ -47,6 +57,7 @@ const getEstimatedTime = (currentStep: number): string => {
 
 const GeneratingReportSkeleton = ({ projectName, currentStatus }: GeneratingReportSkeletonProps) => {
   const currentStep = parseCurrentStep(currentStatus);
+  const failedStep = parseFailedStep(currentStatus);
   const progress = Math.min((currentStep / TOTAL_STEPS) * 100, 100);
 
   return (
@@ -83,24 +94,29 @@ const GeneratingReportSkeleton = ({ projectName, currentStatus }: GeneratingRepo
         <div className="space-y-3 text-left bg-card/50 rounded-xl p-6 border border-border/50 max-h-[400px] overflow-y-auto">
           {steps.map((step) => {
             const Icon = step.icon;
-            const isActive = step.id === currentStep + 1; // Next step to process
-            const isComplete = step.id <= currentStep;
+            const isFailed = step.id === failedStep;
+            const isActive = !isFailed && step.id === currentStep + 1; // Next step to process
+            const isComplete = !isFailed && step.id <= currentStep;
 
             return (
               <div
                 key={step.id}
                 className={`flex items-center gap-3 transition-all duration-300 ${
-                  isActive ? "text-accent" : isComplete ? "text-muted-foreground" : "text-muted-foreground/50"
+                  isFailed ? "text-destructive" : isActive ? "text-accent" : isComplete ? "text-muted-foreground" : "text-muted-foreground/50"
                 }`}
               >
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  isActive 
-                    ? "bg-accent/20 border-2 border-accent" 
-                    : isComplete 
-                      ? "bg-accent/10 border border-accent/50" 
-                      : "bg-muted/30 border border-border/50"
+                  isFailed
+                    ? "bg-destructive/20 border-2 border-destructive"
+                    : isActive 
+                      ? "bg-accent/20 border-2 border-accent" 
+                      : isComplete 
+                        ? "bg-accent/10 border border-accent/50" 
+                        : "bg-muted/30 border border-border/50"
                 }`}>
-                  {isActive ? (
+                  {isFailed ? (
+                    <XCircle className="w-4 h-4" />
+                  ) : isActive ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : isComplete ? (
                     <CheckCircle2 className="w-4 h-4" />
@@ -108,9 +124,14 @@ const GeneratingReportSkeleton = ({ projectName, currentStatus }: GeneratingRepo
                     <Icon className="w-4 h-4" />
                   )}
                 </div>
-                <span className={`text-sm font-medium ${isActive ? "text-foreground" : ""}`}>
+                <span className={`text-sm font-medium ${isFailed ? "text-destructive" : isActive ? "text-foreground" : ""}`}>
                   {step.label}
                 </span>
+                {isFailed && (
+                  <span className="ml-auto text-xs text-destructive font-medium">
+                    Failed
+                  </span>
+                )}
                 {isActive && (
                   <span className="ml-auto text-xs text-accent animate-pulse">
                     In progress...
