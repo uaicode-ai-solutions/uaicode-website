@@ -13,7 +13,8 @@ import {
   Share2,
   Link,
   Mail,
-  RefreshCw
+  RefreshCw,
+  Shield
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,7 @@ import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/Brand
 import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
 import ShareReportDialog from "@/components/planningmysaas/dashboard/ShareReportDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 const PmsDashboardContent = () => {
   const navigate = useNavigate();
@@ -69,6 +71,9 @@ const PmsDashboardContent = () => {
   // Confetti for celebrating completed reports
   const { fireConfetti } = useConfetti();
   const hasShownConfetti = useRef(false);
+  
+  // Check if user is admin for showing Admin Panel link
+  const { isAdmin } = useUserRoles();
   
   // Get ALL data from context - unified loading state ensures no race conditions
   const { report, reportData, pmsReportId, isLoading, error } = useReportContext();
@@ -311,6 +316,15 @@ const PmsDashboardContent = () => {
                     <Settings className="h-4 w-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem 
+                      onClick={() => navigate("/planningmysaas/admin")}
+                      className="cursor-pointer"
+                    >
+                      <Shield className="h-4 w-4 mr-2 text-accent" />
+                      Admin Panel
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator className="bg-border/30" />
                   <DropdownMenuItem 
                     onClick={handleLogout}
