@@ -302,7 +302,8 @@ const PmsDashboardContent = () => {
 
   // Show fullscreen generating animation if report is still being generated
   // Check reportData.status from tb_pms_reports (not report.status from tb_pms_wizard)
-  const isGenerating = !reportData?.status || 
+  // Also show when isRegenerating is true (user clicked Regenerate button)
+  const isGenerating = isRegenerating || !reportData?.status || 
     (reportData.status !== "Created" && 
      reportData.status !== "completed" && 
      reportData.status !== "failed" && 
@@ -313,7 +314,7 @@ const PmsDashboardContent = () => {
       <div className="fixed inset-0 z-[100] bg-background">
         <GeneratingReportSkeleton 
           projectName={projectName} 
-          currentStatus={reportData?.status}
+          currentStatus={isRegenerating ? "Started" : reportData?.status}
         />
       </div>
     );
