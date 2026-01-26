@@ -1,97 +1,104 @@
 
-# Plano: Garantir Loading Completo Antes de Exibir Dashboard
+# Plano: Simplificar Fluxo de Regeneração
 
-## Problema Identificado
+## Problema Atual
 
-A condição de loading no `PmsDashboard.tsx` está incorreta. Quando a query do `useReportData` completa mas não encontra registros, ela retorna `null` em vez de `undefined`.
+O código está complicado demais com variáveis de estado (`isRegenerating`, `regenerationStarted`, `prevStatusRef`) e lógica de monitoramento duplicada. A página `PmsLoading` já faz tudo que precisa:
+- Faz polling a cada 5 segundos
+- Mostra o step-by-step
+- Redireciona quando status = "completed"
+- Mostra erro quando status contém "fail"
 
-**Código problemático (linha 219):**
+## Solução Simples
+
+**Quando clicar em "Regenerate"** → Simplesmente navegar para `/planningmysaas/loading/{id}` (página que já existe e funciona perfeitamente).
+
+## Alterações
+
+### 1. Arquivo: `src/pages/PmsDashboard.tsx`
+
+**Remover:**
+- Estado `isRegenerating` (linha 67)
+- Estado `regenerationStarted` (linha 68)
+- Ref `prevStatusRef` (linha 72)
+- Todo o `useEffect` de monitoramento (linhas 87-123)
+- O bloco de renderização do `GeneratingReportSkeleton` (linhas 262-271)
+
+**Simplificar `handleRegenerateReport`:**
 ```typescript
-if (isLoading || reportData === undefined) {
+const handleRegenerateReport = async () => {
+  if (!wizardId) return;
+  
+  try {
+    // Dispara o webhook n8n
+    await supabase.functions.invoke('pms-trigger-n8n-report', {
+      body: { wizard_id: wizardId }
+    });
+    
+    // Simplesmente navega para a tela de loading
+    navigate(`/planningmysaas/loading/${wizardId}`);
+  } catch (err) {
+    console.error("Erro ao regenerar:", err);
+  }
+};
 ```
 
-**Fluxo do bug:**
-1. Dashboard monta
-2. `useReport` inicia fetch do wizard
-3. `useReportData` inicia fetch do report
-4. `isLoading = true` → skeleton exibido ✓
-5. Ambas queries completam
-6. `isLoading = false`
-7. `reportData = null` (não encontrou registro OU campos vazios)
-8. Condição `reportData === undefined` = **FALSE**
-9. Dashboard renderiza com dados incompletos ✗
+### 2. Arquivo: `src/pages/PmsLoading.tsx`
 
-## Causa Raiz
-
-O `useReportData` usa `.maybeSingle()` que retorna:
-- `undefined` durante carregamento (via react-query)
-- `null` quando não encontra registro
-- `ReportData` quando encontra
-
-O problema duplo:
-1. A comparação `=== undefined` não captura `null`
-2. Mesmo com `reportData` existindo, os campos JSONB internos podem ainda estar vazios durante a geração
-
-## Solução
-
-Alterar a condição de loading para verificar se:
-1. Query ainda está carregando (`isLoading`)
-2. Dados do report não existem (`!reportData`)
-3. O status indica que ainda está em processamento (não é "Created")
-
-## Alteração
-
-### Arquivo: `src/pages/PmsDashboard.tsx`
-
-**Linha 217-256 - Antes:**
+**Atualizar condição de sucesso (linha 65):**
 ```typescript
-// Show loading skeleton while fetching - wait for BOTH wizard AND reportData
-// This prevents race condition where Data Quality errors appear before data loads
-if (isLoading || reportData === undefined) {
+// Antes
+if (status === "Created" || status === "completed") {
+
+// Depois (conforme você vai mudar no n8n para "completed")
+if (status === "completed") {
 ```
 
-**Depois:**
+### 3. Arquivo: `src/pages/PmsDashboard.tsx` - Condição de Loading
+
+**Simplificar verificação de status (linha 220-221):**
 ```typescript
-// Show loading skeleton while fetching - wait for BOTH wizard AND reportData
-// This prevents race condition where Data Quality errors appear before data loads
-// Check: isLoading OR no reportData OR report still being generated
+// Antes
 const isReportReady = reportData?.status === "Created" || reportData?.status === "completed";
 if (isLoading || !reportData || !isReportReady) {
+
+// Depois
+if (isLoading || !reportData || reportData?.status !== "completed") {
 ```
 
-## Detalhes Técnicos
-
-### Estados Possíveis de `reportData`
-
-| Estado | `isLoading` | `reportData` | `status` | Ação |
-|--------|-------------|--------------|----------|------|
-| Carregando | `true` | `undefined` | - | Skeleton |
-| Não encontrado | `false` | `null` | - | Skeleton (aguardar) |
-| Em geração | `false` | `object` | "Step 1..." | Skeleton |
-| Completo | `false` | `object` | "Created" | Dashboard |
-| Falhou | `false` | `object` | "...Fail..." | Dashboard + erro |
-
-### Fluxo Corrigido
+## Fluxo Simplificado
 
 ```text
-1. Dashboard monta
-2. isLoading = true → Skeleton ✓
-3. Queries completam
-4. isLoading = false
-5. reportData = null → !reportData = true → Skeleton ✓
-6. (polling continua)
-7. reportData = { status: "Step 1..." } → !isReportReady = true → Skeleton ✓
-8. reportData = { status: "Created" } → isReportReady = true → Dashboard ✓
+┌─────────────────┐
+│  Dashboard      │
+│  (Regenerate)   │
+└────────┬────────┘
+         │ 1. Dispara webhook
+         │ 2. navigate("/loading/{id}")
+         ▼
+┌─────────────────┐
+│  PmsLoading     │
+│  (já existente) │
+│  - Polling 5s   │
+│  - Step-by-step │
+└────────┬────────┘
+         │ status === "completed"
+         ▼
+┌─────────────────┐
+│  Dashboard      │
+│  (dados prontos)│
+└─────────────────┘
 ```
 
-## Arquivos a Modificar
+## Resumo das Remoções
 
-| Arquivo | Alteração |
-|---------|-----------|
-| `src/pages/PmsDashboard.tsx` | Linhas 217-219: Adicionar verificação de status terminal |
+| Arquivo | O que remover |
+|---------|---------------|
+| `PmsDashboard.tsx` | `isRegenerating`, `regenerationStarted`, `prevStatusRef`, useEffect de monitoramento, bloco if(isRegenerating) |
 
-## Resultado Esperado
+## Resultado
 
-- Skeleton permanece visível até o status ser "Created" ou "completed"
-- Não há flash de dashboard vazio ou com dados incompletos
-- Polling continua automaticamente via `useReportData`
+- Código muito mais simples
+- Uma única fonte de verdade (PmsLoading)
+- Sem estados complicados de rastrear
+- Funciona tanto para geração inicial quanto regeneração
