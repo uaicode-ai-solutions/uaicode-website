@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { useConfetti } from "@/hooks/useConfetti";
 import { BackToTopButton } from "@/components/blog/BackToTopButton";
 import DashboardSkeleton from "@/components/planningmysaas/skeletons/DashboardSkeleton";
 import GeneratingReportSkeleton from "@/components/planningmysaas/skeletons/GeneratingReportSkeleton";
@@ -72,6 +73,10 @@ const PmsDashboardContent = () => {
   
   // Track previous status to detect transitions
   const prevStatusRef = useRef<string | undefined>(undefined);
+  
+  // Confetti for celebrating completed reports
+  const { fireConfetti } = useConfetti();
+  const hasShownConfetti = useRef(false);
   
   // Get report data from context - pmsReportId is tb_pms_reports.id
   const { reportData, pmsReportId } = useReportContext();
@@ -209,6 +214,18 @@ const PmsDashboardContent = () => {
     }
   }, [isLoading, report, wizardId, navigate]);
 
+  // Fire confetti when dashboard loads with a completed report (first time only)
+  useEffect(() => {
+    // Only fire once per mount and only for completed reports
+    if (!hasShownConfetti.current && reportData?.status === "Created") {
+      hasShownConfetti.current = true;
+      // Small delay for UI to render
+      setTimeout(() => {
+        fireConfetti();
+      }, 300);
+    }
+  }, [reportData?.status, fireConfetti]);
+
   // Get project name from database
   const projectName = report?.saas_name || "Untitled Project";
 
@@ -266,21 +283,14 @@ const PmsDashboardContent = () => {
     );
   }
 
-  // Show fullscreen generating animation if report is still being generated
-  // Check reportData.status from tb_pms_reports (not report.status from tb_pms_wizard)
-  // Also show when isRegenerating is true (user clicked Regenerate button)
-  const isGenerating = isRegenerating || !reportData?.status || 
-    (reportData.status !== "Created" && 
-     reportData.status !== "completed" && 
-     reportData.status !== "failed" && 
-     reportData.status !== "error");
-
-  if (isGenerating) {
+  // Show fullscreen generating animation ONLY when regenerating (user clicked Regenerate button)
+  // Initial generation now uses dedicated PmsLoading page
+  if (isRegenerating) {
     return (
       <div className="fixed inset-0 z-[100] bg-background">
         <GeneratingReportSkeleton 
           projectName={projectName} 
-          currentStatus={isRegenerating ? "Started" : reportData?.status}
+          currentStatus="Started"
         />
       </div>
     );

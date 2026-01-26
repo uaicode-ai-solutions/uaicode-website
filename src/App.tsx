@@ -16,6 +16,7 @@ import PlanningMySaas from "./pages/PlanningMySaas";
 import PmsLogin from "./pages/PmsLogin";
 import PmsResetPassword from "./pages/PmsResetPassword";
 import PmsWizard from "./pages/PmsWizard";
+import PmsLoading from "./pages/PmsLoading";
 import PmsReports from "./pages/PmsReports";
 import PmsDashboard from "./pages/PmsDashboard";
 import PmsProfile from "./pages/PmsProfile";
@@ -46,6 +47,9 @@ const App = () => (
             {/* Protected routes */}
             <Route path="/planningmysaas/wizard" element={
               <ProtectedRoute><PmsWizard /></ProtectedRoute>
+            } />
+            <Route path="/planningmysaas/loading/:id" element={
+              <ProtectedRoute><PmsLoading /></ProtectedRoute>
             } />
             <Route path="/planningmysaas/reports" element={
               <ProtectedRoute><PmsReports /></ProtectedRoute>
