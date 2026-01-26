@@ -1,105 +1,123 @@
 
+# Plano: Corrigir Race Condition no Carregamento do Dashboard
 
-# Plano: Adicionar Informações de Debug ao Data Quality Banner
+## Problema Identificado
 
-## Problema Atual
+O dashboard exibe erros de Data Quality antes dos dados estarem prontos porque a verificação de loading está incompleta.
 
-O banner mostra apenas a mensagem genérica:
-- "Overall viability score is missing"
+**Fluxo atual com bug:**
+1. `useReport(wizardId)` carrega os dados do wizard rapidamente
+2. `isLoading` muda para `false`, skeleton desaparece
+3. `useReportData(wizardId)` ainda está carregando em paralelo
+4. Dashboard renderiza com `reportData = undefined`
+5. `checkDataQuality()` reporta campos ausentes
+6. Segundos depois, `reportData` chega e os erros somem
 
-Mas não exibe informações úteis para debug:
-- **Campo JSON**: `hero_score_section.score`
-- **Coluna da tabela**: `tb_pms_reports.hero_score_section`
-
-## Solução
-
-Expandir a interface `DataQualityIssue` e o componente `DataQualityBanner` para exibir:
-1. O caminho do campo JSON (já existe no campo `field`)
-2. A coluna do banco de dados correspondente
-3. O valor atual encontrado (se houver)
-
-## Alterações
-
-### 1. Atualizar Interface `DataQualityIssue`
-
-**Arquivo**: `src/lib/dataQualityUtils.ts`
-
-Adicionar novos campos à interface:
-
+**Código problemático em `PmsDashboard.tsx`:**
 ```typescript
-export interface DataQualityIssue {
-  id: string;
-  type: 'parsing' | 'missing' | 'incomplete';
-  severity: 'warning' | 'info';
-  field: string;           // Caminho no JSON (ex: "score")
-  jsonPath: string;        // Caminho completo (ex: "hero_score_section.score")
-  dbColumn: string;        // Coluna da tabela (ex: "hero_score_section")
-  currentValue?: unknown;  // Valor atual encontrado (para debug)
-  message: string;
+// Linha 162 - só busca loading do wizard
+const { data: report, isLoading, error } = useReport(wizardId);
+
+// Linha 220 - verifica APENAS isLoading do wizard
+if (isLoading) {
+  return <DashboardSkeleton />;
 }
 ```
 
-### 2. Atualizar Função `checkDataQuality`
+O `reportData` vem do `ReportContext` (linha 80), mas seu estado de loading não é verificado.
 
-Modificar cada issue para incluir as novas informações:
+## Solução
 
+Unificar a verificação de loading para incluir AMBOS os estados:
+- `isLoading` do wizard (`useReport`)
+- `isLoading` do reportData (`useReportData`)
+
+## Alterações
+
+### 1. Usar `isLoading` do ReportContext
+
+O `ReportContext` já combina ambos os loadings (linha 84):
 ```typescript
-// hero_score_section.score
-issues.push({
-  id: 'hero_score_missing',
-  type: 'missing',
-  severity: 'warning',
-  field: 'score',
-  jsonPath: 'hero_score_section.score',
-  dbColumn: 'hero_score_section',
-  currentValue: heroScore?.score ?? null,
-  message: 'Overall viability score is missing'
-});
+isLoading: isLoadingWizard || isLoadingReport,
 ```
 
-### 3. Atualizar `DataQualityBanner`
+Porém, `PmsDashboardContent` busca `isLoading` diretamente de `useReport` novamente, ignorando o contexto.
 
-Modificar o componente para exibir as informações técnicas na seção expandida:
+### 2. Modificar `PmsDashboardContent`
 
-```text
-Estrutura Visual:
+**Arquivo**: `src/pages/PmsDashboard.tsx`
 
-• Overall viability score is missing
-  ├─ JSON Path: hero_score_section.score
-  ├─ DB Column: tb_pms_reports.hero_score_section
-  └─ Current Value: null
+Alterar para usar o loading unificado do context:
+
+```typescript
+// ANTES (linhas 79-85):
+const { reportData, pmsReportId } = useReportContext();
+// ...
+const { data: report, isLoading, error } = useReport(wizardId);
+
+// DEPOIS:
+const { report, reportData, pmsReportId, isLoading } = useReportContext();
+```
+
+Remover a chamada duplicada de `useReport(wizardId)` na linha 162.
+
+### 3. Verificação Adicional de Segurança
+
+Adicionar verificação extra antes de renderizar o dashboard:
+
+```typescript
+// Garantir que reportData existe antes de exibir conteúdo
+if (isLoading || !reportData) {
+  return <DashboardSkeleton />;
+}
 ```
 
 ## Arquivos a Modificar
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/lib/dataQualityUtils.ts` | Adicionar `jsonPath`, `dbColumn`, `currentValue` à interface e preencher em cada issue |
-| `src/components/planningmysaas/dashboard/ui/DataQualityBanner.tsx` | Exibir informações técnicas na seção expandida |
+| `src/pages/PmsDashboard.tsx` | Remover `useReport` duplicado; usar `isLoading` e `report` do ReportContext |
 
-## Seção Técnica
+## Detalhes Técnicos
 
-### Mapeamento de Issues para Debug
+### Mudanças na Linha 79-85
 
-| Issue ID | JSON Path | DB Column |
-|----------|-----------|-----------|
-| `hero_score_missing` | `hero_score_section.score` | `hero_score_section` |
-| `summary_verdict_missing` | `summary_section.verdict` | `summary_section` |
-| `investment_missing` | `section_investment.investment_one_payment_cents` | `section_investment` |
-| `monthly_searches_parsing` | `opportunity_section.demand_signals.monthly_searches` | `opportunity_section` |
-| `social_mentions_parsing` | `opportunity_section.demand_signals.social_mentions` | `opportunity_section` |
-| `macro_trends_strength` | `opportunity_section.macro_trends[].strength` | `opportunity_section` |
+```typescript
+// ANTES:
+const { reportData, pmsReportId } = useReportContext();
+// ... 
+const { data: report, isLoading, error } = useReport(wizardId);
 
-### Layout do Banner Expandido
-
-A seção de detalhes usará um layout de código para facilitar copy/paste:
-
-```text
-• Overall viability score is missing
-  JSON Path:    hero_score_section.score
-  DB Column:    tb_pms_reports.hero_score_section  
-  Current:      null
+// DEPOIS:
+const { report, reportData, pmsReportId, isLoading, error } = useReportContext();
 ```
 
-Cada campo terá um botão de copy para facilitar debug no Supabase.
+### Mudança na Linha 220
 
+```typescript
+// ANTES:
+if (isLoading) {
+
+// DEPOIS (incluir verificação de reportData para reports em status terminal):
+const isReady = !isLoading && reportData !== undefined;
+if (!isReady) {
+```
+
+### Fluxo Corrigido
+
+```text
+1. Dashboard monta
+2. ReportContext inicia ambas as queries
+3. isLoading = true (wizard OU reportData carregando)
+4. DashboardSkeleton é exibido
+5. Ambas queries completam
+6. isLoading = false, reportData tem valor
+7. Dashboard renderiza com dados completos
+8. checkDataQuality() valida dados reais
+```
+
+## Resultado Esperado
+
+- O skeleton permanece visível até que TODOS os dados estejam carregados
+- Não haverá erros transitórios de Data Quality
+- Os componentes sempre receberão dados completos (ou vazios, mas não undefined)
