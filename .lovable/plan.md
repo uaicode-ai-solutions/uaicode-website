@@ -1,115 +1,97 @@
 
-
-# Plano: Corrigir Step-by-Step Travado na Tela de Loading
+# Plano: Garantir Loading Completo Antes de Exibir Dashboard
 
 ## Problema Identificado
 
-O indicador step-by-step na tela de regeneração está travado no primeiro item porque o `currentStatus` está **hardcoded como "Started"**, ignorando o status real vindo do polling.
+A condição de loading no `PmsDashboard.tsx` está incorreta. Quando a query do `useReportData` completa mas não encontra registros, ela retorna `null` em vez de `undefined`.
 
-**Código problemático em `PmsDashboard.tsx` (linhas 260-269):**
+**Código problemático (linha 219):**
 ```typescript
-if (isRegenerating) {
-  return (
-    <div className="fixed inset-0 z-[100] bg-background">
-      <GeneratingReportSkeleton 
-        projectName={projectName} 
-        currentStatus="Started"  // ← BUG: Hardcoded, não usa o polling!
-      />
-    </div>
-  );
-}
+if (isLoading || reportData === undefined) {
 ```
 
-**O que acontece:**
-1. Usuário clica em "Regenerate"
-2. `isRegenerating = true` → mostra `GeneratingReportSkeleton`
-3. O `useReportData` faz polling a cada 5 segundos e atualiza `reportData.status`
-4. O `useEffect` na linha 87 monitora as mudanças de status corretamente
-5. **MAS** o skeleton recebe `"Started"` fixo, nunca atualiza visualmente
+**Fluxo do bug:**
+1. Dashboard monta
+2. `useReport` inicia fetch do wizard
+3. `useReportData` inicia fetch do report
+4. `isLoading = true` → skeleton exibido ✓
+5. Ambas queries completam
+6. `isLoading = false`
+7. `reportData = null` (não encontrou registro OU campos vazios)
+8. Condição `reportData === undefined` = **FALSE**
+9. Dashboard renderiza com dados incompletos ✗
+
+## Causa Raiz
+
+O `useReportData` usa `.maybeSingle()` que retorna:
+- `undefined` durante carregamento (via react-query)
+- `null` quando não encontra registro
+- `ReportData` quando encontra
+
+O problema duplo:
+1. A comparação `=== undefined` não captura `null`
+2. Mesmo com `reportData` existindo, os campos JSONB internos podem ainda estar vazios durante a geração
 
 ## Solução
 
-Passar o `reportData?.status` real para o `GeneratingReportSkeleton` ao invés do valor hardcoded.
+Alterar a condição de loading para verificar se:
+1. Query ainda está carregando (`isLoading`)
+2. Dados do report não existem (`!reportData`)
+3. O status indica que ainda está em processamento (não é "Created")
 
 ## Alteração
 
 ### Arquivo: `src/pages/PmsDashboard.tsx`
 
-**Linha 260-269 - Antes:**
+**Linha 217-256 - Antes:**
 ```typescript
-if (isRegenerating) {
-  return (
-    <div className="fixed inset-0 z-[100] bg-background">
-      <GeneratingReportSkeleton 
-        projectName={projectName} 
-        currentStatus="Started"
-      />
-    </div>
-  );
-}
+// Show loading skeleton while fetching - wait for BOTH wizard AND reportData
+// This prevents race condition where Data Quality errors appear before data loads
+if (isLoading || reportData === undefined) {
 ```
 
 **Depois:**
 ```typescript
-if (isRegenerating) {
-  return (
-    <div className="fixed inset-0 z-[100] bg-background">
-      <GeneratingReportSkeleton 
-        projectName={projectName} 
-        currentStatus={reportData?.status}
-      />
-    </div>
-  );
-}
+// Show loading skeleton while fetching - wait for BOTH wizard AND reportData
+// This prevents race condition where Data Quality errors appear before data loads
+// Check: isLoading OR no reportData OR report still being generated
+const isReportReady = reportData?.status === "Created" || reportData?.status === "completed";
+if (isLoading || !reportData || !isReportReady) {
 ```
 
 ## Detalhes Técnicos
 
+### Estados Possíveis de `reportData`
+
+| Estado | `isLoading` | `reportData` | `status` | Ação |
+|--------|-------------|--------------|----------|------|
+| Carregando | `true` | `undefined` | - | Skeleton |
+| Não encontrado | `false` | `null` | - | Skeleton (aguardar) |
+| Em geração | `false` | `object` | "Step 1..." | Skeleton |
+| Completo | `false` | `object` | "Created" | Dashboard |
+| Falhou | `false` | `object` | "...Fail..." | Dashboard + erro |
+
 ### Fluxo Corrigido
 
 ```text
-1. Usuário clica "Regenerate"
-2. isRegenerating = true
-3. Edge function dispara n8n
-4. n8n atualiza status no banco: "Step 1 Investment - Completed"
-5. useReportData polling detecta novo status
-6. reportData.status atualiza para "Step 1..."
-7. GeneratingReportSkeleton re-renderiza com novo status
-8. parseCurrentStep("Step 1...") retorna 1
-9. UI mostra Step 1 completo, Step 2 em progresso
-10. Ciclo continua até status = "Created"
+1. Dashboard monta
+2. isLoading = true → Skeleton ✓
+3. Queries completam
+4. isLoading = false
+5. reportData = null → !reportData = true → Skeleton ✓
+6. (polling continua)
+7. reportData = { status: "Step 1..." } → !isReportReady = true → Skeleton ✓
+8. reportData = { status: "Created" } → isReportReady = true → Dashboard ✓
 ```
-
-### Verificação do parseCurrentStep
-
-A função `parseCurrentStep` no `GeneratingReportSkeleton.tsx` já está correta:
-
-```typescript
-const parseCurrentStep = (status: string | undefined): number => {
-  if (!status) return 0;
-  if (status === "Started") return 0;
-  if (status === "Created") return TOTAL_STEPS;
-  
-  const match = status.match(/Step (\d+)/i);
-  return match ? parseInt(match[1]) : 0;
-};
-```
-
-Ela corretamente:
-- Retorna 0 para `undefined` ou `"Started"`
-- Retorna 10 (TOTAL_STEPS) para `"Created"`
-- Extrai o número do step de strings como `"Step 5 Pricing - Completed"`
 
 ## Arquivos a Modificar
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/pages/PmsDashboard.tsx` | Linha 265: trocar `"Started"` por `reportData?.status` |
+| `src/pages/PmsDashboard.tsx` | Linhas 217-219: Adicionar verificação de status terminal |
 
 ## Resultado Esperado
 
-- O step-by-step atualiza em tempo real durante regeneração
-- Cada step mostra spinner quando ativo
-- Steps completados mostram check verde
-- Barra de progresso avança conforme os steps
-
+- Skeleton permanece visível até o status ser "Created" ou "completed"
+- Não há flash de dashboard vazio ou com dados incompletos
+- Polling continua automaticamente via `useReportData`
