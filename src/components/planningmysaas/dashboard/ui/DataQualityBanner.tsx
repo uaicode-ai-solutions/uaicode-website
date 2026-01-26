@@ -34,7 +34,7 @@ export const DataQualityBanner = ({
   return (
     <div 
       className={`
-        relative rounded-xl border p-4 mb-6
+        hidden md:block relative rounded-xl border p-4 mb-6
         ${isCritical 
           ? 'bg-amber-500/10 border-amber-500/30' 
           : 'bg-amber-500/5 border-amber-500/20'
