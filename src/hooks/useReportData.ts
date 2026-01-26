@@ -32,10 +32,15 @@ export const useReportData = (wizardId: string | undefined) => {
     enabled: !!wizardId,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
-    // Poll every 5 seconds if status is pending
+    // Poll every 5 seconds until status is "Created" (report complete)
     refetchInterval: (query) => {
       const data = query.state.data as ReportData | null;
-      return data?.status === "pending" ? 5000 : false;
+      const status = data?.status;
+      // Stop polling when report is complete or failed
+      if (!status || status === "Created" || status === "completed" || status === "failed" || status === "error") {
+        return false;
+      }
+      return 5000; // Continue polling every 5 seconds
     },
   });
 
