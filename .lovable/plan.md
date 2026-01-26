@@ -1,88 +1,112 @@
 
 
-# Plano: Descrições Mais Concisas no Popup de Logo
+# Plano: Adicionar 4 Novos Tipos de SaaS + Enviar Títulos ao Webhook
 
 ## Resumo
 
-Ajustar o tool calling da Edge Function `pms-generate-logo` para gerar descrições menores e mais pontuais, mantendo as informações relevantes mas sem textos extensos.
+1. Adicionar 4 novos tipos de SaaS ao wizard
+2. Modificar o webhook para enviar o **título** de TODOS os tipos de SaaS (não o ID técnico)
 
 ---
 
-## Arquivo a Modificar
+## Arquivos a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `supabase/functions/pms-generate-logo/index.ts` | Modificar descrições do tool calling |
+| `src/components/planningmysaas/wizard/StepYourIdea.tsx` | Adicionar 4 novos tipos + imports de ícones |
+| `supabase/functions/pms-webhook-new-report/index.ts` | Mapeamento completo ID → Título para TODOS os tipos |
 
 ---
 
-## Mudanças no Tool Calling
+## Parte 1: Frontend - Novos Tipos de SaaS
 
-### Antes (linhas 88-95)
+### Imports de Ícones a Adicionar
+
+`Brain`, `Shield`, `Code`, `Layers`
+
+### Novos Tipos no Array `saasTypes`
+
+Inserir antes do `other`:
 
 ```typescript
-logoDescription: {
-  type: "string",
-  description: "Description of the logo design in 2-3 sentences. Explain what the icon represents and its visual elements."
-},
-marketJustification: {
-  type: "string",
-  description: "2-3 sentences explaining why this design aligns with current market trends, industry standards, and target audience expectations."
-}
+{ id: "ai", title: "AI & Automation", description: "AI-powered solutions", icon: Brain },
+{ id: "security", title: "Cybersecurity & Compliance", description: "Security & data protection", icon: Shield },
+{ id: "devtools", title: "Developer Tools", description: "APIs, SDKs & dev platforms", icon: Code },
+{ id: "platform", title: "Platform", description: "Multi-sided marketplace", icon: Layers },
 ```
 
-### Depois
+---
+
+## Parte 2: Webhook - Mapeamento Completo de Títulos
+
+### Mapeamento de TODOS os Tipos
 
 ```typescript
-logoDescription: {
-  type: "string",
-  description: "Brief description of the logo (max 15 words). State what the icon represents."
-},
-marketJustification: {
-  type: "string",
-  description: "One concise sentence (max 20 words) on why this design aligns with market trends."
-}
+const SAAS_TYPE_TITLES: Record<string, string> = {
+  // Tipos existentes
+  crm: "CRM & Sales",
+  project: "Project Management",
+  ecommerce: "E-commerce",
+  hr: "HR & Recruiting",
+  finance: "Financial Management",
+  marketing: "Marketing Automation",
+  analytics: "Analytics & BI",
+  communication: "Communication",
+  support: "Customer Support",
+  productivity: "Productivity",
+  education: "Education & Learning",
+  // Novos tipos
+  ai: "AI & Automation",
+  security: "Cybersecurity & Compliance",
+  devtools: "Developer Tools",
+  platform: "Platform",
+};
+```
+
+### Função Helper
+
+```typescript
+const getSaasTypeTitle = (id: string, otherValue?: string | null): string => {
+  if (id === "other" && otherValue) {
+    return otherValue; // Retorna o texto personalizado do usuário
+  }
+  return SAAS_TYPE_TITLES[id] || id;
+};
+```
+
+### Uso no Payload do Webhook
+
+```typescript
+// No objeto wizard dentro do webhookPayload:
+saas_type: getSaasTypeTitle(wizardData.saas_type, wizardData.saas_type_other),
 ```
 
 ---
 
-## Mudança no System Prompt (linhas 46-50)
+## Tabela de Conversão Completa
 
-### Antes
-
-```text
-RESPONSE REQUIREMENTS:
-You must provide:
-1. A detailed image generation prompt that strictly follows the rules above
-2. A description of the logo design (2-3 sentences explaining what it depicts)
-3. A market justification (2-3 sentences explaining why this design aligns with current market trends and industry standards)
-```
-
-### Depois
-
-```text
-RESPONSE REQUIREMENTS:
-You must provide:
-1. A detailed image generation prompt that strictly follows the rules above
-2. A brief logo description (max 15 words stating what the icon represents)
-3. A concise market justification (one sentence, max 20 words on trend alignment)
-```
-
----
-
-## Exemplos de Output
-
-### Antes (muito longo)
-- **logoDescription**: "A modern circular icon featuring interconnected nodes representing seamless data flow and connectivity. The design uses clean geometric shapes to convey efficiency and technological sophistication."
-- **marketJustification**: "This design aligns with 2024 SaaS trends favoring minimalist icons and blue color palettes that signal reliability. Competitors in the CRM space use similar geometric approaches for brand recognition and trust."
-
-### Depois (conciso)
-- **logoDescription**: "Circular icon with connected nodes symbolizing seamless data flow."
-- **marketJustification**: "Aligns with 2024 SaaS minimalist trends and blue trust palettes."
+| ID no Banco | Título Enviado ao n8n |
+|-------------|----------------------|
+| `crm` | CRM & Sales |
+| `project` | Project Management |
+| `ecommerce` | E-commerce |
+| `hr` | HR & Recruiting |
+| `finance` | Financial Management |
+| `marketing` | Marketing Automation |
+| `analytics` | Analytics & BI |
+| `communication` | Communication |
+| `support` | Customer Support |
+| `productivity` | Productivity |
+| `education` | Education & Learning |
+| `ai` | AI & Automation |
+| `security` | Cybersecurity & Compliance |
+| `devtools` | Developer Tools |
+| `platform` | Platform |
+| `other` + "Legal Tech" | Legal Tech |
 
 ---
 
 ## Resultado Esperado
 
-O popup exibirá textos curtos e diretos que comunicam o essencial sem ocupar espaço excessivo na interface.
+O n8n receberá títulos legíveis como "CRM & Sales" ou "Cybersecurity & Compliance" em vez de IDs técnicos como "crm" ou "security", permitindo pesquisas de mercado mais precisas e contextualizadas.
 
