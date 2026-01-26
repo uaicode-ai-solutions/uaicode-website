@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { sanitizeFormData } from "@/lib/inputSanitization";
-import { sanitizeFormData } from "@/lib/inputSanitization";
 import { supabase } from "@/integrations/supabase/client";
 import BookingConfirmationDialog from "@/components/scheduler/BookingConfirmationDialog";
 import PhoneCallDialog from "@/components/chat/PhoneCallDialog";
