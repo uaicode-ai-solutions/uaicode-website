@@ -89,7 +89,7 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
 
   const isDescriptionValid = data.description.trim().length >= 20;
 
-  const handleImproveDescription = async () => {
+  const handleImproveDescription = async (retryCount = 0) => {
     if (data.description.length < 10) {
       toast.error("Please write at least 10 characters before improving");
       return;
@@ -113,6 +113,14 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
       }
     } catch (error: any) {
       console.error("Error improving description:", error);
+      
+      // Retry up to 2 times for transient failures (network/deployment issues)
+      if (retryCount < 2 && (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError'))) {
+        console.log(`Retrying... attempt ${retryCount + 2}`);
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Wait 1.5s before retry
+        return handleImproveDescription(retryCount + 1);
+      }
+      
       if (error?.status === 429) {
         toast.error("Rate limit exceeded. Please try again later.");
       } else if (error?.status === 402) {
@@ -273,7 +281,7 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
           <Button
             type="button"
             variant="outline"
-            onClick={handleImproveDescription}
+            onClick={() => handleImproveDescription()}
             disabled={data.description.length < 10 || isImprovingDescription}
             className="border-accent text-accent hover:bg-accent/10 hover:text-accent
                        disabled:opacity-50 disabled:cursor-not-allowed"
