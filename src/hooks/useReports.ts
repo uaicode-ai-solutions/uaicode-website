@@ -8,7 +8,16 @@ export const useReports = () => {
     queryFn: async (): Promise<ReportRow[]> => {
       const { data, error } = await supabase
         .from("tb_pms_wizard")
-        .select("*")
+        .select(`
+          *,
+          tb_pms_reports!wizard_id (
+            id,
+            status,
+            hero_score_section,
+            summary_section,
+            opportunity_section
+          )
+        `)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -16,7 +25,7 @@ export const useReports = () => {
         throw error;
       }
 
-      return data || [];
+      return (data as ReportRow[]) || [];
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
