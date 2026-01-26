@@ -19,12 +19,25 @@ interface ReportCardProps {
 const ReportCard = ({ report, onDelete }: ReportCardProps) => {
   const navigate = useNavigate();
   
-  // Read directly from database fields
+  // Extract nested report data (first item from JOIN)
+  const reportData = report.tb_pms_reports?.[0];
+  
+  // Basic info from wizard
   const projectName = report.saas_name || "Untitled Project";
   const industry = report.industry_other || report.industry || "Technology";
-  const viabilityScore = parseInt(String(report.viability_score || "0"), 10) || 0;
   const formattedDate = format(new Date(report.created_at), "MMM dd, yyyy");
-
+  
+  // Real viability score from hero_score_section
+  const viabilityScore = reportData?.hero_score_section?.score ?? 0;
+  
+  // Verdict from summary_section
+  const verdict = reportData?.summary_section?.verdict || null;
+  
+  // TAM from opportunity_section
+  const tamValue = reportData?.opportunity_section?.tam_value || null;
+  
+  // Check if report is still generating
+  const isGenerating = !reportData || reportData.status?.toLowerCase().includes("pending");
   const handleView = () => {
     navigate(`/planningmysaas/dashboard/${report.id}`);
   };

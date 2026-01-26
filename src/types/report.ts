@@ -7,9 +7,32 @@ import { Database } from "@/integrations/supabase/types";
 // Type alias for the wizard row from the database
 export type WizardRow = Database["public"]["Tables"]["tb_pms_wizard"]["Row"];
 
-// TEMPORARY: ReportRow extends WizardRow with optional AI-generated fields
-// This will be replaced when we create the new tb_pms_reports table
+// Nested report data from tb_pms_reports (joined via wizard_id)
+export interface NestedReportData {
+  id: string;
+  status: string;
+  hero_score_section: {
+    score?: number;
+    tagline?: string;
+    headline?: string;
+  } | null;
+  summary_section: {
+    verdict?: string;
+    verdict_headline?: string;
+    verdict_summary?: string;
+  } | null;
+  opportunity_section: {
+    tam_value?: string;
+    som_value?: string;
+    market_type?: string;
+    market_growth_rate?: string;
+  } | null;
+}
+
+// ReportRow extends WizardRow with nested report data and optional AI-generated fields
 export type ReportRow = WizardRow & {
+  // Nested report data from JOIN
+  tb_pms_reports?: NestedReportData[];
   // AI-generated scores
   viability_score?: string | null;
   complexity_score?: string | null;
