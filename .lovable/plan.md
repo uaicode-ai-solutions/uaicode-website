@@ -1,101 +1,96 @@
 
-# Plano: Adicionar Link "Admin Panel" no Header do Dashboard
+
+# Plano: Adicionar Role "user" Automaticamente para Novos Usuários
 
 ## Objetivo
 
-Adicionar o link "Admin Panel" no dropdown do usuário (ícone de bonequinho) na página `PmsDashboard.tsx`, visível apenas para usuários com role `admin`. Isso garante que o acesso ao Admin Panel esteja disponível em **todas** as telas que têm o dropdown de usuário.
+Modificar a função `handle_new_user()` para atribuir automaticamente a role `"user"` a cada novo usuário, **sem alterar nada do fluxo existente**.
 
-## Análise das Telas
+## O Que NÃO Vou Mudar
 
-| Tela | Tem Dropdown de Usuário | Tem "Admin Panel" |
-|------|-------------------------|-------------------|
-| PmsReports.tsx | ✅ Sim | ✅ Sim (já implementado) |
-| PmsDashboard.tsx | ✅ Sim | ❌ **NÃO** (precisa adicionar) |
-| PmsProfile.tsx | ❌ Não (só botão voltar) | N/A |
+- O INSERT em `tb_pms_users` continua EXATAMENTE igual
+- O ON CONFLICT continua EXATAMENTE igual  
+- O RETURN NEW continua EXATAMENTE igual
+- Nenhuma lógica existente será alterada
 
-## Alterações Necessárias
+## O Que Vou Adicionar
 
-### Arquivo: `src/pages/PmsDashboard.tsx`
+Apenas **UMA instrução INSERT** no final, antes do RETURN NEW:
 
-#### 1. Adicionar Import do ícone Shield
-
-```tsx
-// Na seção de imports do lucide-react, adicionar Shield
-import { Shield } from "lucide-react";
+```sql
+-- Adicionar role "user" para o novo usuário (ignorar se já existe)
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'user'::app_role
+FROM public.tb_pms_users
+WHERE auth_user_id = NEW.id
+ON CONFLICT (user_id, role) DO NOTHING;
 ```
 
-#### 2. Adicionar Import do hook useUserRoles
+## Por Que É Seguro
 
-```tsx
-import { useUserRoles } from "@/hooks/useUserRoles";
-```
+1. **ON CONFLICT DO NOTHING**: Se a role já existir, não faz nada (não dá erro)
+2. **SELECT FROM tb_pms_users**: Busca o `user_id` correto baseado no `auth_user_id`
+3. **Executa DEPOIS**: Só executa após o INSERT/UPDATE em `tb_pms_users` ter sido concluído
+4. **Não altera fluxo**: Todo o código existente permanece intacto
 
-#### 3. Usar o Hook no Componente
+## Função Atualizada (Diferença Mínima)
 
-Dentro do componente `PmsDashboardContent`, adicionar:
-
-```tsx
-const { isAdmin } = useUserRoles();
-```
-
-#### 4. Atualizar o Dropdown Menu (linhas 307-322)
-
-Adicionar o item "Admin Panel" condicionalmente entre "Profile" e "Logout":
-
-```tsx
-<DropdownMenuContent 
-  align="end" 
-  className="w-48 glass-premium border-accent/20"
->
-  <DropdownMenuItem 
-    onClick={() => navigate("/planningmysaas/profile")}
-    className="cursor-pointer"
-  >
-    <Settings className="h-4 w-4 mr-2" />
-    Profile
-  </DropdownMenuItem>
+```sql
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  -- ====== CÓDIGO EXISTENTE (INALTERADO) ======
+  INSERT INTO public.tb_pms_users (auth_user_id, email, username, full_name)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    split_part(NEW.email, '@', 1),
+    COALESCE(
+      NULLIF(TRIM(NEW.raw_user_meta_data->>'full_name'), ''),
+      NULLIF(TRIM(NEW.raw_user_meta_data->>'name'), ''),
+      NULLIF(TRIM(CONCAT(
+        NEW.raw_user_meta_data->>'given_name',
+        ' ',
+        COALESCE(NEW.raw_user_meta_data->>'family_name', '')
+      )), ''),
+      ''
+    )
+  )
+  ON CONFLICT (auth_user_id) DO UPDATE SET
+    full_name = CASE 
+      WHEN tb_pms_users.full_name = '' OR tb_pms_users.full_name IS NULL 
+      THEN EXCLUDED.full_name 
+      ELSE tb_pms_users.full_name 
+    END;
   
-  {/* Admin Panel - visível apenas para admins */}
-  {isAdmin && (
-    <DropdownMenuItem 
-      onClick={() => navigate("/planningmysaas/admin")}
-      className="cursor-pointer"
-    >
-      <Shield className="h-4 w-4 mr-2 text-accent" />
-      Admin Panel
-    </DropdownMenuItem>
-  )}
+  -- ====== ÚNICA ADIÇÃO: Atribuir role "user" ======
+  INSERT INTO public.user_roles (user_id, role)
+  SELECT id, 'user'::app_role
+  FROM public.tb_pms_users
+  WHERE auth_user_id = NEW.id
+  ON CONFLICT (user_id, role) DO NOTHING;
   
-  <DropdownMenuSeparator className="bg-border/30" />
-  <DropdownMenuItem 
-    onClick={handleLogout}
-    className="cursor-pointer text-red-400 focus:text-red-400"
-  >
-    <LogOut className="h-4 w-4 mr-2" />
-    Logout
-  </DropdownMenuItem>
-</DropdownMenuContent>
+  RETURN NEW;
+END;
+$$;
 ```
 
-## Resultado Visual
+## Resumo
 
-O dropdown do usuário ficará assim para **admins**:
+| Item | Status |
+|------|--------|
+| Criar perfil em tb_pms_users | ✅ Continua igual |
+| Atualizar nome se vazio | ✅ Continua igual |
+| Trigger existente | ✅ Continua igual |
+| **NOVO:** Atribuir role "user" | ➕ Adicionado com segurança |
 
-```text
-┌─────────────────────────┐
-│ ⚙️  Profile             │
-│ 🛡️  Admin Panel         │  ← Novo item (ícone dourado)
-├─────────────────────────┤
-│ 🚪  Logout              │
-└─────────────────────────┘
-```
+## Resultado
 
-Para usuários **não-admin**, o "Admin Panel" não aparece.
+- **Novos usuários**: Receberão role "user" automaticamente
+- **Usuários existentes**: Não serão afetados (podem receber role manualmente via Admin Panel se desejado)
+- **Usuários que já têm role "user"**: ON CONFLICT ignora duplicatas
 
-## Consistência
-
-Esta implementação segue exatamente o mesmo padrão já utilizado em `PmsReports.tsx`:
-- Mesmo hook `useUserRoles`
-- Mesmo ícone `Shield` com cor accent
-- Mesma navegação para `/planningmysaas/admin`
-- Mesmo estilo visual UaiCode
