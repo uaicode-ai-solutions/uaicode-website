@@ -7,7 +7,6 @@ import StepTargetMarket from "@/components/planningmysaas/wizard/StepTargetMarke
 import StepFeatures from "@/components/planningmysaas/wizard/StepFeatures";
 import StepGoals from "@/components/planningmysaas/wizard/StepGoals";
 import { useToast } from "@/hooks/use-toast";
-import { useConfetti } from "@/hooks/useConfetti";
 import { saveReport, generateReportId, StoredReport } from "@/lib/reportsStorage";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -114,7 +113,6 @@ const PmsWizard = () => {
   const [userDataLoaded, setUserDataLoaded] = useState(false);
   
   const { toast } = useToast();
-  const { fireConfetti } = useConfetti();
 
   // Load authenticated user data into wizard (only if no localStorage draft exists)
   useEffect(() => {
@@ -358,19 +356,8 @@ const PmsWizard = () => {
         // Don't block user flow if email fails
       }
 
-      // Fire confetti
-      fireConfetti();
-
-      // Show success toast
-      toast({
-        title: "🎉 Submission Successful!",
-        description: "Your SaaS validation report is ready! Redirecting...",
-      });
-
-      // Navigate to dashboard with the new report ID
-      setTimeout(() => {
-        navigate(`/planningmysaas/dashboard/${reportId}`);
-      }, 1500);
+      // Navigate immediately to loading screen
+      navigate(`/planningmysaas/loading/${reportId}`);
 
     } catch (error) {
       console.error("Error during submission:", error);
