@@ -6,7 +6,6 @@ import * as z from "zod";
 import { Mail, Phone, MapPin, Youtube, Facebook, Instagram, Linkedin, Twitter, MessageCircle, Building2, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { toast } from "@/hooks/use-toast";
 import { sanitizeInput } from "@/lib/inputSanitization";
 import { supabase } from "@/integrations/supabase/client";
 import NewsletterSuccessDialog from "./newsletter/NewsletterSuccessDialog";
@@ -66,11 +65,7 @@ const Footer = () => {
     // Prevent double submissions (3 second cooldown)
     const now = Date.now();
     if (now - lastSubmitTime < 3000) {
-      toast({
-        title: "Please Wait",
-        description: "Please wait a moment before submitting again.",
-        variant: "destructive",
-      });
+      console.log("Please wait before submitting again");
       return;
     }
     
@@ -88,10 +83,7 @@ const Footer = () => {
 
       // Handle duplicate email error
       if (dbError?.code === '23505') {
-        toast({
-          title: "Already subscribed!",
-          description: "This email is already subscribed to our newsletter.",
-        });
+        console.log("Email already subscribed");
         return;
       }
 
@@ -125,11 +117,6 @@ const Footer = () => {
       setShowSuccessDialog(true);
     } catch (error) {
       console.error("Newsletter subscription error:", error);
-      toast({
-        title: "Unable to Subscribe",
-        description: "There was an error subscribing. Please check your internet connection and try again.",
-        variant: "destructive",
-      });
     }
   };
 

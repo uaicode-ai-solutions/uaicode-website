@@ -6,13 +6,13 @@ import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceLine, Area, AreaChart, Legend } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
-import { useToast } from "@/hooks/use-toast";
+import { generateROIPDF } from "@/lib/pdfExport";
 import { generateROIPDF } from "@/lib/pdfExport";
 import html2canvas from "html2canvas";
 import logoImage from '@/assets/uaicode-logo.png';
 
 const ROICalculator = () => {
-  const { toast } = useToast();
+  const [expectedUsers, setExpectedUsers] = useState(500);
   const [expectedUsers, setExpectedUsers] = useState(500);
   const [pricePerUser, setPricePerUser] = useState(29);
   const [marketValidation, setMarketValidation] = useState(5);
@@ -77,20 +77,9 @@ const ROICalculator = () => {
       };
       
       await generateROIPDF(pdfData);
-      
-      toast({
-        title: "PDF Generated Successfully!",
-        description: "Your ROI report has been downloaded.",
-        duration: 3000,
-      });
+      console.log("PDF generated successfully");
     } catch (error) {
       console.error('PDF generation error:', error);
-      toast({
-        title: "Export Failed",
-        description: "Unable to generate PDF. Please try again.",
-        variant: "destructive",
-        duration: 5000,
-      });
     } finally {
       setIsExporting(false);
     }

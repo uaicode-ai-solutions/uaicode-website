@@ -16,14 +16,12 @@ import DeleteReportDialog from "@/components/planningmysaas/reports/DeleteReport
 import ReportCardSkeleton from "@/components/planningmysaas/skeletons/ReportCardSkeleton";
 import StatsCardSkeleton from "@/components/planningmysaas/skeletons/StatsCardSkeleton";
 import { useReports, useDeleteReport } from "@/hooks/useReports";
-import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/contexts/AuthContext";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import { ReportRow } from "@/types/report";
 
 const PmsReports = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { signOut, pmsUser } = useAuthContext();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -60,10 +58,7 @@ const PmsReports = () => {
     setIsLoggingOut(true);
     try {
       await signOut();
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
+      console.log("Logged out successfully");
       navigate("/planningmysaas/login");
     } catch (error) {
       console.error("Logout error:", error);
@@ -85,16 +80,9 @@ const PmsReports = () => {
     if (reportToDelete) {
       try {
         await deleteReportMutation.mutateAsync(reportToDelete.id);
-        toast({
-          title: "Report deleted",
-          description: `"${reportToDelete.saas_name}" has been deleted.`,
-        });
+        console.log(`Report "${reportToDelete.saas_name}" deleted`);
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to delete report. Please try again.",
-          variant: "destructive",
-        });
+        console.error("Failed to delete report:", error);
       }
       setReportToDelete(null);
       setDeleteDialogOpen(false);

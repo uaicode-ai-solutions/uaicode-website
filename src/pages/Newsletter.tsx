@@ -6,7 +6,6 @@ import * as z from "zod";
 import { Mail, Loader2, ArrowUpNarrowWide, ArrowDownNarrowWide, Youtube, Radio, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import NewsletterSuccessDialog from "@/components/newsletter/NewsletterSuccessDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -1053,10 +1052,7 @@ const Newsletter = () => {
 
       // Handle duplicate email error
       if (dbError?.code === '23505') {
-        toast({
-          title: "Already subscribed!",
-          description: "This email is already subscribed to our newsletter.",
-        });
+        console.log("Email already subscribed");
         return;
       }
 
@@ -1092,11 +1088,6 @@ const Newsletter = () => {
       setShowSuccessDialog(true);
     } catch (error) {
       console.error("Newsletter subscription error:", error);
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again later.",
-        variant: "destructive",
-      });
     }
   };
 

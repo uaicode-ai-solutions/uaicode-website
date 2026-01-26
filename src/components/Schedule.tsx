@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Mail, Phone, MapPin } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { sanitizeFormData } from "@/lib/inputSanitization";
 import { sanitizeFormData } from "@/lib/inputSanitization";
 import { supabase } from "@/integrations/supabase/client";
 import BookingConfirmationDialog from "@/components/scheduler/BookingConfirmationDialog";
@@ -172,11 +172,6 @@ const Schedule = () => {
       reset();
     } catch (error) {
       console.error("Form submission error:", error);
-      toast({
-        title: "Unable to Submit",
-        description: error instanceof Error ? error.message : "There was an error submitting your form.",
-        variant: "destructive",
-      });
     }
   };
 
