@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/admin/AdminRoute";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
 import Newsletter from "./pages/Newsletter";
@@ -18,6 +19,7 @@ import PmsLoading from "./pages/PmsLoading";
 import PmsReports from "./pages/PmsReports";
 import PmsDashboard from "./pages/PmsDashboard";
 import PmsProfile from "./pages/PmsProfile";
+import PmsAdmin from "./pages/PmsAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +57,9 @@ const App = () => (
             } />
             <Route path="/planningmysaas/profile" element={
               <ProtectedRoute><PmsProfile /></ProtectedRoute>
+            } />
+            <Route path="/planningmysaas/admin" element={
+              <AdminRoute><PmsAdmin /></AdminRoute>
             } />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

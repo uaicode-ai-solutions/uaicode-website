@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, User, LogOut, Settings, Sparkles, TrendingUp, Calendar, BarChart3, Loader2 } from "lucide-react";
+import { Plus, User, LogOut, Settings, Sparkles, TrendingUp, Calendar, BarChart3, Loader2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,12 +17,14 @@ import ReportCardSkeleton from "@/components/planningmysaas/skeletons/ReportCard
 import StatsCardSkeleton from "@/components/planningmysaas/skeletons/StatsCardSkeleton";
 import { useReports, useDeleteReport } from "@/hooks/useReports";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import { ReportRow } from "@/types/report";
 
 const PmsReports = () => {
   const navigate = useNavigate();
   const { signOut, pmsUser } = useAuthContext();
+  const { isAdmin } = useUserRoles();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<ReportRow | null>(null);
@@ -156,6 +158,17 @@ const PmsReports = () => {
                     <Settings className="h-4 w-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem 
+                        onClick={() => navigate("/planningmysaas/admin")}
+                        className="cursor-pointer"
+                      >
+                        <Shield className="h-4 w-4 mr-2 text-accent" />
+                        Admin Panel
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator className="bg-border/50" />
                   <DropdownMenuItem 
                     onClick={handleLogout}
