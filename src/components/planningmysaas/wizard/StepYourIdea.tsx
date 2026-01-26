@@ -102,10 +102,16 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
   const [showNameDialog, setShowNameDialog] = useState(false);
   const [suggestedName, setSuggestedName] = useState("");
   const [suggestedNameRationale, setSuggestedNameRationale] = useState("");
+  
+  // Logo generation states
+  const [showLogoDialog, setShowLogoDialog] = useState(false);
+  const [generatedLogo, setGeneratedLogo] = useState("");
+  const [logoDescription, setLogoDescription] = useState("");
+  const [logoMarketJustification, setLogoMarketJustification] = useState("");
 
   const isDescriptionValid = data.description.trim().length >= 20;
 
-  const handleAILogo = async () => {
+  const handleAILogo = async (retryCount = 0) => {
     if (!isDescriptionValid) {
       toast.error("Please fill in the description first (min 20 characters)");
       return;
@@ -113,10 +119,78 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
     
     setIsGeneratingLogo(true);
     
-    // TODO: Implementar chamada à Edge Function
-    toast.info("AI logo generation coming soon!");
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s for image generation
     
-    setIsGeneratingLogo(false);
+    try {
+      const response = await fetch(
+        'https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-generate-logo',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg'
+          },
+          body: JSON.stringify({
+            description: data.description,
+            saasType: data.saasType,
+            industry: data.industry,
+            existingLogo: data.saasLogo || undefined,
+            mode: data.saasLogo ? "improve" : "create"
+          }),
+          signal: controller.signal
+        }
+      );
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result?.logoUrl) {
+        setGeneratedLogo(result.logoUrl);
+        setLogoDescription(result.logoDescription || "");
+        setLogoMarketJustification(result.marketJustification || "");
+        setShowLogoDialog(true);
+      }
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      console.error("Error generating logo:", error);
+      
+      // Retry up to 2 times for transient failures
+      if (retryCount < 2 && (
+        error?.message?.includes('Failed to fetch') || 
+        error?.message?.includes('NetworkError') ||
+        error?.name === 'AbortError'
+      )) {
+        console.log(`Retrying... attempt ${retryCount + 2}`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return handleAILogo(retryCount + 1);
+      }
+      
+      if (error?.message?.includes('429')) {
+        toast.error("Rate limit exceeded. Please try again later.");
+      } else if (error?.message?.includes('402')) {
+        toast.error("Payment required. Please add credits to continue.");
+      } else {
+        toast.error("Failed to generate logo. Please try again.");
+      }
+    } finally {
+      setIsGeneratingLogo(false);
+    }
+  };
+
+  const handleApplyLogo = () => {
+    onChange("saasLogo", generatedLogo);
+    setShowLogoDialog(false);
+    setGeneratedLogo("");
+    setLogoDescription("");
+    setLogoMarketJustification("");
+    toast.success("Logo applied!");
   };
 
   const handleApplySuggestion = () => {
@@ -566,7 +640,7 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
                 type="button"
                 variant="outline"
                 disabled={!isDescriptionValid || isGeneratingLogo}
-                onClick={handleAILogo}
+                onClick={() => handleAILogo()}
                 className="border-accent text-accent hover:bg-accent/10 hover:text-accent
                            disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -656,6 +730,74 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
             <AlertDialogCancel>Try Another</AlertDialogCancel>
             <AlertDialogAction onClick={handleApplyName} className="bg-accent hover:bg-accent/90">
               Use This Name
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* AI Logo Dialog */}
+      <AlertDialog open={showLogoDialog} onOpenChange={setShowLogoDialog}>
+        <AlertDialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-accent" />
+              {data.saasLogo ? "AI Logo Improvement" : "AI Generated Logo"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {data.saasLogo 
+                ? "Here's an improved version of your logo based on market analysis"
+                : "Here's a logo created based on your SaaS description and market trends"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="my-6 space-y-4">
+            {/* Preview do Logo Gerado */}
+            <div className="flex justify-center">
+              <div className="w-32 h-32 rounded-xl border-2 border-accent/50 
+                              overflow-hidden bg-white flex items-center justify-center p-4">
+                {generatedLogo && (
+                  <img 
+                    src={generatedLogo} 
+                    alt="Generated logo" 
+                    className="max-w-full max-h-full object-contain"
+                  />
+                )}
+              </div>
+            </div>
+            
+            {/* Descrição do Logo */}
+            {logoDescription && (
+              <div className="bg-muted/30 rounded-lg p-4 space-y-2">
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-accent" />
+                  About this design
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {logoDescription}
+                </p>
+              </div>
+            )}
+            
+            {/* Justificativa de Mercado */}
+            {logoMarketJustification && (
+              <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2">
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <BarChart className="w-4 h-4 text-accent" />
+                  Market alignment
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {logoMarketJustification}
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => handleAILogo()}>
+              Try Another
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleApplyLogo} className="bg-accent hover:bg-accent/90">
+              Use This Logo
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
