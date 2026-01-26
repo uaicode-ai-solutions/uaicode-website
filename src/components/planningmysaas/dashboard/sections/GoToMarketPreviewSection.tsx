@@ -63,7 +63,7 @@ const GoToMarketPreviewSection = ({ onNavigateToMarketing }: GoToMarketPreviewSe
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold text-foreground">The Launch Strategy</h2>
             <InfoTooltip side="right" size="sm">
-              Preview of your go-to-market strategy. Full details in Marketing tab.
+              Preview of your go-to-market strategy.
             </InfoTooltip>
           </div>
           <p className="text-sm text-muted-foreground">Quick wins and initial channels to focus on</p>
@@ -177,7 +177,7 @@ const GoToMarketPreviewSection = ({ onNavigateToMarketing }: GoToMarketPreviewSe
         </Card>
       </div>
 
-      {/* CTA to Marketing Tab */}
+      {/* HIDDEN v1.0 - CTA to Marketing Tab will return in future version
       <Card className="bg-card/50 border-border/30">
         <CardContent className="p-5">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -197,6 +197,7 @@ const GoToMarketPreviewSection = ({ onNavigateToMarketing }: GoToMarketPreviewSe
           </div>
         </CardContent>
       </Card>
+      */}
 
       {/* Conclusion */}
       <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
