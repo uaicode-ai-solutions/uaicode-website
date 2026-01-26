@@ -1,171 +1,85 @@
 
-# Plano: Simplificar Fluxo de Geração de Relatório para n8n
 
-## Contexto do Problema
+# Plano: Adicionar wizard_id no Nível Raiz do Payload
 
-O sistema atual tem um fluxo duplicado e conflitante:
-- O **Frontend** chama diretamente `pms-generate-report`
-- O **Database Trigger** chama `pms-webhook-new-report` que também chama `pms-generate-report`
-- O **n8n** deveria ser o único responsável por toda a geração
+## Problema Identificado
 
-A secret `REPORT_NEWREPORT_WEBHOOK_ID` não está configurada, o que impede o webhook do n8n de funcionar.
-
-## Fluxo Correto Desejado
+O n8n espera encontrar `wizard_id` no nível raiz do payload, mas o edge function envia os dados numa estrutura aninhada:
 
 ```text
-┌──────────────────────────────────────────────────────────────────┐
-│  WIZARD SUBMIT                                                   │
-│  ┌─────────────────┐                                             │
-│  │ PmsWizard.tsx   │                                             │
-│  │ handleSubmit()  │                                             │
-│  └────────┬────────┘                                             │
-│           │                                                      │
-│           ▼                                                      │
-│  ┌─────────────────┐                                             │
-│  │ INSERT INTO     │                                             │
-│  │ tb_pms_wizard   │                                             │
-│  └────────┬────────┘                                             │
-│           │                                                      │
-│           ▼ (Database Trigger)                                   │
-│  ┌─────────────────────────────────────────┐                     │
-│  │ notify_pms_wizard_created_webhook()     │                     │
-│  │ -> POST to pms-webhook-new-report       │                     │
-│  └────────┬────────────────────────────────┘                     │
-│           │                                                      │
-│           ▼                                                      │
-│  ┌─────────────────────────────────────────┐                     │
-│  │ pms-webhook-new-report                  │                     │
-│  │ -> POST to n8n webhook                  │                     │
-│  │    (REPORT_NEWREPORT_WEBHOOK_ID)        │                     │
-│  └────────┬────────────────────────────────┘                     │
-│           │                                                      │
-│           ▼                                                      │
-│  ┌─────────────────────────────────────────┐                     │
-│  │ n8n WORKFLOW                            │                     │
-│  │ - Busca dados wizard/user               │                     │
-│  │ - Pesquisa Perplexity                   │                     │
-│  │ - Gera seções do relatório              │                     │
-│  │ - CREATE em tb_pms_reports              │                     │
-│  │ - UPDATE status para "Created"          │                     │
-│  └─────────────────────────────────────────┘                     │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-## Alterações Necessárias
-
-### 1. Adicionar Secret do Webhook n8n
-
-Adicionar a secret `REPORT_NEWREPORT_WEBHOOK_ID` com a URL completa do webhook do n8n.
-
-### 2. Frontend: Remover Chamada Direta
-
-**Arquivo**: `src/pages/PmsWizard.tsx`
-
-Remover as linhas 314-324 que chamam `pms-generate-report` diretamente. O database trigger já vai cuidar disso automaticamente.
-
-**Código a remover**:
-```typescript
-// 3. Trigger AI report generation (async - don't wait)
-console.log("Triggering AI report generation...");
-supabase.functions.invoke('pms-generate-report', {
-  body: { reportId }
-}).then(({ error }) => {
-  if (error) {
-    console.error("AI report generation error:", error);
-  } else {
-    console.log("AI report generation started successfully");
+Estrutura Atual:
+{
+  "event": "wizard.created",
+  "data": {
+    "wizard": {
+      "id": "xxx"  ← n8n não consegue encontrar aqui
+    }
   }
-}).catch((err) => {
-  console.error("Failed to trigger AI report generation:", err);
-});
+}
+
+Estrutura Esperada pelo n8n:
+{
+  "wizard_id": "xxx",  ← n8n espera aqui
+  ...
+}
 ```
 
-### 3. Edge Function: Simplificar pms-webhook-new-report
+## Solução
+
+Adicionar o campo `wizard_id` no nível raiz do payload, mantendo a estrutura completa existente para compatibilidade.
+
+## Alteração Necessária
 
 **Arquivo**: `supabase/functions/pms-webhook-new-report/index.ts`
 
-Remover a chamada a `pms-generate-report` (linhas 206-217). A função deve apenas:
-1. Receber o `wizard_id` do database trigger
-2. Buscar dados do wizard e user
-3. Enviar para o webhook do n8n
-4. Retornar sucesso imediatamente
-
-**Código a remover** (linhas 206-217):
-```typescript
-// 2. Report Generation (main process) - must run regardless of webhook
-(async () => {
-  try {
-    console.log("Starting report generation for wizard:", wizardId);
-    await callInternalFunction("pms-generate-report", { wizardId: wizardId });
-    console.log("Report generation started successfully for wizard:", wizardId);
-    return { success: true };
-  } catch (error) {
-    console.error("Report generation call failed:", error);
-    throw error;
-  }
-})()
-```
-
-### 4. (Opcional) Deprecar/Remover pms-generate-report
-
-**Arquivo**: `supabase/functions/pms-generate-report/index.ts`
-
-Se o n8n é responsável por toda a geração, esta função de 700+ linhas pode ser:
-- Removida completamente, ou
-- Simplificada para ser apenas um fallback
-
-**Recomendação**: Manter temporariamente como fallback mas não chamá-la diretamente.
-
-## Resumo das Mudanças
-
-| Item | Ação | Prioridade |
-|------|------|------------|
-| Secret `REPORT_NEWREPORT_WEBHOOK_ID` | Adicionar | Alta |
-| `PmsWizard.tsx` linhas 312-324 | Remover chamada a `pms-generate-report` | Alta |
-| `pms-webhook-new-report` linhas 206-217 | Remover chamada a `pms-generate-report` | Alta |
-| `pms-generate-report` | Manter como fallback (não chamar) | Baixa |
-
-## Seção Técnica
-
-### Mudança no pms-webhook-new-report
-
-O `Promise.allSettled` atual (linhas 141-218) executa duas operações em paralelo:
-1. Webhook n8n (correto)
-2. Chamada a `pms-generate-report` (incorreto)
-
-A mudança simplifica para executar apenas o webhook do n8n:
+Modificar o `webhookPayload` (linhas 143-180) para incluir `wizard_id` no nível raiz:
 
 ```typescript
-const handler = async (req: Request): Promise<Response> => {
-  // ... validação e fetch de dados ...
-  
-  try {
-    // Enviar apenas para n8n
-    const webhookUrl = getWebhookUrl();
-    const webhookResponse = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(webhookPayload),
-    });
-
-    if (!webhookResponse.ok) {
-      throw new Error(`Webhook failed: ${webhookResponse.status}`);
-    }
-
-    return new Response(
-      JSON.stringify({ success: true, message: "Report generation triggered" }),
-      { status: 200, headers: corsHeaders }
-    );
-  } catch (error) {
-    console.error("Error:", error);
-    return new Response(
-      JSON.stringify({ error: String(error) }),
-      { status: 500, headers: corsHeaders }
-    );
-  }
+const webhookPayload = {
+  wizard_id: wizardData.id,  // <-- Adicionar esta linha
+  event: "wizard.created",
+  timestamp: new Date().toISOString(),
+  data: {
+    wizard: {
+      id: wizardData.id,
+      // ... resto mantém igual
+    },
+    user: userData ? { ... } : null,
+  },
 };
 ```
 
-### Dependência de Secret
+## Resultado Esperado
 
-A função `getWebhookUrl()` (linhas 64-73) já está correta, mas requer que `REPORT_NEWREPORT_WEBHOOK_ID` esteja configurada nas secrets do Supabase.
+Após a alteração, o payload enviado terá esta estrutura:
+
+```json
+{
+  "wizard_id": "c9e0f0b2-8d3a-4b41-a1f2-57edaa56f4ea",
+  "event": "wizard.created",
+  "timestamp": "2026-01-26T...",
+  "data": {
+    "wizard": { ... },
+    "user": { ... }
+  }
+}
+```
+
+O n8n poderá acessar `$json.wizard_id` diretamente, resolvendo o erro.
+
+## Seção Técnica
+
+### Mudança Mínima
+
+A alteração é de apenas uma linha na definição do objeto `webhookPayload`:
+
+| Linha | Alteração |
+|-------|-----------|
+| 143 | Adicionar `wizard_id: wizardData.id,` como primeira propriedade |
+
+### Compatibilidade
+
+- O campo `data.wizard.id` continua existindo para outros processos que possam depender dele
+- Não quebra nenhuma integração existente
+- Apenas adiciona um campo extra para facilitar o acesso no n8n
+
