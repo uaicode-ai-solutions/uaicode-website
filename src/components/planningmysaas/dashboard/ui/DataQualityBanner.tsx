@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertCircle, ChevronDown, ChevronUp, X, RefreshCw } from "lucide-react";
+import { AlertCircle, ChevronDown, ChevronUp, X, RefreshCw, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DataQualityIssue, 
@@ -11,6 +11,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { toast } from "sonner";
 
 interface DataQualityBannerProps {
   issues: DataQualityIssue[];
@@ -99,26 +100,108 @@ export const DataQualityBanner = ({
             </div>
             
             <CollapsibleContent className="mt-3">
-              <div className="space-y-2 pl-0.5">
+              <div className="space-y-4 pl-0.5">
                 {issues.map((issue) => (
-                  <div 
-                    key={issue.id}
-                    className="flex items-start gap-2 text-sm"
-                  >
-                    <span 
-                      className={`
-                        inline-block w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0
-                        ${issue.severity === 'warning' ? 'bg-amber-500' : 'bg-amber-400/60'}
-                      `}
-                    />
-                    <span className="text-muted-foreground">
-                      {issue.message}
-                    </span>
-                  </div>
+                  <IssueDetailCard key={issue.id} issue={issue} />
                 ))}
               </div>
             </CollapsibleContent>
           </Collapsible>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Sub-component for detailed issue display
+const IssueDetailCard = ({ issue }: { issue: DataQualityIssue }) => {
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  
+  const handleCopy = async (text: string, field: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    toast.success("Copied to clipboard");
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+  
+  const formatValue = (value: unknown): string => {
+    if (value === null || value === undefined) return 'null';
+    if (typeof value === 'object') return JSON.stringify(value, null, 2);
+    return String(value);
+  };
+  
+  return (
+    <div className="rounded-lg bg-background/50 border border-amber-500/20 p-3">
+      {/* Issue message */}
+      <div className="flex items-start gap-2 mb-3">
+        <span 
+          className={`
+            inline-block w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0
+            ${issue.severity === 'warning' ? 'bg-amber-500' : 'bg-amber-400/60'}
+          `}
+        />
+        <span className="text-sm font-medium text-foreground">
+          {issue.message}
+        </span>
+      </div>
+      
+      {/* Debug info */}
+      <div className="ml-3 space-y-1.5 font-mono text-xs">
+        {/* JSON Path */}
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground w-20">JSON Path:</span>
+          <code className="flex-1 bg-background/80 px-2 py-0.5 rounded text-amber-400/90">
+            {issue.jsonPath}
+          </code>
+          <button
+            onClick={() => handleCopy(issue.jsonPath, 'jsonPath')}
+            className="p-1 hover:bg-amber-500/10 rounded transition-colors"
+            title="Copy JSON path"
+          >
+            {copiedField === 'jsonPath' ? (
+              <Check className="h-3 w-3 text-green-500" />
+            ) : (
+              <Copy className="h-3 w-3 text-muted-foreground" />
+            )}
+          </button>
+        </div>
+        
+        {/* DB Column */}
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground w-20">DB Column:</span>
+          <code className="flex-1 bg-background/80 px-2 py-0.5 rounded text-blue-400/90">
+            tb_pms_reports.{issue.dbColumn}
+          </code>
+          <button
+            onClick={() => handleCopy(`tb_pms_reports.${issue.dbColumn}`, 'dbColumn')}
+            className="p-1 hover:bg-amber-500/10 rounded transition-colors"
+            title="Copy column name"
+          >
+            {copiedField === 'dbColumn' ? (
+              <Check className="h-3 w-3 text-green-500" />
+            ) : (
+              <Copy className="h-3 w-3 text-muted-foreground" />
+            )}
+          </button>
+        </div>
+        
+        {/* Current Value */}
+        <div className="flex items-start gap-2">
+          <span className="text-muted-foreground w-20">Current:</span>
+          <code className="flex-1 bg-background/80 px-2 py-0.5 rounded text-red-400/70 whitespace-pre-wrap break-all max-h-24 overflow-auto">
+            {formatValue(issue.currentValue)}
+          </code>
+          <button
+            onClick={() => handleCopy(formatValue(issue.currentValue), 'currentValue')}
+            className="p-1 hover:bg-amber-500/10 rounded transition-colors"
+            title="Copy current value"
+          >
+            {copiedField === 'currentValue' ? (
+              <Check className="h-3 w-3 text-green-500" />
+            ) : (
+              <Copy className="h-3 w-3 text-muted-foreground" />
+            )}
+          </button>
         </div>
       </div>
     </div>
