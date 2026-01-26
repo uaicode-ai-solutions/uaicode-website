@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { 
   Download, 
   FileText, 
@@ -59,13 +60,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const PmsDashboardContent = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   // URL param is the wizard_id (tb_pms_wizard.id), not tb_pms_reports.id
   const { id: wizardId } = useParams<{ id: string }>();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("report");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerationStarted, setRegenerationStarted] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  
+  // Track previous status to detect transitions
+  const prevStatusRef = useRef<string | undefined>(undefined);
   
   // Get report data from context - pmsReportId is tb_pms_reports.id
   const { reportData, pmsReportId } = useReportContext();
@@ -75,92 +81,62 @@ const PmsDashboardContent = () => {
     return checkDataQuality(reportData);
   }, [reportData]);
 
-  // Poll for report status changes in tb_pms_reports
-  // IMPORTANT: pmsReportId is the actual ID from tb_pms_reports (NOT wizard_id)
-  const pollReportStatus = async (pmsReportIdToPoll: string) => {
-    console.log("📊 Starting polling for pmsReportId:", pmsReportIdToPoll);
+  // Monitor regeneration status transitions via useReportData polling
+  useEffect(() => {
+    if (!isRegenerating) {
+      prevStatusRef.current = reportData?.status;
+      return;
+    }
     
-    const maxAttempts = 60; // 5 minutes (5s interval)
-    let attempts = 0;
-
-    const poll = async (): Promise<void> => {
-      attempts++;
-      
-      if (attempts > maxAttempts) {
-        console.error("⏰ Polling timeout - report generation took too long");
-        toast({
-          title: "Timeout",
-          description: "Report generation is taking longer than expected. Please refresh the page.",
-          variant: "destructive",
-        });
-        setIsRegenerating(false);
-        return;
+    const currentStatus = reportData?.status;
+    const prevStatus = prevStatusRef.current;
+    
+    console.log(`🔄 Regeneration monitor: prev=${prevStatus}, current=${currentStatus}, started=${regenerationStarted}`);
+    
+    // Detect when n8n has started processing (status changed from terminal to processing)
+    if (currentStatus && currentStatus !== "Created" && currentStatus !== "completed" && currentStatus !== "failed" && currentStatus !== "error") {
+      if (!regenerationStarted) {
+        console.log("✅ Regeneration has started - status changed to:", currentStatus);
+        setRegenerationStarted(true);
       }
-
-      try {
-        // Poll tb_pms_reports for status by its primary key (id)
-        const { data: reportStatus, error } = await supabase
-          .from("tb_pms_reports")
-          .select("status")
-          .eq("id", pmsReportIdToPoll)
-          .single();
-
-        if (error) throw error;
-
-        console.log(`📊 Poll attempt ${attempts}: status=${reportStatus.status}`);
-
-        if (reportStatus.status === "completed") {
-          console.log("✅ Report completed! Reloading...");
-          toast({
-            title: "✅ Report Ready!",
-            description: "Your report has been regenerated successfully.",
-          });
-          // Reload page to show new data
-          window.location.reload();
-          return;
-        }
-
-        if (reportStatus.status === "failed" || reportStatus.status === "error") {
-          console.error("❌ Report generation failed");
-          toast({
-            title: "Error",
-            description: "Report generation failed. Please try again.",
-            variant: "destructive",
-          });
-          setIsRegenerating(false);
-          return;
-        }
-
-        // Still processing, continue polling
-        setTimeout(poll, 5000); // Poll every 5 seconds
-        
-      } catch (error) {
-        console.error("Polling error:", error);
-        setIsRegenerating(false);
-        toast({
-          title: "Error",
-          description: "Failed to check report status.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    // Start first poll after 2 seconds
-    setTimeout(poll, 2000);
-  };
+    }
+    
+    // Detect when regeneration completed (status returned to "Created" AFTER having started)
+    if (regenerationStarted && (currentStatus === "Created" || currentStatus === "completed")) {
+      console.log("✅ Regeneration completed! Reloading page...");
+      setIsRegenerating(false);
+      setRegenerationStarted(false);
+      window.location.reload();
+      return;
+    }
+    
+    // Handle errors during regeneration
+    if (regenerationStarted && (currentStatus === "failed" || currentStatus === "error")) {
+      console.error("❌ Regeneration failed");
+      toast({
+        title: "Error",
+        description: "Report generation failed. Please try again.",
+        variant: "destructive",
+      });
+      setIsRegenerating(false);
+      setRegenerationStarted(false);
+    }
+    
+    prevStatusRef.current = currentStatus;
+  }, [isRegenerating, regenerationStarted, reportData?.status, toast]);
 
   // Regenerate report handler - calls pms-trigger-n8n-report
   const handleRegenerateReport = async () => {
     if (!wizardId) return;
     
-    setIsRegenerating(true);
     console.log("🔄 Starting report regeneration for wizardId:", wizardId);
-
-    // Show toast immediately
-    toast({
-      title: "🔄 Regenerating Report",
-      description: "Triggering n8n workflow. Please wait...",
-    });
+    
+    // Invalidate cache to force fresh fetch
+    await queryClient.invalidateQueries({ queryKey: ["pms-report-data", wizardId] });
+    
+    // Set regenerating state - this triggers the loading screen
+    setIsRegenerating(true);
+    setRegenerationStarted(false);
     
     try {
       // Call the edge function - pass wizard_id (not tb_pms_reports.id)
@@ -180,22 +156,9 @@ const PmsDashboardContent = () => {
       }
 
       console.log("✅ n8n triggered successfully:", data);
-
-      // If we got a report_id, start polling
-      if (data?.report_id) {
-        pollReportStatus(data.report_id);
-      } else {
-        // If already completed, reload
-        if (data?.status === "completed") {
-          toast({
-            title: "✅ Report Ready!",
-            description: "Your report has been regenerated successfully.",
-          });
-          window.location.reload();
-        } else {
-          setIsRegenerating(false);
-        }
-      }
+      // The useEffect above will monitor the status changes via polling
+      // No need for manual polling here - useReportData already polls every 5s
+      
     } catch (err) {
       console.error("❌ Error calling pms-trigger-n8n-report:", err);
       toast({
