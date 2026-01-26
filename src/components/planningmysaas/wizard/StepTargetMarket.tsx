@@ -42,7 +42,7 @@ const targetAudiences = [
 const marketTypes = [
   { id: "b2b", title: "B2B", description: "Business to Business", icon: Briefcase },
   { id: "b2c", title: "B2C", description: "Business to Consumer", icon: User },
-  { id: "internal", title: "Internal", description: "SaaS for internal company use", icon: Home },
+  { id: "b2b2c", title: "B2B2C", description: "Business to Business to Consumer", icon: Users },
 ];
 
 const geographicRegions = [
