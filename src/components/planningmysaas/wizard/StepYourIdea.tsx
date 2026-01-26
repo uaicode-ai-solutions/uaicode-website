@@ -7,6 +7,16 @@ import SelectableCard from "./SelectableCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Users,
   Building,
   ShoppingCart,
@@ -86,8 +96,17 @@ interface StepYourIdeaProps {
 const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
   const [isGeneratingName, setIsGeneratingName] = useState(false);
   const [isImprovingDescription, setIsImprovingDescription] = useState(false);
+  const [showSuggestionDialog, setShowSuggestionDialog] = useState(false);
+  const [suggestedDescription, setSuggestedDescription] = useState("");
 
   const isDescriptionValid = data.description.trim().length >= 20;
+
+  const handleApplySuggestion = () => {
+    onChange("description", suggestedDescription);
+    setShowSuggestionDialog(false);
+    setSuggestedDescription("");
+    toast.success("Description updated!");
+  };
 
   const handleImproveDescription = async (retryCount = 0) => {
     if (data.description.length < 10) {
@@ -128,8 +147,8 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
       const result = await response.json();
       
       if (result?.improvedDescription) {
-        onChange("description", result.improvedDescription);
-        toast.success("Description improved successfully!");
+        setSuggestedDescription(result.improvedDescription);
+        setShowSuggestionDialog(true);
       }
     } catch (error: any) {
       clearTimeout(timeoutId);
@@ -468,6 +487,42 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
           </div>
         </div>
       </div>
+
+      {/* AI Suggestion Dialog */}
+      <AlertDialog open={showSuggestionDialog} onOpenChange={setShowSuggestionDialog}>
+        <AlertDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-accent" />
+              AI Suggestion
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Compare your original text with the AI-improved version
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="grid md:grid-cols-2 gap-4 my-4">
+            {/* Original */}
+            <div className="p-4 bg-muted/50 rounded-lg border border-border/50">
+              <Label className="text-sm text-muted-foreground font-medium">Your Original</Label>
+              <p className="mt-2 text-sm text-foreground whitespace-pre-wrap">{data.description}</p>
+            </div>
+            
+            {/* Suggestion */}
+            <div className="p-4 bg-accent/10 border border-accent/30 rounded-lg">
+              <Label className="text-sm text-accent font-medium">AI Suggestion</Label>
+              <p className="mt-2 text-sm text-foreground whitespace-pre-wrap">{suggestedDescription}</p>
+            </div>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Original</AlertDialogCancel>
+            <AlertDialogAction onClick={handleApplySuggestion} className="bg-accent hover:bg-accent/90">
+              Apply Suggestion
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
