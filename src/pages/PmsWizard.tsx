@@ -309,19 +309,9 @@ const PmsWizard = () => {
         ...data,
       });
 
-      // 3. Trigger AI report generation (async - don't wait)
-      console.log("Triggering AI report generation...");
-      supabase.functions.invoke('pms-generate-report', {
-        body: { reportId }
-      }).then(({ error }) => {
-        if (error) {
-          console.error("AI report generation error:", error);
-        } else {
-          console.log("AI report generation started successfully");
-        }
-      }).catch((err) => {
-        console.error("Failed to trigger AI report generation:", err);
-      });
+      // Report generation is now handled by n8n via database trigger
+      // The INSERT into tb_pms_wizard triggers notify_pms_wizard_created_webhook()
+      // which calls pms-webhook-new-report -> n8n workflow
 
       // Send report ready email notification (will be sent again when report is complete)
       try {
