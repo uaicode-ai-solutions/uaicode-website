@@ -1,233 +1,164 @@
 
 
-# Plano: Agente de IA para Geração de Nomes de SaaS com Popup de Confirmação
+# Plano: Adicionar Justificativa de Branding ao Popup de Nome
 
 ## Resumo
 
-Criar um agente de IA especializado em branding que gera nomes memoráveis para SaaS. Assim como a melhoria de descrição, o nome sugerido será apresentado em um popup para o usuário aprovar antes de ser aplicado.
+Modificar o agente de IA e o popup para incluir uma breve justificativa de marketing/branding explicando o porquê do nome sugerido. A justificativa será uma única frase curta que aparecerá abaixo do nome no popup.
 
-## Fluxo do Usuário
+## Fluxo Visual
 
 ```text
-[Usuário preenche descrição do SaaS]
-         |
-         v
-[Clica "Suggest with AI" no campo Nome]
-         |
-         v
-[Loading... IA analisa descrição]
-         |
-         v
-[Popup abre com sugestão de nome]
-    |           |
-    v           v
-[Aplicar]   [Cancelar]
-    |           |
-    v           v
-[Nome        [Popup fecha,
-aplicado]    campo vazio]
+┌─────────────────────────────────────────────┐
+│  ✨ AI Name Suggestion                      │
+│                                             │
+│  Based on your description, here's a        │
+│  suggested name for your SaaS               │
+│                                             │
+│         ┌──────────────────────┐            │
+│         │     MediFlow         │            │
+│         └──────────────────────┘            │
+│                                             │
+│  "Combines 'Medi' (medical) with 'Flow'     │
+│   to convey seamless healthcare delivery"   │
+│                                             │
+│         [Try Another]  [Use This Name]      │
+└─────────────────────────────────────────────┘
 ```
 
 ---
 
-## Arquivos a Criar/Modificar
+## Arquivos a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `supabase/functions/pms-suggest-name/index.ts` | Criar (novo) |
-| `supabase/config.toml` | Modificar (adicionar função) |
-| `src/components/planningmysaas/wizard/StepYourIdea.tsx` | Modificar |
+| `supabase/functions/pms-suggest-name/index.ts` | Modificar (adicionar tool calling para retornar nome + justificativa) |
+| `src/components/planningmysaas/wizard/StepYourIdea.tsx` | Modificar (adicionar estado para razão e exibir no popup) |
 
 ---
 
-## 1. Edge Function: `pms-suggest-name`
+## 1. Modificar Edge Function: `pms-suggest-name`
 
-**Arquivo:** `supabase/functions/pms-suggest-name/index.ts`
+### Mudanças no System Prompt
 
-O agente será um especialista em branding com foco em:
-- Nomes curtos e memoráveis (1 palavra ideal, 2 aceitável, 3 máximo)
-- Fáceis de pronunciar e soletrar
-- Modernos e profissionais
-- Evitar nomes genéricos ou muito usados
+Adicionar instrução para retornar também uma justificativa curta:
 
-**System Prompt:**
 ```text
-You are an expert SaaS naming consultant with deep knowledge in:
-- Brand strategy and positioning
-- Tech startup naming conventions  
-- Linguistic principles (phonetics, memorability)
-- Marketing psychology
-
-NAMING RULES (STRICT):
-1. IDEAL: 1 word (e.g., Slack, Zoom, Stripe, Notion)
-2. ACCEPTABLE: 2 words (e.g., DropBox, HubSpot, MailChimp)
-3. MAXIMUM: 3 words only if absolutely necessary
-4. NEVER exceed 3 words
-
-PRINCIPLES:
-- Easy to spell and pronounce
-- Memorable and distinctive
-- Evokes the product's value or benefit
-- Modern and professional sound
-- Avoid generic tech terms as standalone (Cloud, Hub, Pro)
-
-Return ONLY the suggested name, nothing else.
+RESPONSE FORMAT:
+Return the name AND a brief branding rationale (one sentence, max 15 words).
+The rationale should explain the strategic thinking behind the name choice.
 ```
 
-**Input:**
-```json
-{
-  "description": "A healthcare marketplace...",
-  "saasType": "ecommerce",
-  "industry": "healthcare"
-}
-```
+### Usar Tool Calling
 
-**Output:**
-```json
-{
-  "suggestedName": "MediFlow"
-}
-```
-
----
-
-## 2. Atualizar config.toml
-
-Adicionar:
-```toml
-[functions.pms-suggest-name]
-verify_jwt = false
-```
-
----
-
-## 3. Atualizar Frontend: `StepYourIdea.tsx`
-
-### Novos Estados
+Ao invés de retornar texto puro, usar tool calling para estruturar a resposta:
 
 ```typescript
-const [showNameDialog, setShowNameDialog] = useState(false);
-const [suggestedName, setSuggestedName] = useState("");
+body: JSON.stringify({
+  model: "google/gemini-2.5-flash",
+  messages: [...],
+  tools: [
+    {
+      type: "function",
+      function: {
+        name: "suggest_name",
+        description: "Return the suggested SaaS name with branding rationale",
+        parameters: {
+          type: "object",
+          properties: {
+            suggestedName: {
+              type: "string",
+              description: "The suggested name (1-3 words max)"
+            },
+            rationale: {
+              type: "string", 
+              description: "Brief branding rationale explaining the name (max 15 words)"
+            }
+          },
+          required: ["suggestedName", "rationale"],
+          additionalProperties: false
+        }
+      }
+    }
+  ],
+  tool_choice: { type: "function", function: { name: "suggest_name" } }
+})
 ```
 
-### Nova Função de Aplicar Nome
+### Output Atualizado
+
+```json
+{
+  "suggestedName": "MediFlow",
+  "rationale": "Combines 'Medi' (medical) with 'Flow' to convey seamless healthcare delivery"
+}
+```
+
+---
+
+## 2. Modificar Frontend: `StepYourIdea.tsx`
+
+### Novo Estado
+
+Adicionar estado para armazenar a justificativa:
+
+```typescript
+const [suggestedNameRationale, setSuggestedNameRationale] = useState("");
+```
+
+### Atualizar `handleSuggestName`
+
+Ao receber a resposta, guardar também a justificativa:
+
+```typescript
+if (result?.suggestedName) {
+  setSuggestedName(result.suggestedName);
+  setSuggestedNameRationale(result.rationale || "");
+  setShowNameDialog(true);
+}
+```
+
+### Atualizar `handleApplyName`
+
+Limpar também a justificativa ao aplicar:
 
 ```typescript
 const handleApplyName = () => {
   onChange("saasName", suggestedName);
   setShowNameDialog(false);
   setSuggestedName("");
+  setSuggestedNameRationale("");
   toast.success("Name applied!");
 };
 ```
 
-### Atualizar `handleSuggestName`
+### Atualizar o Dialog
 
-Substituir a lógica mock atual por chamada real à Edge Function:
-
-```typescript
-const handleSuggestName = async (retryCount = 0) => {
-  if (!isDescriptionValid) {
-    toast.error("Please fill in the description first (min 20 characters)");
-    return;
-  }
-  
-  setIsGeneratingName(true);
-  
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
-  
-  try {
-    const response = await fetch(
-      'https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-suggest-name',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': '...'
-        },
-        body: JSON.stringify({
-          description: data.description,
-          saasType: data.saasType,
-          industry: data.industry
-        }),
-        signal: controller.signal
-      }
-    );
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const result = await response.json();
-    
-    if (result?.suggestedName) {
-      setSuggestedName(result.suggestedName);
-      setShowNameDialog(true); // Abre o popup
-    }
-  } catch (error) {
-    // Retry logic para cold starts
-    if (retryCount < 2 && ...) {
-      return handleSuggestName(retryCount + 1);
-    }
-    toast.error("Failed to suggest name. Please try again.");
-  } finally {
-    setIsGeneratingName(false);
-  }
-};
-```
-
-### Novo Dialog para Nome
+Adicionar a justificativa abaixo do nome:
 
 ```tsx
-<AlertDialog open={showNameDialog} onOpenChange={setShowNameDialog}>
-  <AlertDialogContent className="max-w-md">
-    <AlertDialogHeader>
-      <AlertDialogTitle className="flex items-center gap-2">
-        <Sparkles className="w-5 h-5 text-accent" />
-        AI Name Suggestion
-      </AlertDialogTitle>
-      <AlertDialogDescription>
-        Based on your description, here's a suggested name for your SaaS
-      </AlertDialogDescription>
-    </AlertDialogHeader>
-    
-    <div className="my-6 text-center">
-      <div className="inline-block px-6 py-4 bg-accent/10 border border-accent/30 rounded-xl">
-        <span className="text-2xl font-bold text-foreground">{suggestedName}</span>
-      </div>
-    </div>
-    
-    <AlertDialogFooter>
-      <AlertDialogCancel>Try Another</AlertDialogCancel>
-      <AlertDialogAction onClick={handleApplyName} className="bg-accent hover:bg-accent/90">
-        Use This Name
-      </AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
+<div className="my-6 text-center">
+  <div className="inline-block px-6 py-4 bg-accent/10 border border-accent/30 rounded-xl">
+    <span className="text-2xl font-bold text-foreground">{suggestedName}</span>
+  </div>
+  
+  {/* Justificativa de branding */}
+  {suggestedNameRationale && (
+    <p className="mt-4 text-sm text-muted-foreground italic max-w-sm mx-auto">
+      "{suggestedNameRationale}"
+    </p>
+  )}
+</div>
 ```
-
----
-
-## Design do Popup de Nome
-
-O popup será mais simples que o de descrição:
-- Foco total no nome sugerido (destaque grande e centralizado)
-- Fundo com cor accent suave
-- Botão "Use This Name" para aplicar
-- Botão "Try Another" para gerar novo nome (fecha o popup e permite clicar novamente)
 
 ---
 
 ## Resultado Esperado
 
-1. Usuário escreve descrição do SaaS (mínimo 20 caracteres)
-2. Clica em "Suggest with AI" no campo de nome
-3. Loading aparece enquanto IA processa
-4. Popup abre mostrando o nome sugerido em destaque
-5. Usuário escolhe:
-   - "Use This Name" → Nome é aplicado no campo
-   - "Try Another" → Popup fecha, pode clicar novamente para nova sugestão
+1. Usuário clica em "Suggest with AI"
+2. IA gera nome + justificativa curta
+3. Popup exibe:
+   - Nome em destaque (grande, centralizado)
+   - Justificativa de branding em itálico abaixo (frase curta explicando o porquê)
+4. Usuário decide aplicar ou tentar outro
 
