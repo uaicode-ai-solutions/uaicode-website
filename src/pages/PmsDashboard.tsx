@@ -216,7 +216,9 @@ const PmsDashboardContent = () => {
 
   // Show loading skeleton while fetching - wait for BOTH wizard AND reportData
   // This prevents race condition where Data Quality errors appear before data loads
-  if (isLoading || reportData === undefined) {
+  // Check: isLoading OR no reportData OR report still being generated
+  const isReportReady = reportData?.status === "Created" || reportData?.status === "completed";
+  if (isLoading || !reportData || !isReportReady) {
     return (
       <div className="min-h-screen bg-background">
         {/* Header skeleton */}
