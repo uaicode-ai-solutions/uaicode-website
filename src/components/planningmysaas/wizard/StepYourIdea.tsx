@@ -743,7 +743,7 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
           </div>
           
           <AlertDialogFooter>
-            <AlertDialogCancel>Try Another</AlertDialogCancel>
+            <AlertDialogCancel>Discard</AlertDialogCancel>
             <AlertDialogAction onClick={handleApplyName} className="bg-accent hover:bg-accent/90">
               Use This Name
             </AlertDialogAction>
