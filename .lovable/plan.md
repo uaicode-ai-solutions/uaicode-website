@@ -1,11 +1,10 @@
 
-
-# Plano: Adicionar 4 Novos Tipos de SaaS + Enviar Títulos ao Webhook
+# Plano: Adicionar 4 Novas Indústrias + Enviar Títulos ao Webhook
 
 ## Resumo
 
-1. Adicionar 4 novos tipos de SaaS ao wizard
-2. Modificar o webhook para enviar o **título** de TODOS os tipos de SaaS (não o ID técnico)
+1. Adicionar 4 novas indústrias ao wizard (Logistics & Supply Chain, Hospitality & Travel, Manufacturing, Legal & Compliance)
+2. Modificar o webhook para enviar o **título** de TODAS as indústrias (não o ID técnico)
 
 ---
 
@@ -13,100 +12,117 @@
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/planningmysaas/wizard/StepYourIdea.tsx` | Adicionar 4 novos tipos + imports de ícones |
-| `supabase/functions/pms-webhook-new-report/index.ts` | Mapeamento completo ID → Título para TODOS os tipos |
+| `src/components/planningmysaas/wizard/StepYourIdea.tsx` | Adicionar 4 novas indústrias + imports de ícones |
+| `supabase/functions/pms-webhook-new-report/index.ts` | Adicionar mapeamento completo ID → Título para TODAS as indústrias |
 
 ---
 
-## Parte 1: Frontend - Novos Tipos de SaaS
+## Parte 1: Frontend - Novas Indústrias
 
-### Imports de Ícones a Adicionar
+### Imports de Ícones a Adicionar (linha ~51)
 
-`Brain`, `Shield`, `Code`, `Layers`
+`Truck`, `Plane`, `Factory`, `Scale`
 
-### Novos Tipos no Array `saasTypes`
-
-Inserir antes do `other`:
+### Indústrias Atuais (linhas 72-81)
 
 ```typescript
-{ id: "ai", title: "AI & Automation", description: "AI-powered solutions", icon: Brain },
-{ id: "security", title: "Cybersecurity & Compliance", description: "Security & data protection", icon: Shield },
-{ id: "devtools", title: "Developer Tools", description: "APIs, SDKs & dev platforms", icon: Code },
-{ id: "platform", title: "Platform", description: "Multi-sided marketplace", icon: Layers },
+const industries = [
+  { id: "healthcare", title: "Healthcare", ... },
+  { id: "education", title: "Education", ... },
+  { id: "finance", title: "Finance", ... },
+  { id: "realestate", title: "Real Estate", ... },
+  { id: "retail", title: "Retail", ... },
+  { id: "technology", title: "Technology", ... },
+  { id: "marketing", title: "Marketing", ... },
+  { id: "other", title: "Other", ... },  // <- penúltimo atualmente
+];
+```
+
+### Novas Indústrias (inserir antes do "other")
+
+```typescript
+{ id: "logistics", title: "Logistics & Supply Chain", description: "Shipping & warehousing", icon: Truck },
+{ id: "hospitality", title: "Hospitality & Travel", description: "Hotels & tourism", icon: Plane },
+{ id: "manufacturing", title: "Manufacturing", description: "Production & Industry 4.0", icon: Factory },
+{ id: "legal", title: "Legal & Compliance", description: "Law firms & regulations", icon: Scale },
+```
+
+### Layout Final das Indústrias
+
+```text
+Linha 1: Healthcare, Education, Finance, Real Estate
+Linha 2: Retail, Technology, Marketing
+Linha 3 (NOVA): Logistics & Supply Chain, Hospitality & Travel, Manufacturing, Legal & Compliance
+Linha 4: Other
 ```
 
 ---
 
-## Parte 2: Webhook - Mapeamento Completo de Títulos
+## Parte 2: Webhook - Mapeamento Completo de Títulos de Indústrias
 
-### Mapeamento de TODOS os Tipos
+### Adicionar Constante INDUSTRY_TITLES (após SAAS_TYPE_TITLES, linha ~32)
 
 ```typescript
-const SAAS_TYPE_TITLES: Record<string, string> = {
-  // Tipos existentes
-  crm: "CRM & Sales",
-  project: "Project Management",
-  ecommerce: "E-commerce",
-  hr: "HR & Recruiting",
-  finance: "Financial Management",
-  marketing: "Marketing Automation",
-  analytics: "Analytics & BI",
-  communication: "Communication",
-  support: "Customer Support",
-  productivity: "Productivity",
-  education: "Education & Learning",
-  // Novos tipos
-  ai: "AI & Automation",
-  security: "Cybersecurity & Compliance",
-  devtools: "Developer Tools",
-  platform: "Platform",
+const INDUSTRY_TITLES: Record<string, string> = {
+  healthcare: "Healthcare",
+  education: "Education",
+  finance: "Finance",
+  realestate: "Real Estate",
+  retail: "Retail",
+  technology: "Technology",
+  marketing: "Marketing",
+  // Novas indústrias
+  logistics: "Logistics & Supply Chain",
+  hospitality: "Hospitality & Travel",
+  manufacturing: "Manufacturing",
+  legal: "Legal & Compliance",
 };
 ```
 
-### Função Helper
+### Adicionar Função Helper (após getSaasTypeTitle, linha ~40)
 
 ```typescript
-const getSaasTypeTitle = (id: string, otherValue?: string | null): string => {
+const getIndustryTitle = (id: string | null, otherValue?: string | null): string => {
+  if (!id) return "";
   if (id === "other" && otherValue) {
-    return otherValue; // Retorna o texto personalizado do usuário
+    return otherValue;
   }
-  return SAAS_TYPE_TITLES[id] || id;
+  return INDUSTRY_TITLES[id] || id;
 };
 ```
 
-### Uso no Payload do Webhook
+### Alterar no Payload do Webhook (linha ~136-137)
 
 ```typescript
-// No objeto wizard dentro do webhookPayload:
-saas_type: getSaasTypeTitle(wizardData.saas_type, wizardData.saas_type_other),
+// Antes:
+industry: wizardData.industry,
+industry_other: wizardData.industry_other,
+
+// Depois:
+industry: getIndustryTitle(wizardData.industry, wizardData.industry_other),
 ```
 
 ---
 
-## Tabela de Conversão Completa
+## Tabela de Conversão Completa - Indústrias
 
 | ID no Banco | Título Enviado ao n8n |
 |-------------|----------------------|
-| `crm` | CRM & Sales |
-| `project` | Project Management |
-| `ecommerce` | E-commerce |
-| `hr` | HR & Recruiting |
-| `finance` | Financial Management |
-| `marketing` | Marketing Automation |
-| `analytics` | Analytics & BI |
-| `communication` | Communication |
-| `support` | Customer Support |
-| `productivity` | Productivity |
-| `education` | Education & Learning |
-| `ai` | AI & Automation |
-| `security` | Cybersecurity & Compliance |
-| `devtools` | Developer Tools |
-| `platform` | Platform |
-| `other` + "Legal Tech" | Legal Tech |
+| `healthcare` | Healthcare |
+| `education` | Education |
+| `finance` | Finance |
+| `realestate` | Real Estate |
+| `retail` | Retail |
+| `technology` | Technology |
+| `marketing` | Marketing |
+| `logistics` | Logistics & Supply Chain |
+| `hospitality` | Hospitality & Travel |
+| `manufacturing` | Manufacturing |
+| `legal` | Legal & Compliance |
+| `other` + "Insurance" | Insurance |
 
 ---
 
 ## Resultado Esperado
 
-O n8n receberá títulos legíveis como "CRM & Sales" ou "Cybersecurity & Compliance" em vez de IDs técnicos como "crm" ou "security", permitindo pesquisas de mercado mais precisas e contextualizadas.
-
+O n8n receberá títulos legíveis como "Logistics & Supply Chain" ou "Legal & Compliance" em vez de IDs técnicos como "logistics" ou "legal", permitindo pesquisas de mercado mais precisas e contextualizadas para cada setor.
