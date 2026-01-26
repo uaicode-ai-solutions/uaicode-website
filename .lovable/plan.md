@@ -1,85 +1,105 @@
 
 
-# Plano: Adicionar wizard_id no Nível Raiz do Payload
+# Plano: Adicionar Informações de Debug ao Data Quality Banner
 
-## Problema Identificado
+## Problema Atual
 
-O n8n espera encontrar `wizard_id` no nível raiz do payload, mas o edge function envia os dados numa estrutura aninhada:
+O banner mostra apenas a mensagem genérica:
+- "Overall viability score is missing"
 
-```text
-Estrutura Atual:
-{
-  "event": "wizard.created",
-  "data": {
-    "wizard": {
-      "id": "xxx"  ← n8n não consegue encontrar aqui
-    }
-  }
-}
-
-Estrutura Esperada pelo n8n:
-{
-  "wizard_id": "xxx",  ← n8n espera aqui
-  ...
-}
-```
+Mas não exibe informações úteis para debug:
+- **Campo JSON**: `hero_score_section.score`
+- **Coluna da tabela**: `tb_pms_reports.hero_score_section`
 
 ## Solução
 
-Adicionar o campo `wizard_id` no nível raiz do payload, mantendo a estrutura completa existente para compatibilidade.
+Expandir a interface `DataQualityIssue` e o componente `DataQualityBanner` para exibir:
+1. O caminho do campo JSON (já existe no campo `field`)
+2. A coluna do banco de dados correspondente
+3. O valor atual encontrado (se houver)
 
-## Alteração Necessária
+## Alterações
 
-**Arquivo**: `supabase/functions/pms-webhook-new-report/index.ts`
+### 1. Atualizar Interface `DataQualityIssue`
 
-Modificar o `webhookPayload` (linhas 143-180) para incluir `wizard_id` no nível raiz:
+**Arquivo**: `src/lib/dataQualityUtils.ts`
+
+Adicionar novos campos à interface:
 
 ```typescript
-const webhookPayload = {
-  wizard_id: wizardData.id,  // <-- Adicionar esta linha
-  event: "wizard.created",
-  timestamp: new Date().toISOString(),
-  data: {
-    wizard: {
-      id: wizardData.id,
-      // ... resto mantém igual
-    },
-    user: userData ? { ... } : null,
-  },
-};
-```
-
-## Resultado Esperado
-
-Após a alteração, o payload enviado terá esta estrutura:
-
-```json
-{
-  "wizard_id": "c9e0f0b2-8d3a-4b41-a1f2-57edaa56f4ea",
-  "event": "wizard.created",
-  "timestamp": "2026-01-26T...",
-  "data": {
-    "wizard": { ... },
-    "user": { ... }
-  }
+export interface DataQualityIssue {
+  id: string;
+  type: 'parsing' | 'missing' | 'incomplete';
+  severity: 'warning' | 'info';
+  field: string;           // Caminho no JSON (ex: "score")
+  jsonPath: string;        // Caminho completo (ex: "hero_score_section.score")
+  dbColumn: string;        // Coluna da tabela (ex: "hero_score_section")
+  currentValue?: unknown;  // Valor atual encontrado (para debug)
+  message: string;
 }
 ```
 
-O n8n poderá acessar `$json.wizard_id` diretamente, resolvendo o erro.
+### 2. Atualizar Função `checkDataQuality`
+
+Modificar cada issue para incluir as novas informações:
+
+```typescript
+// hero_score_section.score
+issues.push({
+  id: 'hero_score_missing',
+  type: 'missing',
+  severity: 'warning',
+  field: 'score',
+  jsonPath: 'hero_score_section.score',
+  dbColumn: 'hero_score_section',
+  currentValue: heroScore?.score ?? null,
+  message: 'Overall viability score is missing'
+});
+```
+
+### 3. Atualizar `DataQualityBanner`
+
+Modificar o componente para exibir as informações técnicas na seção expandida:
+
+```text
+Estrutura Visual:
+
+• Overall viability score is missing
+  ├─ JSON Path: hero_score_section.score
+  ├─ DB Column: tb_pms_reports.hero_score_section
+  └─ Current Value: null
+```
+
+## Arquivos a Modificar
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/lib/dataQualityUtils.ts` | Adicionar `jsonPath`, `dbColumn`, `currentValue` à interface e preencher em cada issue |
+| `src/components/planningmysaas/dashboard/ui/DataQualityBanner.tsx` | Exibir informações técnicas na seção expandida |
 
 ## Seção Técnica
 
-### Mudança Mínima
+### Mapeamento de Issues para Debug
 
-A alteração é de apenas uma linha na definição do objeto `webhookPayload`:
+| Issue ID | JSON Path | DB Column |
+|----------|-----------|-----------|
+| `hero_score_missing` | `hero_score_section.score` | `hero_score_section` |
+| `summary_verdict_missing` | `summary_section.verdict` | `summary_section` |
+| `investment_missing` | `section_investment.investment_one_payment_cents` | `section_investment` |
+| `monthly_searches_parsing` | `opportunity_section.demand_signals.monthly_searches` | `opportunity_section` |
+| `social_mentions_parsing` | `opportunity_section.demand_signals.social_mentions` | `opportunity_section` |
+| `macro_trends_strength` | `opportunity_section.macro_trends[].strength` | `opportunity_section` |
 
-| Linha | Alteração |
-|-------|-----------|
-| 143 | Adicionar `wizard_id: wizardData.id,` como primeira propriedade |
+### Layout do Banner Expandido
 
-### Compatibilidade
+A seção de detalhes usará um layout de código para facilitar copy/paste:
 
-- O campo `data.wizard.id` continua existindo para outros processos que possam depender dele
-- Não quebra nenhuma integração existente
-- Apenas adiciona um campo extra para facilitar o acesso no n8n
+```text
+• Overall viability score is missing
+  JSON Path:    hero_score_section.score
+  DB Column:    tb_pms_reports.hero_score_section  
+  Current:      null
+```
+
+Cada campo terá um botão de copy para facilitar debug no Supabase.
 
