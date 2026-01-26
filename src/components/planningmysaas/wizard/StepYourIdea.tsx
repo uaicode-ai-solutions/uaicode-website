@@ -48,6 +48,10 @@ import {
   Shield,
   Code,
   Layers,
+  Truck,
+  Plane,
+  Factory,
+  Scale,
 } from "lucide-react";
 
 const saasTypes = [
@@ -77,6 +81,10 @@ const industries = [
   { id: "retail", title: "Retail", description: "Stores & commerce", icon: Store },
   { id: "technology", title: "Technology", description: "Software & IT", icon: Monitor },
   { id: "marketing", title: "Marketing", description: "Advertising & PR", icon: BarChart },
+  { id: "logistics", title: "Logistics & Supply Chain", description: "Shipping & warehousing", icon: Truck },
+  { id: "hospitality", title: "Hospitality & Travel", description: "Hotels & tourism", icon: Plane },
+  { id: "manufacturing", title: "Manufacturing", description: "Production & Industry 4.0", icon: Factory },
+  { id: "legal", title: "Legal & Compliance", description: "Law firms & regulations", icon: Scale },
   { id: "other", title: "Other", description: "Different industry", icon: Plus },
 ];
 

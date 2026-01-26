@@ -31,12 +31,34 @@ const SAAS_TYPE_TITLES: Record<string, string> = {
   platform: "Platform",
 };
 
+const INDUSTRY_TITLES: Record<string, string> = {
+  healthcare: "Healthcare",
+  education: "Education",
+  finance: "Finance",
+  realestate: "Real Estate",
+  retail: "Retail",
+  technology: "Technology",
+  marketing: "Marketing",
+  logistics: "Logistics & Supply Chain",
+  hospitality: "Hospitality & Travel",
+  manufacturing: "Manufacturing",
+  legal: "Legal & Compliance",
+};
+
 const getSaasTypeTitle = (id: string | null, otherValue?: string | null): string => {
   if (!id) return "";
   if (id === "other" && otherValue) {
     return otherValue;
   }
   return SAAS_TYPE_TITLES[id] || id;
+};
+
+const getIndustryTitle = (id: string | null, otherValue?: string | null): string => {
+  if (!id) return "";
+  if (id === "other" && otherValue) {
+    return otherValue;
+  }
+  return INDUSTRY_TITLES[id] || id;
 };
 
 const getWebhookUrl = (): string => {
@@ -133,8 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
                 saas_logo_url: wizardData.saas_logo_url,
                 product_stage: wizardData.product_stage,
                 saas_type: getSaasTypeTitle(wizardData.saas_type, wizardData.saas_type_other),
-                industry: wizardData.industry,
-                industry_other: wizardData.industry_other,
+                industry: getIndustryTitle(wizardData.industry, wizardData.industry_other),
                 description: wizardData.description,
                 customer_types: wizardData.customer_types,
                 market_size: wizardData.market_size,
