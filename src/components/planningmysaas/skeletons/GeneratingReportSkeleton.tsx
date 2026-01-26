@@ -6,16 +6,19 @@ interface GeneratingReportSkeletonProps {
   currentStatus?: string;
 }
 
+// Steps ordered for column-first display in 2-column grid
+// Visual order: left column (1-5), right column (6-10)
+// Array order: [1,6], [2,7], [3,8], [4,9], [5,10] for row-by-row grid rendering
 const steps = [
   { id: 1, label: "Investment analysis", icon: DollarSign, statusKey: "investment" },
-  { id: 2, label: "Market benchmarks", icon: Target, statusKey: "benchmark" },
-  { id: 3, label: "Competitor research", icon: BarChart3, statusKey: "competitors" },
-  { id: 4, label: "Market opportunity", icon: TrendingUp, statusKey: "opportunity" },
-  { id: 5, label: "Customer profiling (ICP)", icon: Users, statusKey: "icp" },
   { id: 6, label: "Pricing strategy", icon: Tag, statusKey: "price" },
+  { id: 2, label: "Market benchmarks", icon: Target, statusKey: "benchmark" },
   { id: 7, label: "Paid media analysis", icon: Megaphone, statusKey: "paid media" },
+  { id: 3, label: "Competitor research", icon: BarChart3, statusKey: "competitors" },
   { id: 8, label: "Growth projections", icon: Rocket, statusKey: "growth" },
+  { id: 4, label: "Market opportunity", icon: TrendingUp, statusKey: "opportunity" },
   { id: 9, label: "Executive summary", icon: FileText, statusKey: "summary" },
+  { id: 5, label: "Customer profiling (ICP)", icon: Users, statusKey: "icp" },
   { id: 10, label: "Final scoring", icon: Trophy, statusKey: "hero score" },
 ];
 
