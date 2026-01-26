@@ -62,7 +62,7 @@ const GeneratingReportSkeleton = ({ projectName, currentStatus }: GeneratingRepo
 
   return (
     <div className="min-h-screen flex items-center justify-center py-8">
-      <div className="max-w-lg w-full mx-auto text-center space-y-8 px-4">
+      <div className="max-w-2xl w-full mx-auto text-center space-y-6 px-4">
         {/* Animated Logo */}
         <div className="relative mx-auto w-24 h-24">
           <div className="absolute inset-0 bg-gradient-to-r from-accent/20 to-accent/40 rounded-full animate-pulse" />
@@ -90,61 +90,63 @@ const GeneratingReportSkeleton = ({ projectName, currentStatus }: GeneratingRepo
           </p>
         </div>
 
-        {/* Steps */}
-        <div className="space-y-3 text-left bg-card/50 rounded-xl p-6 border border-border/50 max-h-[400px] overflow-y-auto">
-          {steps.map((step) => {
-            const Icon = step.icon;
-            const isFailed = step.id === failedStep;
-            const isActive = !isFailed && step.id === currentStep + 1; // Next step to process
-            const isComplete = !isFailed && step.id <= currentStep;
+        {/* Steps - 2 columns on desktop, 1 column on mobile */}
+        <div className="text-left bg-card/50 rounded-xl p-4 md:p-6 border border-border/50">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-3">
+            {steps.map((step) => {
+              const Icon = step.icon;
+              const isFailed = step.id === failedStep;
+              const isActive = !isFailed && step.id === currentStep + 1;
+              const isComplete = !isFailed && step.id <= currentStep;
 
-            return (
-              <div
-                key={step.id}
-                className={`flex items-center gap-3 transition-all duration-300 ${
-                  isFailed ? "text-destructive" : isActive ? "text-accent" : isComplete ? "text-muted-foreground" : "text-muted-foreground/50"
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  isFailed
-                    ? "bg-destructive/20 border-2 border-destructive"
-                    : isActive 
-                      ? "bg-accent/20 border-2 border-accent" 
-                      : isComplete 
-                        ? "bg-accent/10 border border-accent/50" 
-                        : "bg-muted/30 border border-border/50"
-                }`}>
-                  {isFailed ? (
-                    <XCircle className="w-4 h-4" />
-                  ) : isActive ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : isComplete ? (
-                    <CheckCircle2 className="w-4 h-4" />
-                  ) : (
-                    <Icon className="w-4 h-4" />
+              return (
+                <div
+                  key={step.id}
+                  className={`flex items-center gap-2 md:gap-3 transition-all duration-300 ${
+                    isFailed ? "text-destructive" : isActive ? "text-accent" : isComplete ? "text-muted-foreground" : "text-muted-foreground/50"
+                  }`}
+                >
+                  <div className={`w-6 h-6 md:w-8 md:h-8 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    isFailed
+                      ? "bg-destructive/20 border-2 border-destructive"
+                      : isActive 
+                        ? "bg-accent/20 border-2 border-accent" 
+                        : isComplete 
+                          ? "bg-accent/10 border border-accent/50" 
+                          : "bg-muted/30 border border-border/50"
+                  }`}>
+                    {isFailed ? (
+                      <XCircle className="w-3 h-3 md:w-4 md:h-4" />
+                    ) : isActive ? (
+                      <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
+                    ) : isComplete ? (
+                      <CheckCircle2 className="w-3 h-3 md:w-4 md:h-4" />
+                    ) : (
+                      <Icon className="w-3 h-3 md:w-4 md:h-4" />
+                    )}
+                  </div>
+                  <span className={`text-xs md:text-sm font-medium truncate flex-1 ${isFailed ? "text-destructive" : isActive ? "text-foreground" : ""}`}>
+                    {step.label}
+                  </span>
+                  {isFailed && (
+                    <span className="shrink-0 ml-auto text-[10px] md:text-xs text-destructive font-medium">
+                      Failed
+                    </span>
+                  )}
+                  {isActive && (
+                    <span className="shrink-0 ml-auto text-[10px] md:text-xs text-accent animate-pulse">
+                      In progress...
+                    </span>
+                  )}
+                  {isComplete && (
+                    <span className="shrink-0 ml-auto text-[10px] md:text-xs text-muted-foreground">
+                      ✓
+                    </span>
                   )}
                 </div>
-                <span className={`text-sm font-medium ${isFailed ? "text-destructive" : isActive ? "text-foreground" : ""}`}>
-                  {step.label}
-                </span>
-                {isFailed && (
-                  <span className="ml-auto text-xs text-destructive font-medium">
-                    Failed
-                  </span>
-                )}
-                {isActive && (
-                  <span className="ml-auto text-xs text-accent animate-pulse">
-                    In progress...
-                  </span>
-                )}
-                {isComplete && (
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    ✓
-                  </span>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* Tips */}
