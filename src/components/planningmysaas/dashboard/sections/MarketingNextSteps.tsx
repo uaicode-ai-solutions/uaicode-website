@@ -1,14 +1,14 @@
-import { ArrowRight, Calendar, Download, Mail, MessageCircle, Sparkles, Target, TrendingUp, BarChart3, Zap } from "lucide-react";
+import { ArrowRight, Calendar, Plus, Mail, MessageCircle, Sparkles, Target, TrendingUp, BarChart3, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface MarketingNextStepsProps {
   onScheduleCall?: () => void;
-  onDownloadPDF?: () => void;
+  onNewReport?: () => void;
 }
 
-const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStepsProps) => {
+const MarketingNextSteps = ({ onScheduleCall, onNewReport }: MarketingNextStepsProps) => {
   const steps = [
     { icon: Target, title: "Strategy Call", desc: "30-min consultation" },
     { icon: TrendingUp, title: "Custom Plan", desc: "90-day roadmap" },
@@ -48,9 +48,9 @@ const MarketingNextSteps = ({ onScheduleCall, onDownloadPDF }: MarketingNextStep
                 <Calendar className="h-4 w-4 mr-2" />
                 Schedule Call
               </Button>
-              <Button size="lg" variant="outline" className="border-accent/30 text-accent" onClick={onDownloadPDF}>
-                <Download className="h-4 w-4 mr-2" />
-                Download PDF
+              <Button size="lg" variant="outline" className="border-accent/30 text-accent" onClick={onNewReport}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Report
               </Button>
             </div>
           </div>

@@ -107,10 +107,10 @@ const formatCurrency = (value: number) => {
 
 interface NextStepsSectionProps {
   onScheduleCall?: () => void;
-  onDownloadPDF?: () => void;
+  onNewReport?: () => void;
 }
 
-const NextStepsSection = ({ onScheduleCall, onDownloadPDF }: NextStepsSectionProps) => {
+const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps) => {
   const { report, reportData, marketingTotals, wizardId } = useReportContext();
   const wizardIdFromData = reportData?.wizard_id;
   

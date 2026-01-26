@@ -10,10 +10,10 @@ import MarketingNextSteps from "./MarketingNextSteps";
 interface MarketingAnalysisTabProps {
   projectName?: string;
   onScheduleCall?: () => void;
-  onDownloadPDF?: () => void;
+  onNewReport?: () => void;
 }
 
-const MarketingAnalysisTab = ({ projectName, onScheduleCall, onDownloadPDF }: MarketingAnalysisTabProps) => {
+const MarketingAnalysisTab = ({ projectName, onScheduleCall, onNewReport }: MarketingAnalysisTabProps) => {
   return (
     <div className="space-y-8">
       {/* Executive Summary */}
@@ -40,7 +40,7 @@ const MarketingAnalysisTab = ({ projectName, onScheduleCall, onDownloadPDF }: Ma
       {/* Next Steps CTA */}
       <MarketingNextSteps 
         onScheduleCall={onScheduleCall}
-        onDownloadPDF={onDownloadPDF}
+        onNewReport={onNewReport}
       />
     </div>
   );
