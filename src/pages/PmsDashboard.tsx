@@ -262,7 +262,7 @@ const PmsDashboardContent = () => {
       <div className="fixed inset-0 z-[100] bg-background">
         <GeneratingReportSkeleton 
           projectName={projectName} 
-          currentStatus="Started"
+          currentStatus={reportData?.status}
         />
       </div>
     );
