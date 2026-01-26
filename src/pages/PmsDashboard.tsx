@@ -454,8 +454,8 @@ const PmsDashboardContent = () => {
             <div className="flex justify-center">
               {[
                 { id: "report", label: "Report", icon: FileText },
-                { id: "marketing", label: "Marketing", icon: TrendingUp },
-                { id: "assets", label: "Branding", icon: Palette },
+                // { id: "marketing", label: "Marketing", icon: TrendingUp }, // HIDDEN v1.0 - will return in future version
+                // { id: "assets", label: "Branding", icon: Palette }, // HIDDEN v1.0 - will return in future version
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -518,7 +518,7 @@ const PmsDashboardContent = () => {
                   <MacroTrendsSection />
                   <RiskFactorsSection />
                   <CompetitorsDifferentiationSection />
-                  <MarketingIntelligenceSection onExploreMarketing={() => setActiveTab("marketing")} />
+                  <MarketingIntelligenceSection />
                   <InvestmentSection />
                   <FinancialReturnSection />
                   <GrowthPotentialSection />
@@ -530,6 +530,7 @@ const PmsDashboardContent = () => {
                 </div>
             )}
 
+            {/* HIDDEN v1.0 - Marketing tab will return in future version
             {activeTab === "marketing" && (
               <MarketingAnalysisTab 
                 projectName={projectName}
@@ -537,10 +538,13 @@ const PmsDashboardContent = () => {
                 onDownloadPDF={handleDownloadPDF}
               />
             )}
+            */}
 
+            {/* HIDDEN v1.0 - Branding tab will return in future version
             {activeTab === "assets" && (
               <BrandAssetsTab />
             )}
+            */}
 
             {/* Footer spacing */}
             <div className="h-16" />

@@ -32,8 +32,9 @@ import { ICPIntelligenceSection, ICPPersona } from "@/types/report";
 import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
 import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
+// HIDDEN v1.0 - onExploreMarketing prop removed, will return in future version
 interface MarketingIntelligenceSectionProps {
-  onExploreMarketing: () => void;
+  onExploreMarketing?: () => void;
 }
 
 // Helper: get value or fallback (with capitalization)
@@ -787,7 +788,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
         </CardContent>
       </Card>
 
-      {/* CTA Banner */}
+      {/* HIDDEN v1.0 - CTA Banner will return with Marketing tab
       <Card className="bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border-amber-500/30 hover:border-amber-500/40 transition-all">
         <CardContent className="p-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -810,6 +811,7 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
           </div>
         </CardContent>
       </Card>
+      */}
     </section>
   );
 };
