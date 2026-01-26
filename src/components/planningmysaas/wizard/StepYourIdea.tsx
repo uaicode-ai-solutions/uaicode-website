@@ -96,6 +96,7 @@ interface StepYourIdeaProps {
 const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
   const [isGeneratingName, setIsGeneratingName] = useState(false);
   const [isImprovingDescription, setIsImprovingDescription] = useState(false);
+  const [isGeneratingLogo, setIsGeneratingLogo] = useState(false);
   const [showSuggestionDialog, setShowSuggestionDialog] = useState(false);
   const [suggestedDescription, setSuggestedDescription] = useState("");
   const [showNameDialog, setShowNameDialog] = useState(false);
@@ -103,6 +104,20 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
   const [suggestedNameRationale, setSuggestedNameRationale] = useState("");
 
   const isDescriptionValid = data.description.trim().length >= 20;
+
+  const handleAILogo = async () => {
+    if (!isDescriptionValid) {
+      toast.error("Please fill in the description first (min 20 characters)");
+      return;
+    }
+    
+    setIsGeneratingLogo(true);
+    
+    // TODO: Implementar chamada à Edge Function
+    toast.info("AI logo generation coming soon!");
+    
+    setIsGeneratingLogo(false);
+  };
 
   const handleApplySuggestion = () => {
     onChange("description", suggestedDescription);
@@ -536,15 +551,38 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
                 reader.readAsDataURL(file);
               }}
             />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => document.getElementById('logo-upload')?.click()}
-              className="border-border/50 hover:border-accent hover:bg-accent/10"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {data.saasLogo ? "Change Logo" : "Upload Logo"}
-            </Button>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById('logo-upload')?.click()}
+                className="border-border/50 hover:border-accent hover:bg-accent/10"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {data.saasLogo ? "Change Logo" : "Upload Logo"}
+              </Button>
+              
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!isDescriptionValid || isGeneratingLogo}
+                onClick={handleAILogo}
+                className="border-accent text-accent hover:bg-accent/10 hover:text-accent
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isGeneratingLogo ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {data.saasLogo ? "Improve with AI" : "Create with AI"}
+                  </>
+                )}
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground mt-2">
               PNG, JPG or SVG. Max 2MB. Recommended: 512×512px
             </p>
