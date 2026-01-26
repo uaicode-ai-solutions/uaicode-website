@@ -17,14 +17,12 @@ interface DataQualityBannerProps {
   issues: DataQualityIssue[];
   onRegenerate: () => void;
   onDismiss: () => void;
-  isRegenerating?: boolean;
 }
 
 export const DataQualityBanner = ({
   issues,
   onRegenerate,
   onDismiss,
-  isRegenerating = false,
 }: DataQualityBannerProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -91,11 +89,10 @@ export const DataQualityBanner = ({
                 variant="outline"
                 size="sm"
                 onClick={onRegenerate}
-                disabled={isRegenerating}
                 className="h-8 gap-1.5 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500/50"
               >
-                <RefreshCw className={`h-3 w-3 ${isRegenerating ? 'animate-spin' : ''}`} />
-                {isRegenerating ? 'Regenerating...' : 'Regenerate Report'}
+                <RefreshCw className="h-3 w-3" />
+                Regenerate Report
               </Button>
             </div>
             
