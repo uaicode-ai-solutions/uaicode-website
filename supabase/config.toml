@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.pms-smart-fallback]
 verify_jwt = false
+
+[functions.pms-improve-description]
+verify_jwt = false

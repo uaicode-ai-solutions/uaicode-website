@@ -4,6 +4,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SelectableCard from "./SelectableCard";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Users,
   Building,
@@ -83,8 +85,45 @@ interface StepYourIdeaProps {
 
 const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
   const [isGeneratingName, setIsGeneratingName] = useState(false);
+  const [isImprovingDescription, setIsImprovingDescription] = useState(false);
 
   const isDescriptionValid = data.description.trim().length >= 20;
+
+  const handleImproveDescription = async () => {
+    if (data.description.length < 10) {
+      toast.error("Please write at least 10 characters before improving");
+      return;
+    }
+    
+    setIsImprovingDescription(true);
+    try {
+      const { data: result, error } = await supabase.functions.invoke('pms-improve-description', {
+        body: {
+          description: data.description,
+          saasType: data.saasType,
+          industry: data.industry
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (result?.improvedDescription) {
+        onChange("description", result.improvedDescription);
+        toast.success("Description improved successfully!");
+      }
+    } catch (error: any) {
+      console.error("Error improving description:", error);
+      if (error?.status === 429) {
+        toast.error("Rate limit exceeded. Please try again later.");
+      } else if (error?.status === 402) {
+        toast.error("Payment required. Please add credits to continue.");
+      } else {
+        toast.error("Failed to improve description. Please try again.");
+      }
+    } finally {
+      setIsImprovingDescription(false);
+    }
+  };
 
   const handleSuggestName = async () => {
     setIsGeneratingName(true);
@@ -234,10 +273,22 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
           <Button
             type="button"
             variant="outline"
-            className="border-accent text-accent hover:bg-accent/10 hover:text-accent"
+            onClick={handleImproveDescription}
+            disabled={data.description.length < 10 || isImprovingDescription}
+            className="border-accent text-accent hover:bg-accent/10 hover:text-accent
+                       disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Improve with AI
+            {isImprovingDescription ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Improving...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Improve with AI
+              </>
+            )}
           </Button>
           <span className="text-sm text-muted-foreground">
             {data.description.length}/1000
