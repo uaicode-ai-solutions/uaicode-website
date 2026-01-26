@@ -118,7 +118,7 @@ const WizardLayout = ({
                   disabled={!canGoNext}
                   className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold glow-white"
                 >
-                  🚀 Generate My Launch Plan
+                  🚀 Get my SaaS Analysis
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               ) : (
