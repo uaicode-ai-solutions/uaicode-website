@@ -12,6 +12,33 @@ interface RequestPayload {
   report_id?: string; // Legacy support
 }
 
+// Mapeamento de IDs técnicos para títulos legíveis
+const SAAS_TYPE_TITLES: Record<string, string> = {
+  crm: "CRM & Sales",
+  project: "Project Management",
+  ecommerce: "E-commerce",
+  hr: "HR & Recruiting",
+  finance: "Financial Management",
+  marketing: "Marketing Automation",
+  analytics: "Analytics & BI",
+  communication: "Communication",
+  support: "Customer Support",
+  productivity: "Productivity",
+  education: "Education & Learning",
+  ai: "AI & Automation",
+  security: "Cybersecurity & Compliance",
+  devtools: "Developer Tools",
+  platform: "Platform",
+};
+
+const getSaasTypeTitle = (id: string | null, otherValue?: string | null): string => {
+  if (!id) return "";
+  if (id === "other" && otherValue) {
+    return otherValue;
+  }
+  return SAAS_TYPE_TITLES[id] || id;
+};
+
 const getWebhookUrl = (): string => {
   const webhookId = Deno.env.get("REPORT_NEWREPORT_WEBHOOK_ID");
   if (!webhookId) {
@@ -105,8 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
                 saas_name: wizardData.saas_name,
                 saas_logo_url: wizardData.saas_logo_url,
                 product_stage: wizardData.product_stage,
-                saas_type: wizardData.saas_type,
-                saas_type_other: wizardData.saas_type_other,
+                saas_type: getSaasTypeTitle(wizardData.saas_type, wizardData.saas_type_other),
                 industry: wizardData.industry,
                 industry_other: wizardData.industry_other,
                 description: wizardData.description,

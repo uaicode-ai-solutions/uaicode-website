@@ -44,6 +44,10 @@ import {
   Search,
   Rocket,
   CircleDollarSign,
+  Brain,
+  Shield,
+  Code,
+  Layers,
 } from "lucide-react";
 
 const saasTypes = [
@@ -58,6 +62,10 @@ const saasTypes = [
   { id: "support", title: "Customer Support", description: "Help desk & ticketing", icon: Headphones },
   { id: "productivity", title: "Productivity", description: "Workflow automation", icon: Zap },
   { id: "education", title: "Education & Learning", description: "LMS & e-learning", icon: BookOpen },
+  { id: "ai", title: "AI & Automation", description: "AI-powered solutions", icon: Brain },
+  { id: "security", title: "Cybersecurity & Compliance", description: "Security & data protection", icon: Shield },
+  { id: "devtools", title: "Developer Tools", description: "APIs, SDKs & dev platforms", icon: Code },
+  { id: "platform", title: "Platform", description: "Multi-sided marketplace", icon: Layers },
   { id: "other", title: "Other", description: "Something else", icon: Plus },
 ];
 
