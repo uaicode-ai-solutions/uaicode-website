@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { toast } from "@/hooks/use-toast";
 import { sanitizeFormData } from "@/lib/inputSanitization";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -89,20 +88,11 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
         throw new Error(error.message);
       }
 
-      toast({
-        title: "Message Sent! ✨",
-        description: "We'll get back to you within 24 hours.",
-      });
-
+      console.log("Message sent successfully");
       reset();
       onOpenChange(false);
     } catch (error) {
       console.error("Email contact form error:", error);
-      toast({
-        title: "Unable to Send",
-        description: error instanceof Error ? error.message : "There was an error sending your message. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }

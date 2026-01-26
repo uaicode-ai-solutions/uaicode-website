@@ -1,6 +1,5 @@
 import { Share2, Linkedin, Twitter, Facebook, MessageCircle, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 interface SocialShareButtonsProps {
   orientation?: "vertical" | "horizontal";
@@ -24,7 +23,7 @@ export const SocialShareButtons = ({ orientation = "vertical", label }: SocialSh
 
     if (platform === 'copy') {
       navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied to clipboard!");
+      console.log("Link copied to clipboard");
       return;
     }
 

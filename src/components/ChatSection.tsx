@@ -3,7 +3,6 @@ import { RotateCcw, Send, Mic, MicOff, Globe, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useVapi } from "@/hooks/useVapi";
 import { useConversation } from "@/hooks/useConversation";
 import EveAvatar from "@/components/chat/EveAvatar";
@@ -30,7 +29,6 @@ const ChatSection = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const prevLoadingRef = useRef(isLoading);
-  const { toast } = useToast();
 
   // Callback to save voice messages to database
   const handleVoiceMessage = async (message: Message) => {
@@ -72,13 +70,9 @@ const ChatSection = () => {
   // Voice error handling
   useEffect(() => {
     if (voiceError) {
-      toast({
-        title: "Voice Connection Error",
-        description: voiceError,
-        variant: "destructive",
-      });
+      console.error("Voice Connection Error:", voiceError);
     }
-  }, [voiceError, toast]);
+  }, [voiceError]);
 
   // Call duration timer
   useEffect(() => {
@@ -158,12 +152,6 @@ const ChatSection = () => {
       }
     } catch (error: any) {
       console.error("Error sending message:", error);
-      
-      toast({
-        title: "Error",
-        description: error?.message || "Sorry, there was an error connecting to Eve.",
-        variant: "destructive",
-      });
 
       const errorMessage = { role: "assistant" as const, content: "Sorry, there was an error connecting to the chat service. Please try again." };
       await addMessage(errorMessage);
@@ -190,28 +178,6 @@ const ChatSection = () => {
       }
     } catch (error: any) {
       console.error("Voice toggle error:", error);
-      const errorMessage = error.message || "Failed to connect to Eve.";
-      
-      // Provide more specific error messages based on error type
-      let description = errorMessage;
-      
-      if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError")) {
-        description = "Network error connecting to voice service. Please check your connection.";
-      } else if (errorMessage.includes("Microphone")) {
-        description = "Microphone access required. Please allow it in browser settings.";
-      } else if (errorMessage.includes("401") || errorMessage.includes("403") || errorMessage.includes("Unauthorized")) {
-        description = "Voice service authentication error. Please try again.";
-      } else if (errorMessage.includes("not configured")) {
-        description = "Voice service is not configured. Please contact support.";
-      } else if (errorMessage.includes("allowlist") || errorMessage.includes("origin")) {
-        description = "This domain is not allowed for voice. Please contact support.";
-      }
-      
-      toast({
-        title: "Voice Connection Error",
-        description,
-        variant: "destructive"
-      });
     }
   };
 

@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 
 interface ShareReportDialogProps {
   open: boolean;
@@ -26,7 +25,6 @@ const ShareReportDialog = ({
   reportUrl,
   projectName,
 }: ShareReportDialogProps) => {
-  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -34,37 +32,22 @@ const ShareReportDialog = ({
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(reportUrl);
-      toast({
-        title: "Link copied!",
-        description: "Report link copied to clipboard.",
-      });
+      console.log("Link copied to clipboard");
     } catch (error) {
-      toast({
-        title: "Failed to copy",
-        description: "Please copy the link manually.",
-        variant: "destructive",
-      });
+      console.error("Failed to copy link:", error);
     }
   };
 
   const handleSendEmail = async () => {
     if (!email.trim()) {
-      toast({
-        title: "Email required",
-        description: "Please enter a recipient email address.",
-        variant: "destructive",
-      });
+      console.error("Email required");
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
+      console.error("Invalid email");
       return;
     }
 
@@ -74,10 +57,7 @@ const ShareReportDialog = ({
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     setIsSending(false);
-    toast({
-      title: "Email sent!",
-      description: `Report shared with ${email}`,
-    });
+    console.log(`Email sent to ${email}`);
 
     // Reset form and close dialog
     setEmail("");

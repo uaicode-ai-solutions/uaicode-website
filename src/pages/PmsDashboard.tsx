@@ -24,7 +24,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
 import { useConfetti } from "@/hooks/useConfetti";
 import { BackToTopButton } from "@/components/blog/BackToTopButton";
 import DashboardSkeleton from "@/components/planningmysaas/skeletons/DashboardSkeleton";
@@ -64,7 +63,6 @@ const PmsDashboardContent = () => {
   const queryClient = useQueryClient();
   // URL param is the wizard_id (tb_pms_wizard.id), not tb_pms_reports.id
   const { id: wizardId } = useParams<{ id: string }>();
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("report");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -118,17 +116,12 @@ const PmsDashboardContent = () => {
     // Handle errors during regeneration
     if (regenerationStarted && (currentStatus === "failed" || currentStatus === "error")) {
       console.error("❌ Regeneration failed");
-      toast({
-        title: "Error",
-        description: "Report generation failed. Please try again.",
-        variant: "destructive",
-      });
       setIsRegenerating(false);
       setRegenerationStarted(false);
     }
     
     prevStatusRef.current = currentStatus;
-  }, [isRegenerating, regenerationStarted, reportData?.status, toast]);
+  }, [isRegenerating, regenerationStarted, reportData?.status]);
 
   // Regenerate report handler - calls pms-trigger-n8n-report
   const handleRegenerateReport = async () => {
@@ -151,11 +144,6 @@ const PmsDashboardContent = () => {
 
       if (error) {
         console.error("❌ Failed to trigger n8n:", error);
-        toast({
-          title: "Error",
-          description: "Failed to trigger report generation.",
-          variant: "destructive",
-        });
         setIsRegenerating(false);
         return;
       }
@@ -166,11 +154,6 @@ const PmsDashboardContent = () => {
       
     } catch (err) {
       console.error("❌ Error calling pms-trigger-n8n-report:", err);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
       setIsRegenerating(false);
     }
   };
@@ -180,25 +163,15 @@ const PmsDashboardContent = () => {
 
   const handleLogout = () => {
     navigate("/planningmysaas/login");
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
+    console.log("Logged out");
   };
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Link copied!",
-        description: "Report link copied to clipboard.",
-      });
+      console.log("Link copied to clipboard");
     } catch (error) {
-      toast({
-        title: "Failed to copy",
-        description: "Please copy the link manually.",
-        variant: "destructive",
-      });
+      console.error("Failed to copy link:", error);
     }
   };
 

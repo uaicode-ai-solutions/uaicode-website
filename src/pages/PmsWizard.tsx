@@ -6,7 +6,6 @@ import StepYourIdea from "@/components/planningmysaas/wizard/StepYourIdea";
 import StepTargetMarket from "@/components/planningmysaas/wizard/StepTargetMarket";
 import StepFeatures from "@/components/planningmysaas/wizard/StepFeatures";
 import StepGoals from "@/components/planningmysaas/wizard/StepGoals";
-import { useToast } from "@/hooks/use-toast";
 import { saveReport, generateReportId, StoredReport } from "@/lib/reportsStorage";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -111,8 +110,6 @@ const PmsWizard = () => {
   const [currentStep, setCurrentStep] = useState(savedState.currentStep);
   const [data, setData] = useState<WizardData>(savedState.data);
   const [userDataLoaded, setUserDataLoaded] = useState(false);
-  
-  const { toast } = useToast();
 
   // Load authenticated user data into wizard (only if no localStorage draft exists)
   useEffect(() => {
@@ -212,11 +209,7 @@ const PmsWizard = () => {
     if (!validateStep(currentStep)) return;
     
     if (!pmsUser) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to generate your report.",
-        variant: "destructive",
-      });
+      console.error("Authentication required");
       return;
     }
 
@@ -285,11 +278,6 @@ const PmsWizard = () => {
 
       if (insertError) {
         console.error("Error saving report to database:", insertError);
-        toast({
-          title: "Error",
-          description: "Failed to save your report. Please try again.",
-          variant: "destructive",
-        });
         return;
       }
 
@@ -361,11 +349,6 @@ const PmsWizard = () => {
 
     } catch (error) {
       console.error("Error during submission:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 

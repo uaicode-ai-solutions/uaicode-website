@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { useAuthContext } from "@/contexts/AuthContext";
 import {
   AlertDialog,
@@ -36,7 +36,6 @@ import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 const PmsProfile = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { pmsUser, updateProfile, updatePassword, updateEmail, deleteAccount } = useAuthContext();
   
   // Form states
@@ -76,23 +75,12 @@ const PmsProfile = () => {
       // Update email if changed
       if (email !== pmsUser?.email) {
         await updateEmail(email);
-        toast({
-          title: "Email update requested",
-          description: "Please check your new email address to confirm the change.",
-        });
+        console.log("Email update requested - check new email for confirmation");
       } else {
-        toast({
-          title: "Profile updated",
-          description: "Your profile information has been saved successfully.",
-        });
+        console.log("Profile updated successfully");
       }
     } catch (error: any) {
       console.error("Profile update error:", error);
-      toast({
-        title: "Update failed",
-        description: error.message || "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSavingProfile(false);
     }
@@ -100,20 +88,12 @@ const PmsProfile = () => {
 
   const handleSavePassword = async () => {
     if (newPassword !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your new password and confirmation match.",
-        variant: "destructive",
-      });
+      console.error("Passwords don't match");
       return;
     }
 
     if (newPassword.length < 8) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 8 characters long.",
-        variant: "destructive",
-      });
+      console.error("Password too short");
       return;
     }
     
@@ -121,22 +101,13 @@ const PmsProfile = () => {
     
     try {
       await updatePassword(newPassword);
-      
-      toast({
-        title: "Password updated",
-        description: "Your password has been changed successfully.",
-      });
+      console.log("Password updated successfully");
       
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
       console.error("Password update error:", error);
-      toast({
-        title: "Update failed",
-        description: error.message || "Failed to update password. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSavingPassword(false);
     }
@@ -488,19 +459,11 @@ const PmsProfile = () => {
                         setIsDeleting(true);
                         try {
                           await deleteAccount();
-                          toast({
-                            title: "Account deleted",
-                            description: "Your account has been permanently deleted. Goodbye!",
-                          });
+                          console.log("Account deleted successfully");
                           // Force full page reload to clear all state and ensure navigation
                           window.location.replace("/planningmysaas/login");
                         } catch (error: any) {
                           console.error("Delete account error:", error);
-                          toast({
-                            title: "Deletion failed",
-                            description: error.message || "Failed to delete account. Please try again.",
-                            variant: "destructive",
-                          });
                           // Only reset state on error - success will reload the page
                           setIsDeleting(false);
                           setIsDeleteDialogOpen(false);
