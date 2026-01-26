@@ -73,7 +73,7 @@ const PmsDashboardContent = () => {
   const hasShownConfetti = useRef(false);
   
   // Check if user is admin for showing Admin Panel link
-  const { isAdmin } = useUserRoles();
+  const { isAdmin, isContributor } = useUserRoles();
   
   // Get ALL data from context - unified loading state ensures no race conditions
   const { report, reportData, pmsReportId, isLoading, error } = useReportContext();
@@ -386,7 +386,7 @@ const PmsDashboardContent = () => {
         </div>
 
           {/* Data Quality Banner */}
-          {!bannerDismissed && dataQualityIssues.length > 0 && (
+          {!bannerDismissed && dataQualityIssues.length > 0 && (isAdmin || isContributor) && (
             <div className="py-4">
               <DataQualityBanner
                 issues={dataQualityIssues}
