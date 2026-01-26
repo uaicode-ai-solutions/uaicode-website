@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { MoreVertical, Trash2, Eye, Calendar, ArrowRight } from "lucide-react";
+import { MoreVertical, Trash2, Eye, Calendar, ArrowRight, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +56,23 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
     if (score >= 40) return "bg-gradient-to-r from-orange-500 to-orange-400";
     return "bg-gradient-to-r from-red-500 to-red-400";
   };
+  // Get verdict badge color
+  const getVerdictStyle = (v: string | null) => {
+    if (!v) return null;
+    const lower = v.toLowerCase();
+    if (lower.includes("proceed") || lower.includes("strong")) {
+      return { bg: "bg-green-500/20", text: "text-green-400", label: "Proceed" };
+    }
+    if (lower.includes("caution") || lower.includes("conditional")) {
+      return { bg: "bg-amber-500/20", text: "text-amber-400", label: "Caution" };
+    }
+    if (lower.includes("stop") || lower.includes("pivot")) {
+      return { bg: "bg-red-500/20", text: "text-red-400", label: "Reconsider" };
+    }
+    return { bg: "bg-muted/50", text: "text-muted-foreground", label: "Analyzing" };
+  };
+
+  const verdictStyle = getVerdictStyle(verdict);
 
   return (
     <Card className="group relative overflow-hidden glass-premium border-accent/10 
@@ -70,10 +88,15 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
         {/* Header with badge and menu */}
         <div className="flex items-start justify-between mb-5">
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-lg text-foreground truncate leading-tight">
-              {projectName}
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1.5 truncate">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-bold text-lg text-foreground truncate leading-tight">
+                {projectName}
+              </h3>
+              {isGenerating && (
+                <Loader2 className="h-4 w-4 text-accent animate-spin shrink-0" />
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground truncate">
               {industry}
             </p>
           </div>
@@ -108,20 +131,40 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
 
         {/* Score with premium visual */}
         <div className="mb-5">
-          <div className="flex items-end gap-2 mb-3">
-            <span className={`text-4xl font-bold ${getScoreColor(viabilityScore)} leading-none`}>
-              {viabilityScore}
-            </span>
-            <span className="text-lg text-muted-foreground mb-0.5">/ 100</span>
-          </div>
-          {/* Progress bar premium */}
-          <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
-            <div 
-              className={`h-full rounded-full transition-all duration-1000 ease-out ${getScoreBarColor(viabilityScore)}`}
-              style={{ width: `${viabilityScore}%` }}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">Viability Score</p>
+          {isGenerating ? (
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-muted-foreground text-sm">Generating report...</span>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-end gap-2 mb-3">
+                <span className={`text-4xl font-bold ${getScoreColor(viabilityScore)} leading-none`}>
+                  {viabilityScore}
+                </span>
+                <span className="text-lg text-muted-foreground mb-0.5">/ 100</span>
+              </div>
+              {/* Progress bar premium */}
+              <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-1000 ease-out ${getScoreBarColor(viabilityScore)}`}
+                  style={{ width: `${viabilityScore}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-muted-foreground">Viability Score</p>
+                {verdictStyle && (
+                  <Badge className={`${verdictStyle.bg} ${verdictStyle.text} border-0 text-xs`}>
+                    {verdictStyle.label}
+                  </Badge>
+                )}
+              </div>
+              {tamValue && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  TAM: <span className="text-foreground font-medium">{tamValue}</span>
+                </p>
+              )}
+            </>
+          )}
         </div>
 
         {/* Footer premium */}
