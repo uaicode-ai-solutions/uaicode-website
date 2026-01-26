@@ -128,14 +128,33 @@ Also provide a brief branding rationale explaining why this name works.`;
     }
 
     const data = await response.json();
+    console.log("AI Response:", JSON.stringify(data, null, 2));
     
     // Extract the tool call result
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall || toolCall.function.name !== "suggest_name") {
+    
+    let result: { suggestedName: string; rationale: string };
+    
+    if (toolCall && toolCall.function?.name === "suggest_name") {
+      // Standard tool call response
+      result = JSON.parse(toolCall.function.arguments);
+    } else if (data.choices?.[0]?.message?.content) {
+      // Fallback: parse from content if tool call format differs
+      const content = data.choices[0].message.content;
+      console.log("Fallback parsing from content:", content);
+      
+      // Try to extract name from content
+      const nameMatch = content.match(/(?:name[:\s]+)?["']?([A-Z][a-zA-Z0-9]*(?:\s+[A-Z][a-zA-Z0-9]*)?)["']?/i);
+      const suggestedName = nameMatch ? nameMatch[1].trim() : content.split(/[\n.!?]/)[0].trim().slice(0, 30);
+      
+      result = {
+        suggestedName: suggestedName || "Unnamed",
+        rationale: "AI-generated name based on your product description."
+      };
+    } else {
+      console.error("Unexpected AI response structure:", JSON.stringify(data));
       throw new Error("Unexpected response format from AI");
     }
-
-    const result = JSON.parse(toolCall.function.arguments);
 
     // Clean up the name - remove quotes, extra spaces, etc.
     const cleanName = result.suggestedName
