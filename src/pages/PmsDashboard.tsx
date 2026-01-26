@@ -30,7 +30,6 @@ import DashboardSkeleton from "@/components/planningmysaas/skeletons/DashboardSk
 import GeneratingReportSkeleton from "@/components/planningmysaas/skeletons/GeneratingReportSkeleton";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import { ReportProvider, useReportContext } from "@/contexts/ReportContext";
-import { useReport } from "@/hooks/useReport";
 import { checkDataQuality } from "@/lib/dataQualityUtils";
 import DataQualityBanner from "@/components/planningmysaas/dashboard/ui/DataQualityBanner";
 
@@ -76,8 +75,8 @@ const PmsDashboardContent = () => {
   const { fireConfetti } = useConfetti();
   const hasShownConfetti = useRef(false);
   
-  // Get report data from context - pmsReportId is tb_pms_reports.id
-  const { reportData, pmsReportId } = useReportContext();
+  // Get ALL data from context - unified loading state ensures no race conditions
+  const { report, reportData, pmsReportId, isLoading, error } = useReportContext();
   
   // Check data quality (memoized to avoid recalculating on every render)
   const dataQualityIssues = useMemo(() => {
@@ -158,8 +157,7 @@ const PmsDashboardContent = () => {
     }
   };
 
-  // Use database data - fetch wizard by wizardId
-  const { data: report, isLoading, error } = useReport(wizardId);
+  // report, isLoading, and error now come from ReportContext (unified loading)
 
   const handleLogout = () => {
     navigate("/planningmysaas/login");
@@ -216,8 +214,9 @@ const PmsDashboardContent = () => {
     }
   };
 
-  // Show loading skeleton while fetching
-  if (isLoading) {
+  // Show loading skeleton while fetching - wait for BOTH wizard AND reportData
+  // This prevents race condition where Data Quality errors appear before data loads
+  if (isLoading || reportData === undefined) {
     return (
       <div className="min-h-screen bg-background">
         {/* Header skeleton */}
