@@ -1,92 +1,208 @@
 
 
-# Plano: Criar Página de Loading Dedicada e Corrigir Fluxo de Geração
+# Plano: Adicionar Detecção de Falha na Tela de Loading
 
-## Problema Identificado
+## Contexto
 
-O fluxo atual está errado:
-
-```text
-ATUAL (ERRADO):
-1. Clica em "Get my SaaS Analysis"
-2. Dispara confetti (linha 362)
-3. Mostra toast de sucesso (linha 365-368)
-4. Aguarda 1.5 segundos (linha 371-373)
-5. Navega para o dashboard
-6. Dashboard detecta status != "Created" e mostra loading interno
-```
-
-```text
-ESPERADO (CORRETO):
-1. Clica em "Get my SaaS Analysis"
-2. Navega IMEDIATAMENTE para página de loading (/planningmysaas/loading/{id})
-3. Página de loading faz polling do status
-4. Quando status = "Created", navega para o dashboard
-5. Dashboard dispara confetti
-```
+O n8n pode atualizar o campo `status` com padrões de falha como `"Step X - Fail"`. A tela de loading deve detectar isso e exibir uma interface de erro amigável com opções para o usuário.
 
 ---
 
-## Arquivos a Criar/Modificar
+## Arquivos a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/pages/PmsLoading.tsx` | **CRIAR** - Nova página de loading dedicada |
-| `src/App.tsx` | Adicionar nova rota `/planningmysaas/loading/:id` |
-| `src/pages/PmsWizard.tsx` | Remover toast, confetti e delay - navegar para página de loading |
-| `src/pages/PmsDashboard.tsx` | Disparar confetti ao carregar (relatório já pronto) + remover lógica de isGenerating |
+| `src/hooks/useReportData.ts` | Corrigir lógica de polling + detectar status "Fail" |
+| `src/pages/PmsLoading.tsx` | Adicionar estado de erro com UI e botões de ação |
+| `src/components/planningmysaas/skeletons/GeneratingReportSkeleton.tsx` | Adicionar detecção visual de step com falha |
 
 ---
 
-## Parte 1: Criar Página de Loading Dedicada
+## Parte 1: Corrigir Polling e Adicionar Detecção de Falha
 
-### Arquivo: `src/pages/PmsLoading.tsx` (NOVO)
+### Arquivo: `src/hooks/useReportData.ts`
+
+Atualizar a lógica de `refetchInterval` para:
+1. Continuar polling quando não há dados ainda
+2. Parar quando status é terminal (sucesso OU falha)
 
 ```typescript
-import { useEffect, useRef } from "react";
+refetchInterval: (query) => {
+  const data = query.state.data as ReportData | null;
+  const status = data?.status;
+  
+  // Terminal statuses - stop polling
+  const isTerminal = 
+    status === "Created" || 
+    status === "completed" || 
+    status === "failed" || 
+    status === "error" ||
+    (status && status.toLowerCase().includes("fail"));
+  
+  if (isTerminal) {
+    return false;
+  }
+  
+  // Continue polling: no data yet OR in-progress status
+  return 5000;
+},
+```
+
+---
+
+## Parte 2: Criar UI de Erro na Página de Loading
+
+### Arquivo: `src/pages/PmsLoading.tsx`
+
+Adicionar lógica para detectar falha e renderizar tela de erro:
+
+```typescript
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
 import GeneratingReportSkeleton from "@/components/planningmysaas/skeletons/GeneratingReportSkeleton";
 import { useReportData } from "@/hooks/useReportData";
 import { useReport } from "@/hooks/useReport";
+import { supabase } from "@/integrations/supabase/client";
+
+// Helper to detect failure status
+const isFailureStatus = (status: string | undefined): boolean => {
+  if (!status) return false;
+  return status.toLowerCase().includes("fail");
+};
+
+// Helper to extract failed step from status
+const parseFailedStep = (status: string | undefined): { stepNumber: number; stepName: string } | null => {
+  if (!status) return null;
+  // Pattern: "Step X Name - Fail" or "Step X - Fail"
+  const match = status.match(/Step (\d+)\s*([^-]*)?-?\s*Fail/i);
+  if (match) {
+    return {
+      stepNumber: parseInt(match[1]),
+      stepName: match[2]?.trim() || `Step ${match[1]}`
+    };
+  }
+  return null;
+};
 
 const PmsLoading = () => {
   const navigate = useNavigate();
   const { id: wizardId } = useParams<{ id: string }>();
+  const [isRetrying, setIsRetrying] = useState(false);
   
-  // Get wizard data for project name
   const { data: wizardData } = useReport(wizardId);
   const projectName = wizardData?.saas_name || "Your SaaS";
   
-  // Get report data with polling (every 5 seconds)
-  const { data: reportData } = useReportData(wizardId);
-  
-  // Track if we've already navigated to avoid double navigation
+  const { data: reportData, refetch } = useReportData(wizardId);
   const hasNavigated = useRef(false);
   
-  // Monitor status and navigate when complete
+  const status = reportData?.status;
+  const isFailed = isFailureStatus(status);
+  const failedStepInfo = parseFailedStep(status);
+  
+  // Navigate on success
   useEffect(() => {
     if (hasNavigated.current) return;
     
-    const status = reportData?.status;
-    
-    // Terminal statuses - report is ready
     if (status === "Created" || status === "completed") {
       hasNavigated.current = true;
       navigate(`/planningmysaas/dashboard/${wizardId}`, { replace: true });
     }
-    
-    // Error statuses - redirect back to reports with error
-    if (status === "failed" || status === "error") {
-      hasNavigated.current = true;
-      navigate("/planningmysaas/reports", { replace: true });
-    }
-  }, [reportData?.status, wizardId, navigate]);
+  }, [status, wizardId, navigate]);
   
+  // Handle retry
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    try {
+      // Reset the report status and trigger regeneration
+      await supabase.functions.invoke('pms-generate-report', {
+        body: { reportId: wizardId }
+      });
+      // Refetch to get new status
+      await refetch();
+    } catch (error) {
+      console.error("Retry failed:", error);
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+  
+  // Handle back to wizard
+  const handleBackToWizard = () => {
+    navigate(`/planningmysaas/wizard?edit=${wizardId}`, { replace: true });
+  };
+  
+  // Show error UI if failed
+  if (isFailed) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-6">
+          {/* Error Icon */}
+          <div className="mx-auto w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center">
+            <AlertTriangle className="w-10 h-10 text-destructive" />
+          </div>
+          
+          {/* Error Message */}
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-bold text-foreground">
+              Report Generation Failed
+            </h2>
+            <p className="text-muted-foreground">
+              We encountered an issue while analyzing <span className="font-semibold text-accent">{projectName}</span>
+            </p>
+          </div>
+          
+          {/* Failed Step Details */}
+          <Alert variant="destructive" className="bg-destructive/5 border-destructive/20">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>
+              {failedStepInfo 
+                ? `Failed at Step ${failedStepInfo.stepNumber}: ${failedStepInfo.stepName}`
+                : "Processing Error"
+              }
+            </AlertTitle>
+            <AlertDescription>
+              The AI analysis could not complete this step. You can try again or go back to review your inputs.
+            </AlertDescription>
+          </Alert>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={handleBackToWizard}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Wizard
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={handleRetry}
+              disabled={isRetrying}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+              {isRetrying ? "Retrying..." : "Try Again"}
+            </Button>
+          </div>
+          
+          {/* Help Text */}
+          <p className="text-xs text-muted-foreground text-center">
+            If the problem persists, please contact support with your report ID: <code className="text-xs bg-muted px-1 py-0.5 rounded">{wizardId}</code>
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Normal loading state
   return (
     <div className="fixed inset-0 z-[100] bg-background">
       <GeneratingReportSkeleton 
         projectName={projectName}
-        currentStatus={reportData?.status}
+        currentStatus={status}
       />
     </div>
   );
@@ -97,147 +213,77 @@ export default PmsLoading;
 
 ---
 
-## Parte 2: Adicionar Rota no App.tsx
+## Parte 3: Adicionar Visual de Falha no Skeleton (Opcional)
 
-### Linha ~18: Adicionar import
+### Arquivo: `src/components/planningmysaas/skeletons/GeneratingReportSkeleton.tsx`
 
-```typescript
-import PmsLoading from "./pages/PmsLoading";
-```
-
-### Linha ~51 (após rota do wizard): Adicionar nova rota
+Adicionar detecção de step com falha para feedback visual antes do redirecionamento:
 
 ```typescript
-<Route path="/planningmysaas/loading/:id" element={
-  <ProtectedRoute><PmsLoading /></ProtectedRoute>
-} />
+// Adicionar função helper após parseCurrentStep
+const parseFailedStep = (status: string | undefined): number | null => {
+  if (!status) return null;
+  const match = status.match(/Step (\d+).*Fail/i);
+  return match ? parseInt(match[1]) : null;
+};
+
+// No componente, adicionar:
+const failedStep = parseFailedStep(currentStatus);
+
+// No render de cada step, adicionar estilo de falha:
+const isFailed = step.id === failedStep;
+// Usar cor vermelha e ícone X para steps com falha
 ```
 
 ---
 
-## Parte 3: Simplificar Wizard
-
-### Arquivo: `src/pages/PmsWizard.tsx`
-
-**Remover imports não utilizados (linhas 9-10):**
-- Remover `useToast` (só será usado para erros)
-- Remover `useConfetti`
-
-**Remover no componente (linha ~117):**
-```typescript
-const { fireConfetti } = useConfetti(); // REMOVER
-```
-
-**Substituir linhas 361-373 (confetti + toast + setTimeout) por:**
-
-```typescript
-// Navigate immediately to loading screen
-navigate(`/planningmysaas/loading/${reportId}`);
-```
-
-**Manter apenas o toast de erro (já existe nas linhas 217-223 e 290-295 e 377-381)**
-
----
-
-## Parte 4: Adicionar Confetti ao Dashboard
-
-### Arquivo: `src/pages/PmsDashboard.tsx`
-
-**Adicionar imports (após linha 17):**
-```typescript
-import { useConfetti } from "@/hooks/useConfetti";
-```
-
-**Adicionar ref no componente PmsDashboardContent (após linha 74):**
-```typescript
-const hasShownConfetti = useRef(false);
-const { fireConfetti } = useConfetti();
-```
-
-**Adicionar useEffect para disparar confetti (após linha 210, junto dos outros useEffects):**
-```typescript
-// Fire confetti when dashboard loads with a completed report
-useEffect(() => {
-  // Only fire once per mount and only for completed reports
-  if (!hasShownConfetti.current && reportData?.status === "Created") {
-    hasShownConfetti.current = true;
-    // Small delay for UI to render
-    setTimeout(() => {
-      fireConfetti();
-    }, 300);
-  }
-}, [reportData?.status, fireConfetti]);
-```
-
-**Simplificar lógica de isGenerating (linhas 270-276):**
-
-Remover toda a lógica de isGenerating e o bloco que renderiza o loading skeleton (linhas 278-287), pois agora a página de loading é separada.
-
-```typescript
-// REMOVER ESTE BLOCO:
-const isGenerating = isRegenerating || !reportData?.status || ...
-
-if (isGenerating) {
-  return (
-    <div className="fixed inset-0 z-[100] bg-background">
-      <GeneratingReportSkeleton ... />
-    </div>
-  );
-}
-```
-
-**Manter apenas a lógica de isRegenerating para o botão Regenerate**, que continua usando o componente de loading inline.
-
----
-
-## Fluxo Corrigido
+## Fluxo Completo
 
 ```text
 1. Usuário clica "Get my SaaS Analysis"
-2. Wizard salva dados no banco
-3. Navega IMEDIATAMENTE para /planningmysaas/loading/{id}
-4. Página de Loading:
-   - Mostra GeneratingReportSkeleton em tela cheia
-   - Faz polling do status via useReportData (a cada 5s)
-   - Quando status = "Created" → navega para dashboard
-5. Dashboard carrega com relatório pronto
-6. useEffect detecta que é um relatório novo → dispara confetti
+2. Wizard salva dados → navega para /planningmysaas/loading/{wizardId}
+3. PmsLoading faz polling do status a cada 5s
+4. Cenários:
+   a) status = "Created" → navega para dashboard → confetti
+   b) status = "Step X - Fail" → mostra tela de erro com:
+      - Indicação do step que falhou
+      - Botão "Back to Wizard" → volta ao último step do wizard
+      - Botão "Try Again" → chama pms-generate-report novamente
 ```
 
 ---
 
-## Estrutura de Arquivos Final
+## Status Patterns Detectados
 
-```text
-src/pages/
-├── PmsWizard.tsx      (simplificado - sem confetti/toast)
-├── PmsLoading.tsx     (NOVO - página de loading dedicada)
-└── PmsDashboard.tsx   (com confetti ao carregar)
-```
+| Pattern | Comportamento |
+|---------|---------------|
+| `"Created"` ou `"completed"` | Sucesso → navega para dashboard |
+| `"Step X - Fail"` | Falha → mostra tela de erro |
+| `"Step X Name"` (sem Fail) | Em progresso → continua polling |
+| `undefined` | Aguardando registro → continua polling |
 
 ---
 
 ## Detalhes Técnicos
 
-| Mudança | Arquivo | Linhas |
-|---------|---------|--------|
-| Remover `useConfetti` import | PmsWizard.tsx | 10 |
-| Remover `const { fireConfetti }` | PmsWizard.tsx | 117 |
-| Remover confetti + toast + setTimeout | PmsWizard.tsx | 361-373 |
-| Adicionar navegação para loading | PmsWizard.tsx | 361 |
-| Criar página PmsLoading | PmsLoading.tsx | NOVO |
-| Adicionar rota loading | App.tsx | ~51 |
-| Adicionar confetti hook | PmsDashboard.tsx | ~18 |
-| Adicionar confetti useEffect | PmsDashboard.tsx | ~211 |
-| Remover isGenerating block | PmsDashboard.tsx | 270-287 |
+| Arquivo | Linhas | Mudança |
+|---------|--------|---------|
+| `useReportData.ts` | 36-44 | Atualizar lógica de polling para continuar sem dados |
+| `PmsLoading.tsx` | Todo | Adicionar estado de erro, helpers e UI |
+| `GeneratingReportSkeleton.tsx` | ~28-35, ~86-125 | Adicionar visual de step com falha (opcional) |
 
 ---
 
-## Resultado Esperado
+## Comportamento dos Botões
 
-1. Ao clicar no botão, a tela de loading abre INSTANTANEAMENTE
-2. A tela mostra o progresso em tempo real dos 10 steps
-3. Quando o relatório estiver pronto, redireciona automaticamente
-4. O dashboard abre com o relatório completo
-5. Confetti dispara celebrando a conclusão
+### "Back to Wizard"
+- Navega para `/planningmysaas/wizard?edit={wizardId}`
+- Usuário pode revisar/alterar inputs antes de tentar novamente
+- Não executa nada automaticamente
+
+### "Try Again"
+- Chama `pms-generate-report` manualmente
+- Mostra estado de loading no botão
+- Após chamada, refaz polling para acompanhar novo status
+- Não é automático - requer clique do usuário
 
