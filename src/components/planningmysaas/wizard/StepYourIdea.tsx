@@ -793,8 +793,8 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
           </div>
           
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => handleAILogo()}>
-              Try Another
+            <AlertDialogCancel>
+              Discard
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleApplyLogo} className="bg-accent hover:bg-accent/90">
               Use This Logo
