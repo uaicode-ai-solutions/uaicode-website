@@ -1,181 +1,232 @@
 
+# Plano: Remoção Completa de Toasts do Sistema
 
-# Plano: Layout Responsivo de 2 Colunas para Steps da Tela de Loading
+## Objetivo
 
-## Problema Atual
-
-A lista de 10 steps está em uma única coluna com `max-h-[400px] overflow-y-auto`, criando barra de rolagem desnecessária conforme mostrado na imagem.
-
-## Solução
-
-Reorganizar os 10 steps em:
-- **Desktop**: 2 colunas lado a lado (5 itens cada)
-- **Mobile**: 1 coluna única, mas com itens mais compactos para evitar scroll
+Remover todas as notificações toast do sistema para evitar problemas. Isso inclui ambos os sistemas de toast atualmente em uso: **Radix UI Toast** (useToast) e **Sonner**.
 
 ---
 
-## Arquivo a Modificar
+## Arquivos a Modificar
 
-`src/components/planningmysaas/skeletons/GeneratingReportSkeleton.tsx`
+### Componentes com useToast (Radix)
+
+| Arquivo | Linhas | Toasts |
+|---------|--------|--------|
+| `src/pages/PmsWizard.tsx` | 215-220, 288-293 | 2 toasts |
+| `src/pages/PmsDashboard.tsx` | 121-125, 154-159, 183-186, 192-201 | 5 toasts |
+| `src/pages/PmsProfile.tsx` | 79-88, 91-95, 103-116, 125-128, 491-504 | 7 toasts |
+| `src/components/ChatSection.tsx` | 75-80, 162-167 | 2 toasts |
+| `src/components/chat/EmailContactDialog.tsx` | 92-95 | 1 toast |
+| `src/components/ROICalculator.tsx` | 81-85, 88-93 | 2 toasts |
+| `src/components/Schedule.tsx` | 175-179 | 1 toast |
+| `src/components/planningmysaas/PmsFooter.tsx` | 57-61 | 1 toast |
+| `src/components/planningmysaas/dashboard/ShareReportDialog.tsx` | 37-47, 52-68, 77-80 | 5 toasts |
+
+### Componentes com Sonner
+
+| Arquivo | Linhas | Toasts |
+|---------|--------|--------|
+| `src/components/planningmysaas/wizard/StepYourIdea.tsx` | 132, 192-197, 209, 216, 221, 277-282, 293, 298 | 10 toasts |
+| `src/components/blog/SocialShareButtons.tsx` | 27 | 1 toast |
+| `src/components/planningmysaas/dashboard/sections/BrandAssetsTab.tsx` | 28 | 1 toast |
+| `src/components/planningmysaas/dashboard/marketing/MarketingServiceSelector.tsx` | 281-283 | 1 toast |
+| `src/pages/PmsResetPassword.tsx` | 78 | 1 toast |
+
+### Infraestrutura (Arquivos a Remover/Limpar)
+
+| Arquivo | Ação |
+|---------|------|
+| `src/components/ui/toaster.tsx` | Manter arquivo vazio ou com componente dummy |
+| `src/components/ui/sonner.tsx` | Manter arquivo vazio ou com componente dummy |
+| `src/hooks/use-toast.ts` | Manter arquivo com hook dummy |
+| `src/components/ui/use-toast.ts` | Manter arquivo com re-export dummy |
+| `src/App.tsx` | Remover `<Toaster />` e `<Sonner />` das linhas 30-31 |
 
 ---
 
-## Mudanças Específicas
+## Estratégia de Remoção
 
-### 1. Aumentar largura máxima do container
+### Para cada componente:
 
+1. **Remover imports** de `useToast`, `toast` do sonner
+2. **Remover chamadas** `toast({...})` e `toast.success/error/info()`
+3. **Manter a lógica de negócio** (validações, returns, etc.)
+4. **Usar console.log** para debugging onde necessário
+
+### Exemplo de Transformação
+
+**Antes:**
 ```typescript
-// Linha 65: Mudar de max-w-lg para max-w-2xl
-<div className="max-w-2xl w-full mx-auto text-center space-y-6 px-4">
-```
+import { useToast } from "@/hooks/use-toast";
 
-### 2. Remover scroll e aplicar grid de 2 colunas
-
-```typescript
-// Linha 94: Substituir div de steps
-<div className="text-left bg-card/50 rounded-xl p-4 md:p-6 border border-border/50">
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
-    {steps.map((step) => {
-      // ... existing step rendering logic
-    })}
-  </div>
-</div>
-```
-
-### 3. Compactar itens no mobile
-
-Reduzir padding e gaps no mobile para caber todos os 10 itens sem scroll:
-
-```typescript
-// Cada item de step:
-<div
-  key={step.id}
-  className={`flex items-center gap-2 md:gap-3 py-1 md:py-0 transition-all duration-300 ${...}`}
->
-  {/* Ícone menor no mobile */}
-  <div className={`w-6 h-6 md:w-8 md:h-8 shrink-0 rounded-full flex items-center justify-center ...`}>
-    {/* Ícones menores no mobile */}
-    <Icon className="w-3 h-3 md:w-4 md:h-4" />
-  </div>
+const Component = () => {
+  const { toast } = useToast();
   
-  {/* Texto mais compacto */}
-  <span className="text-xs md:text-sm font-medium truncate flex-1">{step.label}</span>
-  
-  {/* Status badges mais compactos */}
-  {isActive && (
-    <span className="shrink-0 text-[10px] md:text-xs text-accent animate-pulse">
-      In progress...
-    </span>
-  )}
-</div>
+  const handleSave = async () => {
+    try {
+      await saveData();
+      toast({ title: "Saved!", description: "Data saved." });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to save.", variant: "destructive" });
+    }
+  };
+};
 ```
 
----
-
-## Layout Final
-
-### Desktop (md+)
-```text
-┌─────────────────────────────────────────────┐
-│  ┌──────────────────┐ ┌──────────────────┐  │
-│  │ 1. Investment    │ │ 6. Pricing       │  │
-│  │ 2. Benchmarks    │ │ 7. Paid media    │  │
-│  │ 3. Competitors   │ │ 8. Growth        │  │
-│  │ 4. Opportunity   │ │ 9. Summary       │  │
-│  │ 5. Customer ICP  │ │ 10. Final score  │  │
-│  └──────────────────┘ └──────────────────┘  │
-└─────────────────────────────────────────────┘
-```
-
-### Mobile
-```text
-┌───────────────────────┐
-│ 1. Investment    ✓    │
-│ 2. Benchmarks    ✓    │
-│ 3. Competitors   ...  │
-│ 4. Opportunity        │
-│ 5. Customer ICP       │
-│ 6. Pricing            │
-│ 7. Paid media         │
-│ 8. Growth             │
-│ 9. Summary            │
-│ 10. Final score       │
-└───────────────────────┘
-```
-
----
-
-## Código Completo do Bloco de Steps
-
+**Depois:**
 ```typescript
-{/* Steps - 2 columns on desktop, 1 column on mobile */}
-<div className="text-left bg-card/50 rounded-xl p-4 md:p-6 border border-border/50">
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-3">
-    {steps.map((step) => {
-      const Icon = step.icon;
-      const isFailed = step.id === failedStep;
-      const isActive = !isFailed && step.id === currentStep + 1;
-      const isComplete = !isFailed && step.id <= currentStep;
-
-      return (
-        <div
-          key={step.id}
-          className={`flex items-center gap-2 md:gap-3 transition-all duration-300 ${
-            isFailed ? "text-destructive" : isActive ? "text-accent" : isComplete ? "text-muted-foreground" : "text-muted-foreground/50"
-          }`}
-        >
-          <div className={`w-6 h-6 md:w-8 md:h-8 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 ${
-            isFailed
-              ? "bg-destructive/20 border-2 border-destructive"
-              : isActive 
-                ? "bg-accent/20 border-2 border-accent" 
-                : isComplete 
-                  ? "bg-accent/10 border border-accent/50" 
-                  : "bg-muted/30 border border-border/50"
-          }`}>
-            {isFailed ? (
-              <XCircle className="w-3 h-3 md:w-4 md:h-4" />
-            ) : isActive ? (
-              <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
-            ) : isComplete ? (
-              <CheckCircle2 className="w-3 h-3 md:w-4 md:h-4" />
-            ) : (
-              <Icon className="w-3 h-3 md:w-4 md:h-4" />
-            )}
-          </div>
-          <span className={`text-xs md:text-sm font-medium truncate flex-1 ${isFailed ? "text-destructive" : isActive ? "text-foreground" : ""}`}>
-            {step.label}
-          </span>
-          {isFailed && (
-            <span className="shrink-0 ml-auto text-[10px] md:text-xs text-destructive font-medium">
-              Failed
-            </span>
-          )}
-          {isActive && (
-            <span className="shrink-0 ml-auto text-[10px] md:text-xs text-accent animate-pulse">
-              In progress...
-            </span>
-          )}
-          {isComplete && (
-            <span className="shrink-0 ml-auto text-[10px] md:text-xs text-muted-foreground">
-              ✓
-            </span>
-          )}
-        </div>
-      );
-    })}
-  </div>
-</div>
+const Component = () => {
+  const handleSave = async () => {
+    try {
+      await saveData();
+      console.log("Data saved successfully");
+    } catch (error) {
+      console.error("Failed to save:", error);
+    }
+  };
+};
 ```
 
 ---
 
-## Resumo das Alterações
+## Detalhes por Arquivo
 
-| Linha | Mudança |
-|-------|---------|
-| 65 | `max-w-lg` → `max-w-2xl`, `space-y-8` → `space-y-6` |
-| 94 | Remover `max-h-[400px] overflow-y-auto`, adicionar padding responsivo |
-| 94+ | Adicionar wrapper `grid grid-cols-1 md:grid-cols-2` |
-| 102-145 | Tamanhos responsivos para ícones e textos |
+### 1. `src/App.tsx`
+- Remover import do `Toaster` de `@/components/ui/toaster`
+- Remover import do `Sonner` de `@/components/ui/sonner`
+- Remover `<Toaster />` (linha 30)
+- Remover `<Sonner />` (linha 31)
 
+### 2. `src/pages/PmsWizard.tsx`
+- Remover import `useToast`
+- Remover `const { toast } = useToast();`
+- Linha 215-220: Remover toast "Authentication Required" (manter apenas o return)
+- Linha 288-293: Remover toast "Error saving report" (manter apenas o return)
+
+### 3. `src/pages/PmsDashboard.tsx`
+- Remover import `useToast`
+- Remover `const { toast } = useToast();`
+- Linha 121-125: Remover toast de falha de regeneração
+- Linha 154-159: Remover toast de falha do n8n trigger
+- Linha 183-186: Remover toast de logout
+- Linha 192-201: Remover toasts de copy link (sucesso/falha)
+
+### 4. `src/pages/PmsProfile.tsx`
+- Remover import `useToast`
+- Remover `const { toast } = useToast();`
+- Linhas 79-95: Remover toasts de update de perfil
+- Linhas 103-116: Remover toasts de validação de senha
+- Linha 125-128: Remover toast de sucesso de senha
+- Linhas 491-504: Remover toasts de delete account
+
+### 5. `src/components/ChatSection.tsx`
+- Remover import `useToast`
+- Remover `const { toast } = useToast();`
+- Linha 75-80: Remover toast de erro de voz
+- Linha 162-167: Remover toast de erro de mensagem
+
+### 6. `src/components/chat/EmailContactDialog.tsx`
+- Remover import `useToast`
+- Remover `const { toast } = useToast();`
+- Linha 92-95: Remover toast "Message Sent!"
+
+### 7. `src/components/ROICalculator.tsx`
+- Remover import `useToast`
+- Remover `const { toast } = useToast();`
+- Linhas 81-93: Remover toasts de PDF (sucesso/falha)
+
+### 8. `src/components/Schedule.tsx`
+- Remover import `useToast`
+- Remover `const { toast } = useToast();`
+- Linha 175-179: Remover toast de erro de form
+
+### 9. `src/components/planningmysaas/PmsFooter.tsx`
+- Remover import `useToast`
+- Remover `const { toast } = useToast();`
+- Linhas 57-61: Remover toast de email duplicado
+
+### 10. `src/components/planningmysaas/dashboard/ShareReportDialog.tsx`
+- Remover import `useToast`
+- Remover `const { toast } = useToast();`
+- Linhas 37-47: Remover toasts de copy link
+- Linhas 52-68: Remover toasts de validação de email
+- Linhas 77-80: Remover toast de email enviado
+
+### 11. `src/components/planningmysaas/wizard/StepYourIdea.tsx`
+- Remover import `toast` do sonner
+- Remover todos os `toast.error()`, `toast.success()` (10 ocorrências)
+
+### 12. `src/components/blog/SocialShareButtons.tsx`
+- Remover import `toast` do sonner
+- Linha 27: Remover `toast.success("Link copied...")`
+
+### 13. `src/components/planningmysaas/dashboard/sections/BrandAssetsTab.tsx`
+- Remover import `toast` do sonner
+- Linha 28: Remover `toast.success("Copied...")`
+
+### 14. `src/components/planningmysaas/dashboard/marketing/MarketingServiceSelector.tsx`
+- Remover import `toast` do sonner
+- Linhas 281-283: Remover `toast.info("Project Manager...")`
+
+### 15. `src/pages/PmsResetPassword.tsx`
+- Remover import `toast` do sonner
+- Linha 78: Remover `toast.success("Password updated...")`
+
+### 16. Arquivos de Infraestrutura
+
+#### `src/components/ui/toaster.tsx`
+Substituir por componente vazio:
+```typescript
+export function Toaster() {
+  return null;
+}
+```
+
+#### `src/components/ui/sonner.tsx`
+Substituir por componente vazio:
+```typescript
+export const Toaster = () => null;
+export const toast = {
+  success: () => {},
+  error: () => {},
+  info: () => {},
+  warning: () => {},
+};
+```
+
+#### `src/hooks/use-toast.ts`
+Manter hook dummy para evitar erros de import:
+```typescript
+export function useToast() {
+  return {
+    toast: () => {},
+    toasts: [],
+    dismiss: () => {},
+  };
+}
+
+export const toast = () => {};
+```
+
+---
+
+## Resumo
+
+| Categoria | Arquivos | Toasts Removidos |
+|-----------|----------|------------------|
+| Páginas PMS | 4 | 15 |
+| Componentes Chat | 2 | 3 |
+| Componentes Forms | 2 | 3 |
+| Componentes PMS | 5 | 18 |
+| Infraestrutura | 4 | - |
+| **Total** | **17 arquivos** | **39 toasts** |
+
+---
+
+## Observações
+
+- Validações de formulário que usavam toast para feedback agora só bloquearão a ação silenciosamente
+- Erros de API serão logados no console para debugging
+- O fluxo de negócio permanece intacto, apenas sem feedback visual via toast
+- Componentes de toast ficam como "no-op" para evitar erros de import em casos não mapeados
