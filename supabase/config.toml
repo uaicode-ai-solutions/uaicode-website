@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.pms-improve-description]
 verify_jwt = false
+
+[functions.pms-suggest-name]
+verify_jwt = false

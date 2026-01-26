@@ -98,6 +98,8 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
   const [isImprovingDescription, setIsImprovingDescription] = useState(false);
   const [showSuggestionDialog, setShowSuggestionDialog] = useState(false);
   const [suggestedDescription, setSuggestedDescription] = useState("");
+  const [showNameDialog, setShowNameDialog] = useState(false);
+  const [suggestedName, setSuggestedName] = useState("");
 
   const isDescriptionValid = data.description.trim().length >= 20;
 
@@ -177,21 +179,80 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
     }
   };
 
-  const handleSuggestName = async () => {
+  const handleApplyName = () => {
+    onChange("saasName", suggestedName);
+    setShowNameDialog(false);
+    setSuggestedName("");
+    toast.success("Name applied!");
+  };
+
+  const handleSuggestName = async (retryCount = 0) => {
+    if (!isDescriptionValid) {
+      toast.error("Please fill in the description first (min 20 characters)");
+      return;
+    }
+    
     setIsGeneratingName(true);
     
-    // Mock AI suggestion - simulates API call
-    setTimeout(() => {
-      const mockNames = [
-        "FlowSync", "TaskPilot", "DataBridge", "CloudNest", 
-        "SmartDesk", "LaunchPad", "GrowthHub", "NexGen",
-        "BizFlow", "SyncPro", "MetricHub", "InsightAI",
-        "PulseApp", "StreamLine", "VelocityHQ", "CoreStack"
-      ];
-      const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
-      onChange("saasName", randomName);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    try {
+      const response = await fetch(
+        'https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-suggest-name',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg'
+          },
+          body: JSON.stringify({
+            description: data.description,
+            saasType: data.saasType,
+            industry: data.industry
+          }),
+          signal: controller.signal
+        }
+      );
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result?.suggestedName) {
+        setSuggestedName(result.suggestedName);
+        setShowNameDialog(true);
+      }
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      console.error("Error suggesting name:", error);
+      
+      // Retry up to 2 times for transient failures
+      if (retryCount < 2 && (
+        error?.message?.includes('Failed to fetch') || 
+        error?.message?.includes('NetworkError') ||
+        error?.name === 'AbortError'
+      )) {
+        console.log(`Retrying... attempt ${retryCount + 2}`);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        return handleSuggestName(retryCount + 1);
+      }
+      
+      if (error?.message?.includes('429')) {
+        toast.error("Rate limit exceeded. Please try again later.");
+      } else if (error?.message?.includes('402')) {
+        toast.error("Payment required. Please add credits to continue.");
+      } else {
+        toast.error("Failed to suggest name. Please try again.");
+      }
+    } finally {
       setIsGeneratingName(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -374,7 +435,7 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
             type="button"
             variant="outline"
             disabled={!isDescriptionValid || isGeneratingName}
-            onClick={handleSuggestName}
+            onClick={() => handleSuggestName()}
             className="border-accent text-accent hover:bg-accent/10 hover:text-accent
                        disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
@@ -488,7 +549,7 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
         </div>
       </div>
 
-      {/* AI Suggestion Dialog */}
+      {/* AI Suggestion Dialog for Description */}
       <AlertDialog open={showSuggestionDialog} onOpenChange={setShowSuggestionDialog}>
         <AlertDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <AlertDialogHeader>
@@ -519,6 +580,34 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
             <AlertDialogCancel>Keep Original</AlertDialogCancel>
             <AlertDialogAction onClick={handleApplySuggestion} className="bg-accent hover:bg-accent/90">
               Apply Suggestion
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* AI Suggestion Dialog for Name */}
+      <AlertDialog open={showNameDialog} onOpenChange={setShowNameDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-accent" />
+              AI Name Suggestion
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Based on your description, here's a suggested name for your SaaS
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="my-6 text-center">
+            <div className="inline-block px-6 py-4 bg-accent/10 border border-accent/30 rounded-xl">
+              <span className="text-2xl font-bold text-foreground">{suggestedName}</span>
+            </div>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel>Try Another</AlertDialogCancel>
+            <AlertDialogAction onClick={handleApplyName} className="bg-accent hover:bg-accent/90">
+              Use This Name
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
