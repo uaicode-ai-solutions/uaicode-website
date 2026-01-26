@@ -46,8 +46,8 @@ LOGO GENERATION RULES (CRITICAL - MUST FOLLOW):
 RESPONSE REQUIREMENTS:
 You must provide:
 1. A detailed image generation prompt that strictly follows the rules above
-2. A description of the logo design (2-3 sentences explaining what it depicts)
-3. A market justification (2-3 sentences explaining why this design aligns with current market trends and industry standards)`;
+2. A brief logo description (max 15 words stating what the icon represents)
+3. A concise market justification (one sentence, max 20 words on trend alignment)`;
 
 const IMPROVE_LOGO_ADDITION = `
 EXISTING LOGO ANALYSIS:
@@ -87,11 +87,11 @@ const generateLogoDesignTool = {
         },
         logoDescription: {
           type: "string",
-          description: "Description of the logo design in 2-3 sentences. Explain what the icon represents and its visual elements."
+          description: "Brief description of the logo (max 15 words). State what the icon represents."
         },
         marketJustification: {
           type: "string",
-          description: "2-3 sentences explaining why this design aligns with current market trends, industry standards, and target audience expectations."
+          description: "One concise sentence (max 20 words) on why this design aligns with market trends."
         }
       },
       required: ["imagePrompt", "primaryColor", "secondaryColor", "logoDescription", "marketJustification"]
