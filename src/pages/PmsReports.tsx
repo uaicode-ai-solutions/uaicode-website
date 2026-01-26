@@ -33,13 +33,13 @@ const PmsReports = () => {
   const { data: reports = [], isLoading } = useReports();
   const deleteReportMutation = useDeleteReport();
 
-  // Calculate stats from database reports
+  // Calculate stats from database reports (using real viability scores)
   const stats = useMemo(() => {
     if (reports.length === 0) return null;
     
     const totalReports = reports.length;
     const scores = reports
-      .map(r => parseInt(String(r.viability_score || "0"), 10) || 0)
+      .map(r => r.tb_pms_reports?.[0]?.hero_score_section?.score ?? 0)
       .filter(s => s > 0);
     const avgScore = scores.length > 0 
       ? Math.round(scores.reduce((acc, s) => acc + s, 0) / scores.length) 

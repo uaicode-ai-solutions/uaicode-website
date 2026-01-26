@@ -1,31 +1,61 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ReportRow } from "@/types/report";
+import { ReportRow, NestedReportData } from "@/types/report";
 
 export const useReports = () => {
   return useQuery({
     queryKey: ["reports"],
     queryFn: async (): Promise<ReportRow[]> => {
-      const { data, error } = await supabase
+      // Fetch wizard data
+      const { data: wizardData, error: wizardError } = await supabase
         .from("tb_pms_wizard")
-        .select(`
-          *,
-          tb_pms_reports!wizard_id (
-            id,
-            status,
-            hero_score_section,
-            summary_section,
-            opportunity_section
-          )
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching reports:", error);
-        throw error;
+      if (wizardError) {
+        console.error("Error fetching wizard data:", wizardError);
+        throw wizardError;
       }
 
-      return (data as ReportRow[]) || [];
+      if (!wizardData || wizardData.length === 0) {
+        return [];
+      }
+
+      // Get wizard IDs to fetch corresponding reports
+      const wizardIds = wizardData.map(w => w.id);
+
+      // Fetch reports for these wizards
+      const { data: reportsData, error: reportsError } = await supabase
+        .from("tb_pms_reports")
+        .select("id, wizard_id, status, hero_score_section, summary_section, opportunity_section")
+        .in("wizard_id", wizardIds);
+
+      if (reportsError) {
+        console.error("Error fetching reports data:", reportsError);
+        // Continue without reports data - cards will show 0 score
+      }
+
+      // Create a map of wizard_id -> report data
+      const reportsMap = new Map<string, NestedReportData>();
+      if (reportsData) {
+        for (const report of reportsData) {
+          reportsMap.set(report.wizard_id, {
+            id: report.id,
+            status: report.status,
+            hero_score_section: report.hero_score_section as NestedReportData["hero_score_section"],
+            summary_section: report.summary_section as NestedReportData["summary_section"],
+            opportunity_section: report.opportunity_section as NestedReportData["opportunity_section"],
+          });
+        }
+      }
+
+      // Merge wizard data with reports
+      const mergedData: ReportRow[] = wizardData.map(wizard => ({
+        ...wizard,
+        tb_pms_reports: reportsMap.has(wizard.id) ? [reportsMap.get(wizard.id)!] : undefined,
+      }));
+
+      return mergedData;
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
