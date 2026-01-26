@@ -1,96 +1,66 @@
 
-
-# Plano: Adicionar Role "user" Automaticamente para Novos Usuários
+# Plano: Mostrar Data Quality Banner Apenas para Admins e Contributors
 
 ## Objetivo
 
-Modificar a função `handle_new_user()` para atribuir automaticamente a role `"user"` a cada novo usuário, **sem alterar nada do fluxo existente**.
+Alterar a condição de renderização do `DataQualityBanner` para que ele apareça **apenas** para usuários com role `admin` ou `contributor`.
 
-## O Que NÃO Vou Mudar
+## Situação Atual
 
-- O INSERT em `tb_pms_users` continua EXATAMENTE igual
-- O ON CONFLICT continua EXATAMENTE igual  
-- O RETURN NEW continua EXATAMENTE igual
-- Nenhuma lógica existente será alterada
+O hook `useUserRoles` já está:
+- Importado no arquivo (`src/pages/PmsDashboard.tsx:60`)
+- Sendo usado no componente (`linha 76`)
+- Retorna `isAdmin` (já usado para o Admin Panel)
+- Retorna `isContributor` (disponível mas não usado ainda)
 
-## O Que Vou Adicionar
+O banner atualmente é exibido para **todos os usuários** quando há issues:
 
-Apenas **UMA instrução INSERT** no final, antes do RETURN NEW:
-
-```sql
--- Adicionar role "user" para o novo usuário (ignorar se já existe)
-INSERT INTO public.user_roles (user_id, role)
-SELECT id, 'user'::app_role
-FROM public.tb_pms_users
-WHERE auth_user_id = NEW.id
-ON CONFLICT (user_id, role) DO NOTHING;
+```tsx
+{!bannerDismissed && dataQualityIssues.length > 0 && (
+  <DataQualityBanner ... />
+)}
 ```
 
-## Por Que É Seguro
+## Alteração Necessária
 
-1. **ON CONFLICT DO NOTHING**: Se a role já existir, não faz nada (não dá erro)
-2. **SELECT FROM tb_pms_users**: Busca o `user_id` correto baseado no `auth_user_id`
-3. **Executa DEPOIS**: Só executa após o INSERT/UPDATE em `tb_pms_users` ter sido concluído
-4. **Não altera fluxo**: Todo o código existente permanece intacto
+### Arquivo: `src/pages/PmsDashboard.tsx`
 
-## Função Atualizada (Diferença Mínima)
+#### 1. Atualizar o destructuring do useUserRoles (linha 76)
 
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  -- ====== CÓDIGO EXISTENTE (INALTERADO) ======
-  INSERT INTO public.tb_pms_users (auth_user_id, email, username, full_name)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    split_part(NEW.email, '@', 1),
-    COALESCE(
-      NULLIF(TRIM(NEW.raw_user_meta_data->>'full_name'), ''),
-      NULLIF(TRIM(NEW.raw_user_meta_data->>'name'), ''),
-      NULLIF(TRIM(CONCAT(
-        NEW.raw_user_meta_data->>'given_name',
-        ' ',
-        COALESCE(NEW.raw_user_meta_data->>'family_name', '')
-      )), ''),
-      ''
-    )
-  )
-  ON CONFLICT (auth_user_id) DO UPDATE SET
-    full_name = CASE 
-      WHEN tb_pms_users.full_name = '' OR tb_pms_users.full_name IS NULL 
-      THEN EXCLUDED.full_name 
-      ELSE tb_pms_users.full_name 
-    END;
-  
-  -- ====== ÚNICA ADIÇÃO: Atribuir role "user" ======
-  INSERT INTO public.user_roles (user_id, role)
-  SELECT id, 'user'::app_role
-  FROM public.tb_pms_users
-  WHERE auth_user_id = NEW.id
-  ON CONFLICT (user_id, role) DO NOTHING;
-  
-  RETURN NEW;
-END;
-$$;
+**De:**
+```tsx
+const { isAdmin } = useUserRoles();
 ```
 
-## Resumo
+**Para:**
+```tsx
+const { isAdmin, isContributor } = useUserRoles();
+```
 
-| Item | Status |
-|------|--------|
-| Criar perfil em tb_pms_users | ✅ Continua igual |
-| Atualizar nome se vazio | ✅ Continua igual |
-| Trigger existente | ✅ Continua igual |
-| **NOVO:** Atribuir role "user" | ➕ Adicionado com segurança |
+#### 2. Atualizar a condição do banner (linhas 388-397)
+
+**De:**
+```tsx
+{!bannerDismissed && dataQualityIssues.length > 0 && (
+```
+
+**Para:**
+```tsx
+{!bannerDismissed && dataQualityIssues.length > 0 && (isAdmin || isContributor) && (
+```
 
 ## Resultado
 
-- **Novos usuários**: Receberão role "user" automaticamente
-- **Usuários existentes**: Não serão afetados (podem receber role manualmente via Admin Panel se desejado)
-- **Usuários que já têm role "user"**: ON CONFLICT ignora duplicatas
+| Role | Vê o Banner? |
+|------|--------------|
+| admin | Sim |
+| contributor | Sim |
+| user | Não |
+| Sem role | Não |
 
+## Por Que É Seguro
+
+1. **Mínima alteração**: Apenas 2 linhas modificadas
+2. **Reutiliza código existente**: O hook `useUserRoles` já está no componente
+3. **Não afeta outros recursos**: Só adiciona uma condição AND à renderização
+4. **Backward compatible**: Se o hook falhar, `isAdmin` e `isContributor` serão `false`, então o banner simplesmente não aparece (comportamento seguro)
