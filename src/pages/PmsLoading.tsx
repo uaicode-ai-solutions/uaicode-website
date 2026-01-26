@@ -61,8 +61,8 @@ const PmsLoading = () => {
   useEffect(() => {
     if (hasNavigated.current) return;
     
-    // Terminal success statuses - report is ready
-    if (status === "Created" || status === "completed") {
+    // Terminal success status - report is ready
+    if (status === "completed") {
       hasNavigated.current = true;
       navigate(`/planningmysaas/dashboard/${wizardId}`, { replace: true });
     }

@@ -64,12 +64,7 @@ const PmsDashboardContent = () => {
   const { id: wizardId } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState("report");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  const [regenerationStarted, setRegenerationStarted] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
-  
-  // Track previous status to detect transitions
-  const prevStatusRef = useRef<string | undefined>(undefined);
   
   // Confetti for celebrating completed reports
   const { fireConfetti } = useConfetti();
@@ -83,77 +78,20 @@ const PmsDashboardContent = () => {
     return checkDataQuality(reportData);
   }, [reportData]);
 
-  // Monitor regeneration status transitions via useReportData polling
-  useEffect(() => {
-    if (!isRegenerating) {
-      prevStatusRef.current = reportData?.status;
-      return;
-    }
-    
-    const currentStatus = reportData?.status;
-    const prevStatus = prevStatusRef.current;
-    
-    console.log(`🔄 Regeneration monitor: prev=${prevStatus}, current=${currentStatus}, started=${regenerationStarted}`);
-    
-    // Detect when n8n has started processing (status changed from terminal to processing)
-    if (currentStatus && currentStatus !== "Created" && currentStatus !== "completed" && currentStatus !== "failed" && currentStatus !== "error") {
-      if (!regenerationStarted) {
-        console.log("✅ Regeneration has started - status changed to:", currentStatus);
-        setRegenerationStarted(true);
-      }
-    }
-    
-    // Detect when regeneration completed (status returned to "Created" AFTER having started)
-    if (regenerationStarted && (currentStatus === "Created" || currentStatus === "completed")) {
-      console.log("✅ Regeneration completed! Reloading page...");
-      setIsRegenerating(false);
-      setRegenerationStarted(false);
-      window.location.reload();
-      return;
-    }
-    
-    // Handle errors during regeneration
-    if (regenerationStarted && (currentStatus === "failed" || currentStatus === "error")) {
-      console.error("❌ Regeneration failed");
-      setIsRegenerating(false);
-      setRegenerationStarted(false);
-    }
-    
-    prevStatusRef.current = currentStatus;
-  }, [isRegenerating, regenerationStarted, reportData?.status]);
-
-  // Regenerate report handler - calls pms-trigger-n8n-report
+  // Regenerate report handler - simply triggers webhook and navigates to loading page
   const handleRegenerateReport = async () => {
     if (!wizardId) return;
     
-    console.log("🔄 Starting report regeneration for wizardId:", wizardId);
-    
-    // Invalidate cache to force fresh fetch
-    await queryClient.invalidateQueries({ queryKey: ["pms-report-data", wizardId] });
-    
-    // Set regenerating state - this triggers the loading screen
-    setIsRegenerating(true);
-    setRegenerationStarted(false);
-    
     try {
-      // Call the edge function - pass wizard_id (not tb_pms_reports.id)
-      const { data, error } = await supabase.functions.invoke('pms-trigger-n8n-report', {
+      // Trigger n8n webhook
+      await supabase.functions.invoke('pms-trigger-n8n-report', {
         body: { wizard_id: wizardId }
       });
-
-      if (error) {
-        console.error("❌ Failed to trigger n8n:", error);
-        setIsRegenerating(false);
-        return;
-      }
-
-      console.log("✅ n8n triggered successfully:", data);
-      // The useEffect above will monitor the status changes via polling
-      // No need for manual polling here - useReportData already polls every 5s
       
+      // Navigate to loading page - it handles polling and step-by-step display
+      navigate(`/planningmysaas/loading/${wizardId}`);
     } catch (err) {
-      console.error("❌ Error calling pms-trigger-n8n-report:", err);
-      setIsRegenerating(false);
+      console.error("Error triggering regeneration:", err);
     }
   };
 
@@ -214,11 +152,8 @@ const PmsDashboardContent = () => {
     }
   };
 
-  // Show loading skeleton while fetching - wait for BOTH wizard AND reportData
-  // This prevents race condition where Data Quality errors appear before data loads
-  // Check: isLoading OR no reportData OR report still being generated
-  const isReportReady = reportData?.status === "Created" || reportData?.status === "completed";
-  if (isLoading || !reportData || !isReportReady) {
+  // Show loading skeleton while fetching - wait for status to be "completed"
+  if (isLoading || !reportData || reportData?.status !== "completed") {
     return (
       <div className="min-h-screen bg-background">
         {/* Header skeleton */}
@@ -257,18 +192,6 @@ const PmsDashboardContent = () => {
     );
   }
 
-  // Show fullscreen generating animation ONLY when regenerating (user clicked Regenerate button)
-  // Initial generation now uses dedicated PmsLoading page
-  if (isRegenerating) {
-    return (
-      <div className="fixed inset-0 z-[100] bg-background">
-        <GeneratingReportSkeleton 
-          projectName={projectName} 
-          currentStatus={reportData?.status}
-        />
-      </div>
-    );
-  }
 
   // Normal dashboard layout for completed reports
   return (
@@ -318,18 +241,15 @@ const PmsDashboardContent = () => {
 
             {/* Right side - Download Button + Share + User Dropdown */}
             <div className="flex items-center gap-2">
-              {/* DEBUG: Temporary Regenerate Button */}
+              {/* Regenerate Button */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleRegenerateReport}
-                disabled={isRegenerating}
-                className="gap-2 border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 hover:border-yellow-500"
+                className="gap-2 border-accent/50 text-accent hover:bg-accent/10 hover:border-accent"
               >
-                <RefreshCw className={`h-4 w-4 ${isRegenerating ? "animate-spin" : ""}`} />
-                <span className="hidden sm:inline">
-                  {isRegenerating ? "Regenerating..." : "Regenerate"}
-                </span>
+                <RefreshCw className="h-4 w-4" />
+                <span className="hidden sm:inline">Regenerate</span>
               </Button>
 
               <Button
@@ -458,7 +378,6 @@ const PmsDashboardContent = () => {
                 issues={dataQualityIssues}
                 onRegenerate={handleRegenerateReport}
                 onDismiss={() => setBannerDismissed(true)}
-                isRegenerating={isRegenerating}
               />
             </div>
           )}
