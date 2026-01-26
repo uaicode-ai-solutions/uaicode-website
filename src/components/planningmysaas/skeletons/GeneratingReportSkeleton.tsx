@@ -1,46 +1,53 @@
-import { Loader2, Brain, Search, BarChart3, Palette, CheckCircle2 } from "lucide-react";
+import { Loader2, DollarSign, Target, BarChart3, TrendingUp, Users, Tag, Megaphone, Rocket, FileText, Trophy, CheckCircle2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { useState, useEffect } from "react";
 
 interface GeneratingReportSkeletonProps {
   projectName: string;
+  currentStatus?: string;
 }
 
 const steps = [
-  { id: 1, label: "Researching market data", icon: Search, duration: 20 },
-  { id: 2, label: "Analyzing competitors", icon: BarChart3, duration: 25 },
-  { id: 3, label: "Generating insights", icon: Brain, duration: 35 },
-  { id: 4, label: "Creating brand assets", icon: Palette, duration: 15 },
-  { id: 5, label: "Finalizing report", icon: CheckCircle2, duration: 5 },
+  { id: 1, label: "Investment analysis", icon: DollarSign, statusKey: "investment" },
+  { id: 2, label: "Market benchmarks", icon: Target, statusKey: "benchmark" },
+  { id: 3, label: "Competitor research", icon: BarChart3, statusKey: "competitors" },
+  { id: 4, label: "Market opportunity", icon: TrendingUp, statusKey: "opportunity" },
+  { id: 5, label: "Customer profiling (ICP)", icon: Users, statusKey: "icp" },
+  { id: 6, label: "Pricing strategy", icon: Tag, statusKey: "price" },
+  { id: 7, label: "Paid media analysis", icon: Megaphone, statusKey: "paid media" },
+  { id: 8, label: "Growth projections", icon: Rocket, statusKey: "growth" },
+  { id: 9, label: "Executive summary", icon: FileText, statusKey: "summary" },
+  { id: 10, label: "Final scoring", icon: Trophy, statusKey: "hero score" },
 ];
 
-const GeneratingReportSkeleton = ({ projectName }: GeneratingReportSkeletonProps) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [progress, setProgress] = useState(0);
+const TOTAL_STEPS = 10;
 
-  useEffect(() => {
-    // Simulate progress through steps
-    const totalDuration = steps.reduce((acc, step) => acc + step.duration, 0);
-    let elapsed = 0;
+/**
+ * Parse the current step number from the status string
+ * Status format: "Step X Name - Completed" or "Started" or "Created"
+ */
+const parseCurrentStep = (status: string | undefined): number => {
+  if (!status) return 0;
+  if (status === "Started") return 0;
+  if (status === "Created") return TOTAL_STEPS;
+  
+  const match = status.match(/Step (\d+)/i);
+  return match ? parseInt(match[1]) : 0;
+};
 
-    const interval = setInterval(() => {
-      elapsed += 1;
-      const newProgress = Math.min((elapsed / totalDuration) * 100, 95);
-      setProgress(newProgress);
+/**
+ * Get estimated remaining time based on current step
+ */
+const getEstimatedTime = (currentStep: number): string => {
+  const remainingSteps = TOTAL_STEPS - currentStep;
+  if (remainingSteps <= 0) return "Almost done...";
+  if (remainingSteps <= 2) return "Less than a minute";
+  const minutes = Math.ceil((remainingSteps * 15) / 60); // ~15 seconds per step
+  return `~${minutes} min remaining`;
+};
 
-      // Determine current step
-      let accumulatedDuration = 0;
-      for (let i = 0; i < steps.length; i++) {
-        accumulatedDuration += steps[i].duration;
-        if (elapsed <= accumulatedDuration) {
-          setCurrentStep(i);
-          break;
-        }
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+const GeneratingReportSkeleton = ({ projectName, currentStatus }: GeneratingReportSkeletonProps) => {
+  const currentStep = parseCurrentStep(currentStatus);
+  const progress = Math.min((currentStep / TOTAL_STEPS) * 100, 100);
 
   return (
     <div className="min-h-screen flex items-center justify-center py-8">
@@ -49,7 +56,7 @@ const GeneratingReportSkeleton = ({ projectName }: GeneratingReportSkeletonProps
         <div className="relative mx-auto w-24 h-24">
           <div className="absolute inset-0 bg-gradient-to-r from-accent/20 to-accent/40 rounded-full animate-pulse" />
           <div className="absolute inset-2 bg-gradient-to-br from-accent to-accent/80 rounded-full flex items-center justify-center">
-            <Brain className="w-10 h-10 text-background animate-pulse" />
+            <Rocket className="w-10 h-10 text-background animate-pulse" />
           </div>
           <div className="absolute -inset-2 border-2 border-accent/30 rounded-full animate-spin-slow" style={{ animationDuration: '8s' }} />
         </div>
@@ -68,16 +75,16 @@ const GeneratingReportSkeleton = ({ projectName }: GeneratingReportSkeletonProps
         <div className="space-y-2">
           <Progress value={progress} className="h-2" />
           <p className="text-sm text-muted-foreground">
-            {Math.round(progress)}% complete • Estimated time: 2-3 minutes
+            {Math.round(progress)}% complete • {getEstimatedTime(currentStep)}
           </p>
         </div>
 
         {/* Steps */}
-        <div className="space-y-3 text-left bg-card/50 rounded-xl p-6 border border-border/50">
-          {steps.map((step, index) => {
+        <div className="space-y-3 text-left bg-card/50 rounded-xl p-6 border border-border/50 max-h-[400px] overflow-y-auto">
+          {steps.map((step) => {
             const Icon = step.icon;
-            const isActive = index === currentStep;
-            const isComplete = index < currentStep;
+            const isActive = step.id === currentStep + 1; // Next step to process
+            const isComplete = step.id <= currentStep;
 
             return (
               <div
@@ -107,6 +114,11 @@ const GeneratingReportSkeleton = ({ projectName }: GeneratingReportSkeletonProps
                 {isActive && (
                   <span className="ml-auto text-xs text-accent animate-pulse">
                     In progress...
+                  </span>
+                )}
+                {isComplete && (
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    ✓
                   </span>
                 )}
               </div>

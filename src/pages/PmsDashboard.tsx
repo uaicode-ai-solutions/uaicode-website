@@ -300,11 +300,21 @@ const PmsDashboardContent = () => {
     );
   }
 
-  // Show fullscreen generating animation if report is pending or processing - NO navigation allowed
-  if (report?.status === "pending" || report?.status === "processing") {
+  // Show fullscreen generating animation if report is still being generated
+  // Check reportData.status from tb_pms_reports (not report.status from tb_pms_wizard)
+  const isGenerating = !reportData?.status || 
+    (reportData.status !== "Created" && 
+     reportData.status !== "completed" && 
+     reportData.status !== "failed" && 
+     reportData.status !== "error");
+
+  if (isGenerating) {
     return (
       <div className="fixed inset-0 z-[100] bg-background">
-        <GeneratingReportSkeleton projectName={projectName} />
+        <GeneratingReportSkeleton 
+          projectName={projectName} 
+          currentStatus={reportData?.status}
+        />
       </div>
     );
   }
