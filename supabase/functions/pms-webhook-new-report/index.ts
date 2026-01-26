@@ -141,6 +141,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { wizardData, userData } = await fetchWizardAndUserData(wizardId);
     
     const webhookPayload = {
+      wizard_id: wizardData.id,
       event: "wizard.created",
       timestamp: new Date().toISOString(),
       data: {
