@@ -96,34 +96,59 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
     }
     
     setIsImprovingDescription(true);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for cold starts
+    
     try {
-      const { data: result, error } = await supabase.functions.invoke('pms-improve-description', {
-        body: {
-          description: data.description,
-          saasType: data.saasType,
-          industry: data.industry
+      const response = await fetch(
+        'https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-improve-description',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg'
+          },
+          body: JSON.stringify({
+            description: data.description,
+            saasType: data.saasType,
+            industry: data.industry
+          }),
+          signal: controller.signal
         }
-      });
+      );
       
-      if (error) throw error;
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+      
+      const result = await response.json();
       
       if (result?.improvedDescription) {
         onChange("description", result.improvedDescription);
         toast.success("Description improved successfully!");
       }
     } catch (error: any) {
+      clearTimeout(timeoutId);
       console.error("Error improving description:", error);
       
-      // Retry up to 2 times for transient failures (network/deployment issues)
-      if (retryCount < 2 && (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError'))) {
+      // Retry up to 2 times for transient failures (network/deployment/abort issues)
+      if (retryCount < 2 && (
+        error?.message?.includes('Failed to fetch') || 
+        error?.message?.includes('NetworkError') ||
+        error?.name === 'AbortError'
+      )) {
         console.log(`Retrying... attempt ${retryCount + 2}`);
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Wait 1.5s before retry
+        await new Promise(resolve => setTimeout(resolve, 1500));
         return handleImproveDescription(retryCount + 1);
       }
       
-      if (error?.status === 429) {
+      if (error?.message?.includes('429')) {
         toast.error("Rate limit exceeded. Please try again later.");
-      } else if (error?.status === 402) {
+      } else if (error?.message?.includes('402')) {
         toast.error("Payment required. Please add credits to continue.");
       } else {
         toast.error("Failed to improve description. Please try again.");
