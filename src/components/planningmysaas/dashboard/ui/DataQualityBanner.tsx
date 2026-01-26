@@ -17,14 +17,14 @@ interface DataQualityBannerProps {
   issues: DataQualityIssue[];
   onRegenerate: () => void;
   onDismiss: () => void;
-  isRegenerating: boolean;
+  isRegenerating?: boolean;
 }
 
 export const DataQualityBanner = ({
   issues,
   onRegenerate,
   onDismiss,
-  isRegenerating,
+  isRegenerating = false,
 }: DataQualityBannerProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
