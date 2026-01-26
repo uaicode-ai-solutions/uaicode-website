@@ -8,7 +8,10 @@ export interface DataQualityIssue {
   id: string;
   type: 'parsing' | 'missing' | 'incomplete';
   severity: 'warning' | 'info';
-  field: string;
+  field: string;           // Campo específico (ex: "score")
+  jsonPath: string;        // Caminho completo no JSON (ex: "hero_score_section.score")
+  dbColumn: string;        // Coluna da tabela tb_pms_reports
+  currentValue?: unknown;  // Valor atual encontrado (para debug)
   message: string;
 }
 
@@ -55,7 +58,10 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
           id: 'monthly_searches_parsing',
           type: 'parsing',
           severity: 'warning',
-          field: 'demand_signals.monthly_searches',
+          field: 'monthly_searches',
+          jsonPath: 'opportunity_section.demand_signals.monthly_searches',
+          dbColumn: 'opportunity_section',
+          currentValue: { text: monthlySearches, numeric: monthlySearchesNumeric },
           message: 'Monthly searches numeric value could not be parsed'
         });
       }
@@ -71,7 +77,10 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
             id: 'social_mentions_parsing',
             type: 'parsing',
             severity: 'warning',
-            field: 'demand_signals.social_mentions',
+            field: 'monthly_mentions',
+            jsonPath: 'opportunity_section.demand_signals.social_mentions.monthly_mentions',
+            dbColumn: 'opportunity_section',
+            currentValue: { text: mentions, numeric: mentionsNumeric },
             message: 'Social mentions numeric value could not be parsed'
           });
         }
@@ -92,7 +101,10 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
           id: 'macro_trends_strength',
           type: 'parsing',
           severity: 'info',
-          field: 'macro_trends.strength',
+          field: 'strength',
+          jsonPath: 'opportunity_section.macro_trends[*].strength',
+          dbColumn: 'opportunity_section',
+          currentValue: macroTrends.map(t => ({ strength: t.strength, strength_numeric: t.strength_numeric })),
           message: 'Macro trends strength values could not be validated'
         });
       }
@@ -106,7 +118,10 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
       id: 'hero_score_missing',
       type: 'missing',
       severity: 'warning',
-      field: 'hero_score_section.score',
+      field: 'score',
+      jsonPath: 'hero_score_section.score',
+      dbColumn: 'hero_score_section',
+      currentValue: heroScore?.score ?? null,
       message: 'Overall viability score is missing'
     });
   }
@@ -118,7 +133,10 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
       id: 'summary_verdict_missing',
       type: 'missing',
       severity: 'warning',
-      field: 'summary_section.verdict',
+      field: 'verdict',
+      jsonPath: 'summary_section.verdict',
+      dbColumn: 'summary_section',
+      currentValue: summary?.verdict ?? null,
       message: 'Executive verdict is missing'
     });
   }
@@ -130,7 +148,10 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
       id: 'investment_missing',
       type: 'missing',
       severity: 'warning',
-      field: 'section_investment.investment_one_payment_cents',
+      field: 'investment_one_payment_cents',
+      jsonPath: 'section_investment.investment_one_payment_cents',
+      dbColumn: 'section_investment',
+      currentValue: investment?.investment_one_payment_cents ?? null,
       message: 'Investment calculation is missing'
     });
   }
