@@ -114,6 +114,7 @@ const handler = async (req: Request): Promise<Response> => {
                 market_size: wizardData.market_size,
                 target_audience: wizardData.target_audience,
                 market_type: wizardData.market_type,
+                geographic_region: wizardData.geographic_region,
                 selected_features: wizardData.selected_features,
                 selected_tier: wizardData.selected_tier,
                 goal: wizardData.goal,
