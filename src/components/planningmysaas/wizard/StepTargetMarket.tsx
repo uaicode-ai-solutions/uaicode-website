@@ -198,8 +198,8 @@ const StepTargetMarket = ({ data, onChange }: StepTargetMarketProps) => {
               icon={region.icon}
               title={region.title}
               description={region.description}
-              selected={data.geographicRegion === region.id}
-              onClick={() => onChange("geographicRegion", region.id)}
+              selected={data.geographicRegion === region.title}
+              onClick={() => onChange("geographicRegion", region.title)}
             />
           ))}
         </div>
