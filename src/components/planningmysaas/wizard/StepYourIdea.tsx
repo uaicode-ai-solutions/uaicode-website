@@ -100,6 +100,7 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
   const [suggestedDescription, setSuggestedDescription] = useState("");
   const [showNameDialog, setShowNameDialog] = useState(false);
   const [suggestedName, setSuggestedName] = useState("");
+  const [suggestedNameRationale, setSuggestedNameRationale] = useState("");
 
   const isDescriptionValid = data.description.trim().length >= 20;
 
@@ -183,6 +184,7 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
     onChange("saasName", suggestedName);
     setShowNameDialog(false);
     setSuggestedName("");
+    setSuggestedNameRationale("");
     toast.success("Name applied!");
   };
 
@@ -226,6 +228,7 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
       
       if (result?.suggestedName) {
         setSuggestedName(result.suggestedName);
+        setSuggestedNameRationale(result.rationale || "");
         setShowNameDialog(true);
       }
     } catch (error: any) {
@@ -602,6 +605,13 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
             <div className="inline-block px-6 py-4 bg-accent/10 border border-accent/30 rounded-xl">
               <span className="text-2xl font-bold text-foreground">{suggestedName}</span>
             </div>
+            
+            {/* Branding rationale */}
+            {suggestedNameRationale && (
+              <p className="mt-4 text-sm text-muted-foreground italic max-w-sm mx-auto">
+                "{suggestedNameRationale}"
+              </p>
+            )}
           </div>
           
           <AlertDialogFooter>

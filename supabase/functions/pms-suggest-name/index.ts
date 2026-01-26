@@ -33,7 +33,12 @@ AVOID:
 - Overused suffixes (ly, ify, io) unless truly fitting
 - Generic descriptive names
 
-RESPOND WITH ONLY THE SUGGESTED NAME - nothing else, no quotes, no explanation.`;
+RATIONALE RULES:
+- Must be exactly ONE sentence
+- Maximum 15 words
+- Explain the strategic branding/marketing reasoning
+- Focus on what the name evokes or communicates
+- Be specific about linguistic or psychological elements used`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -61,7 +66,8 @@ DESCRIPTION: ${description}
 ${saasType ? `TYPE: ${saasType}` : ""}
 ${industry ? `INDUSTRY: ${industry}` : ""}
 
-Generate ONE perfect name following the naming rules. Prefer 1 word, maximum 3 words.`;
+Generate ONE perfect name following the naming rules. Prefer 1 word, maximum 3 words.
+Also provide a brief branding rationale explaining why this name works.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -70,13 +76,36 @@ Generate ONE perfect name following the naming rules. Prefer 1 word, maximum 3 w
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
         ],
-        max_tokens: 50,
-        temperature: 0.8,
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "suggest_name",
+              description: "Return the suggested SaaS name with branding rationale",
+              parameters: {
+                type: "object",
+                properties: {
+                  suggestedName: {
+                    type: "string",
+                    description: "The suggested name (1-3 words max)",
+                  },
+                  rationale: {
+                    type: "string",
+                    description: "Brief branding rationale explaining the name (one sentence, max 15 words)",
+                  },
+                },
+                required: ["suggestedName", "rationale"],
+                additionalProperties: false,
+              },
+            },
+          },
+        ],
+        tool_choice: { type: "function", function: { name: "suggest_name" } },
       }),
     });
 
@@ -98,22 +127,34 @@ Generate ONE perfect name following the naming rules. Prefer 1 word, maximum 3 w
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
-    const result = await response.json();
-    const suggestedName = result.choices?.[0]?.message?.content?.trim();
-
-    if (!suggestedName) {
-      throw new Error("No name generated");
+    const data = await response.json();
+    
+    // Extract the tool call result
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall || toolCall.function.name !== "suggest_name") {
+      throw new Error("Unexpected response format from AI");
     }
 
+    const result = JSON.parse(toolCall.function.arguments);
+
     // Clean up the name - remove quotes, extra spaces, etc.
-    const cleanName = suggestedName
+    const cleanName = result.suggestedName
       .replace(/^["']|["']$/g, "")
       .replace(/\s+/g, " ")
       .trim()
       .slice(0, 50);
 
+    // Clean up the rationale
+    const cleanRationale = result.rationale
+      .replace(/^["']|["']$/g, "")
+      .trim()
+      .slice(0, 150);
+
     return new Response(
-      JSON.stringify({ suggestedName: cleanName }),
+      JSON.stringify({ 
+        suggestedName: cleanName,
+        rationale: cleanRationale
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
