@@ -1,181 +1,225 @@
 
-# Plano: Correção Definitiva do Fluxo Loading ↔ Dashboard
+# Plano: Corrigir "Try Again" - Evitar Exibição Prematura da Tela de Erro
 
-## Resumo das Mudanças
+## Diagnóstico do Bug
 
-O fluxo será simplificado para:
-- **Status válidos**: apenas `"completed"` (sucesso) e `"Step X ... - Fail"` (falha)
-- **Dashboard só acessível se status = "completed"** - senão, redireciona para Loading
-- **Loading page é o único lugar que dispara o webhook**
-
----
-
-## Arquivos a Modificar
-
-### 1. `src/hooks/useReportData.ts`
-**Objetivo**: Simplificar lógica de polling
-
-**Mudanças**:
-- Remover `"Created"` como status terminal (não é mais usado)
-- Terminal = apenas `"completed"` ou contém `"fail"`
-- Continuar polling em qualquer outro caso
-
-```typescript
-// Polling logic simplificada
-const isTerminal = 
-  normalizedStatus === "completed" || 
-  normalizedStatus.includes("fail");
+### Fluxo Atual (Problema)
+```text
+1. Report falha → status = "Step X - Fail"
+2. Usuário clica "Try Again"
+3. window.location.reload() → página remonta
+4. Cache/banco AINDA tem status "fail" (webhook não rodou)
+5. isFailed = true na PRIMEIRA renderização
+6. Tela de erro é exibida IMEDIATAMENTE
+7. Webhook é disparado em background, mas UI já está no erro
 ```
 
+### Causa Raiz
+A proteção `hasSeenNonCompleted` só protege contra navegação prematura ao dashboard. **Não existe proteção equivalente para a tela de erro.**
+
+A tela de erro é exibida incondicional quando `isFailed = true`, sem verificar se observamos um "ciclo novo" de geração.
+
 ---
 
-### 2. `src/pages/PmsLoading.tsx`
-**Objetivo**: Evitar navegação prematura por cache antigo
+## Solução: Unificar Proteção de Cache
 
-**Mudanças**:
-- Adicionar guarda `hasSeenNonCompleted` para só navegar ao dashboard após observar status não-completed
-- Adicionar "force refetch" agressivo após disparar o webhook (a cada 800ms por 15s)
-- Remover referências a status "Created" e "Started"
+Criar uma única flag `hasObservedFreshCycle` que indica que observamos a geração **realmente iniciar** (ou seja, status diferente do terminal anterior).
 
-**Nova lógica de navegação**:
+### Regra Unificada
+Só aplicar ações terminais (navegar ao dashboard OU mostrar tela de erro) quando:
+1. Status atual é terminal (`"completed"` ou contém `"fail"`)
+2. **E** `hasObservedFreshCycle === true`
+
+Se `hasObservedFreshCycle === false`, mostrar skeleton de loading (mesmo que status seja fail/completed).
+
+---
+
+## Mudanças em `src/pages/PmsLoading.tsx`
+
+### 1. Renomear e Generalizar a Flag
+
 ```typescript
-// Só navegar se:
-// 1. Status atual é "completed"
-// 2. E já vimos algum status não-completed nesta sessão
-if (normalizedStatus === "completed" && hasSeenNonCompleted.current) {
+// ANTES: só protegia contra completed
+const hasSeenNonCompleted = useRef(false);
+
+// DEPOIS: protege contra qualquer status terminal stale
+const hasObservedFreshCycle = useRef(false);
+```
+
+### 2. Detectar Início de Novo Ciclo
+
+O "ciclo novo" começou quando observamos um status que:
+- NÃO é "completed"
+- NÃO contém "fail"
+- NÃO é vazio/undefined
+
+Ou seja, quando vemos "Step X ... In Progress" pela primeira vez.
+
+```typescript
+useEffect(() => {
+  // Status não-terminal = geração está em andamento
+  const isInProgress = normalizedStatus && 
+    normalizedStatus !== "completed" && 
+    !normalizedStatus.includes("fail");
+  
+  if (isInProgress && !hasObservedFreshCycle.current) {
+    console.log("[PmsLoading] Fresh cycle detected:", status);
+    hasObservedFreshCycle.current = true;
+    
+    // Stop aggressive refetch
+    if (aggressiveIntervalRef.current) {
+      clearInterval(aggressiveIntervalRef.current);
+      aggressiveIntervalRef.current = null;
+    }
+  }
+}, [normalizedStatus, status]);
+```
+
+### 3. Condicionar Navegação ao Dashboard
+
+```typescript
+// Só navegar se fresh cycle foi observado
+if (normalizedStatus === "completed" && hasObservedFreshCycle.current) {
   navigate(`/planningmysaas/dashboard/${wizardId}`);
 }
 ```
 
----
+### 4. Condicionar Exibição da Tela de Erro
 
-### 3. `src/pages/PmsDashboard.tsx`
-**Objetivo**: Dashboard só acessível se completed, senão redireciona
-
-**Mudanças**:
-- Adicionar `useEffect` que redireciona para `/loading/:id` se status ≠ "completed"
-- Corrigir confetti (trocar `"Created"` → `"completed"`)
-- Manter skeleton apenas para `isLoading || !reportData` (crash protection)
-
-**Nova lógica**:
 ```typescript
-// Redirect to loading if not completed
-useEffect(() => {
-  if (!isLoading && reportData && wizardId) {
-    const status = reportData.status?.trim().toLowerCase();
-    if (status !== "completed") {
-      navigate(`/planningmysaas/loading/${wizardId}`, { replace: true });
-    }
-  }
-}, [isLoading, reportData, wizardId, navigate]);
+// Só mostrar erro se fresh cycle foi observado
+const showErrorUI = isFailed && hasObservedFreshCycle.current;
+
+if (showErrorUI) {
+  return <ErrorUI ... />;
+}
+
+// Caso contrário, mostrar skeleton (aguardando ciclo iniciar)
+return <GeneratingReportSkeleton ... />;
+```
+
+### 5. Simplificar handleRetry
+
+```typescript
+const handleRetry = () => {
+  setIsRetrying(true);
+  hasTriggeredWebhook.current = false;
+  hasObservedFreshCycle.current = false; // Reset da flag unificada
+  window.location.reload();
+};
 ```
 
 ---
 
-### 4. `src/components/planningmysaas/skeletons/GeneratingReportSkeleton.tsx`
-**Objetivo**: Alinhar com status reais do orchestrator
+## Fluxo Corrigido
 
-**Mudanças**:
-- Remover tratamento de "Created" e "Started"
-- `"completed"` = 100%
-- `undefined/null` ou início = 0%
-- Atualizar TOTAL_STEPS para 11 (conforme orchestrator atual)
-
----
-
-### 5. `src/components/planningmysaas/reports/ReportCard.tsx`
-**Objetivo**: Corrigir detecção de "generating" e navegação
-
-**Mudanças**:
-- `isGenerating` = status ≠ "completed" (e não contém "fail")
-- `handleView`: se completed → dashboard, senão → loading
-
----
-
-### 6. `src/hooks/useReports.ts`
-**Objetivo**: Garantir report mais recente por wizard
-
-**Mudanças**:
-- Adicionar `created_at` no select
-- Ordenar por `created_at desc` e pegar primeiro por wizard_id
-
----
-
-## Fluxo Final
-
-```
+```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│                         FLUXO UNIFICADO                              │
+│                   FLUXO "TRY AGAIN" CORRIGIDO                        │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  Wizard Submit ───┐                                                  │
-│                   │                                                  │
-│  Dashboard        ├──▶ navigate("/loading/:id") ──▶ Loading Page    │
-│  Regenerate ──────┤        (sem webhook)             │               │
-│                   │                                  │               │
-│  Retry Button ────┘                                  ▼               │
-│                                              ┌──────────────────┐    │
-│                                              │ useEffect mount  │    │
-│                                              │ → dispara webhook│    │
-│                                              └────────┬─────────┘    │
-│                                                       │              │
-│                                                       ▼              │
-│                                              ┌──────────────────┐    │
-│                                              │ Polling status   │    │
-│                                              │ (a cada 5s)      │    │
-│                                              └────────┬─────────┘    │
-│                                                       │              │
-│                                     ┌─────────────────┼──────────────┤
-│                                     │                 │              │
-│                               status="completed"   status="fail"    │
-│                               + já viu não-completed                 │
-│                                     │                 │              │
-│                                     ▼                 ▼              │
-│                              ┌───────────┐     ┌────────────┐        │
-│                              │ Dashboard │     │ Error UI   │        │
-│                              │ (estático)│     │ + Retry    │        │
-│                              └───────────┘     └────────────┘        │
+│  1. Report falha → status = "Step X - Fail"                         │
+│  2. Tela de erro exibida (hasObservedFreshCycle = true)             │
 │                                                                      │
-│  Deep-link para Dashboard ──▶ se status ≠ completed ──▶ Loading     │
+│  3. Usuário clica "Try Again"                                        │
+│     ├─ hasTriggeredWebhook = false                                   │
+│     ├─ hasObservedFreshCycle = false  ← RESET                        │
+│     └─ window.location.reload()                                      │
+│                                                                      │
+│  4. Página remonta                                                   │
+│     ├─ Cache ainda tem status "fail"                                 │
+│     ├─ isFailed = true                                               │
+│     ├─ hasObservedFreshCycle = false                                 │
+│     └─ showErrorUI = false ← PROTEÇÃO                                │
+│                                                                      │
+│  5. Skeleton é exibido (não a tela de erro)                          │
+│                                                                      │
+│  6. useEffect dispara webhook                                        │
+│                                                                      │
+│  7. Polling começa (800ms agressivo)                                 │
+│                                                                      │
+│  8. Status muda para "Step 1 - In Progress"                         │
+│     ├─ hasObservedFreshCycle = true                                  │
+│     └─ Skeleton mostra progresso                                     │
+│                                                                      │
+│  9a. Se sucesso → status = "completed"                               │
+│      └─ Navega para dashboard                                        │
+│                                                                      │
+│  9b. Se falha novamente → status = "Step X - Fail"                  │
+│      └─ Tela de erro exibida (fresh cycle = true)                   │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Detalhes Técnicos
-
-### Proteção contra Cache (PmsLoading.tsx)
-
-O problema atual: ao clicar "Regenerate", o React Query ainda tem o status `"completed"` em cache do report anterior. A Loading page vê isso e navega de volta imediatamente.
-
-**Solução**:
-1. `hasSeenNonCompleted` ref = false ao montar
-2. Quando status muda para qualquer coisa ≠ "completed" → marcar true
-3. Só permitir navegação ao dashboard quando:
-   - status === "completed" **E**
-   - hasSeenNonCompleted === true
-
-Isso garante que o "completed" observado é **novo**, não do cache.
-
-### Force Refetch Agressivo
-
-Após disparar o webhook, fazer refetch a cada 800ms por ~15s para capturar rapidamente a transição de status do cache antigo para o novo "Step 1 ... In Progress".
+## Código Final Resumido
 
 ```typescript
-// Após chamar invoke()
-const intervalId = setInterval(() => refetch(), 800);
-setTimeout(() => clearInterval(intervalId), 15000);
+// Flags de proteção
+const hasTriggeredWebhook = useRef(false);
+const hasObservedFreshCycle = useRef(false);
+
+// Status analysis
+const normalizedStatus = status?.trim().toLowerCase() || "";
+const isFailed = normalizedStatus.includes("fail");
+const isCompleted = normalizedStatus === "completed";
+const isInProgress = normalizedStatus && 
+  !isCompleted && 
+  !isFailed;
+
+// Detectar fresh cycle (status não-terminal)
+useEffect(() => {
+  if (isInProgress && !hasObservedFreshCycle.current) {
+    hasObservedFreshCycle.current = true;
+  }
+}, [isInProgress]);
+
+// Navegação condicional
+useEffect(() => {
+  if (isCompleted && hasObservedFreshCycle.current) {
+    navigate(`/planningmysaas/dashboard/${wizardId}`);
+  }
+}, [isCompleted, hasObservedFreshCycle.current, ...]);
+
+// Render condicional
+const showErrorUI = isFailed && hasObservedFreshCycle.current;
+
+if (showErrorUI) {
+  return <ErrorUI />;
+}
+
+return <GeneratingReportSkeleton />;
 ```
 
 ---
 
 ## Critérios de Aceite
 
-1. ✅ Clicar "Regenerate" no Dashboard → vai para Loading e **não volta**
-2. ✅ Loading mostra progresso dos steps em tempo real
-3. ✅ Só vai para Dashboard quando status = "completed" (após ciclo de geração)
-4. ✅ Deep-link direto para Dashboard de report não-completed → redireciona para Loading
-5. ✅ Erro (Fail) → Loading mostra tela de erro com Retry
-6. ✅ Retry → recarrega e dispara webhook novamente
-7. ✅ Reports list: card de report em progresso mostra spinner
+1. **Try Again não mostra erro imediatamente**
+   - Clicar "Try Again" → skeleton aparece
+   - Webhook é disparado
+   - Só mostra erro se falhar novamente
+
+2. **Novo report/regenerate continua funcionando**
+   - Navegar para loading → skeleton
+   - Ao completar → dashboard
+
+3. **Deep-link para loading com status fail**
+   - Se usuário acessar URL diretamente com status fail:
+     - Webhook é disparado (nova tentativa)
+     - Skeleton é exibido
+     - Só mostra erro se falhar novamente
+
+4. **Erro legítimo é exibido corretamente**
+   - Se a geração falhar durante um ciclo observado → tela de erro aparece
+
+---
+
+## Arquivos a Modificar
+
+| Arquivo | Mudança |
+|---------|---------|
+| `src/pages/PmsLoading.tsx` | Unificar flags de proteção, condicionar tela de erro |
+
+Apenas 1 arquivo precisa ser modificado.
