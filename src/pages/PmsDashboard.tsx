@@ -84,28 +84,18 @@ const PmsDashboardContent = () => {
     return checkDataQuality(reportData);
   }, [reportData]);
 
-  // Regenerate report handler - uses new orchestrator Edge Function
+  // Regenerate report handler - navigate to loading page which triggers orchestrator
   const handleRegenerateReport = async () => {
     if (!wizardId || isRegenerating) return;
     
     setIsRegenerating(true);
-    try {
-      // 1. Invalidar cache para forçar dados frescos
-      await queryClient.invalidateQueries({ 
-        queryKey: ["pms-report-data", wizardId] 
-      });
-      
-      // 2. Chamar nova Edge Function orquestradora (fire-and-forget)
-      supabase.functions.invoke('pms-orchestrate-report', {
-        body: { wizard_id: wizardId }
-      });
-      
-      // 3. Navegar para loading page
-      navigate(`/planningmysaas/loading/${wizardId}`);
-    } catch (err) {
-      console.error("Error triggering regeneration:", err);
-      setIsRegenerating(false);
-    }
+    
+    // Invalidate cache and navigate - Loading page will trigger orchestrator
+    await queryClient.invalidateQueries({ 
+      queryKey: ["pms-report-data", wizardId] 
+    });
+    
+    navigate(`/planningmysaas/loading/${wizardId}`);
   };
 
   // report, isLoading, and error now come from ReportContext (unified loading)

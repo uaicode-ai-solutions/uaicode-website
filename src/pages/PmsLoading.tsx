@@ -8,6 +8,8 @@ import { useReportData } from "@/hooks/useReportData";
 import { useReport } from "@/hooks/useReport";
 import { supabase } from "@/integrations/supabase/client";
 
+// Single source of truth: This page triggers the orchestrator webhook on mount
+
 // Helper to detect failure status
 const isFailureStatus = (status: string | undefined): boolean => {
   if (!status) return false;
@@ -43,9 +45,30 @@ const PmsLoading = () => {
   // Track if we've already navigated to avoid double navigation
   const hasNavigated = useRef(false);
   
+  // Guard to ensure webhook is only triggered once (handles StrictMode)
+  const hasTriggeredWebhook = useRef(false);
+  
   const status = reportData?.status;
   const isFailed = isFailureStatus(status);
   const failedStepInfo = parseFailedStep(status);
+  
+  // SINGLE SOURCE OF TRUTH: Trigger orchestrator webhook on mount
+  useEffect(() => {
+    if (!wizardId || hasTriggeredWebhook.current) return;
+    
+    // Mark as triggered BEFORE calling (prevents race condition)
+    hasTriggeredWebhook.current = true;
+    
+    console.log("[PmsLoading] Triggering orchestrator for:", wizardId);
+    
+    supabase.functions.invoke('pms-orchestrate-report', {
+      body: { wizard_id: wizardId }
+    }).then(result => {
+      console.log('[PmsLoading] Orchestrator response:', result);
+    }).catch(err => {
+      console.error('[PmsLoading] Orchestrator error:', err);
+    });
+  }, [wizardId]);
   
   // Debug logging
   useEffect(() => {
@@ -68,14 +91,11 @@ const PmsLoading = () => {
     }
   }, [status, wizardId, navigate]);
   
-  // Handle retry - simple: call orchestrator and reload page
+  // Handle retry - just reload: the mount effect will trigger the webhook
   const handleRetry = () => {
-    // 1. Chamar Edge Function (fire-and-forget)
-    supabase.functions.invoke('pms-orchestrate-report', {
-      body: { wizard_id: wizardId }
-    });
-    
-    // 2. Recarregar página (força re-mount e reinicia polling)
+    // Reset the guard so useEffect will trigger again after reload
+    hasTriggeredWebhook.current = false;
+    // Reload forces re-mount, which triggers the orchestrator webhook
     window.location.reload();
   };
   
