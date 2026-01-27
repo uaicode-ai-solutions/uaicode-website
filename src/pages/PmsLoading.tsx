@@ -45,8 +45,9 @@ const PmsLoading = () => {
   // Guard to ensure webhook is only triggered once (handles StrictMode)
   const hasTriggeredWebhook = useRef(false);
   
-  // Guard to prevent navigation on stale cache: only navigate after observing non-completed status
-  const hasSeenNonCompleted = useRef(false);
+  // UNIFIED GUARD: Only allow terminal actions (navigate to dashboard OR show error)
+  // after observing a fresh generation cycle (status that is not terminal)
+  const hasObservedFreshCycle = useRef(false);
   
   // Track aggressive refetch interval
   const aggressiveIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -54,6 +55,8 @@ const PmsLoading = () => {
   const status = reportData?.status;
   const normalizedStatus = status?.trim().toLowerCase() || "";
   const isFailed = isFailureStatus(status);
+  const isCompleted = normalizedStatus === "completed";
+  const isInProgress = normalizedStatus && !isCompleted && !isFailed;
   const failedStepInfo = parseFailedStep(status);
   
   // SINGLE SOURCE OF TRUTH: Trigger orchestrator webhook on mount
@@ -71,7 +74,7 @@ const PmsLoading = () => {
       console.log('[PmsLoading] Orchestrator response:', result);
       
       // Start aggressive refetch to catch status transition quickly
-      // This helps when cache has old "completed" status
+      // This helps when cache has old "completed" or "fail" status
       if (!aggressiveIntervalRef.current) {
         console.log('[PmsLoading] Starting aggressive refetch (every 800ms for 15s)');
         aggressiveIntervalRef.current = setInterval(() => {
@@ -100,22 +103,21 @@ const PmsLoading = () => {
     };
   }, [wizardId, refetch]);
   
-  // Track when we see a non-completed status (proves this is a fresh generation cycle)
+  // Detect fresh cycle: when we see an in-progress status (not terminal)
+  // This proves the new generation has actually started
   useEffect(() => {
-    if (normalizedStatus && normalizedStatus !== "completed") {
-      if (!hasSeenNonCompleted.current) {
-        console.log("[PmsLoading] Observed non-completed status:", status);
-      }
-      hasSeenNonCompleted.current = true;
+    if (isInProgress && !hasObservedFreshCycle.current) {
+      console.log("[PmsLoading] Fresh cycle detected:", status);
+      hasObservedFreshCycle.current = true;
       
-      // Stop aggressive refetch once we see progress
+      // Stop aggressive refetch once we confirm fresh cycle
       if (aggressiveIntervalRef.current) {
         clearInterval(aggressiveIntervalRef.current);
         aggressiveIntervalRef.current = null;
-        console.log('[PmsLoading] Stopped aggressive refetch (progress detected)');
+        console.log('[PmsLoading] Stopped aggressive refetch (fresh cycle confirmed)');
       }
     }
-  }, [normalizedStatus, status]);
+  }, [isInProgress, status]);
   
   // Debug logging
   useEffect(() => {
@@ -123,28 +125,29 @@ const PmsLoading = () => {
       wizardId,
       rawStatus: status,
       normalizedStatus,
-      hasSeenNonCompleted: hasSeenNonCompleted.current,
+      hasObservedFreshCycle: hasObservedFreshCycle.current,
+      isInProgress,
+      isCompleted,
       isFailed
     });
-  }, [wizardId, status, normalizedStatus, isFailed]);
+  }, [wizardId, status, normalizedStatus, isInProgress, isCompleted, isFailed]);
   
-  // Monitor status and navigate when complete (only after seeing non-completed)
+  // Navigate to dashboard ONLY when:
+  // 1. Status is "completed"
+  // 2. AND we have observed a fresh cycle (proves this isn't stale cache)
   useEffect(() => {
-    // Only navigate if:
-    // 1. Status is "completed"
-    // 2. We have observed a non-completed status during this session
-    if (normalizedStatus === "completed" && hasSeenNonCompleted.current) {
+    if (isCompleted && hasObservedFreshCycle.current) {
       console.log("[PmsLoading] Report completed! Navigating to dashboard...");
       navigate(`/planningmysaas/dashboard/${wizardId}`, { replace: true });
     }
-  }, [normalizedStatus, wizardId, navigate]);
+  }, [isCompleted, wizardId, navigate]);
   
-  // Handle retry - just reload: the mount effect will trigger the webhook
+  // Handle retry - reset guards and reload
   const handleRetry = () => {
     setIsRetrying(true);
-    // Reset the guard so useEffect will trigger again after reload
+    // Reset guards so useEffect will trigger again after reload
     hasTriggeredWebhook.current = false;
-    hasSeenNonCompleted.current = false;
+    hasObservedFreshCycle.current = false;
     // Reload forces re-mount, which triggers the orchestrator webhook
     window.location.reload();
   };
@@ -154,8 +157,12 @@ const PmsLoading = () => {
     navigate(`/planningmysaas/wizard?edit=${wizardId}`, { replace: true });
   };
   
-  // Show error UI if failed
-  if (isFailed) {
+  // Show error UI ONLY when:
+  // 1. Status contains "fail"
+  // 2. AND we have observed a fresh cycle (proves this failure is from current attempt)
+  const showErrorUI = isFailed && hasObservedFreshCycle.current;
+  
+  if (showErrorUI) {
     return (
       <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center p-4">
         <div className="max-w-md w-full space-y-6">
@@ -217,6 +224,8 @@ const PmsLoading = () => {
     );
   }
   
+  // Default: show loading skeleton
+  // This covers: initial load, stale cache states, and in-progress generation
   return (
     <div className="fixed inset-0 z-[100] bg-background">
       <GeneratingReportSkeleton 
