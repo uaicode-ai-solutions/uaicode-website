@@ -1,132 +1,62 @@
 
+# Plano: Simplificar "Try Again"
 
-# Plano: Corrigir Chamadas Duplicadas e Desabilitar Trigger Legado
+## O que fazer
 
-## Diagnóstico
+Alterar o `handleRetry` para:
+1. Chamar a Edge Function `pms-orchestrate-report`
+2. Navegar para a mesma rota de loading (força re-mount do componente)
 
-### Por que ocorreram 4 execuções?
-1. **Frontend** chama `pms-orchestrate-report` (correto)
-2. **Trigger do banco** (`on_pms_wizard_created`) chama `pms-webhook-new-report` (legado)
-3. Ambos enviando para o mesmo webhook n8n = 2 chamadas
-4. Possível retry ou double-render do React causando mais 2
+## Código
 
-### Por que todas falharam?
-O workflow n8n "PMS Server Tools" tem configuração incorreta:
-- Webhook node configurado para "Using Respond to Webhook Node"
-- Mas existe um "Respond to Webhook" node que não está sendo atingido em algum branch
+**Arquivo:** `src/pages/PmsLoading.tsx`
 
----
-
-## Correções Necessárias
-
-### Parte 1: Desabilitar Trigger do Banco (Migration SQL)
-
-Criar uma migration para remover o trigger legado que está causando chamadas duplicadas:
-
-```sql
--- Remover trigger que chama pms-webhook-new-report automaticamente
-DROP TRIGGER IF EXISTS on_pms_wizard_created ON public.tb_pms_wizard;
-
--- Opcional: Remover a função do webhook também
-DROP FUNCTION IF EXISTS public.notify_pms_wizard_created_webhook();
-```
-
-### Parte 2: Correção Manual no n8n (Usuário)
-
-O workflow "PMS Server Tools" precisa de uma correção:
-
-**Opção A (Recomendada - Mais Simples):**
-1. Abrir o node **Webhook** (trigger principal)
-2. Alterar **Respond** de "Using 'Respond to Webhook' node" para **"When Last Node Finishes"**
-3. **Deletar** todos os nodes "Respond to Webhook" do workflow
-4. Salvar e ativar
-
-**Opção B (Se precisar controlar a resposta):**
-1. Manter "Using 'Respond to Webhook' node"
-2. Garantir que **TODOS os branches** do Switch node terminem em um "Respond to Webhook" node
-3. Verificar se o Error Trigger também não está ligado a um Respond to Webhook (ele não deveria estar)
-
-### Parte 3: Adicionar `await` na Chamada do Wizard (Código Frontend)
-
-Atualmente a chamada `supabase.functions.invoke()` não tem `await`, o que pode causar comportamento inesperado. Vamos garantir que a navegação só ocorra após a chamada ser enviada.
-
-**Arquivo:** `src/pages/PmsWizard.tsx`
+**Alterar linhas 72-86:**
 
 ```typescript
-// Linha 315-318 atual:
-supabase.functions.invoke('pms-orchestrate-report', {
-  body: { wizard_id: reportId }
-});
-
-// Alterar para (fire-and-forget mas com log):
-supabase.functions.invoke('pms-orchestrate-report', {
-  body: { wizard_id: reportId }
-}).then(result => {
-  console.log('[Wizard] Orchestrator invoked:', result);
-}).catch(err => {
-  console.error('[Wizard] Orchestrator error:', err);
-});
+// Handle retry using new orchestrator Edge Function
+const handleRetry = () => {
+  // 1. Chamar Edge Function (fire-and-forget)
+  supabase.functions.invoke('pms-orchestrate-report', {
+    body: { wizard_id: wizardId }
+  });
+  
+  // 2. Navegar para a mesma rota (força re-mount e reinicia polling)
+  navigate(`/planningmysaas/loading/${wizardId}`, { replace: true });
+  window.location.reload();
+};
 ```
 
----
+## Por que funciona
 
-## Sequência de Implementação
+- `window.location.reload()` força o re-mount completo do componente
+- O polling reinicia do zero
+- A UI começa mostrando o skeleton (pois `status` inicial é `undefined`)
+- Quando o polling pegar o novo status, a UI atualiza normalmente
 
-| Ordem | Ação | Responsável |
-|-------|------|-------------|
-| 1 | Corrigir Webhook node no n8n (Opção A) | Usuário |
-| 2 | Executar migration para remover trigger | Lovable |
-| 3 | Testar fluxo completo | Usuário |
+## Alternativa sem reload
 
----
+Se preferir evitar o reload da página, podemos usar um `key` no componente:
 
-## Resultado Esperado
+```typescript
+const [retryKey, setRetryKey] = useState(0);
 
-Após implementação:
-
-1. **INSERT em tb_pms_wizard** → Apenas dados salvos (sem trigger)
-2. **Frontend** → Chama `pms-orchestrate-report` (única chamada)
-3. **n8n** → Recebe chamada e processa sem erro de "Unused Respond to Webhook"
-4. **Status** → Atualizado step-by-step conforme orquestrador
-
----
-
-## Seção Técnica
-
-### Estado Atual do Trigger
-
-```sql
--- Trigger ativo na tabela tb_pms_wizard:
-CREATE TRIGGER on_pms_wizard_created
-  AFTER INSERT ON public.tb_pms_wizard
-  FOR EACH ROW
-  EXECUTE FUNCTION public.notify_pms_wizard_created_webhook();
-
--- Função que o trigger chama:
-notify_pms_wizard_created_webhook() 
-  → net.http_post() 
-  → pms-webhook-new-report Edge Function
-  → n8n webhook
+const handleRetry = () => {
+  supabase.functions.invoke('pms-orchestrate-report', {
+    body: { wizard_id: wizardId }
+  });
+  setRetryKey(prev => prev + 1); // Força re-render
+  hasNavigated.current = false;
+};
 ```
 
-### Estado Desejado
+E no return, resetar os dados com `invalidateQueries` ou similar.
 
-```sql
--- Sem trigger (removido pela migration)
--- Frontend é o único ponto de entrada para chamar o orquestrador
-```
+## Resultado
 
-### Fluxo Unificado Final
-
-```text
-Wizard Submit
-    │
-    ├──► INSERT tb_pms_wizard (dados apenas)
-    │
-    └──► supabase.functions.invoke('pms-orchestrate-report')
-              │
-              └──► n8n webhook (uma única chamada)
-                      │
-                      └──► Steps 0-10 processados em sequência
-```
-
+Ao clicar "Try Again":
+1. Edge Function é chamada
+2. Página recarrega
+3. Skeleton aparece imediatamente
+4. Polling monitora progresso
+5. Quando completar, redireciona para dashboard
