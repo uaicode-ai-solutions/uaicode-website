@@ -68,13 +68,13 @@ const PmsLoading = () => {
     }
   }, [status, wizardId, navigate]);
   
-  // Handle retry
+  // Handle retry using new orchestrator Edge Function
   const handleRetry = async () => {
     setIsRetrying(true);
     try {
-      // Reset the report status and trigger regeneration
-      await supabase.functions.invoke('pms-generate-report', {
-        body: { reportId: wizardId }
+      // Chamar nova Edge Function orquestradora
+      supabase.functions.invoke('pms-orchestrate-report', {
+        body: { wizard_id: wizardId }
       });
       // Refetch to get new status
       await refetch();
