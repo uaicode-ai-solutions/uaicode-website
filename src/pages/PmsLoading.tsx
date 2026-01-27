@@ -49,7 +49,7 @@ const PmsLoading = () => {
   
   // UI States
   const [showResumeDialog, setShowResumeDialog] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [hasDecided, setHasDecided] = useState(false);
   
   // Get wizard data for project name
@@ -75,7 +75,6 @@ const PmsLoading = () => {
   const triggerOrchestrator = useCallback(async (resumeFromStep?: number) => {
     if (!wizardId) return;
     
-    setIsProcessing(true);
     console.log("[PmsLoading] Triggering orchestrator:", { wizardId, resumeFromStep });
     
     try {
@@ -163,19 +162,26 @@ const PmsLoading = () => {
   
   // Handle retry failed step - update status to "preparing" before retrying
   const handleRetryFailedStep = useCallback(async () => {
-    if (!failedStepInfo || !wizardId) return;
+    if (!wizardId) return;
     
-    setIsProcessing(true);
+    setIsRetrying(true);
     
-    // Update status to "preparing" before calling orchestrator
-    await supabase
+    // Update status to "preparing" before reloading
+    const { error } = await supabase
       .from("tb_pms_reports")
       .update({ status: "preparing" })
       .eq("wizard_id", wizardId);
     
-    console.log("[PmsLoading] Status reset to 'preparing' for retry");
-    triggerOrchestrator(failedStepInfo.stepNumber);
-  }, [failedStepInfo, wizardId, triggerOrchestrator]);
+    // Reset state before reload
+    setIsRetrying(false);
+    
+    if (!error) {
+      console.log("[PmsLoading] Status reset to 'preparing' for retry, reloading...");
+      window.location.reload();
+    } else {
+      console.error("[PmsLoading] Failed to update status for retry:", error);
+    }
+  }, [wizardId]);
   
   // Handle back to wizard
   const handleBackToWizard = useCallback(() => {
@@ -248,10 +254,10 @@ const PmsLoading = () => {
             <Button
               className="flex-1"
               onClick={handleRetryFailedStep}
-              disabled={isProcessing}
+              disabled={isRetrying}
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isProcessing ? 'animate-spin' : ''}`} />
-              {isProcessing ? "Retrying..." : `Retry Step ${failedStepInfo?.stepNumber || ''}`}
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+              {isRetrying ? "Preparing..." : `Retry Step ${failedStepInfo?.stepNumber || ''}`}
             </Button>
           </div>
           
