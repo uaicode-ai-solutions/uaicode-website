@@ -93,14 +93,18 @@ const PmsLoading = () => {
   
   // Initial status check on mount
   useEffect(() => {
-    if (!reportData || hasCheckedInitialStatus.current || hasDecided) return;
+    if (hasCheckedInitialStatus.current || hasDecided) return;
+    
+    // Wait for first data fetch (reportData can be null for brand new reports)
+    // But we need at least one query to complete
+    if (reportData === undefined) return;
     
     hasCheckedInitialStatus.current = true;
     console.log("[PmsLoading] Initial status check:", status);
     
-    // Case 1: No status or null → First generation, start automatically
-    if (!status) {
-      console.log("[PmsLoading] No status, starting fresh generation");
+    // Case 1: No status, null, or "preparing" → Start fresh generation
+    if (!status || normalizedStatus === "preparing") {
+      console.log("[PmsLoading] Status is preparing/empty, starting generation");
       setHasDecided(true);
       triggerOrchestrator();
       return;
@@ -127,11 +131,11 @@ const PmsLoading = () => {
       return;
     }
     
-    // Default: Start fresh
-    console.log("[PmsLoading] Unknown status, starting fresh");
+    // Default: Start fresh (unknown status)
+    console.log("[PmsLoading] Unknown status, starting fresh:", status);
     setHasDecided(true);
     triggerOrchestrator();
-  }, [reportData, status, isCompleted, isFailed, isInProgress, currentStepNumber, wizardId, navigate, triggerOrchestrator, hasDecided]);
+  }, [reportData, status, normalizedStatus, isCompleted, isFailed, isInProgress, currentStepNumber, wizardId, navigate, triggerOrchestrator, hasDecided]);
   
   // Watch for completion during generation
   useEffect(() => {
@@ -157,13 +161,21 @@ const PmsLoading = () => {
     triggerOrchestrator(); // No resume_from_step = start from 1
   }, [triggerOrchestrator]);
   
-  // Handle retry failed step
-  const handleRetryFailedStep = useCallback(() => {
-    if (failedStepInfo) {
-      setIsProcessing(true);
-      triggerOrchestrator(failedStepInfo.stepNumber);
-    }
-  }, [failedStepInfo, triggerOrchestrator]);
+  // Handle retry failed step - update status to "preparing" before retrying
+  const handleRetryFailedStep = useCallback(async () => {
+    if (!failedStepInfo || !wizardId) return;
+    
+    setIsProcessing(true);
+    
+    // Update status to "preparing" before calling orchestrator
+    await supabase
+      .from("tb_pms_reports")
+      .update({ status: "preparing" })
+      .eq("wizard_id", wizardId);
+    
+    console.log("[PmsLoading] Status reset to 'preparing' for retry");
+    triggerOrchestrator(failedStepInfo.stepNumber);
+  }, [failedStepInfo, wizardId, triggerOrchestrator]);
   
   // Handle back to wizard
   const handleBackToWizard = useCallback(() => {

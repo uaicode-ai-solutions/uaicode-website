@@ -30,7 +30,7 @@ export const useReportData = (wizardId: string | undefined) => {
       return data as ReportData | null;
     },
     enabled: !!wizardId,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0, // Always fetch fresh data (critical for Loading page race conditions)
     gcTime: 1000 * 60 * 30,
     // Poll every 5 seconds until status is terminal (success or failure)
     refetchInterval: (query) => {

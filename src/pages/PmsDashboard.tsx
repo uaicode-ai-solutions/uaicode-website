@@ -96,18 +96,38 @@ const PmsDashboardContent = () => {
     return checkDataQuality(reportData);
   }, [reportData]);
 
-  // Regenerate report handler - navigate to loading page which triggers orchestrator
+  // Regenerate report handler - update status to "preparing" BEFORE navigating
   const handleRegenerateReport = async () => {
     if (!wizardId || isRegenerating) return;
     
     setIsRegenerating(true);
     
-    // Invalidate cache and navigate - Loading page will trigger orchestrator
-    await queryClient.invalidateQueries({ 
-      queryKey: ["pms-report-data", wizardId] 
-    });
-    
-    navigate(`/planningmysaas/loading/${wizardId}`);
+    try {
+      // 1. Update status to "preparing" and WAIT for confirmation
+      const { error } = await supabase
+        .from("tb_pms_reports")
+        .update({ status: "preparing" })
+        .eq("wizard_id", wizardId);
+      
+      if (error) {
+        console.error("[PmsDashboard] Failed to update status to preparing:", error);
+        setIsRegenerating(false);
+        return; // Don't navigate if update failed
+      }
+      
+      console.log("[PmsDashboard] Status updated to 'preparing', navigating to loading page");
+      
+      // 2. Invalidate cache after confirming update
+      await queryClient.invalidateQueries({ 
+        queryKey: ["pms-report-data", wizardId] 
+      });
+      
+      // 3. Only navigate after confirmation
+      navigate(`/planningmysaas/loading/${wizardId}`);
+    } catch (err) {
+      console.error("[PmsDashboard] Regenerate error:", err);
+      setIsRegenerating(false);
+    }
   };
 
   // report, isLoading, and error now come from ReportContext (unified loading)
