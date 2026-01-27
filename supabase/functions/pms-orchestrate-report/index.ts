@@ -3,8 +3,19 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-session-id",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+const getWebhookUrl = (): string => {
+  const webhookId = Deno.env.get("REPORT_NEWREPORT_WEBHOOK_ID");
+  if (!webhookId) {
+    throw new Error("REPORT_NEWREPORT_WEBHOOK_ID not configured");
+  }
+  if (webhookId.startsWith("http")) {
+    return webhookId;
+  }
+  return `https://n8n.uaicode.dev/webhook/${webhookId}`;
 };
 
 // Sequência de tools na ordem correta
@@ -85,19 +96,10 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const webhookUrl = Deno.env.get("REPORT_NEWREPORT_WEBHOOK_ID")!;
-
-  if (!webhookUrl) {
-    console.error("❌ REPORT_NEWREPORT_WEBHOOK_ID not configured");
-    return new Response(
-      JSON.stringify({ error: "Webhook URL not configured" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
-
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    const webhookUrl = getWebhookUrl();
     const { wizard_id } = await req.json();
     
     if (!wizard_id) {
