@@ -491,15 +491,12 @@ const PmsDashboard = () => {
     }
   }, [id, navigate]);
 
-  // Early return BEFORE rendering provider if no ID
-  if (!id) {
-    return null;
-  }
-
-  // ReportProvider wraps PmsDashboardContent - this is critical for context to work
+  // ALWAYS render the Provider, even when id is missing (with undefined)
+  // This prevents "context not found" errors during navigation transitions
+  // The PmsDashboardContent will handle the missing id case via isLoading state
   return (
     <ReportProvider wizardId={id}>
-      <PmsDashboardContent />
+      {id ? <PmsDashboardContent /> : null}
     </ReportProvider>
   );
 };

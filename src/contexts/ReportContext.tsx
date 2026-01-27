@@ -101,7 +101,10 @@ export const ReportProvider = ({ wizardId, children }: ReportProviderProps) => {
 export const useReportContext = (): ReportContextType => {
   const context = useContext(ReportContext);
   if (context === undefined) {
-    throw new Error("useReportContext must be used within a ReportProvider");
+    // More descriptive error with debugging info
+    console.error("[ReportContext] Context is undefined. This component must be rendered inside <ReportProvider>.");
+    console.error("[ReportContext] Current URL:", typeof window !== 'undefined' ? window.location.href : 'SSR');
+    throw new Error("useReportContext must be used within a ReportProvider. Check that PmsDashboard wraps PmsDashboardContent with ReportProvider.");
   }
   return context;
 };
