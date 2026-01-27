@@ -498,7 +498,7 @@ const PmsDashboardContent = () => {
 /**
  * Main PmsDashboard Component
  * IMPORTANT: This wrapper provides the ReportContext to all child components.
- * PmsDashboardContent MUST be rendered inside ReportProvider.
+ * The PmsDashboardContent component MUST be rendered inside ReportProvider.
  */
 const PmsDashboard = () => {
   const { id } = useParams<{ id: string }>();
