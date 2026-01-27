@@ -312,9 +312,13 @@ const PmsWizard = () => {
         ...data,
       });
 
-      // Call orchestrator Edge Function directly (bypass trigger)
+      // Call orchestrator Edge Function directly (fire-and-forget with logging)
       supabase.functions.invoke('pms-orchestrate-report', {
         body: { wizard_id: reportId }
+      }).then(result => {
+        console.log('[Wizard] Orchestrator invoked:', result);
+      }).catch(err => {
+        console.error('[Wizard] Orchestrator error:', err);
       });
 
       // Navigate immediately to loading screen
