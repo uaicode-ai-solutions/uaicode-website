@@ -1,133 +1,177 @@
 
+# Plano: Unificar Fluxo de Geração - Usar Apenas `pms-orchestrate-report`
 
-# Plano: Corrigir Edge Function `pms-orchestrate-report`
+## Objetivo
+Garantir que todos os pontos de entrada para geração de relatório utilizem a Edge Function `pms-orchestrate-report` como único orquestrador, eliminando a duplicação e inconsistência de payloads.
 
-## Problema Identificado
+## Análise Atual
 
-A Edge Function `pms-orchestrate-report` tem duas diferenças críticas em relação às funções que funcionam (`pms-webhook-new-report` e `pms-trigger-n8n-report`):
+### Pontos de Entrada Identificados
 
-1. **CORS Headers incompletos**: Falta o header `x-session-id` que o cliente Supabase envia
-2. **Estrutura do código**: A função existente precisa de pequenos ajustes para garantir compatibilidade
+| Local | Arquivo | Função | Fluxo Atual |
+|-------|---------|--------|-------------|
+| Wizard Step 5 | `src/pages/PmsWizard.tsx` | `handleSubmit` | INSERT → trigger → `pms-webhook-new-report` ❌ |
+| Dashboard Header | `src/pages/PmsDashboard.tsx` | `handleRegenerateReport` | `pms-orchestrate-report` ✅ |
+| Data Quality Banner | `src/components/.../DataQualityBanner.tsx` | `onRegenerate` prop | Usa o handler do Dashboard ✅ |
+| Loading Try Again | `src/pages/PmsLoading.tsx` | `handleRetry` | `pms-orchestrate-report` ✅ |
 
-## Correções Necessárias
+### O Problema Principal
+O Wizard depende de um **trigger de banco de dados** (`notify_pms_wizard_created_webhook`) que chama a Edge Function antiga `pms-webhook-new-report`, enviando um payload diferente do esperado pelo novo fluxo orquestrado.
 
-### Arquivo: `supabase/functions/pms-orchestrate-report/index.ts`
+---
 
-**Alteração 1 - Headers CORS (linha 5)**
+## Alterações Necessárias
 
-De:
+### 1. Atualizar `PmsWizard.tsx` - Chamar `pms-orchestrate-report` diretamente
+
+**Arquivo:** `src/pages/PmsWizard.tsx`
+
+**Alteração na função `handleSubmit` (linhas ~279-338):**
+
+Após o INSERT bem-sucedido em `tb_pms_wizard`, adicionar chamada direta à Edge Function orquestradora:
+
 ```typescript
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+// ANTES (linha ~284-314):
+console.log("Report saved to database:", reportId);
+// Note: Webhook is now called automatically via database trigger (on_pms_report_created)
+
+// Send report ready email notification...
 ```
 
-Para:
 ```typescript
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-session-id",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-```
+// DEPOIS:
+console.log("Report saved to database:", reportId);
 
-**Alteração 2 - Função getWebhookUrl (adicionar após corsHeaders)**
-
-Adicionar helper function para tratar URL do webhook (copiado da função que funciona):
-
-```typescript
-const getWebhookUrl = (): string => {
-  const webhookId = Deno.env.get("REPORT_NEWREPORT_WEBHOOK_ID");
-  if (!webhookId) {
-    throw new Error("REPORT_NEWREPORT_WEBHOOK_ID not configured");
-  }
-  // Se já é URL completa, retorna direto
-  if (webhookId.startsWith("http")) {
-    return webhookId;
-  }
-  // Caso contrário, monta a URL
-  return `https://n8n.uaicode.dev/webhook/${webhookId}`;
-};
-```
-
-**Alteração 3 - Usar getWebhookUrl() no lugar de Deno.env.get direto**
-
-Substituir:
-```typescript
-const webhookUrl = Deno.env.get("REPORT_NEWREPORT_WEBHOOK_ID")!;
-```
-
-Por:
-```typescript
-const webhookUrl = getWebhookUrl();
-```
-
-**Alteração 4 - Remover verificação redundante**
-
-Remover o bloco de verificação após `getWebhookUrl()` já que a função já lança erro se não estiver configurado.
-
-## Código Final Corrigido
-
-```typescript
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-session-id",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-// Sequência de tools na ordem correta
-const TOOLS_SEQUENCE = [
-  { id: 0, tool_name: "Create_Report_Row", label: "Initialize Report", field: null },
-  { id: 1, tool_name: "Call_Get_Investment_Tool_", label: "Investment Analysis", field: "section_investment" },
-  // ... restante igual
-];
-
-const getWebhookUrl = (): string => {
-  const webhookId = Deno.env.get("REPORT_NEWREPORT_WEBHOOK_ID");
-  if (!webhookId) {
-    throw new Error("REPORT_NEWREPORT_WEBHOOK_ID not configured");
-  }
-  if (webhookId.startsWith("http")) {
-    return webhookId;
-  }
-  return `https://n8n.uaicode.dev/webhook/${webhookId}`;
-};
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-  try {
-    const webhookUrl = getWebhookUrl();
-    const { wizard_id } = await req.json();
-    
-    // ... resto do código igual
-  }
+// Chamar Edge Function orquestradora diretamente (não depender do trigger)
+supabase.functions.invoke('pms-orchestrate-report', {
+  body: { wizard_id: reportId }
 });
+
+// REMOVER a chamada de email (será enviado pelo orquestrador quando completar)
+// Send report ready email notification... (REMOVER ESTE BLOCO)
 ```
 
-## Resumo das Alterações
+**Também adicionar proteção contra clique duplo:**
 
-| Linha | Alteração | Motivo |
-|-------|-----------|--------|
-| 5 | Adicionar `x-session-id` ao CORS | Cliente Supabase envia este header |
-| Nova | Adicionar `getWebhookUrl()` | Tratar URL completa ou apenas ID |
-| 67 | Usar `getWebhookUrl()` | Consistência com outras funções |
+```typescript
+// Linha ~67: Adicionar estado
+const [isSubmitting, setIsSubmitting] = useState(false);
 
-## Após Implementação
+// Linha ~208: Modificar início do handleSubmit
+const handleSubmit = async () => {
+  if (!validateStep(currentStep) || isSubmitting) return;
+  
+  setIsSubmitting(true);
+  // ... resto do código
+```
 
-1. A função será automaticamente redeployada
-2. Testar clicando em "Regenerate" no dashboard
-3. Verificar logs da Edge Function para confirmar execução
-4. Confirmar que n8n recebe as chamadas POST
+**Atualizar o botão no `WizardLayout.tsx` para mostrar loading:**
 
+```typescript
+// Receber prop isSubmitting
+interface WizardLayoutProps {
+  // ... existentes
+  isSubmitting?: boolean;
+}
+
+// No botão de submit:
+<Button
+  onClick={onSubmit}
+  disabled={!canGoNext || isSubmitting}
+  className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold glow-white"
+>
+  {isSubmitting ? (
+    <>
+      <RefreshCw className="w-4 h-4 animate-spin" />
+      Generating...
+    </>
+  ) : (
+    <>
+      🚀 Get my SaaS Analysis
+      <ArrowRight className="w-4 h-4" />
+    </>
+  )}
+</Button>
+```
+
+### 2. Atualizar `PmsDashboard.tsx` - Proteção contra clique duplo
+
+**Arquivo:** `src/pages/PmsDashboard.tsx`
+
+Adicionar estado de loading no botão Regenerate:
+
+```typescript
+// Linha ~67: Adicionar estado
+const [isRegenerating, setIsRegenerating] = useState(false);
+
+// Modificar handleRegenerateReport:
+const handleRegenerateReport = async () => {
+  if (!wizardId || isRegenerating) return;
+  
+  setIsRegenerating(true);
+  try {
+    await queryClient.invalidateQueries({ 
+      queryKey: ["pms-report-data", wizardId] 
+    });
+    
+    supabase.functions.invoke('pms-orchestrate-report', {
+      body: { wizard_id: wizardId }
+    });
+    
+    navigate(`/planningmysaas/loading/${wizardId}`);
+  } catch (err) {
+    console.error("Error triggering regeneration:", err);
+    setIsRegenerating(false);
+  }
+};
+```
+
+**Atualizar botão para mostrar spinner:**
+
+```typescript
+<Button
+  variant="outline"
+  size="sm"
+  onClick={handleRegenerateReport}
+  disabled={isRegenerating}
+  className="gap-2 border-accent/50 text-accent hover:bg-accent/10 hover:border-accent"
+>
+  <RefreshCw className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+  <span className="hidden sm:inline">
+    {isRegenerating ? 'Starting...' : 'Regenerate'}
+  </span>
+</Button>
+```
+
+---
+
+## Resumo das Alterações por Arquivo
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/pages/PmsWizard.tsx` | Adicionar `isSubmitting` state, chamar `pms-orchestrate-report` após INSERT, remover email |
+| `src/components/planningmysaas/wizard/WizardLayout.tsx` | Adicionar prop `isSubmitting`, mostrar loading no botão |
+| `src/pages/PmsDashboard.tsx` | Adicionar `isRegenerating` state, proteção contra clique duplo, spinner no botão |
+
+---
+
+## Resultado Esperado
+
+Após implementação:
+
+1. **Wizard Submit** → INSERT + `pms-orchestrate-report` → Loading → Dashboard
+2. **Dashboard Regenerate** → `pms-orchestrate-report` → Loading → Dashboard
+3. **Banner Regenerate** → Usa mesmo handler do Dashboard
+4. **Loading Try Again** → `pms-orchestrate-report` (já correto)
+
+Todos os fluxos agora usam o mesmo orquestrador step-by-step.
+
+---
+
+## Observação sobre o Trigger do Banco
+
+O trigger `notify_pms_wizard_created_webhook` ainda existe e vai disparar `pms-webhook-new-report` a cada INSERT. Isso pode ser ignorado porque:
+1. O n8n pode simplesmente ignorar payloads sem `tool_name` 
+2. Ou podemos remover/desabilitar o trigger posteriormente
+
+Recomendo manter o trigger por enquanto como backup e removê-lo em uma fase posterior quando confirmarmos que o novo fluxo está 100% estável.
