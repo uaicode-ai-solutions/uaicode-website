@@ -28,19 +28,32 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
   const industry = report.industry_other || report.industry || "Technology";
   const formattedDate = format(new Date(report.created_at), "MMM dd, yyyy");
   
-  // Real viability score from hero_score_section
-  const viabilityScore = reportData?.hero_score_section?.score ?? 0;
+  // Normalize status
+  const rawStatus = reportData?.status || "";
+  const normalizedStatus = rawStatus.trim().toLowerCase();
+  
+  // Check if report is still generating or failed
+  const isCompleted = normalizedStatus === "completed";
+  const isFailed = normalizedStatus.includes("fail");
+  const isGenerating = !isCompleted && !isFailed && (!reportData || normalizedStatus !== "");
+  
+  // Real viability score from hero_score_section (only show if completed)
+  const viabilityScore = isCompleted ? (reportData?.hero_score_section?.score ?? 0) : 0;
   
   // Verdict from summary_section
-  const verdict = reportData?.summary_section?.verdict || null;
+  const verdict = isCompleted ? (reportData?.summary_section?.verdict || null) : null;
   
   // TAM from opportunity_section
-  const tamValue = reportData?.opportunity_section?.tam_value || null;
+  const tamValue = isCompleted ? (reportData?.opportunity_section?.tam_value || null) : null;
   
-  // Check if report is still generating
-  const isGenerating = !reportData || reportData.status?.toLowerCase().includes("pending");
+  // Navigate: if completed → dashboard, else → loading page
   const handleView = () => {
-    navigate(`/planningmysaas/dashboard/${report.id}`);
+    if (isCompleted) {
+      navigate(`/planningmysaas/dashboard/${report.id}`);
+    } else {
+      // Go to loading page for in-progress or failed reports
+      navigate(`/planningmysaas/loading/${report.id}`);
+    }
   };
 
   const getScoreColor = (score: number) => {
@@ -56,6 +69,7 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
     if (score >= 40) return "bg-gradient-to-r from-orange-500 to-orange-400";
     return "bg-gradient-to-r from-red-500 to-red-400";
   };
+  
   // Get verdict badge color
   const getVerdictStyle = (v: string | null) => {
     if (!v) return null;
@@ -95,6 +109,11 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
               {isGenerating && (
                 <Loader2 className="h-4 w-4 text-accent animate-spin shrink-0" />
               )}
+              {isFailed && (
+                <Badge variant="destructive" className="text-xs shrink-0">
+                  Failed
+                </Badge>
+              )}
             </div>
             <p className="text-sm text-muted-foreground truncate">
               {industry}
@@ -116,7 +135,7 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
             <DropdownMenuContent align="end" className="glass-premium border-accent/20">
               <DropdownMenuItem onClick={handleView} className="cursor-pointer">
                 <Eye className="h-4 w-4 mr-2" />
-                View Report
+                {isCompleted ? "View Report" : "View Progress"}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => onDelete(report.id)}
@@ -134,6 +153,10 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
           {isGenerating ? (
             <div className="flex items-center gap-2 mb-3">
               <span className="text-muted-foreground text-sm">Generating report...</span>
+            </div>
+          ) : isFailed ? (
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-destructive text-sm">Report generation failed</span>
             </div>
           ) : (
             <>
@@ -180,7 +203,7 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
               shadow-lg shadow-accent/20 hover:shadow-accent/30
               transition-all duration-300 group/btn"
           >
-            View
+            {isCompleted ? "View" : isFailed ? "Retry" : "Progress"}
             <ArrowRight className="ml-1 h-3 w-3 group-hover/btn:translate-x-0.5 transition-transform" />
           </Button>
         </div>

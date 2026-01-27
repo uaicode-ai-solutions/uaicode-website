@@ -42,13 +42,17 @@ const PmsLoading = () => {
   // Get report data with polling (every 5 seconds)
   const { data: reportData, refetch } = useReportData(wizardId);
   
-  // Track if we've already navigated to avoid double navigation
-  const hasNavigated = useRef(false);
-  
   // Guard to ensure webhook is only triggered once (handles StrictMode)
   const hasTriggeredWebhook = useRef(false);
   
+  // Guard to prevent navigation on stale cache: only navigate after observing non-completed status
+  const hasSeenNonCompleted = useRef(false);
+  
+  // Track aggressive refetch interval
+  const aggressiveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   const status = reportData?.status;
+  const normalizedStatus = status?.trim().toLowerCase() || "";
   const isFailed = isFailureStatus(status);
   const failedStepInfo = parseFailedStep(status);
   
@@ -65,36 +69,82 @@ const PmsLoading = () => {
       body: { wizard_id: wizardId }
     }).then(result => {
       console.log('[PmsLoading] Orchestrator response:', result);
+      
+      // Start aggressive refetch to catch status transition quickly
+      // This helps when cache has old "completed" status
+      if (!aggressiveIntervalRef.current) {
+        console.log('[PmsLoading] Starting aggressive refetch (every 800ms for 15s)');
+        aggressiveIntervalRef.current = setInterval(() => {
+          refetch();
+        }, 800);
+        
+        // Stop after 15 seconds
+        setTimeout(() => {
+          if (aggressiveIntervalRef.current) {
+            clearInterval(aggressiveIntervalRef.current);
+            aggressiveIntervalRef.current = null;
+            console.log('[PmsLoading] Stopped aggressive refetch');
+          }
+        }, 15000);
+      }
     }).catch(err => {
       console.error('[PmsLoading] Orchestrator error:', err);
     });
-  }, [wizardId]);
+    
+    // Cleanup on unmount
+    return () => {
+      if (aggressiveIntervalRef.current) {
+        clearInterval(aggressiveIntervalRef.current);
+        aggressiveIntervalRef.current = null;
+      }
+    };
+  }, [wizardId, refetch]);
+  
+  // Track when we see a non-completed status (proves this is a fresh generation cycle)
+  useEffect(() => {
+    if (normalizedStatus && normalizedStatus !== "completed") {
+      if (!hasSeenNonCompleted.current) {
+        console.log("[PmsLoading] Observed non-completed status:", status);
+      }
+      hasSeenNonCompleted.current = true;
+      
+      // Stop aggressive refetch once we see progress
+      if (aggressiveIntervalRef.current) {
+        clearInterval(aggressiveIntervalRef.current);
+        aggressiveIntervalRef.current = null;
+        console.log('[PmsLoading] Stopped aggressive refetch (progress detected)');
+      }
+    }
+  }, [normalizedStatus, status]);
   
   // Debug logging
   useEffect(() => {
-    console.log("[PmsLoading] Polling status:", {
+    console.log("[PmsLoading] Status update:", {
       wizardId,
-      reportStatus: status,
-      hasData: !!reportData,
+      rawStatus: status,
+      normalizedStatus,
+      hasSeenNonCompleted: hasSeenNonCompleted.current,
       isFailed
     });
-  }, [wizardId, status, reportData, isFailed]);
+  }, [wizardId, status, normalizedStatus, isFailed]);
   
-  // Monitor status and navigate when complete
+  // Monitor status and navigate when complete (only after seeing non-completed)
   useEffect(() => {
-    if (hasNavigated.current) return;
-    
-    // Terminal success status - report is ready
-    if (status === "completed") {
-      hasNavigated.current = true;
+    // Only navigate if:
+    // 1. Status is "completed"
+    // 2. We have observed a non-completed status during this session
+    if (normalizedStatus === "completed" && hasSeenNonCompleted.current) {
+      console.log("[PmsLoading] Report completed! Navigating to dashboard...");
       navigate(`/planningmysaas/dashboard/${wizardId}`, { replace: true });
     }
-  }, [status, wizardId, navigate]);
+  }, [normalizedStatus, wizardId, navigate]);
   
   // Handle retry - just reload: the mount effect will trigger the webhook
   const handleRetry = () => {
+    setIsRetrying(true);
     // Reset the guard so useEffect will trigger again after reload
     hasTriggeredWebhook.current = false;
+    hasSeenNonCompleted.current = false;
     // Reload forces re-mount, which triggers the orchestrator webhook
     window.location.reload();
   };

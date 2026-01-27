@@ -1,4 +1,4 @@
-import { Loader2, DollarSign, Target, BarChart3, TrendingUp, Users, Tag, Megaphone, Rocket, FileText, Trophy, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, DollarSign, Target, BarChart3, TrendingUp, Users, Tag, Megaphone, Rocket, FileText, Trophy, CheckCircle2, XCircle, Zap } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface GeneratingReportSkeletonProps {
@@ -6,33 +6,38 @@ interface GeneratingReportSkeletonProps {
   currentStatus?: string;
 }
 
-// Steps ordered for column-first display in 2-column grid
-// Visual order: left column (1-5), right column (6-10)
-// Array order: [1,6], [2,7], [3,8], [4,9], [5,10] for row-by-row grid rendering
+// Steps aligned with orchestrator (11 steps)
+// Visual order: left column (1-6), right column (7-11)
+// Array order: [1,7], [2,8], [3,9], [4,10], [5,11], [6] for row-by-row grid rendering
 const steps = [
-  { id: 1, label: "Investment analysis", icon: DollarSign, statusKey: "investment" },
-  { id: 6, label: "Pricing strategy", icon: Tag, statusKey: "price" },
-  { id: 2, label: "Market benchmarks", icon: Target, statusKey: "benchmark" },
-  { id: 7, label: "Paid media analysis", icon: Megaphone, statusKey: "paid media" },
-  { id: 3, label: "Competitor research", icon: BarChart3, statusKey: "competitors" },
-  { id: 8, label: "Growth projections", icon: Rocket, statusKey: "growth" },
-  { id: 4, label: "Market opportunity", icon: TrendingUp, statusKey: "opportunity" },
-  { id: 9, label: "Executive summary", icon: FileText, statusKey: "summary" },
-  { id: 5, label: "Customer profiling (ICP)", icon: Users, statusKey: "icp" },
-  { id: 10, label: "Final scoring", icon: Trophy, statusKey: "hero score" },
+  { id: 1, label: "Initialize Report", icon: Zap, statusKey: "initialize" },
+  { id: 7, label: "Pricing strategy", icon: Tag, statusKey: "price" },
+  { id: 2, label: "Investment analysis", icon: DollarSign, statusKey: "investment" },
+  { id: 8, label: "Paid media analysis", icon: Megaphone, statusKey: "paid media" },
+  { id: 3, label: "Market benchmarks", icon: Target, statusKey: "benchmark" },
+  { id: 9, label: "Growth projections", icon: Rocket, statusKey: "growth" },
+  { id: 4, label: "Competitor research", icon: BarChart3, statusKey: "competitors" },
+  { id: 10, label: "Executive summary", icon: FileText, statusKey: "summary" },
+  { id: 5, label: "Market opportunity", icon: TrendingUp, statusKey: "opportunity" },
+  { id: 11, label: "Final scoring", icon: Trophy, statusKey: "hero score" },
+  { id: 6, label: "Customer profiling (ICP)", icon: Users, statusKey: "icp" },
 ];
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 11;
 
 /**
  * Parse the current step number from the status string
- * Status format: "Step X Name - Completed" or "Started" or "Created"
+ * Status format: "Step X Name - Completed" or "Step X ... - In Progress"
  */
 const parseCurrentStep = (status: string | undefined): number => {
   if (!status) return 0;
-  if (status === "Started") return 0;
-  if (status === "Created") return TOTAL_STEPS;
   
+  const normalizedStatus = status.trim().toLowerCase();
+  
+  // "completed" = 100% done
+  if (normalizedStatus === "completed") return TOTAL_STEPS;
+  
+  // Parse "Step X ..." pattern
   const match = status.match(/Step (\d+)/i);
   return match ? parseInt(match[1]) : 0;
 };
