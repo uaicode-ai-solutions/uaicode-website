@@ -63,10 +63,10 @@ serve(async (req) => {
       const statusCompleted = `Step ${stepNum} ${tool.label} - Completed`;
       const statusFailed = `Step ${stepNum} ${tool.label} - Fail`;
 
-      // 1. Atualiza status para "In Progress"
+      // 1. Atualiza status para "In Progress" (sanitizado)
       await supabase
         .from("tb_pms_reports")
-        .update({ status: statusInProgress })
+        .update({ status: statusInProgress.trim() })
         .eq("wizard_id", wizard_id);
 
       console.log(`📍 ${statusInProgress}`);
@@ -91,10 +91,10 @@ serve(async (req) => {
         // Consumir response body para evitar resource leak
         await response.text();
 
-        // 4. n8n já salvou os dados, apenas atualizamos o status
+        // 4. n8n já salvou os dados, apenas atualizamos o status (sanitizado)
         await supabase
           .from("tb_pms_reports")
-          .update({ status: statusCompleted })
+          .update({ status: statusCompleted.trim() })
           .eq("wizard_id", wizard_id);
 
         console.log(`✅ ${statusCompleted}`);
@@ -105,7 +105,7 @@ serve(async (req) => {
         
         await supabase
           .from("tb_pms_reports")
-          .update({ status: statusFailed })
+          .update({ status: statusFailed.trim() })
           .eq("wizard_id", wizard_id);
 
         return new Response(
@@ -120,10 +120,10 @@ serve(async (req) => {
       }
     }
 
-    // Todos os steps completados com sucesso
+    // Todos os steps completados com sucesso (status limpo)
     await supabase
       .from("tb_pms_reports")
-      .update({ status: "completed" })
+      .update({ status: "completed".trim() })
       .eq("wizard_id", wizard_id);
 
     console.log(`🎉 Report completed for wizard: ${wizard_id}`);
