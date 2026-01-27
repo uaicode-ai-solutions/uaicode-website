@@ -79,6 +79,18 @@ const PmsDashboardContent = () => {
   // Get ALL data from context - unified loading state ensures no race conditions
   const { report, reportData, pmsReportId, isLoading, error } = useReportContext();
   
+  // CRITICAL: Redirect to loading page if report is not completed
+  // Dashboard should ONLY be accessible for completed reports
+  useEffect(() => {
+    if (!isLoading && reportData && wizardId) {
+      const status = reportData.status?.trim().toLowerCase() || "";
+      if (status !== "completed") {
+        console.log("[PmsDashboard] Report not completed, redirecting to loading. Status:", status);
+        navigate(`/planningmysaas/loading/${wizardId}`, { replace: true });
+      }
+    }
+  }, [isLoading, reportData, wizardId, navigate]);
+  
   // Check data quality (memoized to avoid recalculating on every render)
   const dataQualityIssues = useMemo(() => {
     return checkDataQuality(reportData);
@@ -129,7 +141,8 @@ const PmsDashboardContent = () => {
   // Fire confetti when dashboard loads with a completed report (first time only)
   useEffect(() => {
     // Only fire once per mount and only for completed reports
-    if (!hasShownConfetti.current && reportData?.status === "Created") {
+    const normalizedStatus = reportData?.status?.trim().toLowerCase() || "";
+    if (!hasShownConfetti.current && normalizedStatus === "completed") {
       hasShownConfetti.current = true;
       // Small delay for UI to render
       setTimeout(() => {
@@ -155,8 +168,9 @@ const PmsDashboardContent = () => {
     }
   };
 
-  // Show loading skeleton while fetching - wait for status to be "completed"
-  if (isLoading || !reportData || reportData?.status !== "completed") {
+  // Show loading skeleton while fetching data (crash protection only)
+  // Access control is handled by the useEffect above which redirects if not completed
+  if (isLoading || !reportData) {
     return (
       <div className="min-h-screen bg-background">
         {/* Header skeleton */}

@@ -24,28 +24,32 @@ export const useReports = () => {
       // Get wizard IDs to fetch corresponding reports
       const wizardIds = wizardData.map(w => w.id);
 
-      // Fetch reports for these wizards
+      // Fetch reports for these wizards - include created_at to find most recent
       const { data: reportsData, error: reportsError } = await supabase
         .from("tb_pms_reports")
-        .select("id, wizard_id, status, hero_score_section, summary_section, opportunity_section")
-        .in("wizard_id", wizardIds);
+        .select("id, wizard_id, status, hero_score_section, summary_section, opportunity_section, created_at")
+        .in("wizard_id", wizardIds)
+        .order("created_at", { ascending: false });
 
       if (reportsError) {
         console.error("Error fetching reports data:", reportsError);
         // Continue without reports data - cards will show 0 score
       }
 
-      // Create a map of wizard_id -> report data
+      // Create a map of wizard_id -> most recent report data
       const reportsMap = new Map<string, NestedReportData>();
       if (reportsData) {
         for (const report of reportsData) {
-          reportsMap.set(report.wizard_id, {
-            id: report.id,
-            status: report.status,
-            hero_score_section: report.hero_score_section as NestedReportData["hero_score_section"],
-            summary_section: report.summary_section as NestedReportData["summary_section"],
-            opportunity_section: report.opportunity_section as NestedReportData["opportunity_section"],
-          });
+          // Only set if not already present (first one is most recent due to order by)
+          if (!reportsMap.has(report.wizard_id)) {
+            reportsMap.set(report.wizard_id, {
+              id: report.id,
+              status: report.status,
+              hero_score_section: report.hero_score_section as NestedReportData["hero_score_section"],
+              summary_section: report.summary_section as NestedReportData["summary_section"],
+              opportunity_section: report.opportunity_section as NestedReportData["opportunity_section"],
+            });
+          }
         }
       }
 

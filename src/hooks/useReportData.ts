@@ -35,21 +35,23 @@ export const useReportData = (wizardId: string | undefined) => {
     // Poll every 5 seconds until status is terminal (success or failure)
     refetchInterval: (query) => {
       const data = query.state.data as ReportData | null;
-      const status = data?.status;
+      const rawStatus = data?.status;
+      
+      // Normalize status for comparison
+      const normalizedStatus = rawStatus?.trim().toLowerCase() || "";
       
       // Terminal statuses - stop polling
       const isTerminal = 
-        status === "completed" || 
-        status === "Created" ||
-        (status && status.toLowerCase().includes("fail"));
+        normalizedStatus === "completed" || 
+        normalizedStatus.includes("fail");
       
       if (isTerminal) {
-        console.log("[useReportData] Terminal status:", status);
+        console.log("[useReportData] Terminal status reached:", rawStatus);
         return false;
       }
       
-      // Continue polling: no data yet OR in-progress status
-      console.log("[useReportData] Polling continues, current status:", status || "no record yet");
+      // Continue polling: no data yet OR in-progress status (Step X..., etc.)
+      console.log("[useReportData] Polling continues, current status:", rawStatus || "no record yet");
       return 5000;
     },
   });
