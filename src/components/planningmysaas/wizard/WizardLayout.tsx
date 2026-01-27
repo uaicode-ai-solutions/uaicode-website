@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { X, ArrowLeft, ArrowRight, UserCircle, Rocket, Globe2, Puzzle, Flag } from "lucide-react";
+import { X, ArrowLeft, ArrowRight, UserCircle, Rocket, Globe2, Puzzle, Flag, Loader2 } from "lucide-react";
 import WizardProgress from "./WizardProgress";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 
@@ -15,6 +15,7 @@ interface WizardLayoutProps {
   canGoNext: boolean;
   isLastStep: boolean;
   onSubmit?: () => void;
+  isSubmitting?: boolean;
 }
 
 const steps = [
@@ -34,6 +35,7 @@ const WizardLayout = ({
   canGoNext,
   isLastStep,
   onSubmit,
+  isSubmitting = false,
 }: WizardLayoutProps) => {
   const navigate = useNavigate();
 
@@ -115,11 +117,20 @@ const WizardLayout = ({
               {isLastStep ? (
                 <Button
                   onClick={onSubmit}
-                  disabled={!canGoNext}
+                  disabled={!canGoNext || isSubmitting}
                   className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold glow-white"
                 >
-                  🚀 Get my SaaS Analysis
-                  <ArrowRight className="w-4 h-4" />
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      🚀 Get my SaaS Analysis
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </Button>
               ) : (
                 <Button

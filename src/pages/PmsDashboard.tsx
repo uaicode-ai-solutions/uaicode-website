@@ -67,6 +67,7 @@ const PmsDashboardContent = () => {
   const [activeTab, setActiveTab] = useState("report");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   
   // Confetti for celebrating completed reports
   const { fireConfetti } = useConfetti();
@@ -85,8 +86,9 @@ const PmsDashboardContent = () => {
 
   // Regenerate report handler - uses new orchestrator Edge Function
   const handleRegenerateReport = async () => {
-    if (!wizardId) return;
+    if (!wizardId || isRegenerating) return;
     
+    setIsRegenerating(true);
     try {
       // 1. Invalidar cache para forçar dados frescos
       await queryClient.invalidateQueries({ 
@@ -102,6 +104,7 @@ const PmsDashboardContent = () => {
       navigate(`/planningmysaas/loading/${wizardId}`);
     } catch (err) {
       console.error("Error triggering regeneration:", err);
+      setIsRegenerating(false);
     }
   };
 
@@ -256,10 +259,13 @@ const PmsDashboardContent = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleRegenerateReport}
+                disabled={isRegenerating}
                 className="gap-2 border-accent/50 text-accent hover:bg-accent/10 hover:border-accent"
               >
-                <RefreshCw className="h-4 w-4" />
-                <span className="hidden sm:inline">Regenerate</span>
+                <RefreshCw className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">
+                  {isRegenerating ? 'Starting...' : 'Regenerate'}
+                </span>
               </Button>
 
               <Button

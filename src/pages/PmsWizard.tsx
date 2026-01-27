@@ -103,6 +103,7 @@ const PmsWizard = () => {
   const [searchParams] = useSearchParams();
   const selectedPlan = searchParams.get("plan") || "starter";
   const totalSteps = 5;
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { pmsUser } = useAuthContext();
   
@@ -206,10 +207,13 @@ const PmsWizard = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(currentStep)) return;
+    if (!validateStep(currentStep) || isSubmitting) return;
+    
+    setIsSubmitting(true);
     
     if (!pmsUser) {
       console.error("Authentication required");
+      setIsSubmitting(false);
       return;
     }
 
@@ -282,7 +286,6 @@ const PmsWizard = () => {
       }
 
       console.log("Report saved to database:", reportId);
-      // Note: Webhook is now called automatically via database trigger (on_pms_report_created)
 
       // 2. Also save to localStorage as backup
       const newReport: StoredReport = {
@@ -309,36 +312,17 @@ const PmsWizard = () => {
         ...data,
       });
 
-      // Report generation is now handled by n8n via database trigger
-      // The INSERT into tb_pms_wizard triggers notify_pms_wizard_created_webhook()
-      // which calls pms-webhook-new-report -> n8n workflow
-
-      // Send report ready email notification (will be sent again when report is complete)
-      try {
-        const industryDisplay = data.industry === "other" ? data.industryOther : data.industry;
-        await supabase.functions.invoke('pms-send-report-ready', {
-          body: {
-            email: data.email,
-            fullName: data.fullName,
-            reportId: reportId,
-            projectName: projectName,
-            viabilityScore: viabilityScore,
-            complexityScore: complexityScore,
-            planType: selectedPlan,
-            industry: industryDisplay || "Technology"
-          }
-        });
-        console.log("Report ready email sent successfully");
-      } catch (emailError) {
-        console.error("Failed to send report ready email:", emailError);
-        // Don't block user flow if email fails
-      }
+      // Call orchestrator Edge Function directly (bypass trigger)
+      supabase.functions.invoke('pms-orchestrate-report', {
+        body: { wizard_id: reportId }
+      });
 
       // Navigate immediately to loading screen
       navigate(`/planningmysaas/loading/${reportId}`);
 
     } catch (error) {
       console.error("Error during submission:", error);
+      setIsSubmitting(false);
     }
   };
 
@@ -427,6 +411,7 @@ const PmsWizard = () => {
       canGoNext={validateStep(currentStep)}
       isLastStep={currentStep === totalSteps}
       onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
     >
       {renderStep()}
     </WizardLayout>
