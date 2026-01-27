@@ -1,277 +1,70 @@
 
-# Plano: Status "preparing" com Confirmação Antes da Navegação
+# Correção: Renomear isProcessing para isRetrying
 
-## Resumo da Solução
+## Mudança Simples
 
-A ideia é **garantir que o status seja atualizado no banco ANTES de navegar** para a tela de loading. Isso elimina completamente a race condition.
+Renomear o estado e garantir que ele seja resetado para `false` após a atualização do banco, antes do reload.
 
-**Fluxo proposto:**
-1. Usuário clica em botão (Regenerate, Submit, Retry, View Progress)
-2. Botão entra em estado de loading com animação
-3. Atualiza `tb_pms_reports.status = "preparing"` no banco
-4. Aguarda confirmação do banco (sem erro)
-5. Só então navega para `/loading/:id`
-6. Loading vê `status = "preparing"` → chama orchestrator
-7. Orchestrator muda para `Step 1 - In Progress` e continua
+## Arquivo: `src/pages/PmsLoading.tsx`
 
----
+### Mudanças:
 
-## Todos os Pontos de Entrada para a Tela de Loading
+| Linha | Antes | Depois |
+|-------|-------|--------|
+| 52 | `const [isProcessing, setIsProcessing] = useState(false);` | `const [isRetrying, setIsRetrying] = useState(false);` |
+| 78 | `setIsProcessing(true);` | Remover (não é usado para retry) |
+| 168 | `setIsProcessing(true);` | `setIsRetrying(true);` |
+| 170-177 | Atualiza banco e chama orchestrator | Atualiza banco, seta `isRetrying = false`, faz reload |
+| 251 | `disabled={isProcessing}` | `disabled={isRetrying}` |
+| 253 | `${isProcessing ? 'animate-spin' : ''}` | `${isRetrying ? 'animate-spin' : ''}` |
+| 254 | `{isProcessing ? "Retrying..." : ...}` | `{isRetrying ? "Preparing..." : ...}` |
 
-| Origem | Arquivo | Ação Atual | Ação Necessária |
-|--------|---------|------------|-----------------|
-| Dashboard "Regenerate" | `PmsDashboard.tsx` | Navega direto | Atualizar status → navegar |
-| Dashboard Banner "Regenerate" | `DataQualityBanner.tsx` | Chama `onRegenerate` (mesmo handler) | Já coberto pelo Dashboard |
-| Wizard Submit | `PmsWizard.tsx` | Insere wizard, navega | Inserir report row com "preparing" → navegar |
-| ReportCard "View Progress" | `ReportCard.tsx` | Navega se não completed | Apenas navegar (status já existe) |
-| Loading "Retry" | `PmsLoading.tsx` | Chama orchestrator | Atualizar status para "preparing" → chamar orchestrator |
-
----
-
-## Mudanças Técnicas
-
-### 1. `PmsDashboard.tsx` - Regenerate com Confirmação
+### Código Final do handleRetryFailedStep:
 
 ```typescript
-// ANTES
-const handleRegenerateReport = async () => {
-  if (!wizardId || isRegenerating) return;
-  setIsRegenerating(true);
-  await queryClient.invalidateQueries({ ... });
-  navigate(`/planningmysaas/loading/${wizardId}`);
-};
-
-// DEPOIS
-const handleRegenerateReport = async () => {
-  if (!wizardId || isRegenerating) return;
-  setIsRegenerating(true);
-  
-  try {
-    // 1. Atualizar status para "preparing" e AGUARDAR confirmação
-    const { error } = await supabase
-      .from("tb_pms_reports")
-      .update({ status: "preparing" })
-      .eq("wizard_id", wizardId);
-    
-    if (error) {
-      console.error("Failed to update status:", error);
-      setIsRegenerating(false);
-      return; // Não navega se falhou
-    }
-    
-    // 2. Invalidar cache após confirmar atualização
-    await queryClient.invalidateQueries({ 
-      queryKey: ["pms-report-data", wizardId] 
-    });
-    
-    // 3. Só navegar após confirmação
-    navigate(`/planningmysaas/loading/${wizardId}`);
-  } catch (err) {
-    console.error("Regenerate error:", err);
-    setIsRegenerating(false);
-  }
-};
-```
-
-**Botão com animação:**
-```tsx
-<Button
-  onClick={handleRegenerateReport}
-  disabled={isRegenerating}
->
-  <RefreshCw className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
-  {isRegenerating ? 'Preparing...' : 'Regenerate'}
-</Button>
-```
-
-### 2. `PmsWizard.tsx` - Criar Report Row com "preparing"
-
-```typescript
-// ANTES: Insere apenas wizard, navega
-const { error: insertError } = await supabase
-  .from('tb_pms_wizard')
-  .insert({ id: reportId, ... });
-
-navigate(`/planningmysaas/loading/${reportId}`);
-
-// DEPOIS: Inserir wizard E report row
-// Step 1: Inserir wizard
-const { error: wizardError } = await supabase
-  .from('tb_pms_wizard')
-  .insert({ id: reportId, user_id: pmsUser.id, ... });
-
-if (wizardError) {
-  console.error("Error saving wizard:", wizardError);
-  setIsSubmitting(false);
-  return;
-}
-
-// Step 2: Criar report row com status "preparing"
-const { error: reportError } = await supabase
-  .from('tb_pms_reports')
-  .insert({ 
-    wizard_id: reportId, 
-    status: "preparing" 
-  });
-
-if (reportError) {
-  console.error("Error creating report row:", reportError);
-  // Não é crítico - orchestrator criará se não existir
-}
-
-// Step 3: Só navegar após ambos confirmados
-navigate(`/planningmysaas/loading/${reportId}`);
-```
-
-### 3. `PmsLoading.tsx` - Tratar Status "preparing"
-
-```typescript
-// ANTES: Não reconhece "preparing"
-if (!status) {
-  triggerOrchestrator();
-  return;
-}
-
-// DEPOIS: Reconhecer "preparing" como sinal para iniciar
-const normalizedStatus = status?.trim().toLowerCase() || "";
-
-// Case 1: No status OR "preparing" → Start fresh generation
-if (!normalizedStatus || normalizedStatus === "preparing") {
-  console.log("[PmsLoading] Status is preparing/empty, starting generation");
-  setHasDecided(true);
-  triggerOrchestrator();
-  return;
-}
-
-// Case 2: Completed → Dashboard
-if (normalizedStatus === "completed") {
-  navigate(`/planningmysaas/dashboard/${wizardId}`, { replace: true });
-  return;
-}
-
-// Case 3: Failed → Show error
-if (normalizedStatus.includes("fail")) {
-  setHasDecided(true);
-  return;
-}
-
-// Case 4: In Progress → Show Resume/Restart dialog
-if (isInProgressStatus(status)) {
-  setShowResumeDialog(true);
-  return;
-}
-```
-
-**Também corrigir o Retry:**
-```typescript
-// Handle retry failed step
 const handleRetryFailedStep = useCallback(async () => {
-  if (!failedStepInfo || !wizardId) return;
+  if (!wizardId) return;
   
-  setIsProcessing(true);
+  setIsRetrying(true);
   
-  // Atualizar status para "preparing" antes de chamar orchestrator
-  await supabase
+  // Update status to "preparing" before reloading
+  const { error } = await supabase
     .from("tb_pms_reports")
     .update({ status: "preparing" })
     .eq("wizard_id", wizardId);
   
-  // Chamar orchestrator com resume
-  triggerOrchestrator(failedStepInfo.stepNumber);
-}, [failedStepInfo, wizardId, triggerOrchestrator]);
+  // Reset state before reload
+  setIsRetrying(false);
+  
+  if (!error) {
+    console.log("[PmsLoading] Status reset to 'preparing' for retry, reloading...");
+    window.location.reload();
+  } else {
+    console.error("[PmsLoading] Failed to update status for retry:", error);
+  }
+}, [wizardId]);
 ```
 
-### 4. `useReportData.ts` - Reduzir staleTime para Loading
+### Código Final do Botão:
 
-O polling já está funcionando, mas o staleTime de 5 minutos pode causar problemas. Para a tela de Loading, precisamos de dados frescos:
-
-```typescript
-// Opção 1: Reduzir staleTime global para 0 (simples)
-staleTime: 0,
-
-// Opção 2: Manter 5min mas usar refetchOnMount: 'always' no Loading
-// (configuração no componente)
+```tsx
+<Button
+  className="flex-1"
+  onClick={handleRetryFailedStep}
+  disabled={isRetrying}
+>
+  <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+  {isRetrying ? "Preparing..." : `Retry Step ${failedStepInfo?.stepNumber || ''}`}
+</Button>
 ```
 
-Vou optar por **reduzir staleTime para 0** pois garante dados sempre frescos.
+## Nota sobre `setIsProcessing(true)` na linha 78
 
-### 5. `ReportCard.tsx` - Sem Mudança Necessária
+O `triggerOrchestrator` ainda usa `setIsProcessing(true)` na linha 78, mas como estamos removendo o estado `isProcessing`, essa linha também deve ser removida. O `triggerOrchestrator` é chamado internamente e não precisa de estado de UI.
 
-O ReportCard apenas navega para `/loading/:id` quando o report já existe com algum status. Não precisa mudar nada - ele não inicia geração, apenas visualiza.
+## Resumo
 
----
-
-## Sequência de Estados
-
-```text
-Estado no Banco          | UI Loading             | Ação
--------------------------|------------------------|------------------
-(não existe)             | Skeleton padrão        | Wizard insere "preparing"
-"preparing"              | Skeleton + "Preparing" | Chamar orchestrator
-"Step 1 - In Progress"   | Step 1 ativo           | Polling
-"Step 1 - Completed"     | Step 1 ✓               | Continua...
-"Step 5 - In Progress"   | Steps 1-4 ✓, 5 ativo   | Polling
-"Step 5 - Fail"          | Tela de erro           | Botão Retry
-"completed"              | Redirect               | → Dashboard
-```
-
----
-
-## Fluxo Visual com Status "preparing"
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                   FLUXO REGENERATE                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Dashboard                                                  │
-│  [Regenerate] ← clique                                      │
-│       │                                                     │
-│       ▼                                                     │
-│  [Preparing...] ← botão desabilitado, spinner               │
-│       │                                                     │
-│       ▼                                                     │
-│  UPDATE tb_pms_reports SET status = 'preparing'             │
-│       │                                                     │
-│       ▼                                                     │
-│  ✓ Confirmação do banco (sem erro)                          │
-│       │                                                     │
-│       ▼                                                     │
-│  navigate('/loading/:id')                                   │
-│       │                                                     │
-│       ▼                                                     │
-│  Loading monta, busca status = 'preparing'                  │
-│       │                                                     │
-│       ▼                                                     │
-│  Reconhece 'preparing' → chama orchestrator                 │
-│       │                                                     │
-│       ▼                                                     │
-│  Orchestrator: status → 'Step 1 - In Progress'              │
-│       │                                                     │
-│       ▼                                                     │
-│  ... execução normal ...                                    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Arquivos a Modificar
-
-| Arquivo | Mudança | Prioridade |
-|---------|---------|------------|
-| `src/pages/PmsDashboard.tsx` | Update status → await → navigate | ALTA |
-| `src/pages/PmsWizard.tsx` | Insert report row com "preparing" | ALTA |
-| `src/pages/PmsLoading.tsx` | Reconhecer status "preparing" | ALTA |
-| `src/hooks/useReportData.ts` | Reduzir staleTime para 0 | MÉDIA |
-
----
-
-## Critérios de Aceite
-
-1. **Botão Regenerate**: Mostra "Preparing..." com spinner enquanto atualiza banco
-2. **Navegação só após confirmação**: Se UPDATE falhar, não navega
-3. **Loading reconhece "preparing"**: Inicia orchestrator corretamente
-4. **Wizard cria report row**: Status "preparing" já existe antes de navegar
-5. **Retry funciona**: Atualiza status para "preparing" antes de chamar orchestrator
-6. **Sem bounce-back**: Nunca mais redireciona de Loading para Dashboard durante regeneração
+- Renomear `isProcessing` → `isRetrying`
+- `isRetrying` só é usado no contexto do botão Retry
+- Garantir `setIsRetrying(false)` antes do `window.location.reload()`
+- Texto do botão: "Preparing..." durante o estado de loading
