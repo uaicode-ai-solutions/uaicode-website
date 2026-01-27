@@ -68,21 +68,15 @@ const PmsLoading = () => {
     }
   }, [status, wizardId, navigate]);
   
-  // Handle retry using new orchestrator Edge Function
-  const handleRetry = async () => {
-    setIsRetrying(true);
-    try {
-      // Chamar nova Edge Function orquestradora
-      supabase.functions.invoke('pms-orchestrate-report', {
-        body: { wizard_id: wizardId }
-      });
-      // Refetch to get new status
-      await refetch();
-    } catch (error) {
-      console.error("Retry failed:", error);
-    } finally {
-      setIsRetrying(false);
-    }
+  // Handle retry - simple: call orchestrator and reload page
+  const handleRetry = () => {
+    // 1. Chamar Edge Function (fire-and-forget)
+    supabase.functions.invoke('pms-orchestrate-report', {
+      body: { wizard_id: wizardId }
+    });
+    
+    // 2. Recarregar página (força re-mount e reinicia polling)
+    window.location.reload();
   };
   
   // Handle back to wizard
