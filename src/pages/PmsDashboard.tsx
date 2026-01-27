@@ -465,7 +465,11 @@ const PmsDashboardContent = () => {
   );
 };
 
-// Main component with ReportProvider wrapper
+/**
+ * Main PmsDashboard Component
+ * IMPORTANT: This wrapper provides the ReportContext to all child components.
+ * PmsDashboardContent MUST be rendered inside ReportProvider.
+ */
 const PmsDashboard = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -477,8 +481,12 @@ const PmsDashboard = () => {
     }
   }, [id, navigate]);
 
-  if (!id) return null;
+  // Early return BEFORE rendering provider if no ID
+  if (!id) {
+    return null;
+  }
 
+  // ReportProvider wraps PmsDashboardContent - this is critical for context to work
   return (
     <ReportProvider wizardId={id}>
       <PmsDashboardContent />
