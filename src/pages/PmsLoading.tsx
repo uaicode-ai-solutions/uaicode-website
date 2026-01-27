@@ -172,14 +172,15 @@ const PmsLoading = () => {
       .update({ status: "preparing" })
       .eq("wizard_id", wizardId);
     
-    // Reset state before reload
-    setIsRetrying(false);
-    
     if (!error) {
       console.log("[PmsLoading] Status reset to 'preparing' for retry, reloading...");
       window.location.reload();
+      // Keep isRetrying true - the reload will destroy state anyway
+      // This ensures continuous visual feedback until page reloads
     } else {
       console.error("[PmsLoading] Failed to update status for retry:", error);
+      // Only reset on error so user can try again
+      setIsRetrying(false);
     }
   }, [wizardId]);
   
