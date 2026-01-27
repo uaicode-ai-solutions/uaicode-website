@@ -18,19 +18,19 @@ const getWebhookUrl = (): string => {
   return `https://n8n.uaicode.dev/webhook/${webhookId}`;
 };
 
-// Sequência de tools na ordem correta (IDs 1-11)
+// Sequential tools 1→11
 const TOOLS_SEQUENCE = [
-  { id: 1, tool_name: "Create_Report_Row", label: "Initialize Report" },
-  { id: 2, tool_name: "Call_Get_Investment_Tool_", label: "Investment Analysis" },
-  { id: 3, tool_name: "Call_Get_Benchmark_Tool_", label: "Market Benchmarks" },
-  { id: 4, tool_name: "Call_Get_Competitors_Tool_", label: "Competitor Research" },
-  { id: 5, tool_name: "Call_Get_Opportunity_Tool_", label: "Market Opportunity" },
-  { id: 6, tool_name: "Call_Get_ICP_Tool_", label: "Customer Profiling" },
-  { id: 7, tool_name: "Call_Get_Price_Tool_", label: "Pricing Strategy" },
-  { id: 8, tool_name: "Call_Get_PaidMedia_Tool_", label: "Paid Media Analysis" },
-  { id: 9, tool_name: "Call_Get_Growth_Tool_", label: "Growth Projections" },
-  { id: 10, tool_name: "Call_Get_Summary_Tool_", label: "Executive Summary" },
-  { id: 11, tool_name: "Call_Get_Hero_Score_Tool_", label: "Final Scoring" },
+  { step: 1, tool_name: "Create_Report_Row", label: "Initialize Report" },
+  { step: 2, tool_name: "Call_Get_Investment_Tool_", label: "Investment Analysis" },
+  { step: 3, tool_name: "Call_Get_Benchmark_Tool_", label: "Market Benchmarks" },
+  { step: 4, tool_name: "Call_Get_Competitors_Tool_", label: "Competitor Research" },
+  { step: 5, tool_name: "Call_Get_Opportunity_Tool_", label: "Market Opportunity" },
+  { step: 6, tool_name: "Call_Get_ICP_Tool_", label: "Customer Profiling" },
+  { step: 7, tool_name: "Call_Get_Price_Tool_", label: "Pricing Strategy" },
+  { step: 8, tool_name: "Call_Get_PaidMedia_Tool_", label: "Paid Media Analysis" },
+  { step: 9, tool_name: "Call_Get_Growth_Tool_", label: "Growth Projections" },
+  { step: 10, tool_name: "Call_Get_Summary_Tool_", label: "Executive Summary" },
+  { step: 11, tool_name: "Call_Get_Hero_Score_Tool_", label: "Final Scoring" },
 ];
 
 serve(async (req) => {
@@ -45,7 +45,7 @@ serve(async (req) => {
 
   try {
     const webhookUrl = getWebhookUrl();
-    const { wizard_id } = await req.json();
+    const { wizard_id, resume_from_step } = await req.json();
     
     if (!wizard_id) {
       return new Response(
@@ -54,16 +54,20 @@ serve(async (req) => {
       );
     }
 
-    console.log(`🚀 Starting orchestration for wizard: ${wizard_id}`);
+    // Determine start index (0-based)
+    // resume_from_step is 1-based (Step 1 = index 0)
+    const startIndex = resume_from_step ? resume_from_step - 1 : 0;
+    
+    console.log(`🚀 Starting orchestration for wizard: ${wizard_id}, from step: ${startIndex + 1}`);
 
-    // Executa cada tool em sequência
-    for (const tool of TOOLS_SEQUENCE) {
-      const stepNum = tool.id;
-      const statusInProgress = `Step ${stepNum} ${tool.label} - In Progress`;
-      const statusCompleted = `Step ${stepNum} ${tool.label} - Completed`;
-      const statusFailed = `Step ${stepNum} ${tool.label} - Fail`;
+    // Execute each tool in sequence starting from startIndex
+    for (let i = startIndex; i < TOOLS_SEQUENCE.length; i++) {
+      const tool = TOOLS_SEQUENCE[i];
+      const statusInProgress = `Step ${tool.step} ${tool.label} - In Progress`;
+      const statusCompleted = `Step ${tool.step} ${tool.label} - Completed`;
+      const statusFailed = `Step ${tool.step} ${tool.label} - Fail`;
 
-      // 1. Atualiza status para "In Progress" (sanitizado)
+      // 1. Update status to "In Progress"
       await supabase
         .from("tb_pms_reports")
         .update({ status: statusInProgress.trim() })
@@ -72,7 +76,7 @@ serve(async (req) => {
       console.log(`📍 ${statusInProgress}`);
 
       try {
-        // 2. Chama o webhook n8n com tool_name e wizard_id
+        // 2. Call n8n webhook with tool_name and wizard_id
         const response = await fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -82,16 +86,16 @@ serve(async (req) => {
           }),
         });
 
-        // 3. Verificar apenas se HTTP retornou OK
+        // 3. Check HTTP response
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
 
-        // Consumir response body para evitar resource leak
+        // Consume response body
         await response.text();
 
-        // 4. n8n já salvou os dados, apenas atualizamos o status (sanitizado)
+        // 4. Update status to "Completed"
         await supabase
           .from("tb_pms_reports")
           .update({ status: statusCompleted.trim() })
@@ -100,7 +104,7 @@ serve(async (req) => {
         console.log(`✅ ${statusCompleted}`);
 
       } catch (error) {
-        // 5. Se falhou, atualiza status e para execução
+        // 5. On failure, update status and stop execution
         console.error(`❌ ${statusFailed}:`, error);
         
         await supabase
@@ -111,7 +115,7 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({
             success: false,
-            failedAt: stepNum,
+            failedAt: tool.step,
             tool_name: tool.tool_name,
             error: String(error)
           }),
@@ -120,10 +124,10 @@ serve(async (req) => {
       }
     }
 
-    // Todos os steps completados com sucesso (status limpo)
+    // All steps completed successfully
     await supabase
       .from("tb_pms_reports")
-      .update({ status: "completed".trim() })
+      .update({ status: "completed" })
       .eq("wizard_id", wizard_id);
 
     console.log(`🎉 Report completed for wizard: ${wizard_id}`);
