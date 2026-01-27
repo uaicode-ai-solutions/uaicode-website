@@ -257,7 +257,7 @@ const PmsLoading = () => {
               disabled={isRetrying}
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
-              {isRetrying ? "Preparing..." : `Retry Step ${failedStepInfo?.stepNumber || ''}`}
+              {isRetrying ? "Preparing..." : "Retry"}
             </Button>
           </div>
           
