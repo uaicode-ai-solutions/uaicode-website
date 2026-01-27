@@ -282,12 +282,28 @@ const PmsWizard = () => {
 
       if (insertError) {
         console.error("Error saving report to database:", insertError);
+        setIsSubmitting(false);
         return;
       }
 
-      console.log("Report saved to database:", reportId);
+      console.log("Wizard saved to database:", reportId);
 
-      // 2. Also save to localStorage as backup
+      // 2. Create tb_pms_reports row with status "preparing" BEFORE navigating
+      const { error: reportRowError } = await supabase
+        .from('tb_pms_reports')
+        .insert({
+          wizard_id: reportId,
+          status: 'preparing'
+        });
+
+      if (reportRowError) {
+        console.error("Error creating report row:", reportRowError);
+        // Not critical - orchestrator can create if needed, but log for debugging
+      } else {
+        console.log("Report row created with status 'preparing':", reportId);
+      }
+
+      // 3. Also save to localStorage as backup
       const newReport: StoredReport = {
         id: reportId,
         createdAt: now,
