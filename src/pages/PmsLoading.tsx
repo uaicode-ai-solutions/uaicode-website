@@ -1,25 +1,38 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
 import GeneratingReportSkeleton from "@/components/planningmysaas/skeletons/GeneratingReportSkeleton";
+import ResumeOrRestartDialog from "@/components/planningmysaas/ResumeOrRestartDialog";
 import { useReportData } from "@/hooks/useReportData";
 import { useReport } from "@/hooks/useReport";
 import { supabase } from "@/integrations/supabase/client";
 
-// Single source of truth: This page triggers the orchestrator webhook on mount
+// Parse step number from status string
+const parseStepNumber = (status: string | undefined): number | null => {
+  if (!status) return null;
+  const match = status.match(/Step (\d+)/i);
+  return match ? parseInt(match[1]) : null;
+};
 
-// Helper to detect failure status
+// Check if status indicates failure
 const isFailureStatus = (status: string | undefined): boolean => {
   if (!status) return false;
   return status.toLowerCase().includes("fail");
 };
 
-// Helper to extract failed step from status
+// Check if status indicates in-progress
+const isInProgressStatus = (status: string | undefined): boolean => {
+  if (!status) return false;
+  const normalized = status.trim().toLowerCase();
+  return normalized.includes("in progress") || 
+         (normalized.startsWith("step") && !normalized.includes("fail") && !normalized.includes("completed"));
+};
+
+// Extract failed step info
 const parseFailedStep = (status: string | undefined): { stepNumber: number; stepName: string } | null => {
   if (!status) return null;
-  // Pattern: "Step X Name - Fail" or "Step X - Fail"
   const match = status.match(/Step (\d+)\s*([^-]*)?-?\s*Fail/i);
   if (match) {
     return {
@@ -33,7 +46,11 @@ const parseFailedStep = (status: string | undefined): { stepNumber: number; step
 const PmsLoading = () => {
   const navigate = useNavigate();
   const { id: wizardId } = useParams<{ id: string }>();
-  const [isRetrying, setIsRetrying] = useState(false);
+  
+  // UI States
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [hasDecided, setHasDecided] = useState(false);
   
   // Get wizard data for project name
   const { data: wizardData } = useReport(wizardId);
@@ -42,127 +59,138 @@ const PmsLoading = () => {
   // Get report data with polling (every 5 seconds)
   const { data: reportData, refetch } = useReportData(wizardId);
   
-  // Guard to ensure webhook is only triggered once (handles StrictMode)
-  const hasTriggeredWebhook = useRef(false);
+  // Track if initial check has been done
+  const hasCheckedInitialStatus = useRef(false);
   
-  // UNIFIED GUARD: Only allow terminal actions (navigate to dashboard OR show error)
-  // after observing a fresh generation cycle (status that is not terminal)
-  const hasObservedFreshCycle = useRef(false);
-  
-  // Track aggressive refetch interval
-  const aggressiveIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+  // Current status
   const status = reportData?.status;
   const normalizedStatus = status?.trim().toLowerCase() || "";
+  const currentStepNumber = parseStepNumber(status);
   const isFailed = isFailureStatus(status);
   const isCompleted = normalizedStatus === "completed";
-  const isInProgress = normalizedStatus && !isCompleted && !isFailed;
+  const isInProgress = isInProgressStatus(status);
   const failedStepInfo = parseFailedStep(status);
   
-  // SINGLE SOURCE OF TRUTH: Trigger orchestrator webhook on mount
-  useEffect(() => {
-    if (!wizardId || hasTriggeredWebhook.current) return;
+  // Trigger orchestrator with optional resume step
+  const triggerOrchestrator = useCallback(async (resumeFromStep?: number) => {
+    if (!wizardId) return;
     
-    // Mark as triggered BEFORE calling (prevents race condition)
-    hasTriggeredWebhook.current = true;
+    setIsProcessing(true);
+    console.log("[PmsLoading] Triggering orchestrator:", { wizardId, resumeFromStep });
     
-    console.log("[PmsLoading] Triggering orchestrator for:", wizardId);
-    
-    supabase.functions.invoke('pms-orchestrate-report', {
-      body: { wizard_id: wizardId }
-    }).then(result => {
+    try {
+      const result = await supabase.functions.invoke('pms-orchestrate-report', {
+        body: { 
+          wizard_id: wizardId,
+          resume_from_step: resumeFromStep 
+        }
+      });
       console.log('[PmsLoading] Orchestrator response:', result);
-      
-      // Start aggressive refetch to catch status transition quickly
-      // This helps when cache has old "completed" or "fail" status
-      if (!aggressiveIntervalRef.current) {
-        console.log('[PmsLoading] Starting aggressive refetch (every 800ms for 15s)');
-        aggressiveIntervalRef.current = setInterval(() => {
-          refetch();
-        }, 800);
-        
-        // Stop after 15 seconds
-        setTimeout(() => {
-          if (aggressiveIntervalRef.current) {
-            clearInterval(aggressiveIntervalRef.current);
-            aggressiveIntervalRef.current = null;
-            console.log('[PmsLoading] Stopped aggressive refetch');
-          }
-        }, 15000);
-      }
-    }).catch(err => {
+    } catch (err) {
       console.error('[PmsLoading] Orchestrator error:', err);
-    });
-    
-    // Cleanup on unmount
-    return () => {
-      if (aggressiveIntervalRef.current) {
-        clearInterval(aggressiveIntervalRef.current);
-        aggressiveIntervalRef.current = null;
-      }
-    };
-  }, [wizardId, refetch]);
-  
-  // Detect fresh cycle: when we see an in-progress status (not terminal)
-  // This proves the new generation has actually started
-  useEffect(() => {
-    if (isInProgress && !hasObservedFreshCycle.current) {
-      console.log("[PmsLoading] Fresh cycle detected:", status);
-      hasObservedFreshCycle.current = true;
-      
-      // Stop aggressive refetch once we confirm fresh cycle
-      if (aggressiveIntervalRef.current) {
-        clearInterval(aggressiveIntervalRef.current);
-        aggressiveIntervalRef.current = null;
-        console.log('[PmsLoading] Stopped aggressive refetch (fresh cycle confirmed)');
-      }
     }
-  }, [isInProgress, status]);
+  }, [wizardId]);
   
-  // Debug logging
+  // Initial status check on mount
   useEffect(() => {
-    console.log("[PmsLoading] Status update:", {
-      wizardId,
-      rawStatus: status,
-      normalizedStatus,
-      hasObservedFreshCycle: hasObservedFreshCycle.current,
-      isInProgress,
-      isCompleted,
-      isFailed
-    });
-  }, [wizardId, status, normalizedStatus, isInProgress, isCompleted, isFailed]);
+    if (!reportData || hasCheckedInitialStatus.current || hasDecided) return;
+    
+    hasCheckedInitialStatus.current = true;
+    console.log("[PmsLoading] Initial status check:", status);
+    
+    // Case 1: No status or null → First generation, start automatically
+    if (!status) {
+      console.log("[PmsLoading] No status, starting fresh generation");
+      setHasDecided(true);
+      triggerOrchestrator();
+      return;
+    }
+    
+    // Case 2: Completed → Go to dashboard
+    if (isCompleted) {
+      console.log("[PmsLoading] Already completed, navigating to dashboard");
+      navigate(`/planningmysaas/dashboard/${wizardId}`, { replace: true });
+      return;
+    }
+    
+    // Case 3: Failed → Show error UI (will be handled by render)
+    if (isFailed) {
+      console.log("[PmsLoading] Found failed status");
+      setHasDecided(true);
+      return;
+    }
+    
+    // Case 4: In Progress → Show dialog asking Resume or Restart
+    if (isInProgress && currentStepNumber) {
+      console.log("[PmsLoading] Found in-progress status, showing dialog");
+      setShowResumeDialog(true);
+      return;
+    }
+    
+    // Default: Start fresh
+    console.log("[PmsLoading] Unknown status, starting fresh");
+    setHasDecided(true);
+    triggerOrchestrator();
+  }, [reportData, status, isCompleted, isFailed, isInProgress, currentStepNumber, wizardId, navigate, triggerOrchestrator, hasDecided]);
   
-  // Navigate to dashboard ONLY when:
-  // 1. Status is "completed"
-  // 2. AND we have observed a fresh cycle (proves this isn't stale cache)
+  // Watch for completion during generation
   useEffect(() => {
-    if (isCompleted && hasObservedFreshCycle.current) {
-      console.log("[PmsLoading] Report completed! Navigating to dashboard...");
+    if (hasDecided && isCompleted) {
+      console.log("[PmsLoading] Generation completed! Navigating to dashboard...");
       navigate(`/planningmysaas/dashboard/${wizardId}`, { replace: true });
     }
-  }, [isCompleted, wizardId, navigate]);
+  }, [hasDecided, isCompleted, wizardId, navigate]);
   
-  // Handle retry - reset guards and reload
-  const handleRetry = () => {
-    setIsRetrying(true);
-    // Reset guards so useEffect will trigger again after reload
-    hasTriggeredWebhook.current = false;
-    hasObservedFreshCycle.current = false;
-    // Reload forces re-mount, which triggers the orchestrator webhook
-    window.location.reload();
-  };
+  // Handle resume choice
+  const handleResume = useCallback(() => {
+    setShowResumeDialog(false);
+    setHasDecided(true);
+    if (currentStepNumber) {
+      triggerOrchestrator(currentStepNumber);
+    }
+  }, [currentStepNumber, triggerOrchestrator]);
+  
+  // Handle restart choice
+  const handleRestart = useCallback(() => {
+    setShowResumeDialog(false);
+    setHasDecided(true);
+    triggerOrchestrator(); // No resume_from_step = start from 1
+  }, [triggerOrchestrator]);
+  
+  // Handle retry failed step
+  const handleRetryFailedStep = useCallback(() => {
+    if (failedStepInfo) {
+      setIsProcessing(true);
+      triggerOrchestrator(failedStepInfo.stepNumber);
+    }
+  }, [failedStepInfo, triggerOrchestrator]);
   
   // Handle back to wizard
-  const handleBackToWizard = () => {
+  const handleBackToWizard = useCallback(() => {
     navigate(`/planningmysaas/wizard?edit=${wizardId}`, { replace: true });
-  };
+  }, [wizardId, navigate]);
   
-  // Show error UI ONLY when:
-  // 1. Status contains "fail"
-  // 2. AND we have observed a fresh cycle (proves this failure is from current attempt)
-  const showErrorUI = isFailed && hasObservedFreshCycle.current;
+  // Show Resume/Restart dialog
+  if (showResumeDialog && currentStepNumber) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-background">
+        <GeneratingReportSkeleton 
+          projectName={projectName}
+          currentStatus={status}
+        />
+        <ResumeOrRestartDialog
+          open={true}
+          currentStep={currentStepNumber}
+          projectName={projectName}
+          onResume={handleResume}
+          onRestart={handleRestart}
+        />
+      </div>
+    );
+  }
   
-  if (showErrorUI) {
+  // Show error UI for failed status
+  if (hasDecided && isFailed) {
     return (
       <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center p-4">
         <div className="max-w-md w-full space-y-6">
@@ -191,7 +219,7 @@ const PmsLoading = () => {
               }
             </AlertTitle>
             <AlertDescription>
-              The AI analysis could not complete this step. You can try again or go back to review your inputs.
+              The AI analysis could not complete this step. You can retry from this step or go back to review your inputs.
             </AlertDescription>
           </Alert>
           
@@ -207,11 +235,11 @@ const PmsLoading = () => {
             </Button>
             <Button
               className="flex-1"
-              onClick={handleRetry}
-              disabled={isRetrying}
+              onClick={handleRetryFailedStep}
+              disabled={isProcessing}
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
-              {isRetrying ? "Retrying..." : "Try Again"}
+              <RefreshCw className={`w-4 h-4 mr-2 ${isProcessing ? 'animate-spin' : ''}`} />
+              {isProcessing ? "Retrying..." : `Retry Step ${failedStepInfo?.stepNumber || ''}`}
             </Button>
           </div>
           
@@ -225,7 +253,6 @@ const PmsLoading = () => {
   }
   
   // Default: show loading skeleton
-  // This covers: initial load, stale cache states, and in-progress generation
   return (
     <div className="fixed inset-0 z-[100] bg-background">
       <GeneratingReportSkeleton 
