@@ -1,29 +1,98 @@
 
-# Correção: Texto do Botão Retry
+# Correção: Remover Tela em Branco Durante Retry
 
-## Mudança
+## Problema
 
-Simplificar o texto do botão de "Retry Step X" para apenas "Retry", já que o fluxo reinicia completamente do zero.
+O fluxo atual:
+1. Clica em Retry → `setIsRetrying(true)` → botão anima
+2. `await supabase.update()` → aguarda banco
+3. `setIsRetrying(false)` → **PARA a animação** ❌
+4. `window.location.reload()` → inicia reload
+5. **Tela em branco** enquanto a página recarrega
+
+O `setIsRetrying(false)` na linha 176 está causando o problema - ele reseta o estado visual ANTES do reload completar.
+
+## Solução
+
+Remover `setIsRetrying(false)` completamente. Uma vez que o reload acontece, o estado é destruído de qualquer forma. Manter a animação até o último momento garante feedback visual contínuo.
 
 ## Arquivo: `src/pages/PmsLoading.tsx`
 
-### Linha 260
+### Mudança na função `handleRetryFailedStep` (linhas 163-186)
 
 **Antes:**
-```tsx
-{isRetrying ? "Preparing..." : `Retry Step ${failedStepInfo?.stepNumber || ''}`}
+```typescript
+const handleRetryFailedStep = useCallback(async () => {
+  if (!wizardId) return;
+  
+  setIsRetrying(true);
+  
+  // Update status to "preparing" before reloading
+  const { error } = await supabase
+    .from("tb_pms_reports")
+    .update({ status: "preparing" })
+    .eq("wizard_id", wizardId);
+  
+  // Reset state before reload
+  setIsRetrying(false);  // ❌ PROBLEMA: para a animação
+  
+  if (!error) {
+    console.log("[PmsLoading] Status reset to 'preparing' for retry, reloading...");
+    window.location.reload();
+  } else {
+    console.error("[PmsLoading] Failed to update status for retry:", error);
+  }
+}, [wizardId]);
 ```
 
 **Depois:**
-```tsx
-{isRetrying ? "Preparing..." : "Retry"}
+```typescript
+const handleRetryFailedStep = useCallback(async () => {
+  if (!wizardId) return;
+  
+  setIsRetrying(true);
+  
+  // Update status to "preparing" before reloading
+  const { error } = await supabase
+    .from("tb_pms_reports")
+    .update({ status: "preparing" })
+    .eq("wizard_id", wizardId);
+  
+  if (!error) {
+    console.log("[PmsLoading] Status reset to 'preparing' for retry, reloading...");
+    window.location.reload();
+    // Não resetar isRetrying - o reload vai destruir o estado de qualquer forma
+    // Manter a animação garante feedback visual contínuo
+  } else {
+    console.error("[PmsLoading] Failed to update status for retry:", error);
+    // Só resetar em caso de erro, para permitir nova tentativa
+    setIsRetrying(false);
+  }
+}, [wizardId]);
 ```
 
-## Justificativa
+## Fluxo Corrigido
 
-O botão não retoma de um step específico - ele:
-1. Atualiza status para "preparing"
-2. Faz reload da página
-3. A página detecta "preparing" e reinicia todo o fluxo
+```text
+Clica em Retry
+     │
+     ▼
+setIsRetrying(true) → botão mostra "Preparing..." com spinner
+     │
+     ▼
+await supabase.update() → aguarda banco (botão continua animando)
+     │
+     ▼
+Sucesso? ──┬── Sim → window.location.reload() 
+           │         (animação continua até página recarregar)
+           │
+           └── Não → setIsRetrying(false) → botão volta para "Retry"
+                     (usuário pode tentar novamente)
+```
 
-Portanto, o texto deve refletir isso: apenas "Retry".
+## Resumo
+
+| Cenário | Antes | Depois |
+|---------|-------|--------|
+| Sucesso | Para animação → tela branca → reload | Animação contínua → reload |
+| Erro | Para animação → fica travado | Para animação → pode tentar novamente |
