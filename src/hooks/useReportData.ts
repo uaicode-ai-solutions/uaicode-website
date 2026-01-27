@@ -39,14 +39,12 @@ export const useReportData = (wizardId: string | undefined) => {
       
       // Terminal statuses - stop polling
       const isTerminal = 
-        status === "Created" || 
         status === "completed" || 
-        status === "failed" || 
-        status === "error" ||
+        status === "Created" ||
         (status && status.toLowerCase().includes("fail"));
       
       if (isTerminal) {
-        console.log("[useReportData] Terminal status reached:", status);
+        console.log("[useReportData] Terminal status:", status);
         return false;
       }
       

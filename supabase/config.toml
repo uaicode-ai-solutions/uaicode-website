@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.pms-generate-logo]
 verify_jwt = false
+
+[functions.pms-orchestrate-report]
+verify_jwt = false

@@ -83,17 +83,22 @@ const PmsDashboardContent = () => {
     return checkDataQuality(reportData);
   }, [reportData]);
 
-  // Regenerate report handler - simply triggers webhook and navigates to loading page
+  // Regenerate report handler - uses new orchestrator Edge Function
   const handleRegenerateReport = async () => {
     if (!wizardId) return;
     
     try {
-      // Trigger n8n webhook
-      await supabase.functions.invoke('pms-trigger-n8n-report', {
+      // 1. Invalidar cache para forçar dados frescos
+      await queryClient.invalidateQueries({ 
+        queryKey: ["pms-report-data", wizardId] 
+      });
+      
+      // 2. Chamar nova Edge Function orquestradora (fire-and-forget)
+      supabase.functions.invoke('pms-orchestrate-report', {
         body: { wizard_id: wizardId }
       });
       
-      // Navigate to loading page - it handles polling and step-by-step display
+      // 3. Navegar para loading page
       navigate(`/planningmysaas/loading/${wizardId}`);
     } catch (err) {
       console.error("Error triggering regeneration:", err);
