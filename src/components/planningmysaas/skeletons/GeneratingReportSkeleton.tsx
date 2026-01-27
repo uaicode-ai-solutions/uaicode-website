@@ -55,7 +55,8 @@ const parseFailedStep = (status: string | undefined): number | null => {
 /**
  * Get estimated remaining time based on current step
  */
-const getEstimatedTime = (currentStep: number): string => {
+const getEstimatedTime = (currentStep: number, hasFailure: boolean): string => {
+  if (hasFailure) return "Generation stopped";
   const remainingSteps = TOTAL_STEPS - currentStep;
   if (remainingSteps <= 0) return "Almost done...";
   if (remainingSteps <= 2) return "Less than a minute";
@@ -66,7 +67,11 @@ const getEstimatedTime = (currentStep: number): string => {
 const GeneratingReportSkeleton = ({ projectName, currentStatus }: GeneratingReportSkeletonProps) => {
   const currentStep = parseCurrentStep(currentStatus);
   const failedStep = parseFailedStep(currentStatus);
-  const progress = Math.min((currentStep / TOTAL_STEPS) * 100, 100);
+  const hasFailure = failedStep !== null;
+  
+  // Progress bar: if failed, show progress up to step before failure
+  const effectiveProgress = hasFailure ? failedStep - 1 : currentStep;
+  const progress = Math.min((effectiveProgress / TOTAL_STEPS) * 100, 100);
 
   return (
     <div className="min-h-screen flex items-center justify-center py-8">
@@ -94,7 +99,7 @@ const GeneratingReportSkeleton = ({ projectName, currentStatus }: GeneratingRepo
         <div className="space-y-2">
           <Progress value={progress} className="h-2" />
           <p className="text-sm text-muted-foreground">
-            {Math.round(progress)}% complete • {getEstimatedTime(currentStep)}
+            {Math.round(progress)}% complete • {getEstimatedTime(currentStep, hasFailure)}
           </p>
         </div>
 
@@ -104,7 +109,9 @@ const GeneratingReportSkeleton = ({ projectName, currentStatus }: GeneratingRepo
             {steps.map((step) => {
               const Icon = step.icon;
               const isFailed = step.id === failedStep;
-              const isActive = !isFailed && step.id === currentStep + 1;
+              // Active ONLY if no failure AND is the next step to run
+              const isActive = !hasFailure && step.id === currentStep + 1;
+              // Complete if step is before current (and not the one that failed)
               const isComplete = !isFailed && step.id <= currentStep;
 
               return (
