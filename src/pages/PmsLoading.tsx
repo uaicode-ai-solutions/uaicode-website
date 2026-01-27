@@ -160,29 +160,38 @@ const PmsLoading = () => {
     triggerOrchestrator(); // No resume_from_step = start from 1
   }, [triggerOrchestrator]);
   
-  // Handle retry failed step - update status to "preparing" before retrying
+  // Handle retry failed step - SPA flow without page reload
   const handleRetryFailedStep = useCallback(async () => {
     if (!wizardId) return;
     
     setIsRetrying(true);
     
-    // Update status to "preparing" before reloading
+    // Update status to "preparing"
     const { error } = await supabase
       .from("tb_pms_reports")
       .update({ status: "preparing" })
       .eq("wizard_id", wizardId);
     
     if (!error) {
-      console.log("[PmsLoading] Status reset to 'preparing' for retry, reloading...");
-      window.location.reload();
-      // Keep isRetrying true - the reload will destroy state anyway
-      // This ensures continuous visual feedback until page reloads
+      console.log("[PmsLoading] Status reset to 'preparing', triggering orchestrator...");
+      // Immediate refetch to get fresh status
+      await refetch();
+      // Trigger orchestrator to restart the flow
+      triggerOrchestrator();
+      // isRetrying will be reset by the failsafe useEffect when status changes
     } else {
       console.error("[PmsLoading] Failed to update status for retry:", error);
-      // Only reset on error so user can try again
       setIsRetrying(false);
     }
-  }, [wizardId]);
+  }, [wizardId, refetch, triggerOrchestrator]);
+  
+  // Failsafe: reset isRetrying when status moves away from "fail"
+  useEffect(() => {
+    if (isRetrying && status && !isFailureStatus(status)) {
+      console.log("[PmsLoading] Status changed from fail, resetting isRetrying");
+      setIsRetrying(false);
+    }
+  }, [isRetrying, status]);
   
   // Handle back to wizard
   const handleBackToWizard = useCallback(() => {
@@ -203,6 +212,18 @@ const PmsLoading = () => {
           projectName={projectName}
           onResume={handleResume}
           onRestart={handleRestart}
+        />
+      </div>
+    );
+  }
+  
+  // Show skeleton immediately when retrying (before status updates in cache)
+  if (isRetrying) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-background">
+        <GeneratingReportSkeleton 
+          projectName={projectName}
+          currentStatus="preparing"
         />
       </div>
     );
