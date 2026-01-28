@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 const EmptyReports = () => {
   const navigate = useNavigate();
 
+  const handleNewReport = () => {
+    localStorage.removeItem("pms-wizard-data");
+    navigate("/planningmysaas/wizard");
+  };
+
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
       {/* Animated icon */}
@@ -36,7 +41,7 @@ const EmptyReports = () => {
       
       {/* CTA Premium */}
       <Button 
-        onClick={() => navigate("/planningmysaas/wizard")}
+        onClick={handleNewReport}
         size="lg"
         className="gap-3 bg-accent hover:bg-accent/90 text-background font-semibold 
           text-lg px-8 py-6 shadow-lg shadow-accent/30 hover:shadow-accent/40

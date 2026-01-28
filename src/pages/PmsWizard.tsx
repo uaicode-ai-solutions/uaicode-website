@@ -318,8 +318,8 @@ const PmsWizard = () => {
       };
       saveReport(newReport);
 
-      // Clear wizard draft data
-      localStorage.removeItem(STORAGE_KEY);
+      // Note: localStorage is NOT cleared here anymore
+      // It will be cleared when user clicks "New Report" in dashboard/reports
 
       // Log data for debugging
       console.log("Wizard submission complete:", {

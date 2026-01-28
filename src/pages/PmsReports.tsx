@@ -56,6 +56,11 @@ const PmsReports = () => {
     return { totalReports, avgScore, daysSinceLatest };
   }, [reports]);
 
+  const handleNewReport = () => {
+    localStorage.removeItem("pms-wizard-data");
+    navigate("/planningmysaas/wizard");
+  };
+
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
@@ -119,7 +124,7 @@ const PmsReports = () => {
             <div className="flex items-center gap-3">
               {/* New Report Button */}
               <Button 
-                onClick={() => navigate("/planningmysaas/wizard")}
+                onClick={handleNewReport}
                 className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
               >
                 <Plus className="h-4 w-4" />
@@ -291,7 +296,7 @@ const PmsReports = () => {
                   bg-gradient-to-br from-accent/5 to-transparent
                   transition-all duration-500 hover:-translate-y-1 
                   hover:shadow-[0_0_40px_hsla(45,100%,55%,0.1)]"
-                onClick={() => navigate("/planningmysaas/wizard")}
+                onClick={handleNewReport}
               >
                 {/* Shimmer effect on hover */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/10 to-transparent 
