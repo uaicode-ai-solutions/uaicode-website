@@ -1,86 +1,134 @@
 
-<contexto-e-diagnostico>
-Objetivo: eliminar a “tela em branco” e o delay entre a tela de erro e a tela de loading ao clicar em Retry.
 
-O que observei (com evidências):
-1) Hoje o Retry faz `window.location.reload()`.
-   - Um reload de página sempre tem um período em que o browser descarrega a UI atual e ainda não re-renderizou o React. Esse intervalo pode parecer “tela branca”, principalmente em rotas protegidas (porque precisa re-hidratar sessão/JS/CSS).
-2) Mesmo antes do reload, existe um delay perceptível porque o hook `useReportData` só volta a fazer GET a cada 5s quando não está em terminal. Quando está em “Fail”, ele para de pollar. No log de rede, o PATCH do status aconteceu, mas o próximo GET veio ~5 segundos depois. Isso dá sensação de “travou / sumiu / branco”.
+# Simplificação: Limpeza do Wizard via CTAs Específicos
 
-Conclusão: enquanto existir `window.location.reload()`, sempre vai existir uma janela de UI “desmontada” (ou pelo menos instável) e o usuário pode enxergar branco. E, além disso, a atualização visual depende do próximo poll de 5s.
-</contexto-e-diagnostico>
+## Resumo da Solução
 
-<causa-raiz>
-A causa raiz do “branco” é o reload. O delay adicional acontece porque o polling estava parado (status terminal), e só volta a atualizar quando você força um refetch (ou espera algum novo ciclo/reativação).
-</causa-raiz>
+Limpar o `localStorage` do wizard apenas quando o usuário clica em CTAs que iniciam um **novo** report, e remover a limpeza de onde está agora (submit do wizard).
 
-<solucao-proposta-alto-nivel>
-Trocar o fluxo de Retry de “reset via reload” para “reset via estado + refetch + re-trigger do orchestrator”, tudo dentro do SPA, sem recarregar a página.
+## Onde Limpar o localStorage
 
-Comportamento desejado após a mudança:
-- Clique em Retry:
-  1) Imediatamente some a tela de erro e entra a tela de loading (skeleton) sem branco.
-  2) O botão continua com spinner/estado de “Preparing...” (ou mantém feedback visual equivalente) enquanto o status é atualizado no banco.
-  3) Assim que o banco confirma o status atualizado (via refetch imediato), o fluxo dispara o orchestrator e segue normalmente, com polling ativo.
-</solucao-proposta-alto-nivel>
+### ✅ Lugares que DEVEM limpar (novo report)
 
-<mudancas-de-codigo>
-Arquivo: `src/pages/PmsLoading.tsx`
+| Arquivo | Local | Ação |
+|---------|-------|------|
+| `src/pages/PmsDashboard.tsx` | `handleNewReport()` | ✅ Já limpa - manter |
+| `src/pages/PmsReports.tsx` | Botão "New Report" no header | ❌ Não limpa - **adicionar** |
+| `src/pages/PmsReports.tsx` | Card "Create new" no grid | ❌ Não limpa - **adicionar** |
+| `src/components/planningmysaas/reports/EmptyReports.tsx` | Botão "Create Your First Report" | ❌ Não limpa - **adicionar** |
+| `src/components/planningmysaas/PmsPricing.tsx` | CTA "Validate My Idea Now" | ❌ Não limpa - **adicionar** |
 
-1) Remover o `window.location.reload()`.
-   - Isso elimina a janela inevitável de “tela branca” causada por recarregar a página inteira.
+### ❌ Lugares que NÃO devem limpar
 
-2) Fazer o Retry virar um fluxo SPA:
-   - No `handleRetryFailedStep`:
-     a) `setIsRetrying(true)` imediatamente.
-     b) PATCH no Supabase: `status = "preparing"`.
-     c) Se falhar: `setIsRetrying(false)` e manter a tela de erro (idealmente com toast).
-     d) Se sucesso:
-        - Forçar `await refetch()` imediatamente (não esperar 5s).
-        - Assim que o refetch confirmar que o status não é mais “Fail” (ex: “preparing”), chamar `triggerOrchestrator()` para reiniciar o fluxo completo.
-        - Opcional: `setIsRetrying(false)` após o refetch (porque a tela já estará em loading e o polling voltará automaticamente).
+| Arquivo | Local | Situação Atual |
+|---------|-------|----------------|
+| `src/pages/PmsWizard.tsx` | `handleSubmit()` | ❌ Limpa no submit - **remover** |
 
-3) Ajustar a lógica de render para nunca mostrar a tela de erro quando `isRetrying` estiver true:
-   - Regra: `if (isRetrying) return <GeneratingReportSkeleton ... />` (full screen).
-   - Isso garante transição imediata para loading (zero “branco”) mesmo se o `reportData.status` ainda estiver com “Fail” em cache por alguns milissegundos.
+## Implementação
 
-4) Garantir que o skeleton mostre um status coerente durante o Retry:
-   - Enquanto `isRetrying` estiver true, passar `currentStatus="preparing"` (ou algo similar) ao `GeneratingReportSkeleton`, ao invés do status antigo “Fail”.
-   - Isso evita a sensação de “loading, mas com status falhando”.
+### 1. `src/pages/PmsWizard.tsx`
 
-5) (Opcional, mas recomendado) “failsafe” para desligar `isRetrying` automaticamente:
-   - Um `useEffect` que observa `status` e, se `isRetrying === true` e `status` virar “Step 1 …” / “preparing” / “in progress”, então `setIsRetrying(false)`.
-   - Isso evita ficar preso em estado de retry caso algum caminho de promise não finalize como esperado.
+**Remover linha ~322:**
+```typescript
+// REMOVER ESTA LINHA:
+localStorage.removeItem(STORAGE_KEY);
+```
 
-</mudancas-de-codigo>
+Isso permite que, se o usuário voltar ao wizard (erro, "Back to Wizard"), os dados ainda estejam lá.
 
-<criterios-de-aceitacao>
-1) Ao clicar Retry na tela de erro:
-   - Não existe mais tela em branco.
-   - A UI troca imediatamente para o skeleton (loading).
-2) O sistema não espera 5 segundos para “começar a mexer”:
-   - Deve haver um `refetch()` imediato após atualizar o status.
-3) O orchestrator é disparado exatamente uma vez no retry (sem duplo-disparo).
-4) Se o PATCH falhar:
-   - A tela de erro permanece e o botão volta para “Retry” (sem travar).
-</criterios-de-aceitacao>
+---
 
-<observacao-importante-backend>
-Nos logs aparece que o orchestrator falhou no Step 4 com:
-“HTTP 500: No item to return was found”.
-Isso é um problema do pipeline/edge/n8n retornando vazio, independente da UX. A correção acima melhora a transição/UX do Retry, mas não resolve a causa do Step 4 falhar. Se você quiser, depois fazemos uma auditoria específica do Step 4 (logs do edge function + validação do retorno do n8n + tratamento de “no item”).
-</observacao-importante-backend>
+### 2. `src/pages/PmsReports.tsx`
 
-<passos-de-implementacao>
-1) Editar `PmsLoading.tsx`:
-   - Remover `window.location.reload()`.
-   - Atualizar `handleRetryFailedStep` para: update status -> refetch imediato -> triggerOrchestrator.
-2) Ajustar render:
-   - Priorizar `isRetrying` e mostrar skeleton sempre que true.
-3) Testar o fluxo:
-   - Simular falha (status “Step X … Fail”), clicar Retry e verificar:
-     - sem branco
-     - skeleton imediato
-     - status muda para preparing rapidamente (sem esperar 5s)
-     - orchestrator é chamado
-</passos-de-implementacao>
+**Criar helper function e usar nos dois CTAs:**
+
+```typescript
+// Adicionar função helper
+const handleNewReport = () => {
+  localStorage.removeItem("pms-wizard-data");
+  navigate("/planningmysaas/wizard");
+};
+
+// Linha 122 - Botão "New Report" no header
+// Antes:
+onClick={() => navigate("/planningmysaas/wizard")}
+
+// Depois:
+onClick={handleNewReport}
+
+// Linha 294 - Card "Create new" no grid  
+// Antes:
+onClick={() => navigate("/planningmysaas/wizard")}
+
+// Depois:
+onClick={handleNewReport}
+```
+
+---
+
+### 3. `src/components/planningmysaas/reports/EmptyReports.tsx`
+
+**Adicionar limpeza antes de navegar:**
+
+```typescript
+// Adicionar função
+const handleNewReport = () => {
+  localStorage.removeItem("pms-wizard-data");
+  navigate("/planningmysaas/wizard");
+};
+
+// Linha 39 - Botão "Create Your First Report"
+// Antes:
+onClick={() => navigate("/planningmysaas/wizard")}
+
+// Depois:
+onClick={handleNewReport}
+```
+
+---
+
+### 4. `src/components/planningmysaas/PmsPricing.tsx`
+
+**Adicionar limpeza no CTA da landing page:**
+
+```typescript
+const handleValidate = () => {
+  // Limpar draft anterior para garantir wizard limpo
+  localStorage.removeItem("pms-wizard-data");
+  navigate("/planningmysaas/login");
+};
+```
+
+---
+
+## Fluxo Corrigido
+
+```text
+Landing Page CTA → Limpa localStorage → Login → Wizard (vazio)
+                        ↓
+Reports "New Report" → Limpa localStorage → Wizard (vazio)
+                        ↓
+Dashboard "New Report" → Limpa localStorage → Wizard (vazio)
+
+         ════════════════════════════════════════════
+
+Wizard submit → NÃO limpa → Navega para Loading
+                                    ↓
+                 ┌──────────────────┴──────────────────┐
+                 ↓                                     ↓
+           Sucesso                                Erro/Volta
+                 ↓                                     ↓
+         Dashboard                              Wizard monta
+         (dados ficam no                        (dados do localStorage
+          localStorage                           ainda estão lá! ✅)
+          até próximo
+          "New Report")
+```
+
+## Critérios de Aceitação
+
+1. ✅ Dados do wizard persistem se usuário voltar do Loading/Erro
+2. ✅ Clicar "New Report" sempre inicia wizard zerado
+3. ✅ CTA da landing page sempre inicia wizard zerado
+4. ✅ Sem mudanças no comportamento do "Regenerate" (não afeta wizard)
+
