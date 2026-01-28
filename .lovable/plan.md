@@ -1,63 +1,88 @@
 
+# Adicionar Botão "My Reports" na Tela de Erro
 
-# Filtrar Reports: Mostrar Apenas Status "Completed"
+## Objetivo
 
-## Problema Identificado
+Incluir um botão "My Reports" na tela de erro do PmsLoading que navega para `/planningmysaas/reports`.
 
-A tela `/planningmysaas/reports` exibe todos os wizards que têm relatórios associados, independente do status. Isso inclui relatórios em andamento ("Step X...") e com erro ("...Fail").
+## Alterações
 
-## Solução
+### Arquivo: `src/pages/PmsLoading.tsx`
 
-Filtrar a lista de reports para incluir **apenas** aqueles com `status === "completed"`, tanto na exibição quanto no cálculo das estatísticas.
-
-## Alterações Necessárias
-
-### Arquivo: `src/hooks/useReports.ts`
-
-**Mudança:** Adicionar filtro no merge final para retornar apenas wizards cujo report tenha status "completed".
+**1. Adicionar ícone FileText no import (linha 5)**
 
 ```typescript
-// Linha ~56-62 - Alterar o merge para filtrar por status completed
-
-// ANTES:
-const mergedData: ReportRow[] = wizardData.map(wizard => ({
-  ...wizard,
-  tb_pms_reports: reportsMap.has(wizard.id) ? [reportsMap.get(wizard.id)!] : undefined,
-}));
-
-return mergedData;
-
-// DEPOIS:
-const mergedData: ReportRow[] = wizardData
-  .filter(wizard => {
-    const report = reportsMap.get(wizard.id);
-    // Só incluir se o report existe e tem status "completed"
-    return report && report.status?.trim().toLowerCase() === "completed";
-  })
-  .map(wizard => ({
-    ...wizard,
-    tb_pms_reports: [reportsMap.get(wizard.id)!],
-  }));
-
-return mergedData;
+import { AlertTriangle, ArrowLeft, RefreshCw, FileText } from "lucide-react";
 ```
 
-## Resultado Esperado
+**2. Adicionar handler para navegação (após linha 199)**
 
-| Antes | Depois |
-|-------|--------|
-| Cards de reports "generating" | ❌ Não aparece |
-| Cards de reports "failed" | ❌ Não aparece |
-| Cards de reports "completed" | ✅ Aparece normalmente |
-| Stats contabilizam todos | Stats contabilizam só completed |
+```typescript
+// Handle go to reports
+const handleGoToReports = useCallback(() => {
+  navigate('/planningmysaas/reports', { replace: true });
+}, [navigate]);
+```
+
+**3. Adicionar botão no grupo de Action Buttons (linhas 267-284)**
+
+O grupo atual tem 2 botões em flex. Adicionar um terceiro botão "My Reports" abaixo dos existentes:
+
+```typescript
+{/* Action Buttons */}
+<div className="flex flex-col gap-3">
+  <div className="flex flex-col sm:flex-row gap-3">
+    <Button
+      variant="outline"
+      className="flex-1"
+      onClick={handleBackToWizard}
+    >
+      <ArrowLeft className="w-4 h-4 mr-2" />
+      Back to Wizard
+    </Button>
+    <Button
+      className="flex-1"
+      onClick={handleRetryFailedStep}
+      disabled={isRetrying}
+    >
+      <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+      {isRetrying ? "Preparing..." : "Retry"}
+    </Button>
+  </div>
+  <Button
+    variant="ghost"
+    className="w-full"
+    onClick={handleGoToReports}
+  >
+    <FileText className="w-4 h-4 mr-2" />
+    My Reports
+  </Button>
+</div>
+```
+
+## Resultado Visual
+
+```
+┌─────────────────────────────────────┐
+│         ⚠️ (Error Icon)             │
+│                                     │
+│    Report Generation Failed         │
+│    We encountered an issue...       │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │ Failed at Step X: ...       │    │
+│  │ The AI analysis could not...│    │
+│  └─────────────────────────────┘    │
+│                                     │
+│  [Back to Wizard]  [Retry]          │
+│         [My Reports]                │ ← NOVO
+│                                     │
+│  If the problem persists...         │
+└─────────────────────────────────────┘
+```
 
 ## Impacto
 
-- **Cards exibidos:** Apenas reports completos
-- **Total Reports (stats):** Conta apenas completed
-- **Avg. Viability (stats):** Média apenas de completed
-- **Last Created (stats):** Data do último completed
-- **EmptyReports:** Aparece se nenhum report completed existir
-
-Nenhuma outra alteração é necessária pois a filtragem acontece na fonte de dados.
-
+- Nenhuma alteração em outros elementos da tela
+- O botão usa variant="ghost" para ser secundário visualmente
+- Layout mantido com flex column para acomodar o terceiro botão
