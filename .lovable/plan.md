@@ -1,134 +1,63 @@
 
 
-# Simplificação: Limpeza do Wizard via CTAs Específicos
+# Filtrar Reports: Mostrar Apenas Status "Completed"
 
-## Resumo da Solução
+## Problema Identificado
 
-Limpar o `localStorage` do wizard apenas quando o usuário clica em CTAs que iniciam um **novo** report, e remover a limpeza de onde está agora (submit do wizard).
+A tela `/planningmysaas/reports` exibe todos os wizards que têm relatórios associados, independente do status. Isso inclui relatórios em andamento ("Step X...") e com erro ("...Fail").
 
-## Onde Limpar o localStorage
+## Solução
 
-### ✅ Lugares que DEVEM limpar (novo report)
+Filtrar a lista de reports para incluir **apenas** aqueles com `status === "completed"`, tanto na exibição quanto no cálculo das estatísticas.
 
-| Arquivo | Local | Ação |
-|---------|-------|------|
-| `src/pages/PmsDashboard.tsx` | `handleNewReport()` | ✅ Já limpa - manter |
-| `src/pages/PmsReports.tsx` | Botão "New Report" no header | ❌ Não limpa - **adicionar** |
-| `src/pages/PmsReports.tsx` | Card "Create new" no grid | ❌ Não limpa - **adicionar** |
-| `src/components/planningmysaas/reports/EmptyReports.tsx` | Botão "Create Your First Report" | ❌ Não limpa - **adicionar** |
-| `src/components/planningmysaas/PmsPricing.tsx` | CTA "Validate My Idea Now" | ❌ Não limpa - **adicionar** |
+## Alterações Necessárias
 
-### ❌ Lugares que NÃO devem limpar
+### Arquivo: `src/hooks/useReports.ts`
 
-| Arquivo | Local | Situação Atual |
-|---------|-------|----------------|
-| `src/pages/PmsWizard.tsx` | `handleSubmit()` | ❌ Limpa no submit - **remover** |
-
-## Implementação
-
-### 1. `src/pages/PmsWizard.tsx`
-
-**Remover linha ~322:**
-```typescript
-// REMOVER ESTA LINHA:
-localStorage.removeItem(STORAGE_KEY);
-```
-
-Isso permite que, se o usuário voltar ao wizard (erro, "Back to Wizard"), os dados ainda estejam lá.
-
----
-
-### 2. `src/pages/PmsReports.tsx`
-
-**Criar helper function e usar nos dois CTAs:**
+**Mudança:** Adicionar filtro no merge final para retornar apenas wizards cujo report tenha status "completed".
 
 ```typescript
-// Adicionar função helper
-const handleNewReport = () => {
-  localStorage.removeItem("pms-wizard-data");
-  navigate("/planningmysaas/wizard");
-};
+// Linha ~56-62 - Alterar o merge para filtrar por status completed
 
-// Linha 122 - Botão "New Report" no header
-// Antes:
-onClick={() => navigate("/planningmysaas/wizard")}
+// ANTES:
+const mergedData: ReportRow[] = wizardData.map(wizard => ({
+  ...wizard,
+  tb_pms_reports: reportsMap.has(wizard.id) ? [reportsMap.get(wizard.id)!] : undefined,
+}));
 
-// Depois:
-onClick={handleNewReport}
+return mergedData;
 
-// Linha 294 - Card "Create new" no grid  
-// Antes:
-onClick={() => navigate("/planningmysaas/wizard")}
+// DEPOIS:
+const mergedData: ReportRow[] = wizardData
+  .filter(wizard => {
+    const report = reportsMap.get(wizard.id);
+    // Só incluir se o report existe e tem status "completed"
+    return report && report.status?.trim().toLowerCase() === "completed";
+  })
+  .map(wizard => ({
+    ...wizard,
+    tb_pms_reports: [reportsMap.get(wizard.id)!],
+  }));
 
-// Depois:
-onClick={handleNewReport}
+return mergedData;
 ```
 
----
+## Resultado Esperado
 
-### 3. `src/components/planningmysaas/reports/EmptyReports.tsx`
+| Antes | Depois |
+|-------|--------|
+| Cards de reports "generating" | ❌ Não aparece |
+| Cards de reports "failed" | ❌ Não aparece |
+| Cards de reports "completed" | ✅ Aparece normalmente |
+| Stats contabilizam todos | Stats contabilizam só completed |
 
-**Adicionar limpeza antes de navegar:**
+## Impacto
 
-```typescript
-// Adicionar função
-const handleNewReport = () => {
-  localStorage.removeItem("pms-wizard-data");
-  navigate("/planningmysaas/wizard");
-};
+- **Cards exibidos:** Apenas reports completos
+- **Total Reports (stats):** Conta apenas completed
+- **Avg. Viability (stats):** Média apenas de completed
+- **Last Created (stats):** Data do último completed
+- **EmptyReports:** Aparece se nenhum report completed existir
 
-// Linha 39 - Botão "Create Your First Report"
-// Antes:
-onClick={() => navigate("/planningmysaas/wizard")}
-
-// Depois:
-onClick={handleNewReport}
-```
-
----
-
-### 4. `src/components/planningmysaas/PmsPricing.tsx`
-
-**Adicionar limpeza no CTA da landing page:**
-
-```typescript
-const handleValidate = () => {
-  // Limpar draft anterior para garantir wizard limpo
-  localStorage.removeItem("pms-wizard-data");
-  navigate("/planningmysaas/login");
-};
-```
-
----
-
-## Fluxo Corrigido
-
-```text
-Landing Page CTA → Limpa localStorage → Login → Wizard (vazio)
-                        ↓
-Reports "New Report" → Limpa localStorage → Wizard (vazio)
-                        ↓
-Dashboard "New Report" → Limpa localStorage → Wizard (vazio)
-
-         ════════════════════════════════════════════
-
-Wizard submit → NÃO limpa → Navega para Loading
-                                    ↓
-                 ┌──────────────────┴──────────────────┐
-                 ↓                                     ↓
-           Sucesso                                Erro/Volta
-                 ↓                                     ↓
-         Dashboard                              Wizard monta
-         (dados ficam no                        (dados do localStorage
-          localStorage                           ainda estão lá! ✅)
-          até próximo
-          "New Report")
-```
-
-## Critérios de Aceitação
-
-1. ✅ Dados do wizard persistem se usuário voltar do Loading/Erro
-2. ✅ Clicar "New Report" sempre inicia wizard zerado
-3. ✅ CTA da landing page sempre inicia wizard zerado
-4. ✅ Sem mudanças no comportamento do "Regenerate" (não afeta wizard)
+Nenhuma outra alteração é necessária pois a filtragem acontece na fonte de dados.
 
