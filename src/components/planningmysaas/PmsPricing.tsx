@@ -45,6 +45,8 @@ const PmsPricing = () => {
   const navigate = useNavigate();
 
   const handleValidate = () => {
+    // Clear any previous wizard draft to ensure fresh start
+    localStorage.removeItem("pms-wizard-data");
     navigate("/planningmysaas/login");
   };
 
