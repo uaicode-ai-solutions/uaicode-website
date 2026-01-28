@@ -53,11 +53,17 @@ export const useReports = () => {
         }
       }
 
-      // Merge wizard data with reports
-      const mergedData: ReportRow[] = wizardData.map(wizard => ({
-        ...wizard,
-        tb_pms_reports: reportsMap.has(wizard.id) ? [reportsMap.get(wizard.id)!] : undefined,
-      }));
+      // Merge wizard data with reports - only include completed reports
+      const mergedData: ReportRow[] = wizardData
+        .filter(wizard => {
+          const report = reportsMap.get(wizard.id);
+          // Only include if report exists and has status "completed"
+          return report && report.status?.trim().toLowerCase() === "completed";
+        })
+        .map(wizard => ({
+          ...wizard,
+          tb_pms_reports: [reportsMap.get(wizard.id)!],
+        }));
 
       return mergedData;
     },
