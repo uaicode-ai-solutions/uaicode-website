@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
+import { AlertTriangle, ArrowLeft, RefreshCw, FileText } from "lucide-react";
 import GeneratingReportSkeleton from "@/components/planningmysaas/skeletons/GeneratingReportSkeleton";
 import ResumeOrRestartDialog from "@/components/planningmysaas/ResumeOrRestartDialog";
 import { useReportData } from "@/hooks/useReportData";
@@ -198,6 +198,11 @@ const PmsLoading = () => {
     navigate(`/planningmysaas/wizard?edit=${wizardId}`, { replace: true });
   }, [wizardId, navigate]);
   
+  // Handle go to reports
+  const handleGoToReports = useCallback(() => {
+    navigate('/planningmysaas/reports', { replace: true });
+  }, [navigate]);
+  
   // Show Resume/Restart dialog
   if (showResumeDialog && currentStepNumber) {
     return (
@@ -264,22 +269,32 @@ const PmsLoading = () => {
           </Alert>
           
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handleBackToWizard}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Wizard
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleRetryFailedStep}
+                disabled={isRetrying}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+                {isRetrying ? "Preparing..." : "Retry"}
+              </Button>
+            </div>
             <Button
-              variant="outline"
-              className="flex-1"
-              onClick={handleBackToWizard}
+              variant="ghost"
+              className="w-full"
+              onClick={handleGoToReports}
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Wizard
-            </Button>
-            <Button
-              className="flex-1"
-              onClick={handleRetryFailedStep}
-              disabled={isRetrying}
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
-              {isRetrying ? "Preparing..." : "Retry"}
+              <FileText className="w-4 h-4 mr-2" />
+              My Reports
             </Button>
           </div>
           
