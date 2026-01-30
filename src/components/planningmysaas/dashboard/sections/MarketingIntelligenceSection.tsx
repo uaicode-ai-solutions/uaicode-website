@@ -339,13 +339,8 @@ const MarketingIntelligenceSection = ({ onExploreMarketing }: MarketingIntellige
     null
   );
 
-  // Apply smart fallback for the entire ICP section
-  const { value: icpDataFallback, isLoading: icpLoading } = useSmartFallbackField<ICPIntelligenceSection | null>({
-    fieldPath: "icp_intelligence_section",
-    currentValue: rawIcpData,
-  });
-
-  const icpData = icpDataFallback || rawIcpData;
+  // Use ICP data directly from database (100% from tb_pms_reports JSONB)
+  const icpData = rawIcpData;
 
   // Get primary persona (first one)
   const primaryPersona = icpData?.primary_personas?.[0] || null;

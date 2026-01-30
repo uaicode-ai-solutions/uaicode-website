@@ -110,13 +110,13 @@ const InvestmentSection = () => {
     'hsl(var(--accent) / 0.5)',
   ];
 
-  // Breakdown items with updated names (using fallback values)
+  // Breakdown items with values from database (100% from section_investment JSONB)
   const breakdownItems = [
-    { name: "Frontend Development", value: getFallbackNumber(frontendFallback, mvpBreakdown.frontend), color: COLORS[0] },
-    { name: "Backend & API", value: getFallbackNumber(backendFallback, mvpBreakdown.backend), color: COLORS[1] },
-    { name: "Integrations", value: getFallbackNumber(integrationsFallback, mvpBreakdown.integrations), color: COLORS[2] },
-    { name: "Infrastructure", value: getFallbackNumber(infraFallback, mvpBreakdown.infra), color: COLORS[3] },
-    { name: "Testing & QA", value: getFallbackNumber(testingFallback, mvpBreakdown.testing), color: COLORS[4] },
+    { name: "Frontend Development", value: mvpBreakdown.frontend, color: COLORS[0] },
+    { name: "Backend & API", value: mvpBreakdown.backend, color: COLORS[1] },
+    { name: "Integrations", value: mvpBreakdown.integrations, color: COLORS[2] },
+    { name: "Infrastructure", value: mvpBreakdown.infra, color: COLORS[3] },
+    { name: "Testing & QA", value: mvpBreakdown.testing, color: COLORS[4] },
   ];
 
   // Fixed "What's Included" items
@@ -303,7 +303,7 @@ const InvestmentSection = () => {
             <div className="text-center mb-6">
               <p className="text-sm text-muted-foreground mb-1">Total MVP Investment</p>
               <div className="text-4xl md:text-5xl font-bold text-gradient-gold">
-                {investmentLoading ? <InlineValueSkeleton size="xl" /> : formatValueOrFallback(mvpBreakdown.onePayment)}
+                {formatValueOrFallback(mvpBreakdown.onePayment)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">One-time payment</p>
             </div>

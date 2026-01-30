@@ -130,28 +130,16 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
   const sectionInvestmentData = getSectionInvestment(reportData);
   const sectionInvestmentRaw = reportData?.section_investment as Record<string, unknown> | null;
   
-  // Apply smart fallback for viability score
-  const rawViabilityScore = heroScoreData?.score ?? (sectionInvestmentRaw?.viability_score as number | null);
-  const { value: viabilityScoreFallback, isLoading: scoreLoading } = useSmartFallbackField({
-    fieldPath: "hero_score_section.score",
-    currentValue: rawViabilityScore !== null && rawViabilityScore !== undefined ? String(rawViabilityScore) : undefined,
-  });
-  
-  // Viability score: prefer hero_score_section, fallback to section_investment
+  // Viability score: direct from database (hero_score_section or section_investment)
   const viabilityScore = safeNumber(
-    viabilityScoreFallback ? parseFloat(viabilityScoreFallback) : rawViabilityScore,
+    heroScoreData?.score ?? (sectionInvestmentRaw?.viability_score as number | null),
     0
   );
   
-  // Apply smart fallback for tagline
-  const rawTagline = heroScoreData?.tagline || (sectionInvestmentRaw?.verdict_headline as string | null);
-  const { value: taglineFallback, isLoading: taglineLoading } = useSmartFallbackField({
-    fieldPath: "hero_score_section.tagline",
-    currentValue: rawTagline || undefined,
-  });
-  
-  // Tagline: prefer hero_score_section, fallback to section_investment verdict_headline
-  const verdictHeadline = taglineFallback || "High viability, your idea has real traction potential.";
+  // Tagline: direct from database (hero_score_section or section_investment verdict_headline)
+  const verdictHeadline = heroScoreData?.tagline || 
+    (sectionInvestmentRaw?.verdict_headline as string | null) || 
+    "...";
   const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
   
   
