@@ -29,8 +29,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
 import { ICPIntelligenceSection, ICPPersona } from "@/types/report";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 // HIDDEN v1.0 - onExploreMarketing prop removed, will return in future version
 interface MarketingIntelligenceSectionProps {

@@ -4,8 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { getSectionInvestment } from "@/lib/sectionInvestmentUtils";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 // ==========================================
 // Fixed Execution Phases Data
@@ -158,44 +156,16 @@ const calculatePhaseWeeks = (
 // ==========================================
 
 const ExecutionPlanSection = () => {
-  const { reportData, wizardId } = useReportContext();
-  const wizardIdFromData = reportData?.wizard_id;
+  const { reportData } = useReportContext();
   
-  // Get section_investment data for delivery weeks
+  // Get section_investment data for delivery weeks (100% from database)
   const sectionInvestment = getSectionInvestment(reportData);
   
-  // Apply smart fallback for delivery weeks
-  const { value: minWeeksFallback, isLoading: minWeeksLoading } = useSmartFallbackField({
-    fieldPath: "section_investment.delivery_weeks_uaicode_min",
-    currentValue: sectionInvestment?.delivery_weeks_uaicode_min != null 
-      ? String(sectionInvestment.delivery_weeks_uaicode_min) 
-      : undefined,
-  });
+  // Use database values directly - show "..." when data is missing
+  const totalMinWeeks = sectionInvestment?.delivery_weeks_uaicode_min ?? null;
+  const totalMaxWeeks = sectionInvestment?.delivery_weeks_uaicode_max ?? null;
   
-  const { value: maxWeeksFallback, isLoading: maxWeeksLoading } = useSmartFallbackField({
-    fieldPath: "section_investment.delivery_weeks_uaicode_max",
-    currentValue: sectionInvestment?.delivery_weeks_uaicode_max != null 
-      ? String(sectionInvestment.delivery_weeks_uaicode_max) 
-      : undefined,
-  });
-  
-  const { value: mvpTierFallback, isLoading: mvpTierLoading } = useSmartFallbackField({
-    fieldPath: "section_investment.mvp_tier",
-    currentValue: sectionInvestment?.mvp_tier || undefined,
-  });
-  
-  // Use fallback values - show "..." if no data available instead of hardcoded defaults
-  const hasMinWeeksData = sectionInvestment?.delivery_weeks_uaicode_min != null || minWeeksFallback;
-  const hasMaxWeeksData = sectionInvestment?.delivery_weeks_uaicode_max != null || maxWeeksFallback;
-  
-  const totalMinWeeks = hasMinWeeksData
-    ? (minWeeksFallback ? parseInt(minWeeksFallback) : sectionInvestment!.delivery_weeks_uaicode_min!)
-    : null;
-  const totalMaxWeeks = hasMaxWeeksData
-    ? (maxWeeksFallback ? parseInt(maxWeeksFallback) : sectionInvestment!.delivery_weeks_uaicode_max!)
-    : null;
-  
-  const mvpTier = ((mvpTierFallback || sectionInvestment?.mvp_tier)?.toLowerCase() as "starter" | "growth" | "enterprise") ?? "growth";
+  const mvpTier = ((sectionInvestment?.mvp_tier)?.toLowerCase() as "starter" | "growth" | "enterprise") ?? "growth";
   
   // Get traditional weeks for comparison
   const traditionalMinWeeks = sectionInvestment?.delivery_weeks_traditional_min ?? null;
@@ -209,17 +179,12 @@ const ExecutionPlanSection = () => {
                   ((traditionalMinWeeks + traditionalMaxWeeks) / 2)) * 100)
     : null;
   
-  // Loading state
-  const isLoading = minWeeksLoading || maxWeeksLoading || mvpTierLoading;
-  
   // Total time display - show "..." when data is missing
-  const totalTimeDisplay = isLoading 
-    ? null 
-    : (totalMinWeeks === null || totalMaxWeeks === null)
-      ? "..."
-      : totalMinWeeks === totalMaxWeeks 
-        ? `${totalMinWeeks} weeks` 
-        : `${totalMinWeeks}-${totalMaxWeeks} weeks`;
+  const totalTimeDisplay = (totalMinWeeks === null || totalMaxWeeks === null)
+    ? "..."
+    : totalMinWeeks === totalMaxWeeks 
+      ? `${totalMinWeeks} weeks` 
+      : `${totalMinWeeks}-${totalMaxWeeks} weeks`;
 
   return (
     <section id="execution-plan" className="space-y-6 animate-fade-in">
@@ -401,13 +366,12 @@ const ExecutionPlanSection = () => {
                 <Clock className="h-4 w-4 text-amber-400" />
                 <span className="text-muted-foreground">Total estimated time:</span>
                 <span className="font-bold text-foreground text-lg">
-                  {isLoading ? <InlineValueSkeleton size="lg" /> : totalTimeDisplay}
+                  {totalTimeDisplay}
                 </span>
               </div>
               <Badge variant="outline" className="border-green-500/30 text-green-400 gap-1.5">
                 <Zap className="h-3 w-3" />
-                {isLoading ? <InlineValueSkeleton size="sm" /> : 
-                  fasterPercent !== null ? `${fasterPercent}% faster than traditional agencies` : "..."}
+                {fasterPercent !== null ? `${fasterPercent}% faster than traditional agencies` : "..."}
               </Badge>
             </div>
           </div>
@@ -448,26 +412,21 @@ const ExecutionPlanSection = () => {
                     </h4>
                   </div>
                   
-                  {/* Tech badges */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {stack.items.map((tech, idx) => (
-                      <Badge 
+                  {/* Technologies */}
+                  <div className="flex flex-wrap gap-1">
+                    {stack.items.map((item, idx) => (
+                      <span 
                         key={idx} 
-                        variant="outline" 
-                        className="text-[10px] bg-amber-500/10 border-amber-500/20 text-amber-400 px-2 py-0.5 hover:bg-amber-500/15 transition-colors"
+                        className="text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-foreground"
                       >
-                        {tech}
-                      </Badge>
+                        {item}
+                      </span>
                     ))}
                   </div>
                 </div>
               );
             })}
           </div>
-
-          <p className="text-xs text-muted-foreground mt-4 italic">
-            * Modern and scalable stack, chosen based on specific project needs
-          </p>
         </CardContent>
       </Card>
     </section>

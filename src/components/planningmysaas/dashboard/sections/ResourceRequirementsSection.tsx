@@ -4,8 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField, emptyStates } from "@/lib/reportDataUtils";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 
 interface ResourceRequirementsData {
   founderTime: {
@@ -20,19 +18,12 @@ interface ResourceRequirementsData {
 }
 
 const ResourceRequirementsSection = () => {
-  const { report, reportData, wizardId } = useReportContext();
-  const wizardIdFromData = reportData?.wizard_id;
+  const { report, reportData } = useReportContext();
   
-  // Parse resource requirements from report
+  // Parse resource requirements from report (100% from database)
   const rawResourceRequirements = parseJsonField<ResourceRequirementsData>(report?.resource_requirements, null);
   
-  // Smart fallback for resource requirements
-  const { value: fallbackResourceRequirements, isLoading } = useSmartFallbackField<ResourceRequirementsData>({
-    fieldPath: "resource_requirements",
-    currentValue: rawResourceRequirements,
-  });
-  
-  const resourceRequirements = fallbackResourceRequirements ?? rawResourceRequirements ?? emptyStates.resourceRequirements;
+  const resourceRequirements = rawResourceRequirements ?? emptyStates.resourceRequirements;
 
   const getImportanceColor = (importance: string) => {
     switch (importance?.toLowerCase()) {
@@ -50,37 +41,8 @@ const ResourceRequirementsSection = () => {
     { ...founderTime.phase4, phase: 4 },
   ] : [];
   
-  // Early return if no data and loading
-  if (!rawResourceRequirements && isLoading) {
-    return (
-      <section id="resource-requirements" className="space-y-6 animate-fade-in">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-accent/10">
-            <Users className="h-5 w-5 text-accent" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Beyond the Money</h2>
-            <p className="text-sm text-muted-foreground">Loading resource requirements...</p>
-          </div>
-        </div>
-        <div className="grid lg:grid-cols-2 gap-6">
-          <Card className="bg-card/50 border-border/30">
-            <CardContent className="p-5">
-              <CardContentSkeleton lines={4} />
-            </CardContent>
-          </Card>
-          <Card className="bg-card/50 border-border/30">
-            <CardContent className="p-5">
-              <CardContentSkeleton lines={4} />
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    );
-  }
-  
   // Early return if no data
-  if (!rawResourceRequirements && !fallbackResourceRequirements) {
+  if (!rawResourceRequirements) {
     return (
       <section id="resource-requirements" className="space-y-6 animate-fade-in">
         <div className="flex items-center gap-3">

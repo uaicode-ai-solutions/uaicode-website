@@ -7,8 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { SummarySection } from "@/types/report";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { FallbackSkeleton, CardContentSkeleton } from "@/components/ui/fallback-skeleton";
 import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
 
 const ExecutiveVerdict = () => {
@@ -17,22 +15,14 @@ const ExecutiveVerdict = () => {
   // Get validated financial metrics for syncing with summary text
   const financialMetrics = useFinancialMetrics(reportData, report?.market_type);
   
-  // Get summary data from summary_section JSONB (prefer over legacy fields)
+  // Get summary data from summary_section JSONB (100% from database)
   const summaryData = reportData?.summary_section as SummarySection | null;
   
-  // Use smart fallback for verdict
-  const rawVerdict = summaryData?.verdict || report?.verdict;
-  const { value: verdict, isLoading: verdictLoading } = useSmartFallbackField<string>({
-    fieldPath: "summary_section.verdict",
-    currentValue: rawVerdict,
-  });
+  // Verdict: Direct from database
+  const verdict = summaryData?.verdict || "...";
 
-  // Use smart fallback for verdict_summary
-  const rawVerdictSummary = summaryData?.verdict_summary || report?.verdict_summary;
-  const { value: verdictSummary, isLoading: summaryLoading } = useSmartFallbackField<string>({
-    fieldPath: "summary_section.verdict_summary",
-    currentValue: rawVerdictSummary,
-  });
+  // Verdict Summary: Direct from database
+  const verdictSummary = summaryData?.verdict_summary || "";
 
   // Sync metrics in summary text with validated financial data to prevent contradictions
   const syncMetricsInText = (text: string): string => {
@@ -68,7 +58,7 @@ const ExecutiveVerdict = () => {
   };
 
   // Apply metric sync to verdict summary
-  const syncedVerdictSummary = syncMetricsInText(verdictSummary || "");
+  const syncedVerdictSummary = syncMetricsInText(verdictSummary);
 
   // Parse executive summary into bullet points for better readability
   const summaryParagraphs = syncedVerdictSummary.split('\n\n').filter(p => p.trim());
@@ -98,13 +88,9 @@ const ExecutiveVerdict = () => {
         </div>
         <div>
           <span className="text-sm text-muted-foreground">Our Recommendation:</span>
-          {verdictLoading ? (
-            <FallbackSkeleton size="lg" className="mt-1" />
-          ) : (
-            <div className="text-xl font-bold text-green-400">
-              {verdict || "..."}
-            </div>
-          )}
+          <div className="text-xl font-bold text-green-400">
+            {verdict}
+          </div>
         </div>
       </div>
 
@@ -117,9 +103,7 @@ const ExecutiveVerdict = () => {
               AI-generated executive summary of your SaaS idea's viability and market potential.
             </InfoTooltip>
           </div>
-          {summaryLoading ? (
-            <CardContentSkeleton lines={4} />
-          ) : summaryParagraphs.length > 0 ? (
+          {summaryParagraphs.length > 0 ? (
             <div className="space-y-3">
               {summaryParagraphs.map((paragraph, index) => (
                 <div 

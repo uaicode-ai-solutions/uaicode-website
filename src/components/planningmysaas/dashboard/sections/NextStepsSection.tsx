@@ -41,8 +41,6 @@ import KyleAvatar from "@/components/chat/KyleAvatar";
 import EmailContactDialog from "@/components/chat/EmailContactDialog";
 import { getSectionInvestment, getDiscountStrategy, getDiscountSavings } from "@/lib/sectionInvestmentUtils";
 import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
-import { useSmartFallbackField } from "@/hooks/useSmartFallbackField";
-import { InlineValueSkeleton } from "@/components/ui/fallback-skeleton";
 
 
 // Countdown Timer Hook
