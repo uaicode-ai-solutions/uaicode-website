@@ -571,6 +571,16 @@ export interface GrowthIntelligenceSection {
 // Paid Media Intelligence Section (from tb_pms_reports.paid_media_intelligence_section)
 // ==========================================
 
+/** Pre-calculated metrics from n8n pipeline */
+export interface PaidMediaCalculatedMetrics {
+  competitive_position?: {
+    label: string;           // "Strong" | "Moderate" | "Emerging"
+    percent: number;         // 0-100
+    gaps_count: number;      // Number of exploitable gaps
+  };
+  expected_roas_percent?: number;  // 300 = 3.0x
+}
+
 export interface PaidMediaIntelligenceSection {
   performance_targets?: {
     target_cac?: string;                    // "$231"
@@ -618,14 +628,25 @@ export interface PaidMediaIntelligenceSection {
       kpis?: string[];
     };
   };
+  
+  /** Pre-calculated metrics from n8n (eliminates frontend calculations) */
+  calculated_metrics?: PaidMediaCalculatedMetrics;
+  
   _metadata?: {
     citations?: string[];
     citations_count?: number;
     raw_values?: {
       target_cac?: number;
       ltv_cac_ratio?: number;
-      budget_monthly?: number;
+      budget_monthly?: number | string;  // Supports "$5,600" or 5600
     };
+    // Versioning and provenance
+    parser_version?: string;
+    calculator_version?: string;
+    calculated_at?: string;
+    input_type?: string;
+    perplexity_model?: string;
+    perplexity_cost?: number;
   };
 }
 
