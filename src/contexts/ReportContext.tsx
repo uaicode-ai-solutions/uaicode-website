@@ -3,7 +3,6 @@ import { useReport } from "@/hooks/useReport";
 import { useReportData } from "@/hooks/useReportData";
 import { ReportRow, ReportData } from "@/types/report";
 import { MarketingTotals } from "@/hooks/useMarketingTiers";
-import { useFallbackAgent, UseFallbackAgentReturn } from "@/hooks/useFallbackAgent";
 import { useQueryClient } from "@tanstack/react-query";
 
 /**
@@ -29,10 +28,6 @@ interface ReportContextType {
   setSelectedMarketingIds: (ids: string[]) => void;
   marketingTotals: MarketingTotals;
   setMarketingTotals: (totals: MarketingTotals) => void;
-  // Fallback agent for intelligent data fetching
-  fallbackAgent: UseFallbackAgentReturn | null;
-  // Refresh report data after fallback updates
-  refreshReportData: () => Promise<void>;
 }
 
 const ReportContext = createContext<ReportContextType | undefined>(undefined);
@@ -50,9 +45,6 @@ export const ReportProvider = ({ wizardId, children }: ReportProviderProps) => {
   // Extract the actual tb_pms_reports.id for polling/status checks
   const pmsReportId = reportData?.id;
 
-  // Initialize fallback agent
-  const fallbackAgent = useFallbackAgent();
-
   // Marketing selection state (shared between sections)
   const [selectedMarketingIds, setSelectedMarketingIds] = useState<string[]>([]);
   const [marketingTotals, setMarketingTotals] = useState<MarketingTotals>({
@@ -67,15 +59,6 @@ export const ReportProvider = ({ wizardId, children }: ReportProviderProps) => {
     annualSavingsMax: 0,
   });
 
-  // Function to refresh report data after fallback agent updates
-  const refreshReportData = useCallback(async () => {
-    if (wizardId) {
-      // Invalidate both queries with the new standardized keys
-      await queryClient.invalidateQueries({ queryKey: ["wizard", wizardId] });
-      await queryClient.invalidateQueries({ queryKey: ["pms-report-data", wizardId] });
-    }
-  }, [wizardId, queryClient]);
-
   return (
     <ReportContext.Provider
       value={{
@@ -89,8 +72,6 @@ export const ReportProvider = ({ wizardId, children }: ReportProviderProps) => {
         setSelectedMarketingIds,
         marketingTotals,
         setMarketingTotals,
-        fallbackAgent,
-        refreshReportData,
       }}
     >
       {children}
