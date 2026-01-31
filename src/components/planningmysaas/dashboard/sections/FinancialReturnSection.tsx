@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
-import { formatCurrency } from "@/lib/financialParsingUtils";
+import { formatCurrency } from "@/lib/currencyFormatter";
 import { JCurveChart } from "@/components/planningmysaas/dashboard/JCurveChart";
 import { 
   calculateSuggestedPaidMedia, 

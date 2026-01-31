@@ -209,40 +209,10 @@ export function parseCustomerRange(value: string | null | undefined): MoneyRange
 }
 
 /**
- * Format number as currency string
- * Handles scientific notation strings from Supabase JSONB (e.g., "1.45e+07")
+ * Format number as currency string (LEGACY - Re-exported from currencyFormatter)
+ * @deprecated Use formatCurrency from '@/lib/currencyFormatter' instead
  */
-export function formatCurrency(value: number | string | null | undefined, fallback = "..."): string {
-  if (value === null || value === undefined) return fallback;
-  
-  let numValue: number;
-  
-  if (typeof value === 'string') {
-    // If already formatted string with currency symbols, return it
-    if (value.includes('$') || value.includes('K') || value.includes('M') || value.includes('B')) {
-      return value;
-    }
-    // Use Number() to handle scientific notation (e.g., "1.45e+07")
-    // DO NOT use regex replacement as it destroys scientific notation
-    numValue = Number(value);
-    if (isNaN(numValue)) return fallback;
-  } else {
-    numValue = value;
-  }
-  
-  if (typeof numValue !== 'number' || isNaN(numValue)) return fallback;
-  
-  if (numValue >= 1000000000) {
-    return `$${(numValue / 1000000000).toFixed(1)}B`;
-  }
-  if (numValue >= 1000000) {
-    return `$${(numValue / 1000000).toFixed(1)}M`;
-  }
-  if (numValue >= 1000) {
-    return `$${(numValue / 1000).toFixed(0)}K`;
-  }
-  return `$${numValue.toFixed(0)}`;
-}
+export { formatCurrency, formatCurrencyExact, formatCurrencyCompact } from './currencyFormatter';
 
 /**
  * Format percentage
