@@ -19,7 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Slider } from "@/components/ui/slider";
-import { formatCurrency } from "@/lib/financialParsingUtils";
+import { formatCurrency } from "@/lib/currencyFormatter";
 
 interface WhatIfScenariosProps {
   currentArpu: number;
