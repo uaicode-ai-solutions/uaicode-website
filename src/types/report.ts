@@ -794,6 +794,8 @@ export interface ReportData {
   summary_section: unknown | null;
   // Market benchmarks from n8n research pipeline
   benchmark_section: unknown | null;
+  // Business Plan document (from n8n Business Plan AI pipeline)
+  business_plan_section: unknown | null;
   // Generated avatar URL
   icp_avatar_url: string | null;
 }
@@ -1670,6 +1672,43 @@ export function calculateDynamicPrice(
     max: tier.max_price_cents,
     calculated: Math.round(calculatedCents)
   };
+}
+
+// ==========================================
+// Business Plan Section (from n8n Business Plan AI pipeline)
+// ==========================================
+
+export interface BusinessPlanChartsData {
+  market_sizing?: {
+    tam: string;
+    sam: string;
+    som: string;
+  };
+  financial_projections?: {
+    month_6_mrr: string;
+    year_1_arr: string;
+    year_2_arr: string;
+  };
+  competitor_pricing?: Array<{
+    name: string;
+    min_price: number;
+    max_price: number;
+  }>;
+  investment_breakdown?: Array<{
+    category: string;
+    amount: number;
+  }>;
+}
+
+export interface BusinessPlanSection {
+  title: string;
+  subtitle: string;
+  generated_at: string;
+  viability_score: number;
+  viability_label: string;
+  markdown_content: string;
+  charts_data: BusinessPlanChartsData;
+  word_count: number;
 }
 
 // ==========================================

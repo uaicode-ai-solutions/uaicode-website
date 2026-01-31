@@ -14,7 +14,8 @@ import {
   Link,
   Mail,
   RefreshCw,
-  Shield
+  Shield,
+  Briefcase
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ import NextStepsSection from "@/components/planningmysaas/dashboard/sections/Nex
 import ScheduleCallSection from "@/components/planningmysaas/dashboard/sections/ScheduleCallSection";
 import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/BrandAssetsTab";
 import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
+import BusinessPlanTab from "@/components/planningmysaas/dashboard/sections/BusinessPlanTab";
 import ShareReportDialog from "@/components/planningmysaas/dashboard/ShareReportDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -384,6 +386,7 @@ const PmsDashboardContent = () => {
             <div className="flex justify-center">
               {[
                 { id: "report", label: "Report", icon: FileText },
+                { id: "businessplan", label: "Business Plan", icon: Briefcase },
                 // { id: "marketing", label: "Marketing", icon: TrendingUp }, // HIDDEN v1.0 - will return in future version
                 // { id: "assets", label: "Branding", icon: Palette }, // HIDDEN v1.0 - will return in future version
               ].map((tab) => {
@@ -457,6 +460,10 @@ const PmsDashboardContent = () => {
                   <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
                   <ScheduleCallSection projectName={projectName} />
                 </div>
+            )}
+
+            {activeTab === "businessplan" && (
+              <BusinessPlanTab />
             )}
 
             {/* HIDDEN v1.0 - Marketing tab will return in future version
