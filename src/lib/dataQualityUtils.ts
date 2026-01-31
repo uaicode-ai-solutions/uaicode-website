@@ -73,7 +73,7 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
     });
   } else if (heroScore) {
     // Check specific critical fields
-    if (typeof heroScore.score !== 'number' || heroScore.score === 0) {
+    if (typeof heroScore.score !== 'number') {
       issues.push({
         id: 'hero_score_missing',
         type: 'missing',
@@ -181,44 +181,23 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
       });
     }
     
-    // Check demand signals parsing
-    const demandSignals = getNestedValue(opportunity, 'demand_signals') as Record<string, unknown> | undefined;
-    if (demandSignals) {
-      const monthlySearches = demandSignals.monthly_searches;
-      const monthlySearchesNumeric = demandSignals.monthly_searches_numeric;
-      
-      if (hasParsingIssue(monthlySearches, monthlySearchesNumeric)) {
-        issues.push({
-          id: 'monthly_searches_parsing',
-          type: 'parsing',
-          severity: 'info',
-          field: 'monthly_searches',
-          jsonPath: 'opportunity_section.demand_signals.monthly_searches',
-          dbColumn: 'opportunity_section',
-          currentValue: { text: monthlySearches, numeric: monthlySearchesNumeric },
-          message: 'Monthly searches numeric value could not be parsed'
-        });
-      }
-      
-      // Check social mentions parsing
-      const socialMentions = demandSignals.social_mentions as Record<string, unknown> | undefined;
-      if (socialMentions) {
-        const mentions = socialMentions.monthly_mentions;
-        const mentionsNumeric = socialMentions.monthly_mentions_numeric;
-        
-        if (hasParsingIssue(mentions, mentionsNumeric)) {
-          issues.push({
-            id: 'social_mentions_parsing',
-            type: 'parsing',
-            severity: 'info',
-            field: 'monthly_mentions',
-            jsonPath: 'opportunity_section.demand_signals.social_mentions.monthly_mentions',
-            dbColumn: 'opportunity_section',
-            currentValue: { text: mentions, numeric: mentionsNumeric },
-            message: 'Social mentions numeric value could not be parsed'
-          });
-        }
-      }
+    // Check demand signals - simplified validation (text fields are sufficient)
+    // Note: monthly_searches_numeric is not always present, so we only check for text values
+    const hasMonthlySearches = opportunity.monthly_searches && String(opportunity.monthly_searches).trim() !== '';
+    const hasSearchTrend = opportunity.search_trend && String(opportunity.search_trend).trim() !== '';
+    const hasDemandEvidence = opportunity.demand_evidence && typeof opportunity.demand_evidence === 'object';
+    
+    if (!hasMonthlySearches && !hasSearchTrend && !hasDemandEvidence) {
+      issues.push({
+        id: 'demand_signals_missing',
+        type: 'missing',
+        severity: 'info',
+        field: 'demand_signals',
+        jsonPath: 'opportunity_section.monthly_searches',
+        dbColumn: 'opportunity_section',
+        currentValue: { monthly_searches: opportunity.monthly_searches, search_trend: opportunity.search_trend },
+        message: 'Demand signals data is missing'
+      });
     }
     
     // Check macro trends strength values
@@ -261,8 +240,13 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
       message: 'Competitive analysis is missing'
     });
   } else if (competitive) {
-    const competitors = competitive.competitors as unknown[] | undefined;
-    if (!competitors || competitors.length === 0) {
+    // n8n sends competitors as object {competitor_1: {...}, competitor_2: {...}} OR array
+    const competitors = competitive.competitors;
+    const hasCompetitors = Array.isArray(competitors)
+      ? competitors.length > 0
+      : (competitors && typeof competitors === 'object' && Object.keys(competitors).length > 0);
+    
+    if (!hasCompetitors) {
       issues.push({
         id: 'competitors_missing',
         type: 'missing',
@@ -292,8 +276,12 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
       message: 'Customer persona data is missing'
     });
   } else if (icp) {
-    const personas = icp.primary_personas as unknown[] | undefined;
-    if (!personas || personas.length === 0) {
+    // UI uses persona + demographics (n8n v1.7.0+) OR primary_personas (legacy)
+    const hasPersonas = icp.primary_personas && Array.isArray(icp.primary_personas) && (icp.primary_personas as unknown[]).length > 0;
+    const hasLegacyPersona = icp.persona && typeof icp.persona === 'object';
+    const hasDemographics = icp.demographics && typeof icp.demographics === 'object';
+    
+    if (!hasPersonas && !hasLegacyPersona && !hasDemographics) {
       issues.push({
         id: 'personas_missing',
         type: 'missing',
@@ -301,8 +289,8 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
         field: 'primary_personas',
         jsonPath: 'icp_intelligence_section.primary_personas',
         dbColumn: 'icp_intelligence_section',
-        currentValue: personas ?? null,
-        message: 'Customer personas list is empty'
+        currentValue: { primary_personas: icp.primary_personas, persona: icp.persona, demographics: icp.demographics },
+        message: 'Customer persona data is missing'
       });
     }
   }
@@ -323,16 +311,20 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
       message: 'Pricing intelligence is missing'
     });
   } else if (price) {
-    if (!price.pricing_strategy) {
+    // UI uses unit_economics and recommended_model (via useFinancialMetrics)
+    const hasUnitEconomics = price.unit_economics && typeof price.unit_economics === 'object';
+    const hasRecommendedModel = price.recommended_model && String(price.recommended_model).trim() !== '';
+    
+    if (!hasUnitEconomics && !hasRecommendedModel) {
       issues.push({
-        id: 'pricing_strategy_missing',
+        id: 'pricing_data_missing',
         type: 'missing',
         severity: 'info',
-        field: 'pricing_strategy',
-        jsonPath: 'price_intelligence_section.pricing_strategy',
+        field: 'unit_economics',
+        jsonPath: 'price_intelligence_section.unit_economics',
         dbColumn: 'price_intelligence_section',
-        currentValue: price.pricing_strategy ?? null,
-        message: 'Pricing strategy is missing'
+        currentValue: { unit_economics: price.unit_economics, recommended_model: price.recommended_model },
+        message: 'Pricing unit economics data is missing'
       });
     }
   }
@@ -353,17 +345,20 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
       message: 'Paid media analysis is missing'
     });
   } else if (paidMedia) {
-    const channels = paidMedia.channels as unknown[] | undefined;
-    if (!channels || channels.length === 0) {
+    // UI uses performance_targets and budget_strategy (via useFinancialMetrics)
+    const hasPerformanceTargets = paidMedia.performance_targets && typeof paidMedia.performance_targets === 'object';
+    const hasBudgetStrategy = paidMedia.budget_strategy && typeof paidMedia.budget_strategy === 'object';
+    
+    if (!hasPerformanceTargets && !hasBudgetStrategy) {
       issues.push({
-        id: 'paid_media_channels_missing',
+        id: 'paid_media_targets_missing',
         type: 'missing',
         severity: 'info',
-        field: 'channels',
-        jsonPath: 'paid_media_intelligence_section.channels',
+        field: 'performance_targets',
+        jsonPath: 'paid_media_intelligence_section.performance_targets',
         dbColumn: 'paid_media_intelligence_section',
-        currentValue: channels ?? null,
-        message: 'Paid media channels list is empty'
+        currentValue: { performance_targets: paidMedia.performance_targets, budget_strategy: paidMedia.budget_strategy },
+        message: 'Paid media targets are missing'
       });
     }
   }
@@ -384,49 +379,31 @@ export function checkDataQuality(reportData: ReportData | null | undefined): Dat
       message: 'Growth projections are missing'
     });
   } else if (growth) {
-    if (!growth.growth_targets) {
+    // UI prioritizes financial_metrics (n8n v1.7.0+) over growth_targets (legacy)
+    const hasFinancialMetrics = growth.financial_metrics && typeof growth.financial_metrics === 'object';
+    const hasGrowthTargets = growth.growth_targets && typeof growth.growth_targets === 'object';
+    
+    if (!hasFinancialMetrics && !hasGrowthTargets) {
       issues.push({
-        id: 'growth_targets_missing',
+        id: 'growth_data_missing',
         type: 'missing',
         severity: 'info',
-        field: 'growth_targets',
-        jsonPath: 'growth_intelligence_section.growth_targets',
+        field: 'financial_metrics',
+        jsonPath: 'growth_intelligence_section.financial_metrics',
         dbColumn: 'growth_intelligence_section',
-        currentValue: growth.growth_targets ?? null,
-        message: 'Growth targets are missing'
+        currentValue: { financial_metrics: growth.financial_metrics, growth_targets: growth.growth_targets },
+        message: 'Financial metrics and growth targets are missing'
       });
     }
   }
   
   // ========================================
-  // 10. BENCHMARK SECTION
+  // 10. BENCHMARK SECTION - REMOVED
   // ========================================
-  const benchmark = reportData.benchmark_section as Record<string, unknown> | null;
-  if (isEmptyJsonb(benchmark)) {
-    issues.push({
-      id: 'benchmark_section_empty',
-      type: 'missing',
-      severity: 'warning',
-      field: 'benchmark_section',
-      jsonPath: 'benchmark_section',
-      dbColumn: 'benchmark_section',
-      currentValue: benchmark,
-      message: 'Market benchmarks are missing'
-    });
-  } else if (benchmark) {
-    if (!benchmark.market_benchmarks) {
-      issues.push({
-        id: 'market_benchmarks_missing',
-        type: 'missing',
-        severity: 'info',
-        field: 'market_benchmarks',
-        jsonPath: 'benchmark_section.market_benchmarks',
-        dbColumn: 'benchmark_section',
-        currentValue: benchmark.market_benchmarks ?? null,
-        message: 'Market benchmark data is missing'
-      });
-    }
-  }
+  // Note: benchmark_section is 100% internal to n8n workflows
+  // It is NOT used in any UI component, only for validation/capping calculations
+  // Therefore, we do not validate it here to avoid false positives
+  
   
   return issues;
 }
