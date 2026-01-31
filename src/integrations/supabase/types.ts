@@ -278,6 +278,7 @@ export type Database = {
       tb_pms_reports: {
         Row: {
           benchmark_section: Json | null
+          business_plan_section: Json | null
           competitive_analysis_section: Json | null
           created_at: string
           growth_intelligence_section: Json | null
@@ -296,6 +297,7 @@ export type Database = {
         }
         Insert: {
           benchmark_section?: Json | null
+          business_plan_section?: Json | null
           competitive_analysis_section?: Json | null
           created_at?: string
           growth_intelligence_section?: Json | null
@@ -314,6 +316,7 @@ export type Database = {
         }
         Update: {
           benchmark_section?: Json | null
+          business_plan_section?: Json | null
           competitive_analysis_section?: Json | null
           created_at?: string
           growth_intelligence_section?: Json | null
