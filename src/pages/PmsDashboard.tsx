@@ -81,6 +81,7 @@ const PmsDashboardContent = () => {
   const { id: wizardId } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState("report");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [pdfErrorDialog, setPdfErrorDialog] = useState<{
@@ -161,12 +162,56 @@ const PmsDashboardContent = () => {
     console.log("Logged out");
   };
 
+  // Generate a cryptographically secure share token
+  const generateShareToken = (): string => {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+  };
+
+  // Get or create public share URL
+  const getOrCreateShareUrl = async (): Promise<string> => {
+    // Check if report already has an active share token
+    const currentShareToken = (reportData as { share_token?: string; share_enabled?: boolean })?.share_token;
+    const shareEnabled = (reportData as { share_enabled?: boolean })?.share_enabled;
+    
+    if (currentShareToken && shareEnabled) {
+      return `${window.location.origin}/planningmysaas/shared/${currentShareToken}`;
+    }
+    
+    // Generate new token
+    const token = generateShareToken();
+    
+    // Update report with share token
+    const { error } = await supabase
+      .from("tb_pms_reports")
+      .update({ 
+        share_token: token, 
+        share_enabled: true,
+        share_created_at: new Date().toISOString()
+      })
+      .eq("wizard_id", wizardId);
+    
+    if (error) {
+      console.error("[PmsDashboard] Failed to save share token:", error);
+      throw new Error("Failed to generate share link");
+    }
+    
+    // Invalidate cache to reflect the change
+    await queryClient.invalidateQueries({ 
+      queryKey: ["pms-report-data", wizardId] 
+    });
+    
+    return `${window.location.origin}/planningmysaas/shared/${token}`;
+  };
+
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      console.log("Link copied to clipboard");
+      const publicUrl = await getOrCreateShareUrl();
+      await navigator.clipboard.writeText(publicUrl);
+      console.log("Public link copied to clipboard");
     } catch (error) {
-      console.error("Failed to copy link:", error);
+      console.error("Failed to generate share link:", error);
     }
   };
 
@@ -369,7 +414,15 @@ const PmsDashboardContent = () => {
                     Copy Link
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    onClick={() => setShareDialogOpen(true)} 
+                    onClick={async () => {
+                      try {
+                        const url = await getOrCreateShareUrl();
+                        setShareUrl(url);
+                        setShareDialogOpen(true);
+                      } catch (err) {
+                        console.error("Failed to open share dialog:", err);
+                      }
+                    }} 
                     className="cursor-pointer"
                   >
                     <Mail className="h-4 w-4 mr-2" />
@@ -550,7 +603,7 @@ const PmsDashboardContent = () => {
       <ShareReportDialog
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
-        reportUrl={window.location.href}
+        reportUrl={shareUrl || window.location.href}
         projectName={projectName}
       />
 
