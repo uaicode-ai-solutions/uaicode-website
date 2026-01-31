@@ -1,210 +1,220 @@
 
-# Plano: Substituir Console.error por Popups de Erro no Export PDF
+# Plano: Corrigir Problemas no PDF Export
 
-## Objetivo
+## Problemas Identificados
 
-Alterar o tratamento de erros do "Export to PDF" para exibir popups (AlertDialog) ao invés de apenas logar no console, garantindo feedback visual claro para o usuário.
-
----
-
-## 1. Cenários de Erro
-
-| Cenário | Mensagem do Popup |
-|---------|-------------------|
-| **Business Plan vazio** | "Business Plan is not available. Please ensure the report has been fully generated before exporting." |
-| **Erro no jsPDF** | "An error occurred while generating the PDF. Please try again or contact support if the problem persists." |
+| Problema | Causa | Solução |
+|----------|-------|---------|
+| **Tabelas duplicadas** | Markdown contém tabelas + placeholders `[CHART:xxx]`, ambos são renderizados | Detectar e pular linhas de tabela markdown que precedem charts |
+| **Caracteres corrompidos** | jsPDF não suporta Unicode/emojis (ex: 📊, ✓, →) | Sanitizar texto removendo/substituindo caracteres não-ASCII |
+| **Footer inconsistente** | Footer é adicionado apenas no `checkPageBreak`, não na última página | Garantir footer em todas as páginas incluindo a final |
 
 ---
 
-## 2. Arquivos a Modificar
+## 1. Sanitização de Caracteres Unicode/Emojis
+
+### 1.1 Nova Função Helper
+
+```typescript
+const sanitizeTextForPDF = (text: string): string => {
+  return text
+    // Remove emojis e símbolos Unicode
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, "") // Emojis
+    .replace(/[\u{2600}-\u{26FF}]/gu, "")   // Misc symbols
+    .replace(/[\u{2700}-\u{27BF}]/gu, "")   // Dingbats
+    .replace(/[\u{FE00}-\u{FE0F}]/gu, "")   // Variation selectors
+    // Substituir caracteres especiais por equivalentes ASCII
+    .replace(/[""]/g, '"')           // Smart quotes
+    .replace(/['']/g, "'")           // Smart apostrophes
+    .replace(/[–—]/g, "-")           // Dashes
+    .replace(/…/g, "...")            // Ellipsis
+    .replace(/[•·]/g, "-")           // Bullets (serão re-adicionados como •)
+    .replace(/[→←↑↓]/g, "->")        // Arrows
+    .replace(/[✓✔]/g, "[x]")         // Checkmarks
+    .replace(/[✗✘]/g, "[_]")         // X marks
+    .replace(/[★☆]/g, "*")           // Stars
+    .replace(/©/g, "(c)")            // Copyright
+    .replace(/®/g, "(R)")            // Registered
+    .replace(/™/g, "(TM)")           // Trademark
+    .replace(/°/g, " deg")           // Degree
+    .replace(/[^\x00-\x7F]/g, "");   // Remove any remaining non-ASCII
+};
+```
+
+### 1.2 Aplicar Sanitização
+
+Aplicar `sanitizeTextForPDF()` em:
+- `stripMarkdownFormatting()` - após processar formatação
+- Título do projeto na cover
+- Subtitle na cover
+- viability_label na cover
+
+---
+
+## 2. Remoção de Tabelas Markdown Duplicadas
+
+### 2.1 Estratégia
+
+O markdown contém estruturas como:
+
+```markdown
+| Market | Value |
+|--------|-------|
+| TAM    | $102B |
+
+[CHART:market_sizing]
+```
+
+Precisamos detectar e pular essas linhas de tabela que precedem um `[CHART:xxx]`.
+
+### 2.2 Pré-processamento do Markdown
+
+```typescript
+const preprocessMarkdown = (markdown: string): string => {
+  const lines = markdown.split("\n");
+  const result: string[] = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    
+    // Check if this is a table line (starts with |)
+    if (trimmed.startsWith("|")) {
+      // Look ahead to find if there's a CHART placeholder after this table
+      let j = i + 1;
+      let isTableBeforeChart = false;
+      
+      // Skip remaining table lines
+      while (j < lines.length && lines[j].trim().startsWith("|")) {
+        j++;
+      }
+      // Skip empty lines between table and chart
+      while (j < lines.length && lines[j].trim() === "") {
+        j++;
+      }
+      // Check if next non-empty line is a chart placeholder
+      if (j < lines.length && lines[j].trim().match(/\[CHART:\w+\]/)) {
+        isTableBeforeChart = true;
+      }
+      
+      if (isTableBeforeChart) {
+        // Skip all table lines until we reach non-table content
+        while (i < lines.length && lines[i].trim().startsWith("|")) {
+          i++;
+        }
+        i--; // Adjust for loop increment
+        continue;
+      }
+    }
+    
+    result.push(line);
+  }
+  
+  return result.join("\n");
+};
+```
+
+### 2.3 Uso no generateBusinessPlanPDF
+
+```typescript
+// Antes de processar as linhas
+const cleanedMarkdown = preprocessMarkdown(businessPlan.markdown_content || "");
+const lines = cleanedMarkdown.split("\n");
+```
+
+---
+
+## 3. Footer Consistente em Todas as Páginas
+
+### 3.1 Problema Atual
+
+O footer só é adicionado quando há quebra de página via `checkPageBreak()`. A última página não recebe footer.
+
+### 3.2 Solução
+
+Adicionar footer na última página antes do `pdf.save()`:
+
+```typescript
+// Final page footer
+addPageFooter(pdf, pageNumber.value);
+
+// Save PDF
+const timestamp = new Date().toISOString().split("T")[0];
+const filename = `BusinessPlan_${sanitizeFilename(projectName)}_${timestamp}.pdf`;
+pdf.save(filename);
+```
+
+### 3.3 Padronizar Footer
+
+O footer já está correto, mas vamos garantir uma linha separadora sutil:
+
+```typescript
+const addPageFooter = (pdf: jsPDF, pageNumber: number): void => {
+  const y = PAGE_HEIGHT - 10;
+  
+  // Subtle separator line
+  pdf.setDrawColor(...COLORS.lightGray);
+  pdf.setLineWidth(0.2);
+  pdf.line(MARGIN, y - 5, PAGE_WIDTH - MARGIN, y - 5);
+  
+  // Footer text
+  pdf.setFontSize(8);
+  pdf.setTextColor(...COLORS.muted);
+  pdf.setFont("helvetica", "normal");
+  pdf.text(`Page ${pageNumber}`, MARGIN, y);
+  pdf.text("uaicode.ai | PlanningMySaaS", PAGE_WIDTH - MARGIN, y, { align: "right" });
+};
+```
+
+---
+
+## 4. Resumo das Alterações em businessPlanPdfExport.ts
+
+| Seção | Alteração |
+|-------|-----------|
+| **Helpers (linha ~30)** | Adicionar `sanitizeTextForPDF()` |
+| **Helpers (linha ~55)** | Adicionar `preprocessMarkdown()` |
+| **stripMarkdownFormatting** | Integrar `sanitizeTextForPDF()` |
+| **addPageFooter** | Adicionar linha separadora sutil |
+| **Cover page texts** | Aplicar sanitização em title, subtitle, viability_label |
+| **Content processing** | Usar `preprocessMarkdown()` antes do split |
+| **Final page** | Garantir `addPageFooter()` antes do save |
+
+---
+
+## 5. Fluxo Corrigido
+
+```text
+[markdown_content]
+       │
+       ▼
+[preprocessMarkdown()] ─► Remove tabelas antes de [CHART:xxx]
+       │
+       ▼
+[split("\n")]
+       │
+       ▼
+[parseMarkdownLine()] 
+       │
+       ▼
+[stripMarkdownFormatting() + sanitizeTextForPDF()] ─► Remove Unicode/emojis
+       │
+       ▼
+[renderizar no PDF]
+       │
+       ▼
+[addPageFooter()] em TODAS as páginas
+       │
+       ▼
+[pdf.save()]
+```
+
+---
+
+## 6. Arquivos a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/lib/businessPlanPdfExport.ts` | Adicionar try/catch e retornar objeto de resultado |
-| `src/pages/PmsDashboard.tsx` | Adicionar estado de erro + AlertDialog para exibir popup |
+| `src/lib/businessPlanPdfExport.ts` | Implementar todas as correções acima |
 
----
-
-## 3. Modificar businessPlanPdfExport.ts
-
-### 3.1 Alterar Tipo de Retorno
-
-```typescript
-// Novo tipo de retorno
-interface PDFExportResult {
-  success: boolean;
-  error?: string;
-}
-
-export const generateBusinessPlanPDF = async (
-  businessPlan: BusinessPlanSection,
-  projectName: string
-): Promise<PDFExportResult> => {
-  try {
-    // ... lógica existente de geração do PDF ...
-    
-    pdf.save(filename);
-    return { success: true };
-  } catch (error) {
-    console.error("PDF generation error:", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Unknown error occurred" 
-    };
-  }
-};
-```
-
----
-
-## 4. Modificar PmsDashboard.tsx
-
-### 4.1 Adicionar Estado para Popup de Erro
-
-```typescript
-const [pdfErrorDialog, setPdfErrorDialog] = useState<{
-  open: boolean;
-  title: string;
-  message: string;
-}>({
-  open: false,
-  title: "",
-  message: "",
-});
-```
-
-### 4.2 Atualizar handleExportPDF
-
-```typescript
-const handleExportPDF = async () => {
-  const bp = reportData?.business_plan_section as BusinessPlanSection | null;
-  
-  // Cenário 1: Business Plan vazio
-  if (!bp || !bp.markdown_content) {
-    setPdfErrorDialog({
-      open: true,
-      title: "Business Plan Not Available",
-      message: "The Business Plan section is empty or not yet generated. Please ensure your report has been fully processed before exporting to PDF.",
-    });
-    return;
-  }
-  
-  // Cenário 2: Tentar gerar PDF (pode falhar)
-  const result = await generateBusinessPlanPDF(bp, projectName);
-  
-  if (!result.success) {
-    setPdfErrorDialog({
-      open: true,
-      title: "PDF Export Failed",
-      message: result.error || "An unexpected error occurred while generating the PDF. Please try again or contact support if the problem persists.",
-    });
-  }
-};
-```
-
-### 4.3 Adicionar AlertDialog no JSX
-
-Após os outros dialogs existentes, adicionar:
-
-```typescript
-{/* PDF Export Error Dialog */}
-<AlertDialog 
-  open={pdfErrorDialog.open} 
-  onOpenChange={(open) => setPdfErrorDialog(prev => ({ ...prev, open }))}
->
-  <AlertDialogContent className="max-w-md">
-    <AlertDialogHeader>
-      <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-        <AlertCircle className="w-5 h-5" />
-        {pdfErrorDialog.title}
-      </AlertDialogTitle>
-      <AlertDialogDescription>
-        {pdfErrorDialog.message}
-      </AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter>
-      <AlertDialogAction 
-        onClick={() => setPdfErrorDialog(prev => ({ ...prev, open: false }))}
-        className="bg-accent hover:bg-accent/90"
-      >
-        OK
-      </AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
-```
-
-### 4.4 Imports Necessários
-
-```typescript
-import { AlertCircle } from "lucide-react"; // Adicionar ao import existente
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-```
-
----
-
-## 5. Fluxo de Execução Atualizado
-
-```text
-[Usuário clica "Export to PDF"]
-          │
-          ▼
-[Validar se Business Plan existe]
-          │
-          ├─ NÃO → Popup: "Business Plan Not Available"
-          │         ┌────────────────────────────────┐
-          │         │ ⚠️ Business Plan Not Available │
-          │         │                                │
-          │         │ The Business Plan section is   │
-          │         │ empty or not yet generated...  │
-          │         │                                │
-          │         │            [ OK ]              │
-          │         └────────────────────────────────┘
-          │
-          └─ SIM ─┬─► [Tentar gerar PDF]
-                  │
-                  ▼
-          [generateBusinessPlanPDF()]
-                  │
-                  ├─ SUCCESS → Download automático
-                  │
-                  └─ ERROR → Popup: "PDF Export Failed"
-                            ┌────────────────────────────────┐
-                            │ ⚠️ PDF Export Failed           │
-                            │                                │
-                            │ An unexpected error occurred   │
-                            │ while generating the PDF...    │
-                            │                                │
-                            │            [ OK ]              │
-                            └────────────────────────────────┘
-```
-
----
-
-## 6. Estilo Visual do Popup
-
-- **Título:** Ícone `AlertCircle` vermelho + texto em `text-destructive`
-- **Corpo:** Descrição clara do problema
-- **Botão:** "OK" com estilo accent para fechar
-- **Tamanho:** `max-w-md` para não ser muito grande
-
----
-
-## Resumo da Implementação
-
-| Step | Arquivo | Ação |
-|------|---------|------|
-| 1 | `businessPlanPdfExport.ts` | Adicionar try/catch e retornar `{ success, error }` |
-| 2 | `PmsDashboard.tsx` | Adicionar estado `pdfErrorDialog` |
-| 3 | `PmsDashboard.tsx` | Atualizar `handleExportPDF` com validação e tratamento de erro |
-| 4 | `PmsDashboard.tsx` | Adicionar imports do AlertDialog e AlertCircle |
-| 5 | `PmsDashboard.tsx` | Adicionar componente AlertDialog no JSX |
-| 6 | Testar | Verificar popup com Business Plan vazio e com erro simulado |
+Ao aprovar, implementarei as correções no arquivo.
