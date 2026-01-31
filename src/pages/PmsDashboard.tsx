@@ -15,7 +15,8 @@ import {
   Mail,
   RefreshCw,
   Shield,
-  Briefcase
+  Briefcase,
+  FileDown
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,8 @@ import BusinessPlanTab from "@/components/planningmysaas/dashboard/sections/Busi
 import ShareReportDialog from "@/components/planningmysaas/dashboard/ShareReportDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { generateBusinessPlanPDF } from "@/lib/businessPlanPdfExport";
+import { BusinessPlanSection } from "@/types/report";
 
 const PmsDashboardContent = () => {
   const navigate = useNavigate();
@@ -188,6 +191,17 @@ const PmsDashboardContent = () => {
     if (scheduleSection) {
       scheduleSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  };
+
+  const handleExportPDF = async () => {
+    const bp = reportData?.business_plan_section as BusinessPlanSection | null;
+    
+    if (!bp || !bp.markdown_content) {
+      console.error("Business Plan not available for export");
+      return;
+    }
+    
+    await generateBusinessPlanPDF(bp, projectName);
   };
 
   // Show loading skeleton while fetching data (crash protection only)
@@ -327,6 +341,14 @@ const PmsDashboardContent = () => {
                   >
                     <Mail className="h-4 w-4 mr-2" />
                     Share via Email
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-border/30" />
+                  <DropdownMenuItem 
+                    onClick={handleExportPDF} 
+                    className="cursor-pointer"
+                  >
+                    <FileDown className="h-4 w-4 mr-2" />
+                    Export to PDF
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
