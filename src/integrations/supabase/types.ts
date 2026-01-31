@@ -293,6 +293,7 @@ export type Database = {
           share_created_at: string | null
           share_enabled: boolean | null
           share_token: string | null
+          share_url: string | null
           status: string
           summary_section: Json | null
           updated_at: string
@@ -315,6 +316,7 @@ export type Database = {
           share_created_at?: string | null
           share_enabled?: boolean | null
           share_token?: string | null
+          share_url?: string | null
           status?: string
           summary_section?: Json | null
           updated_at?: string
@@ -337,6 +339,7 @@ export type Database = {
           share_created_at?: string | null
           share_enabled?: boolean | null
           share_token?: string | null
+          share_url?: string | null
           status?: string
           summary_section?: Json | null
           updated_at?: string
