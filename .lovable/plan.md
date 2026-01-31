@@ -1,374 +1,252 @@
 
 
-# Plano: Página Pública de Compartilhamento (100% Isolada)
+# Plano: Adicionar Step 12 + Coluna share_url + Gerar Dados de Compartilhamento Automaticamente
 
-## Princípio de Segurança: ISOLAMENTO TOTAL
+## Objetivo
 
-Todos os componentes da página pública serão **NOVOS** e **SEPARADOS** do sistema existente. Nenhum componente existente será modificado exceto:
-1. `App.tsx` - Adicionar 1 rota pública
-2. `PmsDashboard.tsx` - Adicionar lógica de geração de token (função nova, sem modificar existentes)
-3. `ShareReportDialog.tsx` - Alterar 1 prop de URL (mudança mínima)
-
----
-
-## 1. Nova Estrutura de Arquivos
-
-Criação de uma **nova pasta isolada** para componentes públicos:
-
-| Novo Arquivo | Descrição |
-|--------------|-----------|
-| `src/pages/PmsSharedReport.tsx` | Página pública principal |
-| `src/components/planningmysaas/public/SharedReportHeader.tsx` | Header simplificado (sem navegação do sistema) |
-| `src/components/planningmysaas/public/SharedReportContent.tsx` | Renderizador do Business Plan |
-| `src/components/planningmysaas/public/SharedReportFooter.tsx` | Footer com CTAs |
-| `src/components/planningmysaas/public/SharedReportSkeleton.tsx` | Loading skeleton |
-| `src/components/planningmysaas/public/SharedReportError.tsx` | Página de erro (token inválido) |
-| `src/components/planningmysaas/public/SharedReportCharts.tsx` | Renderizador de charts (cópia isolada) |
-| `src/hooks/useSharedReport.ts` | Hook para fetch por share_token |
+1. Adicionar **Step 12: Business Plan** no orchestrator e na tela de loading
+2. Adicionar coluna **share_url** no banco para armazenar a URL completa
+3. Após Step 12, **gerar automaticamente** `share_token`, `share_url`, `share_enabled`, `share_created_at`
+4. Atualizar o Dashboard para usar a URL do banco diretamente (sem precisar gerar)
 
 ---
 
-## 2. Alterações no Banco de Dados
+## Arquivos a Modificar (APENAS 4)
 
-### 2.1 Migration: Novas Colunas em `tb_pms_reports`
+| Arquivo | Modificação |
+|---------|-------------|
+| `supabase/functions/pms-orchestrate-report/index.ts` | Adicionar Step 12 + gerar dados de compartilhamento |
+| `src/components/planningmysaas/skeletons/GeneratingReportSkeleton.tsx` | Adicionar Step 12 na lista visual |
+| `src/pages/PmsDashboard.tsx` | Simplificar lógica para usar share_url do banco |
+| **Migration** | Adicionar coluna `share_url TEXT` |
+
+---
+
+## 1. Migration: Nova Coluna share_url
 
 ```sql
--- Add sharing columns
-ALTER TABLE tb_pms_reports
-ADD COLUMN IF NOT EXISTS share_token TEXT UNIQUE,
-ADD COLUMN IF NOT EXISTS share_enabled BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS share_created_at TIMESTAMPTZ;
-
--- Create index for fast lookup
-CREATE INDEX IF NOT EXISTS idx_pms_reports_share_token 
-ON tb_pms_reports(share_token) 
-WHERE share_token IS NOT NULL;
-```
-
-### 2.2 RLS Policy para Acesso Anônimo
-
-```sql
--- Allow anonymous users to SELECT reports that are shared
-CREATE POLICY "Public can view shared reports by token"
-ON tb_pms_reports FOR SELECT
-TO anon
-USING (
-  share_enabled = true 
-  AND share_token IS NOT NULL
-);
-```
-
-Esta policy é **ADITIVA** - não afeta as policies existentes para usuários autenticados.
-
----
-
-## 3. Hook Isolado: useSharedReport.ts
-
-```typescript
-// src/hooks/useSharedReport.ts
-// NOVO ARQUIVO - Não modifica nada existente
-
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { BusinessPlanSection } from "@/types/report";
-
-interface SharedReportData {
-  saas_name: string;
-  business_plan_section: BusinessPlanSection;
-}
-
-export const useSharedReport = (shareToken: string | undefined) => {
-  return useQuery({
-    queryKey: ["shared-report", shareToken],
-    queryFn: async (): Promise<SharedReportData | null> => {
-      if (!shareToken) return null;
-
-      // Fetch report by share_token (RLS permite anon se share_enabled=true)
-      const { data: report, error } = await supabase
-        .from("tb_pms_reports")
-        .select("business_plan_section, wizard_id")
-        .eq("share_token", shareToken)
-        .eq("share_enabled", true)
-        .maybeSingle();
-
-      if (error || !report) return null;
-
-      // Fetch project name from wizard (public read não é necessário - usamos service role via edge function)
-      // Para evitar complexidade, embutimos o saas_name no business_plan_section.title
-      // que já vem do n8n
-      
-      const bp = report.business_plan_section as BusinessPlanSection;
-      
-      return {
-        saas_name: bp?.title || "SaaS Project",
-        business_plan_section: bp,
-      };
-    },
-    enabled: !!shareToken,
-    staleTime: 1000 * 60 * 5, // 5 minutos
-  });
-};
+ALTER TABLE public.tb_pms_reports
+ADD COLUMN IF NOT EXISTS share_url TEXT;
 ```
 
 ---
 
-## 4. Página Pública: PmsSharedReport.tsx
+## 2. Modificação: pms-orchestrate-report/index.ts
 
-```text
-┌─────────────────────────────────────────────────────────────────────┐
-│  [UAICode Logo]                       Shared Business Plan          │
-│  ─────────────────────────────────────────────────────────────────  │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────────┐│
-│  │  📊 {Project Title}                                             ││
-│  │  Viability Score: 78/100 — Promising                            ││
-│  │  Generated: Jan 31, 2026 | 8,500 words                          ││
-│  └─────────────────────────────────────────────────────────────────┘│
-│                                                                     │
-│  ════════════════════════════════════════════════════════════════  │
-│                                                                     │
-│  [Business Plan Markdown Content]                                   │
-│  - Headers (H1, H2, H3)                                             │
-│  - Paragraphs, Lists, Tables                                        │
-│  - Interactive Charts (Market Sizing, Financial Projections, etc.)  │
-│                                                                     │
-│  ════════════════════════════════════════════════════════════════  │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────────┐│
-│  │  📥 Download PDF          🚀 Create Your Own Report             ││
-│  └─────────────────────────────────────────────────────────────────┘│
-│                                                                     │
-│  ─────────────────────────────────────────────────────────────────  │
-│  Powered by PlanningMySaaS | uaicode.ai                             │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### 4.1 Estados da Página
-
-| Estado | UI |
-|--------|-----|
-| `isLoading` | `SharedReportSkeleton` animado |
-| `error` ou `!data` | `SharedReportError` - "Report not found or sharing has been disabled" |
-| Sucesso | Renderiza conteúdo completo |
-
-### 4.2 Features da Página Pública
-
-- **SEM navegação do sistema** (não expõe rotas internas)
-- **SEM login required** (acesso anônimo)
-- **Download PDF** (reutiliza `generateBusinessPlanPDF`)
-- **CTA "Create Your Own Report"** → redireciona para `/planningmysaas`
-
----
-
-## 5. Componentes Públicos Isolados
-
-### 5.1 SharedReportHeader.tsx (NOVO)
+### 2.1 Adicionar Step 12 no TOOLS_SEQUENCE (linha 22-34)
 
 ```typescript
-// Header simplificado SEM navegação do sistema
-// Apenas: Logo + "Shared Business Plan"
-// SEM: Menu de usuário, botões de ação do dashboard
+// Sequential tools 1→12
+const TOOLS_SEQUENCE = [
+  { step: 1, tool_name: "Create_Report_Row", label: "Initialize Report" },
+  { step: 2, tool_name: "Call_Get_Investment_Tool_", label: "Investment Analysis" },
+  { step: 3, tool_name: "Call_Get_Benchmark_Tool_", label: "Market Benchmarks" },
+  { step: 4, tool_name: "Call_Get_Competitors_Tool_", label: "Competitor Research" },
+  { step: 5, tool_name: "Call_Get_Opportunity_Tool_", label: "Market Opportunity" },
+  { step: 6, tool_name: "Call_Get_Price_Tool_", label: "Pricing Strategy" },
+  { step: 7, tool_name: "Call_Get_ICP_Tool_", label: "Customer Profiling" },
+  { step: 8, tool_name: "Call_Get_PaidMedia_Tool_", label: "Paid Media Analysis" },
+  { step: 9, tool_name: "Call_Get_Growth_Tool_", label: "Growth Projections" },
+  { step: 10, tool_name: "Call_Get_Summary_Tool_", label: "Executive Summary" },
+  { step: 11, tool_name: "Call_Get_Hero_Score_Tool_", label: "Final Scoring" },
+  { step: 12, tool_name: "Call_Get_Business_Plan_Tool_", label: "Business Plan" },  // NOVO
+];
 ```
 
-### 5.2 SharedReportContent.tsx (NOVO)
+### 2.2 Adicionar constante da URL base (após corsHeaders, linha ~9)
 
 ```typescript
-// Cópia ISOLADA da lógica de renderização do BusinessPlanTab
-// - Markdown parser com react-markdown + remark-gfm
-// - Chart placeholders [CHART:xxx] → renderiza SharedReportCharts
-// - markdownComponents (h1, h2, p, table, etc.) - cópia local
+const PRODUCTION_URL = "https://uaicodewebsite.lovable.app";
 ```
 
-### 5.3 SharedReportCharts.tsx (NOVO)
+### 2.3 Adicionar função de geração de token (após getWebhookUrl, linha ~19)
 
 ```typescript
-// Cópia ISOLADA dos chart renderers
-// - MarketSizingChart (Donut)
-// - FinancialProjectionsChart (Bar)
-// - CompetitorPricingChart (Horizontal Bar)
-// - InvestmentBreakdownChart (Pie)
-// Mesmo visual, mas em arquivo separado
-```
-
-### 5.4 SharedReportFooter.tsx (NOVO)
-
-```typescript
-// Footer com CTAs:
-// - "Download PDF" button
-// - "Create Your Own Report" button → /planningmysaas
-// - "Powered by PlanningMySaaS | uaicode.ai"
-```
-
-### 5.5 SharedReportSkeleton.tsx (NOVO)
-
-```typescript
-// Skeleton de loading para a página pública
-// Visual similar mas arquivo separado
-```
-
-### 5.6 SharedReportError.tsx (NOVO)
-
-```typescript
-// Página de erro elegante:
-// - "Report Not Found"
-// - "This report may have been removed or sharing has been disabled."
-// - CTA: "Create Your Own Report"
-```
-
----
-
-## 6. Modificações Mínimas em Arquivos Existentes
-
-### 6.1 App.tsx (+3 linhas)
-
-```typescript
-// Adicionar import
-import PmsSharedReport from "./pages/PmsSharedReport";
-
-// Adicionar rota PÚBLICA (fora do ProtectedRoute)
-<Route 
-  path="/planningmysaas/shared/:shareToken" 
-  element={<PmsSharedReport />} 
-/>
-```
-
-### 6.2 PmsDashboard.tsx (Adicionar função helper + modificar handleCopyLink)
-
-```typescript
-// ADICIONAR: Nova função para gerar token (não modifica funções existentes)
+// Generate cryptographically secure share token (32 hex chars)
 const generateShareToken = (): string => {
   const array = new Uint8Array(16);
   crypto.getRandomValues(array);
   return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
 };
-
-// ADICIONAR: Função para obter/criar URL pública
-const getOrCreateShareUrl = async (): Promise<string> => {
-  // Verificar se já tem token
-  if (reportData?.share_token && reportData?.share_enabled) {
-    return `${window.location.origin}/planningmysaas/shared/${reportData.share_token}`;
-  }
-  
-  // Gerar novo token
-  const token = generateShareToken();
-  
-  // Salvar no DB
-  await supabase
-    .from("tb_pms_reports")
-    .update({ 
-      share_token: token, 
-      share_enabled: true,
-      share_created_at: new Date().toISOString()
-    })
-    .eq("wizard_id", wizardId);
-  
-  // Invalidar cache
-  await queryClient.invalidateQueries({ queryKey: ["pms-report-data", wizardId] });
-  
-  return `${window.location.origin}/planningmysaas/shared/${token}`;
-};
-
-// MODIFICAR: handleCopyLink para usar URL pública
-const handleCopyLink = async () => {
-  try {
-    const publicUrl = await getOrCreateShareUrl();
-    await navigator.clipboard.writeText(publicUrl);
-    toast.success("Public link copied!");
-  } catch (error) {
-    console.error("Failed to generate share link:", error);
-    toast.error("Failed to generate share link");
-  }
-};
 ```
 
-### 6.3 ShareReportDialog.tsx (Mudança de 1 prop)
+### 2.4 Modificar bloco de conclusão (linha 127-131)
+
+**ANTES:**
+```typescript
+// All steps completed successfully
+await supabase
+  .from("tb_pms_reports")
+  .update({ status: "completed" })
+  .eq("wizard_id", wizard_id);
+```
+
+**DEPOIS:**
+```typescript
+// All steps completed - generate share data and mark as completed
+const shareToken = generateShareToken();
+const shareUrl = `${PRODUCTION_URL}/planningmysaas/shared/${shareToken}`;
+
+await supabase
+  .from("tb_pms_reports")
+  .update({ 
+    status: "completed",
+    share_token: shareToken,
+    share_url: shareUrl,
+    share_enabled: true,
+    share_created_at: new Date().toISOString()
+  })
+  .eq("wizard_id", wizard_id);
+
+console.log(`🔗 Share URL generated: ${shareUrl}`);
+```
+
+---
+
+## 3. Modificação: GeneratingReportSkeleton.tsx
+
+### 3.1 Adicionar import do ícone Briefcase (linha 1)
 
 ```typescript
-// O dialog já recebe reportUrl como prop
-// PmsDashboard passará a URL pública ao invés da URL do dashboard
-// Nenhuma mudança no componente ShareReportDialog em si
+import { Loader2, DollarSign, Target, BarChart3, TrendingUp, Users, Tag, Megaphone, Rocket, FileText, Trophy, CheckCircle2, XCircle, Zap, Briefcase } from "lucide-react";
+```
+
+### 3.2 Adicionar Step 12 na lista STEPS (linha 10-22)
+
+```typescript
+const STEPS = [
+  { label: "Initialize Report", icon: Zap },
+  { label: "Investment Analysis", icon: DollarSign },
+  { label: "Market Benchmarks", icon: Target },
+  { label: "Competitor Research", icon: BarChart3 },
+  { label: "Market Opportunity", icon: TrendingUp },
+  { label: "Pricing Strategy", icon: Tag },
+  { label: "Customer Profiling", icon: Users },
+  { label: "Paid Media Analysis", icon: Megaphone },
+  { label: "Growth Projections", icon: Rocket },
+  { label: "Executive Summary", icon: FileText },
+  { label: "Final Scoring", icon: Trophy },
+  { label: "Business Plan", icon: Briefcase },  // NOVO (Step 12)
+];
 ```
 
 ---
 
-## 7. Segurança: Nenhuma Exposição de Dados Sensíveis
+## 4. Modificação: PmsDashboard.tsx
 
-| O que É exposto | O que NÃO é exposto |
-|-----------------|---------------------|
-| `business_plan_section.title` | Email/telefone do usuário |
-| `business_plan_section.subtitle` | `wizard_id` na URL |
-| `business_plan_section.viability_score` | `report_id` na URL |
-| `business_plan_section.viability_label` | Dados do wizard (goals, budget, timeline) |
-| `business_plan_section.markdown_content` | Navegação para o sistema |
-| `business_plan_section.charts_data` | Menu de usuário logado |
-| `business_plan_section.generated_at` | Outras seções do report (ICP, Marketing, etc.) |
-| `business_plan_section.word_count` | Dados financeiros detalhados |
+### 4.1 Simplificar getOrCreateShareUrl (linhas 173-206)
+
+A lógica agora apenas lê do banco - não precisa mais gerar:
+
+**ANTES:** Função que gera token se não existir
+
+**DEPOIS:**
+```typescript
+// Get public share URL from database
+const getShareUrl = (): string | null => {
+  const shareUrl = (reportData as { share_url?: string; share_enabled?: boolean })?.share_url;
+  const shareEnabled = (reportData as { share_enabled?: boolean })?.share_enabled;
+  
+  if (shareUrl && shareEnabled) {
+    return shareUrl;
+  }
+  
+  return null;
+};
+```
+
+### 4.2 Simplificar handleCopyLink (linhas 208-216)
+
+```typescript
+const handleCopyLink = async () => {
+  const url = getShareUrl();
+  if (url) {
+    await navigator.clipboard.writeText(url);
+    console.log("Public link copied to clipboard");
+  } else {
+    console.error("Share URL not available");
+  }
+};
+```
+
+### 4.3 Simplificar handler do Share via Email (linhas 417-422)
+
+```typescript
+onClick={() => {
+  const url = getShareUrl();
+  if (url) {
+    setShareUrl(url);
+    setShareDialogOpen(true);
+  }
+}}
+```
+
+### 4.4 Remover função generateShareToken (linhas 165-170)
+
+Não é mais necessária no frontend - token é gerado no backend.
 
 ---
 
-## 8. Fluxo do Usuário
+## 5. Atualizar Types
+
+A migration atualizará automaticamente os types para incluir `share_url`.
+
+---
+
+## 6. Fluxo Atualizado
 
 ```text
-[Owner no Dashboard]
-      │
-      ├─ Clica "Copy Link" ou "Share via Email"
-      │
-      ▼
-[Sistema gera share_token se não existir]
-      │
-      ▼
-[URL copiada: /planningmysaas/shared/{share_token}]
-      │
-      ▼
-[Recipient abre o link (sem login)]
-      │
-      ▼
-[PmsSharedReport.tsx carrega]
-      │
-      ├─ useSharedReport(shareToken)
-      │   │
-      │   └─ Supabase query com share_token
-      │       │
-      │       └─ RLS: share_enabled=true?
-      │           │
-      │           ├─ SIM → retorna business_plan_section
-      │           │
-      │           └─ NÃO → retorna null
-      │
-      ├─ Se dados: renderiza SharedReportContent
-      │
-      └─ Se null: renderiza SharedReportError
+[Orchestrator executa Step 1-12]
+          │
+          └── Step 12: Business Plan ← NOVO
+          │
+          ▼
+[Após Step 12 completar com sucesso]
+          │
+          ▼
+[Gerar share_token + share_url + share_enabled=true]
+          │
+          ▼
+[Atualizar status = "completed"]
+          │
+          ▼
+[Dashboard carrega - share_url JÁ ESTÁ NO BANCO]
+          │
+          ▼
+[Usuário clica "Copy Link" → Copia share_url instantaneamente]
 ```
 
 ---
 
-## 9. Resumo de Arquivos
+## 7. Dados no Banco (para debug)
 
-| Ação | Arquivo |
-|------|---------|
-| **CRIAR** | `src/pages/PmsSharedReport.tsx` |
-| **CRIAR** | `src/hooks/useSharedReport.ts` |
-| **CRIAR** | `src/components/planningmysaas/public/SharedReportHeader.tsx` |
-| **CRIAR** | `src/components/planningmysaas/public/SharedReportContent.tsx` |
-| **CRIAR** | `src/components/planningmysaas/public/SharedReportFooter.tsx` |
-| **CRIAR** | `src/components/planningmysaas/public/SharedReportSkeleton.tsx` |
-| **CRIAR** | `src/components/planningmysaas/public/SharedReportError.tsx` |
-| **CRIAR** | `src/components/planningmysaas/public/SharedReportCharts.tsx` |
-| **MIGRATION** | Adicionar colunas `share_token`, `share_enabled`, `share_created_at` |
-| **MIGRATION** | Criar RLS policy para acesso anônimo |
-| **MODIFICAR** | `src/App.tsx` (+1 rota, +1 import) |
-| **MODIFICAR** | `src/pages/PmsDashboard.tsx` (+2 funções novas, modificar 1 handler) |
+| Coluna | Exemplo |
+|--------|---------|
+| `share_token` | `a3f7c2e8b1d4f6a9c5e2b8d1f4a7c3e9` |
+| `share_url` | `https://uaicodewebsite.lovable.app/planningmysaas/shared/a3f7c2e8b1d4f6a9c5e2b8d1f4a7c3e9` |
+| `share_enabled` | `true` |
+| `share_created_at` | `2026-01-31T15:30:00.000Z` |
 
 ---
 
-## 10. Garantia de Não-Quebra
+## 8. O que NÃO será modificado
 
-- **BusinessPlanTab.tsx** → NÃO TOCADO
-- **ReportContext.tsx** → NÃO TOCADO
-- **Todos os componentes em `dashboard/`** → NÃO TOCADOS
-- **Todas as RLS policies existentes** → MANTIDAS (nova policy é aditiva)
-- **Fluxo de autenticação** → NÃO AFETADO
-- **Páginas protegidas** → CONTINUAM PROTEGIDAS
+| Arquivo | Razão |
+|---------|-------|
+| `ShareReportDialog.tsx` | Nenhuma mudança necessária (já recebe `reportUrl` como prop) |
+| `useSharedReport.ts` | Nenhuma mudança necessária (busca por `share_token`) |
+| `PmsSharedReport.tsx` | Nenhuma mudança necessária |
+| Componentes em `public/` | Nenhuma mudança necessária |
+| RLS policies | Nenhuma mudança necessária |
 
-Ao aprovar, implementarei todos os arquivos novos e as modificações mínimas necessárias.
+---
+
+## 9. Resumo
+
+| Arquivo | Ação |
+|---------|------|
+| **Migration** | Adicionar coluna `share_url TEXT` |
+| `pms-orchestrate-report/index.ts` | +Step 12, +generateShareToken, +PRODUCTION_URL, modificar bloco final |
+| `GeneratingReportSkeleton.tsx` | +import Briefcase, +Step 12 na lista |
+| `PmsDashboard.tsx` | Simplificar para ler share_url do banco, remover generateShareToken |
 
