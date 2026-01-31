@@ -278,10 +278,17 @@ const checkPageBreak = (
   return currentY;
 };
 
+// Result type for error handling
+export interface PDFExportResult {
+  success: boolean;
+  error?: string;
+}
+
 export const generateBusinessPlanPDF = async (
   businessPlan: BusinessPlanSection,
   projectName: string
-): Promise<void> => {
+): Promise<PDFExportResult> => {
+  try {
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -504,6 +511,15 @@ export const generateBusinessPlanPDF = async (
   const timestamp = new Date().toISOString().split("T")[0];
   const filename = `BusinessPlan_${sanitizeFilename(projectName)}_${timestamp}.pdf`;
   pdf.save(filename);
+  
+  return { success: true };
+  } catch (error) {
+    console.error("PDF generation error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred while generating the PDF",
+    };
+  }
 };
 
 export default generateBusinessPlanPDF;
