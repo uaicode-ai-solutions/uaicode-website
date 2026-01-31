@@ -44,41 +44,45 @@ const TOOLS_SEQUENCE = [
   { step: 12, tool_name: "Call_Get_Business_Plan_Tool_", label: "Business Plan" },
 ];
 
-serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+// Graceful shutdown detection
+let shutdownRequested = false;
 
+addEventListener('beforeunload', () => {
+  shutdownRequested = true;
+  console.warn('⚠️ Worker shutdown requested, attempting graceful cleanup...');
+});
+
+// Background task: Process all report steps sequentially
+async function processReportSteps(
+  wizard_id: string, 
+  resume_from_step?: number
+): Promise<void> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const webhookUrl = getWebhookUrl();
+  const startIndex = resume_from_step ? resume_from_step - 1 : 0;
+
+  console.log(`🚀 Background task started for wizard: ${wizard_id}, from step: ${startIndex + 1}`);
 
   try {
-    const webhookUrl = getWebhookUrl();
-    const { wizard_id, resume_from_step } = await req.json();
-    
-    if (!wizard_id) {
-      return new Response(
-        JSON.stringify({ error: "wizard_id is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Determine start index (0-based)
-    // resume_from_step is 1-based (Step 1 = index 0)
-    const startIndex = resume_from_step ? resume_from_step - 1 : 0;
-    
-    console.log(`🚀 Starting orchestration for wizard: ${wizard_id}, from step: ${startIndex + 1}`);
-
-    // Execute each tool in sequence starting from startIndex
     for (let i = startIndex; i < TOOLS_SEQUENCE.length; i++) {
+      // Check for graceful shutdown before each step
+      if (shutdownRequested) {
+        console.error('❌ Worker shutting down, marking as interrupted');
+        await supabase
+          .from("tb_pms_reports")
+          .update({ status: "Generation interrupted - Please retry" })
+          .eq("wizard_id", wizard_id);
+        return;
+      }
+
       const tool = TOOLS_SEQUENCE[i];
       const statusInProgress = `Step ${tool.step} ${tool.label} - In Progress`;
       const statusCompleted = `Step ${tool.step} ${tool.label} - Completed`;
       const statusFailed = `Step ${tool.step} ${tool.label} - Fail`;
 
-      // 1. Update status to "In Progress"
+      // Update to In Progress
       await supabase
         .from("tb_pms_reports")
         .update({ status: statusInProgress.trim() })
@@ -87,11 +91,10 @@ serve(async (req) => {
       console.log(`📍 ${statusInProgress}`);
 
       try {
-        // Create abort controller with 150 second timeout
+        // AbortController with 150s timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 150000);
 
-        // 2. Call n8n webhook with tool_name and wizard_id
         const response = await fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -102,10 +105,8 @@ serve(async (req) => {
           signal: controller.signal,
         });
 
-        // Clear timeout on successful response
         clearTimeout(timeoutId);
 
-        // 3. Check HTTP response
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`HTTP ${response.status}: ${errorText}`);
@@ -114,7 +115,7 @@ serve(async (req) => {
         // Consume response body
         await response.text();
 
-        // 4. Update status to "Completed"
+        // Update to Completed
         await supabase
           .from("tb_pms_reports")
           .update({ status: statusCompleted.trim() })
@@ -123,7 +124,6 @@ serve(async (req) => {
         console.log(`✅ ${statusCompleted}`);
 
       } catch (error: unknown) {
-        // 5. On failure (including timeout), update status and stop execution
         const isTimeout = error instanceof Error && error.name === 'AbortError';
         const errorMessage = isTimeout 
           ? 'Request timeout (150s exceeded)' 
@@ -131,24 +131,18 @@ serve(async (req) => {
         
         console.error(`❌ ${statusFailed}:`, errorMessage);
         
+        // Update to Fail
         await supabase
           .from("tb_pms_reports")
           .update({ status: statusFailed.trim() })
           .eq("wizard_id", wizard_id);
 
-        return new Response(
-          JSON.stringify({
-            success: false,
-            failedAt: tool.step,
-            tool_name: tool.tool_name,
-            error: errorMessage
-          }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        // Stop processing on failure
+        return;
       }
     }
 
-    // All steps completed - generate share data and mark as completed
+    // All steps completed - generate share data
     const shareToken = generateShareToken();
     const shareUrl = `${PRODUCTION_URL}/planningmysaas/shared/${shareToken}`;
 
@@ -164,12 +158,51 @@ serve(async (req) => {
       .eq("wizard_id", wizard_id);
 
     console.log(`🔗 Share URL generated: ${shareUrl}`);
-
     console.log(`🎉 Report completed for wizard: ${wizard_id}`);
 
+  } catch (error) {
+    console.error("❌ Background task error:", error);
+    // Update to generic fail status
+    await supabase
+      .from("tb_pms_reports")
+      .update({ status: "Generation Failed" })
+      .eq("wizard_id", wizard_id);
+  }
+}
+
+serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { wizard_id, resume_from_step } = await req.json();
+    
+    if (!wizard_id) {
+      return new Response(
+        JSON.stringify({ error: "wizard_id is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`🚀 Starting orchestration for wizard: ${wizard_id}, resume_from: ${resume_from_step || 'start'}`);
+
+    // Use EdgeRuntime.waitUntil to process steps in background
+    // This allows the HTTP response to return immediately while processing continues
+    // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
+    EdgeRuntime.waitUntil(
+      processReportSteps(wizard_id, resume_from_step)
+    );
+
+    // Return immediately with 202 Accepted
     return new Response(
-      JSON.stringify({ success: true, wizard_id }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ 
+        success: true, 
+        wizard_id,
+        message: "Processing started in background" 
+      }),
+      { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
