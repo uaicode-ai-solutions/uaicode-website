@@ -4,13 +4,10 @@
 // Visual style matches CustomerPainPointsSection
 // ============================================
 
-import { useState } from "react";
 import { 
   Target, 
   TrendingUp, 
   Lightbulb,
-  ChevronDown,
-  ChevronUp,
   Zap,
   DollarSign,
   Users,
@@ -18,7 +15,6 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { Button } from "@/components/ui/button";
 import { useReportContext } from "@/contexts/ReportContext";
 import { useFinancialMetrics } from "@/hooks/useFinancialMetrics";
 import WhatIfScenarios from "@/components/planningmysaas/dashboard/WhatIfScenarios";
@@ -34,7 +30,6 @@ interface MetricProgress {
 
 const GrowthPotentialSection = () => {
   const { reportData, report } = useReportContext();
-  const [showWhatIf, setShowWhatIf] = useState(false);
   
   // Get market type and financial metrics
   const marketType = report?.market_type || undefined;
@@ -293,44 +288,31 @@ const GrowthPotentialSection = () => {
         ))}
       </div>
 
-      {/* What-If Scenarios Toggle */}
+      {/* What-If Scenarios - Always Visible */}
       <div className="border border-border/30 rounded-lg overflow-hidden">
-        <Button
-          variant="ghost"
-          onClick={() => setShowWhatIf(!showWhatIf)}
-          className="w-full flex items-center justify-between p-4 h-auto hover:bg-accent/5"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-accent/10">
-              <BarChart3 className="h-4 w-4 text-accent" />
-            </div>
-            <div className="text-left">
-              <span className="font-medium text-foreground">Simulate Your Scenario</span>
-              <p className="text-xs text-muted-foreground">
-                Adjust ARPU, Churn, and CAC to see real-time impact on your metrics
-              </p>
-            </div>
+        <div className="flex items-center gap-3 p-4">
+          <div className="p-2 rounded-lg bg-accent/10">
+            <BarChart3 className="h-4 w-4 text-accent" />
           </div>
-          {showWhatIf ? (
-            <ChevronUp className="h-5 w-5 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-          )}
-        </Button>
+          <div>
+            <span className="font-medium text-foreground">Simulate Your Scenario</span>
+            <p className="text-xs text-muted-foreground">
+              Adjust ARPU, Churn, and CAC to see real-time impact on your metrics
+            </p>
+          </div>
+        </div>
         
-        {showWhatIf && (
-          <div className="border-t border-border/30">
-            <WhatIfScenarios 
-              currentArpu={currentArpu}
-              currentChurn={currentChurn}
-              currentCac={currentCac}
-              currentLtv={metrics.ltv || 0}
-              currentLtvCac={currentLtvCac}
-              currentPayback={currentPayback}
-              marketType={marketType}
-            />
-          </div>
-        )}
+        <div className="border-t border-border/30">
+          <WhatIfScenarios 
+            currentArpu={currentArpu}
+            currentChurn={currentChurn}
+            currentCac={currentCac}
+            currentLtv={metrics.ltv || 0}
+            currentLtvCac={currentLtvCac}
+            currentPayback={currentPayback}
+            marketType={marketType}
+          />
+        </div>
       </div>
     </section>
   );
