@@ -1,294 +1,162 @@
 
-# Plano de Auditoria: Remover Fallbacks e Usar 100% Dados do Banco
+# Plano: Corrigir Validação do Banner Data Quality Notice
 
-## Resumo do Objetivo
-Simplificar a UI do dashboard para ler dados **exclusivamente** de `tb_pms_reports` (JSONB) + `tb_pms_wizard`, removendo toda a infraestrutura de fallback inteligente (SmartFallback, FallbackAgent) e o hook `useFinancialMetrics` onde os dados já existem prontos no banco.
+## Problema Identificado
 
-## Regras Confirmadas
-- **Fonte**: `tb_pms_reports` + `tb_pms_wizard` (ambos via ReportContext)
-- **Cálculos permitidos**: Formatação (moeda, %, "mo") + cálculos visuais (barras de progresso, percentuais para UI)
-- **Fallback visual**: Skeleton durante loading inicial → depois sempre "..." para dados ausentes
-- **Remover**: Tudo que o banco já fornece (hooks de fallback, cálculos redundantes)
+O banner "Data Quality Notice" está exibindo alertas falsos porque a função `checkDataQuality()` em `src/lib/dataQualityUtils.ts` valida estruturas de dados que:
 
----
+1. **Não correspondem à estrutura real do n8n** (ex: espera `competitors` como array, mas é objeto)
+2. **Valida campos que NÃO são usados na UI** (ex: `benchmark_section.market_benchmarks`)
+3. **Usa critérios incorretos** (ex: `score === 0` como inválido quando 0 pode ser válido)
 
-## Parte 1: Arquivos a REMOVER completamente
+## Mudanças Necessárias
 
-| Arquivo | Motivo |
-|---------|--------|
-| `src/hooks/useSmartFallbackField.ts` | Não será mais usado |
-| `src/hooks/useFallbackAgent.ts` | Não será mais usado |
-| `src/lib/fallbackConfig.ts` | Não será mais usado |
-| `supabase/functions/pms-smart-fallback/index.ts` | Edge function sem uso |
+### 1. `hero_score_section` (linhas 76-87)
+**Problema**: Trata `score === 0` como erro  
+**Correção**: Apenas `null` ou `undefined` é erro
 
----
+```typescript
+// DE:
+if (typeof heroScore.score !== 'number' || heroScore.score === 0)
 
-## Parte 2: Simplificar ReportContext
+// PARA:
+if (typeof heroScore.score !== 'number')
+```
 
-**Arquivo**: `src/contexts/ReportContext.tsx`
+### 2. `competitive_analysis_section` (linhas 264-276)
+**Problema**: Espera `competitors` como array, mas n8n envia como objeto `{competitor_1: {...}, competitor_2: {...}}`  
+**Correção**: Verificar se é objeto com chaves ou array
 
-**Remover**:
-- Import e uso de `useFallbackAgent`
-- Campo `fallbackAgent` do contexto
-- Campo `refreshReportData` (usado apenas pelo fallback)
+```typescript
+// DE:
+const competitors = competitive.competitors as unknown[] | undefined;
+if (!competitors || competitors.length === 0)
 
-**Manter**:
-- `report` (wizard data)
-- `reportData` (report data)
-- `wizardId`, `pmsReportId`
-- `selectedMarketingIds`, `marketingTotals` (interação de UI)
+// PARA:
+const competitors = competitive.competitors;
+const hasCompetitors = Array.isArray(competitors)
+  ? competitors.length > 0
+  : (competitors && typeof competitors === 'object' && Object.keys(competitors).length > 0);
+if (!hasCompetitors)
+```
 
----
+### 3. `icp_intelligence_section` (linhas 295-307)
+**Problema**: Verifica apenas `primary_personas`, mas a UI também usa `persona` e `demographics`  
+**Correção**: Aceitar estrutura completa (persona + demographics OU primary_personas)
 
-## Parte 3: Componentes a Simplificar (10 arquivos)
+```typescript
+// DE:
+const personas = icp.primary_personas as unknown[] | undefined;
+if (!personas || personas.length === 0)
 
-### 3.1. ReportHero.tsx
-**Localização**: `src/components/planningmysaas/dashboard/sections/ReportHero.tsx`
+// PARA:
+const hasPersonas = icp.primary_personas && (icp.primary_personas as unknown[]).length > 0;
+const hasLegacyPersona = icp.persona && typeof icp.persona === 'object';
+const hasDemographics = icp.demographics && typeof icp.demographics === 'object';
+if (!hasPersonas && !hasLegacyPersona && !hasDemographics)
+```
 
-**Remover**:
-- Import `useSmartFallbackField`
-- Import `FallbackSkeleton`
-- Chamadas `useSmartFallbackField` (linhas 52-70)
-- Estados `isLoading` dos fallbacks
+### 4. `price_intelligence_section` (linhas 326-337)
+**Problema**: Verifica `pricing_strategy` que NÃO é usado na UI  
+**Correção**: Verificar `unit_economics` que É usado na UI via `useFinancialMetrics`
 
-**Simplificar**:
-- Score: ler direto de `heroScoreData?.score ?? 0`
-- Tagline: ler direto de `heroScoreData?.tagline ?? "..."`
-- TAM: ler direto de `opportunityData?.tam_value ?? "..."`
+```typescript
+// DE:
+if (!price.pricing_strategy)
 
-**Manter**:
-- `useFinancialMetrics` para LTV/CAC e Payback (ainda precisa formatar/calcular dos dados brutos)
-- Formatação `formatMarketValue()`
+// PARA:
+const hasUnitEconomics = price.unit_economics && typeof price.unit_economics === 'object';
+const hasRecommendedModel = price.recommended_model && String(price.recommended_model).trim() !== '';
+if (!hasUnitEconomics && !hasRecommendedModel)
+```
 
-### 3.2. ExecutiveVerdict.tsx
-**Localização**: `src/components/planningmysaas/dashboard/sections/ExecutiveVerdict.tsx`
+### 5. `paid_media_intelligence_section` (linhas 356-368)
+**Problema**: Verifica `channels` que NÃO existe - o campo é `channel_recommendations`, mas também NÃO é usado na UI visível  
+**Correção**: Verificar `performance_targets` e `budget_strategy` que SÃO usados via `useFinancialMetrics`
 
-**Remover**:
-- Import `useSmartFallbackField`
-- Import `FallbackSkeleton`, `CardContentSkeleton`
-- Chamadas `useSmartFallbackField` (linhas 25-35)
+```typescript
+// DE:
+const channels = paidMedia.channels as unknown[] | undefined;
+if (!channels || channels.length === 0)
 
-**Simplificar**:
-- Verdict: `summaryData?.verdict ?? "..."`
-- Verdict Summary: `summaryData?.verdict_summary ?? "..."`
+// PARA:
+const hasPerformanceTargets = paidMedia.performance_targets && typeof paidMedia.performance_targets === 'object';
+const hasBudgetStrategy = paidMedia.budget_strategy && typeof paidMedia.budget_strategy === 'object';
+if (!hasPerformanceTargets && !hasBudgetStrategy)
 
-**Manter**:
-- `useFinancialMetrics` para sync de métricas no texto (função `syncMetricsInText`)
+// TAMBÉM: Mudar mensagem de "Paid media channels list is empty" para "Paid media targets are missing"
+```
 
-### 3.3. MarketingIntelligenceSection.tsx
-**Localização**: `src/components/planningmysaas/dashboard/sections/MarketingIntelligenceSection.tsx`
+### 6. `growth_intelligence_section` (linhas 387-398)
+**Problema**: Verifica apenas `growth_targets`, mas a UI usa principalmente `financial_metrics`  
+**Correção**: Aceitar `financial_metrics` OU `growth_targets`
 
-**Remover**:
-- Import `useSmartFallbackField` (linha 32)
-- Import `InlineValueSkeleton` (linha 33)
-- Chamada `useSmartFallbackField` (linhas 345-348)
+```typescript
+// DE:
+if (!growth.growth_targets)
 
-**Simplificar**:
-- Usar `rawIcpData` direto, sem fallback
-- Helper `getValue()` já retorna "..." para valores ausentes
+// PARA:
+const hasFinancialMetrics = growth.financial_metrics && typeof growth.financial_metrics === 'object';
+const hasGrowthTargets = growth.growth_targets && typeof growth.growth_targets === 'object';
+if (!hasFinancialMetrics && !hasGrowthTargets)
 
-### 3.4. InvestmentSection.tsx
-**Localização**: `src/components/planningmysaas/dashboard/sections/InvestmentSection.tsx`
+// TAMBÉM: Mudar mensagem para "Financial metrics and growth targets are missing"
+```
 
-**Remover**:
-- Import `useSmartFallbackField` (linha 16)
-- Import `InlineValueSkeleton` (linha 17)
-- Chamadas `useSmartFallbackField` (linhas 89-100+)
+### 7. `benchmark_section` (linhas 404-429)
+**Problema**: Valida esta seção inteira que NÃO é usada na UI (é 100% interno do n8n)  
+**Correção**: **REMOVER COMPLETAMENTE** a validação de `benchmark_section`
 
-**Simplificar**:
-- Ler valores direto de `mvpBreakdown` sem fallback
-- Se valor null/0 → mostrar "..."
+```typescript
+// DELETAR linhas 401-429 completamente
+// ========================================
+// 10. BENCHMARK SECTION
+// ========================================
+// (TUDO REMOVIDO - benchmark_section é interno do n8n, não aparece na UI)
+```
 
-### 3.5. NextStepsSection.tsx
-**Localização**: `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx`
+### 8. `opportunity_section` - demand_signals (linhas 185-221)
+**Problema**: Verifica `demand_signals.monthly_searches_numeric` que nem sempre existe  
+**Correção**: Verificar se existe texto `monthly_searches` OU campos no root do opportunity
 
-**Remover**:
-- Import `useSmartFallbackField` (linha 44)
-- Import `InlineValueSkeleton` (linha 45)
-- Chamadas `useSmartFallbackField` (linhas 137-153)
-
-**Simplificar**:
-- Score: `heroScoreData?.score ?? 0`
-- Tagline: `heroScoreData?.tagline ?? "..."`
-
-### 3.6. CompetitorsDifferentiationSection.tsx
-**Localização**: `src/components/planningmysaas/dashboard/sections/CompetitorsDifferentiationSection.tsx`
-
-**Remover**:
-- Import `useSmartFallbackField` (linha 12)
-- Import `CardContentSkeleton` (linha 13)
-- Chamada `useSmartFallbackField` (linhas 38-41)
-- Loading skeleton condicional (linhas 57-79)
-
-**Simplificar**:
-- Usar `rawCompetitiveData` direto
-- Se null → mostrar estado vazio com "..." nos campos
-
-### 3.7. PivotScenariosSection.tsx
-**Localização**: `src/components/planningmysaas/dashboard/sections/PivotScenariosSection.tsx`
-
-**Remover**:
-- Import `useSmartFallbackField` (linha 7)
-- Import `InlineValueSkeleton`, `CardContentSkeleton` (linha 8)
-- Chamadas `useSmartFallbackField` (linhas 26-35)
-- Loading skeleton condicional (linhas 58-77)
-
-**Simplificar**:
-- Usar `rawPivotScenarios` direto
-- Score: `rawPivotScenarios?.readinessScore ?? 0`
-
-### 3.8. SuccessMetricsSection.tsx
-**Localização**: `src/components/planningmysaas/dashboard/sections/SuccessMetricsSection.tsx`
-
-**Remover**:
-- Import `useSmartFallbackField` (linha 7)
-- Import `InlineValueSkeleton`, `CardContentSkeleton` (linha 8)
-- Chamada `useSmartFallbackField` (linhas 32-35)
-- Loading skeleton condicional (linhas 58-77)
-
-**Simplificar**:
-- Usar `rawSuccessMetrics` direto
-
-### 3.9. ResourceRequirementsSection.tsx
-**Localização**: `src/components/planningmysaas/dashboard/sections/ResourceRequirementsSection.tsx`
-
-**Remover**:
-- Import `useSmartFallbackField` (linha 7)
-- Import `CardContentSkeleton` (linha 8)
-- Chamada `useSmartFallbackField` (linhas 30-33)
-- Loading skeleton condicional (linhas 54-79)
-
-**Simplificar**:
-- Usar `rawResourceRequirements` direto
-
-### 3.10. ExecutionPlanSection.tsx
-**Localização**: `src/components/planningmysaas/dashboard/sections/ExecutionPlanSection.tsx`
-
-**Remover**:
-- Import `useSmartFallbackField` (linha 7)
-- Import `InlineValueSkeleton` (linha 8)
-
-**Verificar**: Se há chamadas de useSmartFallbackField no restante do arquivo
-
----
-
-## Parte 4: useFinancialMetrics - Manter ou Simplificar?
-
-**Decisão**: Manter parcialmente, mas refatorar para priorizar dados do banco.
-
-O banco agora traz:
-- `growth_intelligence_section.financial_metrics` (MRR, ARR, ROI, break-even, LTV/CAC, payback)
-- `growth_intelligence_section.financial_scenarios` (cenários prontos)
-- `growth_intelligence_section.year_evolution` (evolução anual)
-
-**Refatorar useFinancialMetrics.ts**:
-1. **Priorizar** valores numéricos diretos de `financial_metrics` (n8n v1.7.0+)
-2. **Eliminar** fallbacks de cálculo local quando dados do banco existirem
-3. **Manter** apenas formatação e cálculos visuais (progresso, comparações)
-
-**Componentes que usam useFinancialMetrics**:
-- `ReportHero.tsx` - LTV/CAC, Payback (manter, formata dados)
-- `FinancialReturnSection.tsx` - Cenários, J-Curve, métricas (manter, usa projection_data do banco)
-- `GrowthPotentialSection.tsx` - Métricas de progresso (manter, cálculo visual)
-- `ComparableSuccessesSection.tsx` - TAM comparison (manter, cálculo visual)
-- `ExecutiveVerdict.tsx` - Sync de texto (manter, formatação)
-
----
-
-## Parte 5: Checklist de Verificação Pós-Implementação
-
-Para cada componente alterado, verificar:
-
-- [ ] Não há import de `useSmartFallbackField`
-- [ ] Não há import de `useFallbackAgent`
-- [ ] Não há import de `fallbackConfig`
-- [ ] Dados vêm de `reportData` ou `report` (contexto)
-- [ ] Campos ausentes mostram "..." (não erro, não skeleton após loading)
-- [ ] Skeleton só aparece durante `isLoading` inicial
-- [ ] Nenhum cálculo de métricas financeiras (ROI, LTV, etc.) que o banco já fornece
-- [ ] Formatação de moeda/% permitida
-
----
-
-## Parte 6: Ordem de Execução
-
-1. **Deletar arquivos** (Parte 1)
-2. **Simplificar ReportContext** (Parte 2)
-3. **Refatorar useFinancialMetrics** (Parte 4)
-4. **Simplificar componentes** na ordem:
-   - ReportHero (crítico - é o hero)
-   - ExecutiveVerdict
-   - NextStepsSection
-   - InvestmentSection
-   - MarketingIntelligenceSection
-   - CompetitorsDifferentiationSection
-   - FinancialReturnSection
-   - GrowthPotentialSection
-   - ComparableSuccessesSection
-   - PivotScenariosSection
-   - SuccessMetricsSection
-   - ResourceRequirementsSection
-   - ExecutionPlanSection
-5. **Testar dashboard completo**
-6. **Verificar console** - nenhum erro de undefined
+```typescript
+// A validação de demand_signals é muito restritiva
+// Remover verificação de monthly_searches_numeric pois o campo texto já é suficiente
+```
 
 ---
 
 ## Seção Técnica
 
-### Padrão de código para leitura de dados
+### Arquivo a Modificar
+- `src/lib/dataQualityUtils.ts`
 
-```tsx
-// ANTES (com SmartFallback)
-const { value: score, isLoading } = useSmartFallbackField({
-  fieldPath: "hero_score_section.score",
-  currentValue: heroScoreData?.score,
-});
+### Estrutura Real do Banco (n8n v1.7.0+)
 
-// DEPOIS (direto do banco)
-const score = heroScoreData?.score ?? null;
-// Na UI:
-<span>{score !== null ? score : "..."}</span>
-```
+| Seção | Campo Verificado | Estrutura Real |
+|-------|------------------|----------------|
+| `competitive_analysis` | `competitors` | `{competitor_1: {...}, competitor_2: {...}}` (objeto) |
+| `icp_intelligence` | `primary_personas` | Array, MAS também usa `persona` + `demographics` |
+| `price_intelligence` | `pricing_strategy` | NÃO USADO - UI usa `unit_economics` |
+| `paid_media` | `channels` | NÃO EXISTE - campo é `channel_recommendations` |
+| `growth_intelligence` | `growth_targets` | Usado, MAS `financial_metrics` é prioridade |
+| `benchmark_section` | `market_benchmarks` | **0% usado na UI** - remover validação |
 
-### Padrão para formatação
+### Resumo das Ações
 
-```tsx
-// Permitido: formatação de moeda
-const formatCurrency = (cents: number) => 
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
-    .format(cents / 100);
+1. **Linha 76**: Remover `|| heroScore.score === 0` da condição
+2. **Linhas 264-276**: Aceitar `competitors` como objeto ou array
+3. **Linhas 295-307**: Aceitar `persona` + `demographics` além de `primary_personas`
+4. **Linhas 326-337**: Trocar `pricing_strategy` por `unit_economics` ou `recommended_model`
+5. **Linhas 356-368**: Trocar `channels` por `performance_targets` ou `budget_strategy`
+6. **Linhas 387-398**: Aceitar `financial_metrics` OU `growth_targets`
+7. **Linhas 401-429**: **DELETAR** validação de `benchmark_section` completamente
+8. **Linhas 185-221**: Simplificar validação de demand_signals
 
-// Permitido: cálculo visual (barra de progresso)
-const progress = targetValue > 0 ? Math.min(100, (currentValue / targetValue) * 100) : 0;
+### Resultado Esperado
 
-// NÃO permitido: recalcular LTV quando banco já tem
-// const ltv = arpu / (churnMonthly / 100); ❌
-// Usar: financial_metrics.ltv_used ✓
-```
-
-### Estrutura de dados do banco (referência)
-
-```typescript
-// tb_pms_reports.hero_score_section
-{ score: number, tagline: string }
-
-// tb_pms_reports.summary_section  
-{ verdict: string, verdict_summary: string }
-
-// tb_pms_reports.growth_intelligence_section.financial_metrics
-{ 
-  mrr_month_12: number,
-  arr_year_1: number,
-  roi_year_1: number,
-  break_even_months: number,
-  payback_months: number,
-  ltv_cac_ratio: number,
-  arpu_used: number,
-  ltv_used: number,
-  cac_used: number
-}
-
-// tb_pms_reports.growth_intelligence_section.financial_scenarios
-[{ name: string, mrrMonth12: number, arrYear1: number, breakEven: number, probability: string }]
-```
+Após estas correções:
+- ✅ Banner não aparecerá quando os dados do n8n estão completos
+- ✅ Banner aparecerá apenas para dados realmente faltantes
+- ✅ Mensagens de erro serão precisas e acionáveis
+- ✅ Nenhum alerta falso por estruturas de dados diferentes
