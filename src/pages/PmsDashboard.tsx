@@ -16,7 +16,8 @@ import {
   RefreshCw,
   Shield,
   Briefcase,
-  FileDown
+  FileDown,
+  AlertCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { generateBusinessPlanPDF } from "@/lib/businessPlanPdfExport";
 import { BusinessPlanSection } from "@/types/report";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const PmsDashboardContent = () => {
   const navigate = useNavigate();
@@ -73,6 +83,15 @@ const PmsDashboardContent = () => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [pdfErrorDialog, setPdfErrorDialog] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+  }>({
+    open: false,
+    title: "",
+    message: "",
+  });
   
   // Confetti for celebrating completed reports
   const { fireConfetti } = useConfetti();
@@ -196,12 +215,26 @@ const PmsDashboardContent = () => {
   const handleExportPDF = async () => {
     const bp = reportData?.business_plan_section as BusinessPlanSection | null;
     
+    // Cenário 1: Business Plan vazio
     if (!bp || !bp.markdown_content) {
-      console.error("Business Plan not available for export");
+      setPdfErrorDialog({
+        open: true,
+        title: "Business Plan Not Available",
+        message: "The Business Plan section is empty or not yet generated. Please ensure your report has been fully processed before exporting to PDF.",
+      });
       return;
     }
     
-    await generateBusinessPlanPDF(bp, projectName);
+    // Cenário 2: Tentar gerar PDF (pode falhar)
+    const result = await generateBusinessPlanPDF(bp, projectName);
+    
+    if (!result.success) {
+      setPdfErrorDialog({
+        open: true,
+        title: "PDF Export Failed",
+        message: result.error || "An unexpected error occurred while generating the PDF. Please try again or contact support if the problem persists.",
+      });
+    }
   };
 
   // Show loading skeleton while fetching data (crash protection only)
@@ -520,6 +553,32 @@ const PmsDashboardContent = () => {
         reportUrl={window.location.href}
         projectName={projectName}
       />
+
+      {/* PDF Export Error Dialog */}
+      <AlertDialog 
+        open={pdfErrorDialog.open} 
+        onOpenChange={(open) => setPdfErrorDialog(prev => ({ ...prev, open }))}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="w-5 h-5" />
+              {pdfErrorDialog.title}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pdfErrorDialog.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setPdfErrorDialog(prev => ({ ...prev, open: false }))}
+              className="bg-accent hover:bg-accent/90"
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
