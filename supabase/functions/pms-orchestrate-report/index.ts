@@ -87,6 +87,10 @@ serve(async (req) => {
       console.log(`📍 ${statusInProgress}`);
 
       try {
+        // Create abort controller with 150 second timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 150000);
+
         // 2. Call n8n webhook with tool_name and wizard_id
         const response = await fetch(webhookUrl, {
           method: "POST",
@@ -95,7 +99,11 @@ serve(async (req) => {
             tool_name: tool.tool_name,
             wizard_id: wizard_id
           }),
+          signal: controller.signal,
         });
+
+        // Clear timeout on successful response
+        clearTimeout(timeoutId);
 
         // 3. Check HTTP response
         if (!response.ok) {
@@ -114,9 +122,14 @@ serve(async (req) => {
 
         console.log(`✅ ${statusCompleted}`);
 
-      } catch (error) {
-        // 5. On failure, update status and stop execution
-        console.error(`❌ ${statusFailed}:`, error);
+      } catch (error: unknown) {
+        // 5. On failure (including timeout), update status and stop execution
+        const isTimeout = error instanceof Error && error.name === 'AbortError';
+        const errorMessage = isTimeout 
+          ? 'Request timeout (150s exceeded)' 
+          : String(error);
+        
+        console.error(`❌ ${statusFailed}:`, errorMessage);
         
         await supabase
           .from("tb_pms_reports")
@@ -128,7 +141,7 @@ serve(async (req) => {
             success: false,
             failedAt: tool.step,
             tool_name: tool.tool_name,
-            error: String(error)
+            error: errorMessage
           }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
