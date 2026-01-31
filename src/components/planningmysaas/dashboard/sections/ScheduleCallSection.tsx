@@ -13,14 +13,14 @@ const useCountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 59, seconds: 59 });
 
   useEffect(() => {
-    const savedExpiry = localStorage.getItem('discountExpiry');
+    const savedExpiry = localStorage.getItem('pms_offer_expiry_24h');
     let expiryTime: number;
 
     if (savedExpiry) {
       expiryTime = parseInt(savedExpiry);
     } else {
       expiryTime = Date.now() + 24 * 60 * 60 * 1000;
-      localStorage.setItem('discountExpiry', expiryTime.toString());
+      localStorage.setItem('pms_offer_expiry_24h', expiryTime.toString());
     }
 
     const updateTimer = () => {
@@ -30,7 +30,7 @@ const useCountdownTimer = () => {
       if (diff <= 0) {
         // Reset timer for another 24h
         expiryTime = Date.now() + 24 * 60 * 60 * 1000;
-        localStorage.setItem('discountExpiry', expiryTime.toString());
+        localStorage.setItem('pms_offer_expiry_24h', expiryTime.toString());
       }
 
       const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
