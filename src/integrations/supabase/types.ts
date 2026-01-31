@@ -290,6 +290,9 @@ export type Database = {
           paid_media_intelligence_section: Json | null
           price_intelligence_section: Json | null
           section_investment: Json | null
+          share_created_at: string | null
+          share_enabled: boolean | null
+          share_token: string | null
           status: string
           summary_section: Json | null
           updated_at: string
@@ -309,6 +312,9 @@ export type Database = {
           paid_media_intelligence_section?: Json | null
           price_intelligence_section?: Json | null
           section_investment?: Json | null
+          share_created_at?: string | null
+          share_enabled?: boolean | null
+          share_token?: string | null
           status?: string
           summary_section?: Json | null
           updated_at?: string
@@ -328,6 +334,9 @@ export type Database = {
           paid_media_intelligence_section?: Json | null
           price_intelligence_section?: Json | null
           section_investment?: Json | null
+          share_created_at?: string | null
+          share_enabled?: boolean | null
+          share_token?: string | null
           status?: string
           summary_section?: Json | null
           updated_at?: string

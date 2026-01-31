@@ -20,6 +20,7 @@ import PmsReports from "./pages/PmsReports";
 import PmsDashboard from "./pages/PmsDashboard";
 import PmsProfile from "./pages/PmsProfile";
 import PmsAdmin from "./pages/PmsAdmin";
+import PmsSharedReport from "./pages/PmsSharedReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/planningmysaas" element={<PlanningMySaas />} />
             <Route path="/planningmysaas/login" element={<PmsLogin />} />
             <Route path="/planningmysaas/reset-password" element={<PmsResetPassword />} />
+            <Route path="/planningmysaas/shared/:shareToken" element={<PmsSharedReport />} />
             
             {/* Protected routes */}
             <Route path="/planningmysaas/wizard" element={
