@@ -36,6 +36,81 @@ const getViabilityColor = (score: number): [number, number, number] => {
   return COLORS.red;
 };
 
+// ==========================================
+// Text Sanitization for PDF (jsPDF compatibility)
+// ==========================================
+
+const sanitizeTextForPDF = (text: string): string => {
+  return text
+    // Remove emojis and Unicode symbols
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, "") // Emojis
+    .replace(/[\u{2600}-\u{26FF}]/gu, "")   // Misc symbols
+    .replace(/[\u{2700}-\u{27BF}]/gu, "")   // Dingbats
+    .replace(/[\u{FE00}-\u{FE0F}]/gu, "")   // Variation selectors
+    // Replace special characters with ASCII equivalents
+    .replace(/[""]/g, '"')           // Smart quotes
+    .replace(/['']/g, "'")           // Smart apostrophes
+    .replace(/[–—]/g, "-")           // Dashes
+    .replace(/…/g, "...")            // Ellipsis
+    .replace(/[•·]/g, "-")           // Bullets (will be re-added as •)
+    .replace(/[→←↑↓]/g, "->")        // Arrows
+    .replace(/[✓✔]/g, "[x]")         // Checkmarks
+    .replace(/[✗✘]/g, "[_]")         // X marks
+    .replace(/[★☆]/g, "*")           // Stars
+    .replace(/©/g, "(c)")            // Copyright
+    .replace(/®/g, "(R)")            // Registered
+    .replace(/™/g, "(TM)")           // Trademark
+    .replace(/°/g, " deg")           // Degree
+    .replace(/[^\x00-\x7F]/g, "");   // Remove any remaining non-ASCII
+};
+
+// ==========================================
+// Markdown Preprocessing (Remove duplicate tables)
+// ==========================================
+
+const preprocessMarkdown = (markdown: string): string => {
+  const lines = markdown.split("\n");
+  const result: string[] = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    
+    // Check if this is a table line (starts with |)
+    if (trimmed.startsWith("|")) {
+      // Look ahead to find if there's a CHART placeholder after this table
+      let j = i + 1;
+      let isTableBeforeChart = false;
+      
+      // Skip remaining table lines
+      while (j < lines.length && lines[j].trim().startsWith("|")) {
+        j++;
+      }
+      // Skip empty lines between table and chart
+      while (j < lines.length && lines[j].trim() === "") {
+        j++;
+      }
+      // Check if next non-empty line is a chart placeholder
+      if (j < lines.length && lines[j].trim().match(/\[CHART:\w+\]/)) {
+        isTableBeforeChart = true;
+      }
+      
+      if (isTableBeforeChart) {
+        // Skip all table lines until we reach non-table content
+        while (i < lines.length && lines[i].trim().startsWith("|")) {
+          i++;
+        }
+        i--; // Adjust for loop increment
+        continue;
+      }
+    }
+    
+    result.push(line);
+  }
+  
+  return result.join("\n");
+};
+
 const formatDate = (dateString: string): string => {
   try {
     const date = new Date(dateString);
@@ -244,11 +319,12 @@ const parseMarkdownLine = (line: string): ParsedLine => {
 };
 
 const stripMarkdownFormatting = (text: string): string => {
-  return text
+  const stripped = text
     .replace(/\*\*([^*]+)\*\*/g, "$1") // Bold
     .replace(/\*([^*]+)\*/g, "$1")     // Italic
     .replace(/`([^`]+)`/g, "$1")       // Code
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"); // Links
+  return sanitizeTextForPDF(stripped);
 };
 
 // ==========================================
@@ -257,8 +333,16 @@ const stripMarkdownFormatting = (text: string): string => {
 
 const addPageFooter = (pdf: jsPDF, pageNumber: number): void => {
   const y = PAGE_HEIGHT - 10;
+  
+  // Subtle separator line
+  pdf.setDrawColor(...COLORS.lightGray);
+  pdf.setLineWidth(0.2);
+  pdf.line(MARGIN, y - 5, PAGE_WIDTH - MARGIN, y - 5);
+  
+  // Footer text
   pdf.setFontSize(8);
   pdf.setTextColor(...COLORS.muted);
+  pdf.setFont("helvetica", "normal");
   pdf.text(`Page ${pageNumber}`, MARGIN, y);
   pdf.text("uaicode.ai | PlanningMySaaS", PAGE_WIDTH - MARGIN, y, { align: "right" });
 };
@@ -321,7 +405,8 @@ export const generateBusinessPlanPDF = async (
   // Project Title
   pdf.setFontSize(24);
   pdf.setTextColor(...COLORS.darkGray);
-  const titleLines = pdf.splitTextToSize(businessPlan.title || projectName, CONTENT_WIDTH);
+  const sanitizedTitle = sanitizeTextForPDF(businessPlan.title || projectName);
+  const titleLines = pdf.splitTextToSize(sanitizedTitle, CONTENT_WIDTH);
   titleLines.forEach((line: string) => {
     pdf.text(line, PAGE_WIDTH / 2, y, { align: "center" });
     y += 12;
@@ -340,8 +425,9 @@ export const generateBusinessPlanPDF = async (
   pdf.setFontSize(14);
   pdf.setTextColor(...COLORS.white);
   pdf.setFont("helvetica", "bold");
+  const sanitizedLabel = sanitizeTextForPDF(businessPlan.viability_label || "Unknown");
   pdf.text(
-    `Viability Score: ${businessPlan.viability_score || 0}/100 — ${businessPlan.viability_label || "Unknown"}`,
+    `Viability Score: ${businessPlan.viability_score || 0}/100 - ${sanitizedLabel}`,
     PAGE_WIDTH / 2,
     y + 7,
     { align: "center" }
@@ -353,7 +439,8 @@ export const generateBusinessPlanPDF = async (
     pdf.setFontSize(12);
     pdf.setFont("helvetica", "normal");
     pdf.setTextColor(...COLORS.textLight);
-    const subtitleLines = pdf.splitTextToSize(businessPlan.subtitle, CONTENT_WIDTH - 20);
+    const sanitizedSubtitle = sanitizeTextForPDF(businessPlan.subtitle);
+    const subtitleLines = pdf.splitTextToSize(sanitizedSubtitle, CONTENT_WIDTH - 20);
     subtitleLines.forEach((line: string) => {
       pdf.text(line, PAGE_WIDTH / 2, y, { align: "center" });
       y += 7;
@@ -378,7 +465,9 @@ export const generateBusinessPlanPDF = async (
   pageNumber.value++;
   y = MARGIN + 10;
 
-  const lines = (businessPlan.markdown_content || "").split("\n");
+  // Preprocess markdown to remove duplicate tables before charts
+  const cleanedMarkdown = preprocessMarkdown(businessPlan.markdown_content || "");
+  const lines = cleanedMarkdown.split("\n");
 
   for (const line of lines) {
     const parsed = parseMarkdownLine(line);
