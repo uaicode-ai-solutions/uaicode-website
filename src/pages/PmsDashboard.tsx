@@ -83,7 +83,7 @@ const PmsDashboardContent = () => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
+  
   const [pdfErrorDialog, setPdfErrorDialog] = useState<{
     open: boolean;
     title: string;
@@ -121,38 +121,21 @@ const PmsDashboardContent = () => {
     return checkDataQuality(reportData);
   }, [reportData]);
 
-  // Regenerate report handler - update status to "preparing" BEFORE navigating
-  const handleRegenerateReport = async () => {
-    if (!wizardId || isRegenerating) return;
-    
-    setIsRegenerating(true);
-    
-    try {
-      // 1. Update status to "preparing" and WAIT for confirmation
-      const { error } = await supabase
-        .from("tb_pms_reports")
-        .update({ status: "preparing" })
-        .eq("wizard_id", wizardId);
-      
-      if (error) {
-        console.error("[PmsDashboard] Failed to update status to preparing:", error);
-        setIsRegenerating(false);
-        return; // Don't navigate if update failed
+  // Regenerate report handler - navigate to wizard step 5
+  const handleRegenerateReport = () => {
+    // Update localStorage to set wizard at step 5
+    const savedData = localStorage.getItem("pms-wizard-data");
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        parsed.currentStep = 5;
+        localStorage.setItem("pms-wizard-data", JSON.stringify(parsed));
+      } catch (e) {
+        console.error("Error updating wizard step:", e);
       }
-      
-      console.log("[PmsDashboard] Status updated to 'preparing', navigating to loading page");
-      
-      // 2. Invalidate cache after confirming update
-      await queryClient.invalidateQueries({ 
-        queryKey: ["pms-report-data", wizardId] 
-      });
-      
-      // 3. Only navigate after confirmation
-      navigate(`/planningmysaas/loading/${wizardId}`);
-    } catch (err) {
-      console.error("[PmsDashboard] Regenerate error:", err);
-      setIsRegenerating(false);
     }
+    // Navigate to wizard (will open at step 5)
+    navigate("/planningmysaas/wizard");
   };
 
   // report, isLoading, and error now come from ReportContext (unified loading)
@@ -346,13 +329,10 @@ const PmsDashboardContent = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleRegenerateReport}
-                disabled={isRegenerating}
                 className="gap-2 border-accent/50 text-accent hover:bg-accent/10 hover:border-accent"
               >
-                <RefreshCw className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">
-                  {isRegenerating ? 'Starting...' : 'Regenerate'}
-                </span>
+                <RefreshCw className="h-4 w-4" />
+                <span className="hidden sm:inline">Regenerate</span>
               </Button>
 
               <Button
