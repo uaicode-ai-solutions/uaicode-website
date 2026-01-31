@@ -98,3 +98,6 @@ verify_jwt = false
 
 [functions.pms-send-share-report]
 verify_jwt = false
+
+[functions.pms-email-kyle]
+verify_jwt = false
