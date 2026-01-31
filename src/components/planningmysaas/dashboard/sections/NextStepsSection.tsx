@@ -38,7 +38,7 @@ import { useState, useEffect } from "react";
 import KyleConsultantDialog from "../KyleConsultantDialog";
 import KyleChatDialog from "../KyleChatDialog";
 import KyleAvatar from "@/components/chat/KyleAvatar";
-import EmailContactDialog from "@/components/chat/EmailContactDialog";
+import EmailKyleDialog from "../EmailKyleDialog";
 import { getSectionInvestment, getDiscountStrategy, getDiscountSavings } from "@/lib/sectionInvestmentUtils";
 import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
 
@@ -829,10 +829,9 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
         open={kyleChatDialogOpen} 
         onOpenChange={setKyleChatDialogOpen}
       />
-      <EmailContactDialog 
+      <EmailKyleDialog 
         open={emailDialogOpen} 
         onOpenChange={setEmailDialogOpen}
-        source="pms_next_steps"
       />
     </section>
   );
