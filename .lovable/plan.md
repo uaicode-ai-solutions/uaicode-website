@@ -1,188 +1,138 @@
 
-# Plano: Implementar Envio de Email no Share Report
+# Plan: Unify Monetary Value Formatting
 
-## Visão Geral
+## Problem Summary
+Currently, the Business Plan tab displays exact monetary values (e.g., `$4,580`, `$109,920`) while the Report tab uses rounded/abbreviated formatting (e.g., `$5K`, `$110K`). This creates inconsistency in the user experience.
 
-Quando o usuário preencher o email no popup "Share Report" e clicar em "Send Email", o sistema enviará um email formatado no padrão visual UaiCode para o destinatário com o link do relatório e a mensagem personalizada (se houver).
+## Analysis
 
-## Arquitetura
+### Current Formatting Sources
+
+| Location | Function | Example Output |
+|----------|----------|----------------|
+| `financialParsingUtils.ts` | `formatCurrency()` | `$5K`, `$110K`, `$1.5M` |
+| `reportDataUtils.ts` | `formatCurrency()` | `$4,580`, `$109,920` |
+| Business Plan (n8n) | Raw values from AI | `$4,580`, `$109,920` |
+
+### Decision: Which Format to Standardize On?
+
+**Recommended: Keep exact values for precision**
+
+Rationale:
+- Business plans and investor reports benefit from precision
+- Exact values (`$109,920`) convey more credibility than rounded (`$110K`)
+- Rounding can cause confusion when comparing metrics across tabs
+- The Business Plan markdown already uses exact values from n8n
+
+## Implementation Steps
+
+### Step 1: Create Unified Formatting Utility
+Create a new utility function that provides both formatting options with a clear API:
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    ShareReportDialog (Frontend)                  │
-│  • email, message, projectName, reportUrl                       │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                    POST /pms-send-share-report
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│              pms-send-share-report (Edge Function)              │
-│  • Recebe: recipientEmail, senderName, projectName,             │
-│            reportUrl, personalMessage                           │
-│  • Gera HTML com padrão UaiCode                                 │
-│  • Envia via Resend API                                         │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                        Resend API                                │
-│  • From: PlanningMySaaS <noreply@uaicode.ai>                    │
-│  • Subject: "🔗 [SenderName] shared a SaaS Report with you"     │
-└─────────────────────────────────────────────────────────────────┘
+src/lib/currencyFormatter.ts (NEW)
+├── formatCurrencyExact()    → $4,580 / $109,920 / $1,450,000
+├── formatCurrencyCompact()  → $5K / $110K / $1.5M
+└── formatCurrency()         → Default to exact (breaking change handled)
 ```
 
-## Mudanças Necessárias
+### Step 2: Update Report Tab Components
+Modify components that display financial values to use exact formatting:
 
-### 1. Nova Edge Function: `pms-send-share-report`
+- `FinancialReturnSection.tsx` - Investment, ARR, MRR values
+- `ReportHero.tsx` - TAM, LTV/CAC display
+- `UnitEconomics.tsx` - ARPU, LTV, CAC values  
+- `GrowthPotentialSection.tsx` - ARR evolution values
+- `InvestmentSection.tsx` - Investment breakdowns
+- `BusinessModelSection.tsx` - MRR projections
 
-Criar nova edge function seguindo o padrão existente:
+### Step 3: Update `financialParsingUtils.ts`
+Refactor `formatCurrency()` to use exact formatting by default, add `formatCurrencyCompact()` for cases where abbreviations are preferred (e.g., chart axis labels).
 
-| Parâmetro | Tipo | Descrição |
-|-----------|------|-----------|
-| `recipientEmail` | string | Email do destinatário |
-| `senderName` | string | Nome de quem está compartilhando |
-| `projectName` | string | Nome do projeto SaaS |
-| `reportUrl` | string | URL do relatório compartilhado |
-| `personalMessage` | string (opcional) | Mensagem personalizada |
+### Step 4: Verify Business Plan Alignment
+Ensure `BusinessPlanTab.tsx` chart components also use exact formatting for consistency.
 
-**Template do Email:**
-- Header: Gradiente dourado com "🔗 SaaS Report Shared"
-- Corpo:
-  - Saudação: "Hi there! [SenderName] shared a SaaS validation report with you."
-  - Se houver mensagem pessoal: Card com a mensagem
-  - Card de Preview: Nome do projeto + botão "View Report"
-  - What's Inside: Lista de conteúdo do relatório
-- Footer: Links UaiCode + disclaimer
-- Cores: `#0A0A0A` (background), `#FACC15` (accent gold), `#141414` (cards)
+## Technical Details
 
-### 2. Atualizar `ShareReportDialog.tsx`
+### New Utility Function
+```text
+Location: src/lib/currencyFormatter.ts
 
-Conectar o frontend à nova edge function:
-
-- Adicionar import do `supabase` client
-- Adicionar import do `toast` (sonner)
-- Adicionar import do `useAuth` hook para pegar o nome do usuário logado
-- Substituir o `setTimeout` simulado por chamada real à edge function
-- Adicionar tratamento de erro com toast
-- Adicionar toast de sucesso quando email for enviado
-
-### 3. Adicionar Props Extras ao Dialog
-
-O componente precisa receber informações adicionais:
-- `senderName`: Nome do usuário logado (pode vir via `useAuth`)
-
-Alternativa: buscar o `senderName` dentro do próprio componente usando `useAuth()`.
-
-## Detalhes Técnicos
-
-### Edge Function: Estrutura do Código
-
-```typescript
-interface ShareReportEmailRequest {
-  recipientEmail: string;
-  senderName: string;
-  projectName: string;
-  reportUrl: string;
-  personalMessage?: string;
+export function formatCurrencyExact(
+  value: number | string | null, 
+  fallback = "..."
+): string {
+  // Handle null/undefined
+  // Handle scientific notation strings
+  // Return formatted: $4,580 or $109,920
 }
 
-// Gera HTML seguindo padrão UaiCode
-const generateShareReportEmail = (
-  senderName: string,
-  projectName: string,
-  reportUrl: string,
-  personalMessage?: string
-) => {
-  // Template HTML com cores UaiCode
-  // Header dourado, cards escuros, tipografia consistente
-};
+export function formatCurrencyCompact(
+  value: number | string | null,
+  fallback = "..."
+): string {
+  // Existing K/M/B abbreviation logic
+}
 
-// Handler padrão com CORS
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-  // Validação, geração de email, envio via Resend
-});
+// Alias for backwards compatibility
+export const formatCurrency = formatCurrencyExact;
 ```
 
-### Frontend: Chamada à Edge Function
-
-```typescript
-const handleSendEmail = async () => {
-  // Validações existentes...
-  
-  setIsSending(true);
-  
-  try {
-    const { error } = await supabase.functions.invoke('pms-send-share-report', {
-      body: {
-        recipientEmail: email,
-        senderName: user?.full_name || 'Someone',
-        projectName,
-        reportUrl,
-        personalMessage: message || undefined
-      }
-    });
-    
-    if (error) throw error;
-    
-    toast.success('Email sent successfully!');
-    // Reset e fechar dialog
-  } catch (err) {
-    toast.error('Failed to send email');
-  } finally {
-    setIsSending(false);
-  }
-};
+### Import Updates
+Components will import from the new unified location:
+```text
+- import { formatCurrency } from "@/lib/financialParsingUtils";
++ import { formatCurrency } from "@/lib/currencyFormatter";
 ```
 
-## Design do Email
+### Files to Modify
 
-**Paleta de Cores (padrão UaiCode):**
-- Background: `#0A0A0A`
-- Card: `#141414`
-- Border: `#2A2A2A`
-- Gold accent: `#FACC15`
-- Text primary: `#FFFFFF`
-- Text secondary: `#B3B3B3`
+1. **Create** `src/lib/currencyFormatter.ts`
+   - New unified formatting module
 
-**Estrutura Visual:**
-1. **Header** (gradiente dourado): "🔗 SaaS Report Shared" + "PlanningMySaaS by UaiCode"
-2. **Greeting**: "Hi there! [SenderName] shared a SaaS validation report with you."
-3. **Personal Message Card** (se houver): Fundo `#1A1A1A` com aspas decorativas
-4. **Report Preview Card**: Nome do projeto + link clicável + botão CTA
-5. **What's Included**: Lista de features do relatório
-6. **CTA Button**: "View Full Report" (gradiente dourado)
-7. **Footer**: Links sociais + copyright UaiCode
+2. **Update** `src/lib/financialParsingUtils.ts`
+   - Remove `formatCurrency()` (moved to new module)
+   - Add re-export for backwards compatibility
 
-## Arquivos a Modificar
+3. **Update** `src/components/planningmysaas/dashboard/sections/FinancialReturnSection.tsx`
+   - Switch import to use exact formatting
 
-| Arquivo | Ação | Descrição |
-|---------|------|-----------|
-| `supabase/functions/pms-send-share-report/index.ts` | **Criar** | Nova edge function para enviar email |
-| `src/components/planningmysaas/dashboard/ShareReportDialog.tsx` | **Modificar** | Conectar ao backend, adicionar toasts |
+4. **Update** `src/components/planningmysaas/dashboard/sections/ReportHero.tsx`
+   - Ensure TAM formatting uses exact values
 
-## Fluxo Completo
+5. **Update** `src/components/planningmysaas/dashboard/WhatIfScenarios.tsx`
+   - Update sliders to show exact values
 
-1. Usuário abre popup Share Report
-2. Preenche email do destinatário
-3. (Opcional) Adiciona mensagem personalizada
-4. Clica "Send Email"
-5. Frontend chama `pms-send-share-report`
-6. Edge function valida dados
-7. Gera HTML do email no padrão UaiCode
-8. Envia via Resend API
-9. Retorna sucesso/erro
-10. Frontend mostra toast e fecha dialog
+6. **Update** `src/hooks/useFinancialMetrics.ts`
+   - Update formatted string outputs to use exact format
 
-## Validações
+7. **Update** Chart components (optional)
+   - Keep compact format for axis labels (readability)
+   - Use exact format for tooltips and data labels
 
-**Frontend:**
-- Email obrigatório e formato válido
-- Mensagem opcional (máximo 500 caracteres, se necessário)
+## Edge Cases
 
-**Backend:**
-- `recipientEmail`, `senderName`, `projectName`, `reportUrl` obrigatórios
-- Validação de formato de email
-- `RESEND_API_KEY` configurada (já existe no projeto)
+1. **Very large numbers** (billions): Keep abbreviation for readability
+   - Rule: Values ≥ $1B use `$1.5B` format
+   - Values < $1B use exact format `$450,000,000`
+
+2. **Scientific notation from DB**: Already handled in existing parsing logic
+
+3. **Null/undefined values**: Continue showing "..." fallback
+
+## Testing Checklist
+
+After implementation:
+- [ ] Business Plan and Report Tab show matching values for same metrics
+- [ ] Investment breakdown matches across tabs
+- [ ] MRR/ARR values consistent between J-Curve chart and text
+- [ ] PDF export maintains exact formatting
+- [ ] Chart tooltips show exact values
+- [ ] No regressions in existing financial displays
+
+## Rollback Plan
+
+If issues arise, the changes can be reverted by:
+1. Restore original `formatCurrency()` in `financialParsingUtils.ts`
+2. Remove new `currencyFormatter.ts` module
+3. Revert import statements
