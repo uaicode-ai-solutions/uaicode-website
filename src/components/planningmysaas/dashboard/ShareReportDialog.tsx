@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Link, Copy, Send, Loader2 } from "lucide-react";
+import { Mail, Link, Copy, Send, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface ShareReportDialogProps {
   open: boolean;
@@ -25,44 +27,71 @@ const ShareReportDialog = ({
   reportUrl,
   projectName,
 }: ShareReportDialogProps) => {
+  const { pmsUser } = useAuthContext();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(reportUrl);
-      console.log("Link copied to clipboard");
+      setFeedback({ type: "success", message: "Link copied to clipboard!" });
+      setTimeout(() => setFeedback(null), 3000);
     } catch (error) {
       console.error("Failed to copy link:", error);
+      setFeedback({ type: "error", message: "Failed to copy link" });
+      setTimeout(() => setFeedback(null), 3000);
     }
   };
 
   const handleSendEmail = async () => {
     if (!email.trim()) {
-      console.error("Email required");
+      setFeedback({ type: "error", message: "Email is required" });
+      setTimeout(() => setFeedback(null), 3000);
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      console.error("Invalid email");
+      setFeedback({ type: "error", message: "Please enter a valid email address" });
+      setTimeout(() => setFeedback(null), 3000);
       return;
     }
 
     setIsSending(true);
+    setFeedback(null);
 
-    // Simulate sending email (replace with actual API call)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const { error } = await supabase.functions.invoke('pms-send-share-report', {
+        body: {
+          recipientEmail: email,
+          senderName: pmsUser?.full_name || 'Someone',
+          projectName,
+          reportUrl,
+          personalMessage: message || undefined
+        }
+      });
 
-    setIsSending(false);
-    console.log(`Email sent to ${email}`);
+      if (error) throw error;
 
-    // Reset form and close dialog
-    setEmail("");
-    setMessage("");
-    onOpenChange(false);
+      setFeedback({ type: "success", message: "Email sent successfully!" });
+      
+      // Reset form and close dialog after a brief delay
+      setTimeout(() => {
+        setEmail("");
+        setMessage("");
+        setFeedback(null);
+        onOpenChange(false);
+      }, 1500);
+    } catch (err: any) {
+      console.error("Failed to send email:", err);
+      setFeedback({ type: "error", message: err.message || "Failed to send email. Please try again." });
+      setTimeout(() => setFeedback(null), 5000);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleClose = () => {
@@ -85,10 +114,26 @@ const ShareReportDialog = ({
         </DialogHeader>
 
         <div className="space-y-4 pt-2 min-w-0">
+          {/* Feedback Message */}
+          {feedback && (
+            <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
+              feedback.type === "success" 
+                ? "bg-green-500/10 border border-green-500/20 text-green-400" 
+                : "bg-red-500/10 border border-red-500/20 text-red-400"
+            }`}>
+              {feedback.type === "success" ? (
+                <CheckCircle className="h-4 w-4 shrink-0" />
+              ) : (
+                <AlertCircle className="h-4 w-4 shrink-0" />
+              )}
+              {feedback.message}
+            </div>
+          )}
+
           {/* Recipient Email */}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium">
-              Recipient Email <span className="text-red-400">*</span>
+              Recipient Email <span className="text-destructive">*</span>
             </Label>
             <Input
               id="email"
