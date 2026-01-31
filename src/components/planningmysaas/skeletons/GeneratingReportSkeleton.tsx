@@ -1,4 +1,4 @@
-import { Loader2, DollarSign, Target, BarChart3, TrendingUp, Users, Tag, Megaphone, Rocket, FileText, Trophy, CheckCircle2, XCircle, Zap } from "lucide-react";
+import { Loader2, DollarSign, Target, BarChart3, TrendingUp, Users, Tag, Megaphone, Rocket, FileText, Trophy, CheckCircle2, XCircle, Zap, Briefcase } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface GeneratingReportSkeletonProps {
@@ -6,7 +6,7 @@ interface GeneratingReportSkeletonProps {
   currentStatus?: string;
 }
 
-// Steps in sequential order 1→11 (single column layout)
+// Steps in sequential order 1→12 (single column layout)
 const STEPS = [
   { label: "Initialize Report", icon: Zap },
   { label: "Investment Analysis", icon: DollarSign },
@@ -19,6 +19,7 @@ const STEPS = [
   { label: "Growth Projections", icon: Rocket },
   { label: "Executive Summary", icon: FileText },
   { label: "Final Scoring", icon: Trophy },
+  { label: "Business Plan", icon: Briefcase },
 ];
 
 const TOTAL_STEPS = STEPS.length;

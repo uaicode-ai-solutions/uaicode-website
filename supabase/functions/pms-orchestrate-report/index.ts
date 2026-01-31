@@ -7,6 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Production URL for generating share links
+const PRODUCTION_URL = "https://uaicodewebsite.lovable.app";
+
 const getWebhookUrl = (): string => {
   const webhookId = Deno.env.get("REPORT_NEWREPORT_WEBHOOK_ID");
   if (!webhookId) {
@@ -18,7 +21,14 @@ const getWebhookUrl = (): string => {
   return `https://n8n.uaicode.dev/webhook/${webhookId}`;
 };
 
-// Sequential tools 1→11
+// Generate cryptographically secure share token (32 hex chars)
+const generateShareToken = (): string => {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+};
+
+// Sequential tools 1→12
 const TOOLS_SEQUENCE = [
   { step: 1, tool_name: "Create_Report_Row", label: "Initialize Report" },
   { step: 2, tool_name: "Call_Get_Investment_Tool_", label: "Investment Analysis" },
@@ -31,6 +41,7 @@ const TOOLS_SEQUENCE = [
   { step: 9, tool_name: "Call_Get_Growth_Tool_", label: "Growth Projections" },
   { step: 10, tool_name: "Call_Get_Summary_Tool_", label: "Executive Summary" },
   { step: 11, tool_name: "Call_Get_Hero_Score_Tool_", label: "Final Scoring" },
+  { step: 12, tool_name: "Call_Get_Business_Plan_Tool_", label: "Business Plan" },
 ];
 
 serve(async (req) => {
@@ -124,11 +135,22 @@ serve(async (req) => {
       }
     }
 
-    // All steps completed successfully
+    // All steps completed - generate share data and mark as completed
+    const shareToken = generateShareToken();
+    const shareUrl = `${PRODUCTION_URL}/planningmysaas/shared/${shareToken}`;
+
     await supabase
       .from("tb_pms_reports")
-      .update({ status: "completed" })
+      .update({ 
+        status: "completed",
+        share_token: shareToken,
+        share_url: shareUrl,
+        share_enabled: true,
+        share_created_at: new Date().toISOString()
+      })
       .eq("wizard_id", wizard_id);
+
+    console.log(`🔗 Share URL generated: ${shareUrl}`);
 
     console.log(`🎉 Report completed for wizard: ${wizard_id}`);
 
