@@ -1,215 +1,157 @@
 
-# Plano: Adicionar "Export to PDF" no Menu Share
+# Plano: Substituir Console.error por Popups de Erro no Export PDF
 
 ## Objetivo
 
-Adicionar uma opção "Export to PDF" no dropdown de Share do header que exporta o Business Plan completo para PDF usando a biblioteca jsPDF (já instalada).
+Alterar o tratamento de erros do "Export to PDF" para exibir popups (AlertDialog) ao invés de apenas logar no console, garantindo feedback visual claro para o usuário.
 
 ---
 
-## 1. Arquivos a Criar/Modificar
+## 1. Cenários de Erro
 
-| Ação | Arquivo | Descrição |
-|------|---------|-----------|
-| **Criar** | `src/lib/businessPlanPdfExport.ts` | Função para gerar PDF do Business Plan |
-| **Modificar** | `src/pages/PmsDashboard.tsx` | Adicionar opção "Export to PDF" no dropdown |
+| Cenário | Mensagem do Popup |
+|---------|-------------------|
+| **Business Plan vazio** | "Business Plan is not available. Please ensure the report has been fully generated before exporting." |
+| **Erro no jsPDF** | "An error occurred while generating the PDF. Please try again or contact support if the problem persists." |
 
 ---
 
-## 2. Novo Arquivo: businessPlanPdfExport.ts
+## 2. Arquivos a Modificar
 
-### 2.1 Estrutura da Função
+| Arquivo | Ação |
+|---------|------|
+| `src/lib/businessPlanPdfExport.ts` | Adicionar try/catch e retornar objeto de resultado |
+| `src/pages/PmsDashboard.tsx` | Adicionar estado de erro + AlertDialog para exibir popup |
+
+---
+
+## 3. Modificar businessPlanPdfExport.ts
+
+### 3.1 Alterar Tipo de Retorno
 
 ```typescript
+// Novo tipo de retorno
+interface PDFExportResult {
+  success: boolean;
+  error?: string;
+}
+
 export const generateBusinessPlanPDF = async (
   businessPlan: BusinessPlanSection,
   projectName: string
-): Promise<void>
+): Promise<PDFExportResult> => {
+  try {
+    // ... lógica existente de geração do PDF ...
+    
+    pdf.save(filename);
+    return { success: true };
+  } catch (error) {
+    console.error("PDF generation error:", error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Unknown error occurred" 
+    };
+  }
+};
 ```
-
-### 2.2 Layout do PDF (Múltiplas Páginas)
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ PAGE 1: COVER                                               │
-├─────────────────────────────────────────────────────────────┤
-│  [UAICode Logo]                                             │
-│                                                             │
-│  BUSINESS PLAN                                              │
-│  {title}                                                    │
-│                                                             │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ Viability Score: 70/100 — Promising                  │  │
-│  └──────────────────────────────────────────────────────┘  │
-│                                                             │
-│  {subtitle}                                                 │
-│                                                             │
-│  Generated: January 31, 2026                                │
-│  Word Count: 2,850 words                                    │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│ PAGES 2+: CONTENT                                           │
-├─────────────────────────────────────────────────────────────┤
-│  ## Section Heading                                         │
-│                                                             │
-│  Lorem ipsum dolor sit amet, consectetur adipiscing elit.   │
-│  Sed do eiusmod tempor incididunt ut labore et dolore...    │
-│                                                             │
-│  ────────────────────────────────────────────────────────   │
-│                                                             │
-│  [CHART PLACEHOLDER - Note: Charts rendered as text tables] │
-│                                                             │
-│  | Market | Value |                                         │
-│  |--------|-------|                                         │
-│  | TAM    | $102B |                                         │
-│  | SAM    | $8.4B |                                         │
-│  | SOM    | $3.7M |                                         │
-│                                                             │
-│                                       Page 2 | uaicode.ai   │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### 2.3 Funcionalidades Principais
-
-| Feature | Descrição |
-|---------|-----------|
-| **Markdown Parsing** | Converter markdown em texto formatado para PDF |
-| **Chart Tables** | Substituir `[CHART:xxx]` por tabelas de dados equivalentes |
-| **Multi-Page** | Paginação automática com quebra de página inteligente |
-| **Viability Badge** | Destaque colorido baseado no score (verde/amarelo/vermelho) |
-| **Brand Footer** | Logo + contato da UAICode em cada página |
-| **Filename** | `BusinessPlan_{projectName}_{timestamp}.pdf` |
-
-### 2.4 Tratamento de Charts
-
-Os charts interativos do Recharts não podem ser exportados diretamente para PDF. A estratégia será converter os dados em tabelas formatadas:
-
-| Chart Type | PDF Representation |
-|------------|-------------------|
-| `market_sizing` | Tabela 3 linhas: TAM, SAM, SOM |
-| `financial_projections` | Tabela com MRR/ARR projections |
-| `competitor_pricing` | Tabela com min/max por competidor |
-| `investment_breakdown` | Tabela com categorias e valores |
 
 ---
 
-## 3. Modificar PmsDashboard.tsx
+## 4. Modificar PmsDashboard.tsx
 
-### 3.1 Adicionar Import
+### 4.1 Adicionar Estado para Popup de Erro
 
 ```typescript
-import { FileDown } from "lucide-react"; // Ícone para Export
-import { generateBusinessPlanPDF } from "@/lib/businessPlanPdfExport";
-import { BusinessPlanSection } from "@/types/report";
+const [pdfErrorDialog, setPdfErrorDialog] = useState<{
+  open: boolean;
+  title: string;
+  message: string;
+}>({
+  open: false,
+  title: "",
+  message: "",
+});
 ```
 
-### 3.2 Adicionar Handler
+### 4.2 Atualizar handleExportPDF
 
 ```typescript
 const handleExportPDF = async () => {
   const bp = reportData?.business_plan_section as BusinessPlanSection | null;
   
+  // Cenário 1: Business Plan vazio
   if (!bp || !bp.markdown_content) {
-    console.error("Business Plan not available for export");
+    setPdfErrorDialog({
+      open: true,
+      title: "Business Plan Not Available",
+      message: "The Business Plan section is empty or not yet generated. Please ensure your report has been fully processed before exporting to PDF.",
+    });
     return;
   }
   
-  await generateBusinessPlanPDF(bp, projectName);
+  // Cenário 2: Tentar gerar PDF (pode falhar)
+  const result = await generateBusinessPlanPDF(bp, projectName);
+  
+  if (!result.success) {
+    setPdfErrorDialog({
+      open: true,
+      title: "PDF Export Failed",
+      message: result.error || "An unexpected error occurred while generating the PDF. Please try again or contact support if the problem persists.",
+    });
+  }
 };
 ```
 
-### 3.3 Adicionar Item no Dropdown
+### 4.3 Adicionar AlertDialog no JSX
 
-Após "Share via Email", adicionar:
+Após os outros dialogs existentes, adicionar:
 
 ```typescript
-<DropdownMenuSeparator className="bg-border/30" />
-<DropdownMenuItem 
-  onClick={handleExportPDF} 
-  className="cursor-pointer"
+{/* PDF Export Error Dialog */}
+<AlertDialog 
+  open={pdfErrorDialog.open} 
+  onOpenChange={(open) => setPdfErrorDialog(prev => ({ ...prev, open }))}
 >
-  <FileDown className="h-4 w-4 mr-2" />
-  Export to PDF
-</DropdownMenuItem>
+  <AlertDialogContent className="max-w-md">
+    <AlertDialogHeader>
+      <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+        <AlertCircle className="w-5 h-5" />
+        {pdfErrorDialog.title}
+      </AlertDialogTitle>
+      <AlertDialogDescription>
+        {pdfErrorDialog.message}
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogAction 
+        onClick={() => setPdfErrorDialog(prev => ({ ...prev, open: false }))}
+        className="bg-accent hover:bg-accent/90"
+      >
+        OK
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
 ```
 
----
-
-## 4. Estrutura Visual do Dropdown Atualizado
-
-```text
-┌─────────────────────┐
-│ 🔗 Copy Link        │
-│ ✉️  Share via Email │
-├─────────────────────┤
-│ 📄 Export to PDF    │  ← NOVO
-└─────────────────────┘
-```
-
----
-
-## 5. Markdown Parser para PDF
-
-### 5.1 Regras de Conversão
-
-| Markdown | PDF Output |
-|----------|------------|
-| `# Heading 1` | Bold, 24pt, underlined |
-| `## Heading 2` | Bold, 18pt, gold color |
-| `### Heading 3` | Bold, 14pt |
-| `**bold**` | Bold text |
-| `*italic*` | Italic text |
-| `- item` | • Bullet point |
-| `1. item` | 1. Numbered list |
-| `> quote` | Indented, gray bar left |
-| `---` | Horizontal line |
-| Tables | Formatted with borders |
-| `[CHART:xxx]` | Data table replacement |
-
-### 5.2 Page Break Logic
+### 4.4 Imports Necessários
 
 ```typescript
-// Check if adding content would overflow page
-if (yPosition + contentHeight > pageHeight - margin - footerHeight) {
-  addPageFooter(pageNumber);
-  pdf.addPage();
-  pageNumber++;
-  yPosition = margin;
-}
+import { AlertCircle } from "lucide-react"; // Adicionar ao import existente
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 ```
 
 ---
 
-## 6. PDF Metadata
-
-```typescript
-pdf.setProperties({
-  title: `Business Plan: ${projectName}`,
-  subject: 'SaaS Business Plan Document',
-  author: 'UAICode - PlanningMySaaS',
-  keywords: 'Business Plan, SaaS, Startup, Market Analysis',
-  creator: 'PlanningMySaaS by UAICode',
-});
-```
-
----
-
-## 7. Cores e Estilo (Brand UaiCode)
-
-| Elemento | Cor |
-|----------|-----|
-| Título principal | Gold (#FFB800) |
-| Headings H2 | Dark Gray (#232729) |
-| Texto normal | Text Light (#3C3C3C) |
-| Viability Verde | Green (#22C55E) |
-| Viability Amarelo | Yellow (#EAB308) |
-| Viability Vermelho | Red (#EF4444) |
-| Footer | Muted (#646464) |
-
----
-
-## 8. Fluxo de Execução
+## 5. Fluxo de Execução Atualizado
 
 ```text
 [Usuário clica "Export to PDF"]
@@ -217,42 +159,42 @@ pdf.setProperties({
           ▼
 [Validar se Business Plan existe]
           │
-          ├─ NÃO → Toast: "Business Plan not available"
+          ├─ NÃO → Popup: "Business Plan Not Available"
+          │         ┌────────────────────────────────┐
+          │         │ ⚠️ Business Plan Not Available │
+          │         │                                │
+          │         │ The Business Plan section is   │
+          │         │ empty or not yet generated...  │
+          │         │                                │
+          │         │            [ OK ]              │
+          │         └────────────────────────────────┘
           │
-          └─ SIM ─┬─► [Criar jsPDF instance]
+          └─ SIM ─┬─► [Tentar gerar PDF]
                   │
                   ▼
-          [Gerar Cover Page]
+          [generateBusinessPlanPDF()]
                   │
-                  ▼
-          [Parse Markdown]
+                  ├─ SUCCESS → Download automático
                   │
-                  ▼
-          [Substituir [CHART:] por tabelas]
-                  │
-                  ▼
-          [Renderizar texto com paginação]
-                  │
-                  ▼
-          [Adicionar footers]
-                  │
-                  ▼
-          [pdf.save(filename)]
-                  │
-                  ▼
-          [Download automático]
+                  └─ ERROR → Popup: "PDF Export Failed"
+                            ┌────────────────────────────────┐
+                            │ ⚠️ PDF Export Failed           │
+                            │                                │
+                            │ An unexpected error occurred   │
+                            │ while generating the PDF...    │
+                            │                                │
+                            │            [ OK ]              │
+                            └────────────────────────────────┘
 ```
 
 ---
 
-## 9. Tratamento de Erros
+## 6. Estilo Visual do Popup
 
-| Cenário | Ação |
-|---------|------|
-| Business Plan vazio | Mostrar toast de erro |
-| Markdown malformado | Fallback para texto plano |
-| Charts sem dados | Omitir tabela correspondente |
-| Erro no jsPDF | Log + toast de erro |
+- **Título:** Ícone `AlertCircle` vermelho + texto em `text-destructive`
+- **Corpo:** Descrição clara do problema
+- **Botão:** "OK" com estilo accent para fechar
+- **Tamanho:** `max-w-md` para não ser muito grande
 
 ---
 
@@ -260,9 +202,9 @@ pdf.setProperties({
 
 | Step | Arquivo | Ação |
 |------|---------|------|
-| 1 | `src/lib/businessPlanPdfExport.ts` | Criar função de export |
-| 2 | `src/pages/PmsDashboard.tsx` | Adicionar import + handler |
-| 3 | `src/pages/PmsDashboard.tsx` | Adicionar item no dropdown |
-| 4 | Testar | Verificar download do PDF |
-
-Ao aprovar, implementarei todos os arquivos necessários.
+| 1 | `businessPlanPdfExport.ts` | Adicionar try/catch e retornar `{ success, error }` |
+| 2 | `PmsDashboard.tsx` | Adicionar estado `pdfErrorDialog` |
+| 3 | `PmsDashboard.tsx` | Atualizar `handleExportPDF` com validação e tratamento de erro |
+| 4 | `PmsDashboard.tsx` | Adicionar imports do AlertDialog e AlertCircle |
+| 5 | `PmsDashboard.tsx` | Adicionar componente AlertDialog no JSX |
+| 6 | Testar | Verificar popup com Business Plan vazio e com erro simulado |
