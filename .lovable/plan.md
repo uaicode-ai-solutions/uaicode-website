@@ -1,252 +1,212 @@
 
 
-# Plano: Adicionar Step 12 + Coluna share_url + Gerar Dados de Compartilhamento Automaticamente
+# Plano: Adicionar Timeout de 150s no Fetch (Mudança Cirúrgica)
 
-## Objetivo
+## Resumo Executivo
 
-1. Adicionar **Step 12: Business Plan** no orchestrator e na tela de loading
-2. Adicionar coluna **share_url** no banco para armazenar a URL completa
-3. Após Step 12, **gerar automaticamente** `share_token`, `share_url`, `share_enabled`, `share_created_at`
-4. Atualizar o Dashboard para usar a URL do banco diretamente (sem precisar gerar)
+**Problema**: Quando o n8n demora mais de 60s, a Edge Function faz shutdown e o status fica travado em "In Progress".
 
----
-
-## Arquivos a Modificar (APENAS 4)
-
-| Arquivo | Modificação |
-|---------|-------------|
-| `supabase/functions/pms-orchestrate-report/index.ts` | Adicionar Step 12 + gerar dados de compartilhamento |
-| `src/components/planningmysaas/skeletons/GeneratingReportSkeleton.tsx` | Adicionar Step 12 na lista visual |
-| `src/pages/PmsDashboard.tsx` | Simplificar lógica para usar share_url do banco |
-| **Migration** | Adicionar coluna `share_url TEXT` |
+**Solução**: Adicionar timeout de 150 segundos no fetch. Se o tempo exceder, o código vai para o catch que JÁ existe e grava "Fail" no banco.
 
 ---
 
-## 1. Migration: Nova Coluna share_url
+## Auditoria de Risco ✅
 
-```sql
-ALTER TABLE public.tb_pms_reports
-ADD COLUMN IF NOT EXISTS share_url TEXT;
-```
-
----
-
-## 2. Modificação: pms-orchestrate-report/index.ts
-
-### 2.1 Adicionar Step 12 no TOOLS_SEQUENCE (linha 22-34)
-
-```typescript
-// Sequential tools 1→12
-const TOOLS_SEQUENCE = [
-  { step: 1, tool_name: "Create_Report_Row", label: "Initialize Report" },
-  { step: 2, tool_name: "Call_Get_Investment_Tool_", label: "Investment Analysis" },
-  { step: 3, tool_name: "Call_Get_Benchmark_Tool_", label: "Market Benchmarks" },
-  { step: 4, tool_name: "Call_Get_Competitors_Tool_", label: "Competitor Research" },
-  { step: 5, tool_name: "Call_Get_Opportunity_Tool_", label: "Market Opportunity" },
-  { step: 6, tool_name: "Call_Get_Price_Tool_", label: "Pricing Strategy" },
-  { step: 7, tool_name: "Call_Get_ICP_Tool_", label: "Customer Profiling" },
-  { step: 8, tool_name: "Call_Get_PaidMedia_Tool_", label: "Paid Media Analysis" },
-  { step: 9, tool_name: "Call_Get_Growth_Tool_", label: "Growth Projections" },
-  { step: 10, tool_name: "Call_Get_Summary_Tool_", label: "Executive Summary" },
-  { step: 11, tool_name: "Call_Get_Hero_Score_Tool_", label: "Final Scoring" },
-  { step: 12, tool_name: "Call_Get_Business_Plan_Tool_", label: "Business Plan" },  // NOVO
-];
-```
-
-### 2.2 Adicionar constante da URL base (após corsHeaders, linha ~9)
-
-```typescript
-const PRODUCTION_URL = "https://uaicodewebsite.lovable.app";
-```
-
-### 2.3 Adicionar função de geração de token (após getWebhookUrl, linha ~19)
-
-```typescript
-// Generate cryptographically secure share token (32 hex chars)
-const generateShareToken = (): string => {
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
-};
-```
-
-### 2.4 Modificar bloco de conclusão (linha 127-131)
-
-**ANTES:**
-```typescript
-// All steps completed successfully
-await supabase
-  .from("tb_pms_reports")
-  .update({ status: "completed" })
-  .eq("wizard_id", wizard_id);
-```
-
-**DEPOIS:**
-```typescript
-// All steps completed - generate share data and mark as completed
-const shareToken = generateShareToken();
-const shareUrl = `${PRODUCTION_URL}/planningmysaas/shared/${shareToken}`;
-
-await supabase
-  .from("tb_pms_reports")
-  .update({ 
-    status: "completed",
-    share_token: shareToken,
-    share_url: shareUrl,
-    share_enabled: true,
-    share_created_at: new Date().toISOString()
-  })
-  .eq("wizard_id", wizard_id);
-
-console.log(`🔗 Share URL generated: ${shareUrl}`);
-```
+| Componente | Status | Será modificado? |
+|------------|--------|------------------|
+| `pms-orchestrate-report/index.ts` | Funcionando | ✅ SIM (apenas 1 bloco) |
+| `PmsLoading.tsx` | Funcionando | ❌ NÃO |
+| `useReportData.ts` | Funcionando | ❌ NÃO |
+| `GeneratingReportSkeleton.tsx` | Funcionando | ❌ NÃO |
+| `PmsDashboard.tsx` | Funcionando | ❌ NÃO |
+| Share URL generation | Funcionando | ❌ NÃO |
+| CORS headers | Funcionando | ❌ NÃO |
 
 ---
 
-## 3. Modificação: GeneratingReportSkeleton.tsx
+## Modificação Única
 
-### 3.1 Adicionar import do ícone Briefcase (linha 1)
+**Arquivo**: `supabase/functions/pms-orchestrate-report/index.ts`  
+**Linhas afetadas**: 89-135 (bloco try/catch dentro do loop)
 
-```typescript
-import { Loader2, DollarSign, Target, BarChart3, TrendingUp, Users, Tag, Megaphone, Rocket, FileText, Trophy, CheckCircle2, XCircle, Zap, Briefcase } from "lucide-react";
-```
-
-### 3.2 Adicionar Step 12 na lista STEPS (linha 10-22)
+### Código Atual (linhas 89-135)
 
 ```typescript
-const STEPS = [
-  { label: "Initialize Report", icon: Zap },
-  { label: "Investment Analysis", icon: DollarSign },
-  { label: "Market Benchmarks", icon: Target },
-  { label: "Competitor Research", icon: BarChart3 },
-  { label: "Market Opportunity", icon: TrendingUp },
-  { label: "Pricing Strategy", icon: Tag },
-  { label: "Customer Profiling", icon: Users },
-  { label: "Paid Media Analysis", icon: Megaphone },
-  { label: "Growth Projections", icon: Rocket },
-  { label: "Executive Summary", icon: FileText },
-  { label: "Final Scoring", icon: Trophy },
-  { label: "Business Plan", icon: Briefcase },  // NOVO (Step 12)
-];
-```
+try {
+  // 2. Call n8n webhook with tool_name and wizard_id
+  const response = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      tool_name: tool.tool_name,
+      wizard_id: wizard_id
+    }),
+  });
 
----
+  // 3. Check HTTP response
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errorText}`);
+  }
 
-## 4. Modificação: PmsDashboard.tsx
+  // Consume response body
+  await response.text();
 
-### 4.1 Simplificar getOrCreateShareUrl (linhas 173-206)
+  // 4. Update status to "Completed"
+  await supabase
+    .from("tb_pms_reports")
+    .update({ status: statusCompleted.trim() })
+    .eq("wizard_id", wizard_id);
 
-A lógica agora apenas lê do banco - não precisa mais gerar:
+  console.log(`✅ ${statusCompleted}`);
 
-**ANTES:** Função que gera token se não existir
-
-**DEPOIS:**
-```typescript
-// Get public share URL from database
-const getShareUrl = (): string | null => {
-  const shareUrl = (reportData as { share_url?: string; share_enabled?: boolean })?.share_url;
-  const shareEnabled = (reportData as { share_enabled?: boolean })?.share_enabled;
+} catch (error) {
+  // 5. On failure, update status and stop execution
+  console.error(`❌ ${statusFailed}:`, error);
   
-  if (shareUrl && shareEnabled) {
-    return shareUrl;
+  await supabase
+    .from("tb_pms_reports")
+    .update({ status: statusFailed.trim() })
+    .eq("wizard_id", wizard_id);
+
+  return new Response(
+    JSON.stringify({
+      success: false,
+      failedAt: tool.step,
+      tool_name: tool.tool_name,
+      error: String(error)
+    }),
+    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+}
+```
+
+### Código Novo (mesmas linhas, com timeout)
+
+```typescript
+try {
+  // Create abort controller with 150 second timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 150000);
+
+  // 2. Call n8n webhook with tool_name and wizard_id
+  const response = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      tool_name: tool.tool_name,
+      wizard_id: wizard_id
+    }),
+    signal: controller.signal,
+  });
+
+  // Clear timeout on successful response
+  clearTimeout(timeoutId);
+
+  // 3. Check HTTP response
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errorText}`);
   }
+
+  // Consume response body
+  await response.text();
+
+  // 4. Update status to "Completed"
+  await supabase
+    .from("tb_pms_reports")
+    .update({ status: statusCompleted.trim() })
+    .eq("wizard_id", wizard_id);
+
+  console.log(`✅ ${statusCompleted}`);
+
+} catch (error) {
+  // 5. On failure (including timeout), update status and stop execution
+  const isTimeout = error.name === 'AbortError';
+  const errorMessage = isTimeout 
+    ? 'Request timeout (150s exceeded)' 
+    : String(error);
   
-  return null;
-};
+  console.error(`❌ ${statusFailed}:`, errorMessage);
+  
+  await supabase
+    .from("tb_pms_reports")
+    .update({ status: statusFailed.trim() })
+    .eq("wizard_id", wizard_id);
+
+  return new Response(
+    JSON.stringify({
+      success: false,
+      failedAt: tool.step,
+      tool_name: tool.tool_name,
+      error: errorMessage
+    }),
+    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+}
 ```
-
-### 4.2 Simplificar handleCopyLink (linhas 208-216)
-
-```typescript
-const handleCopyLink = async () => {
-  const url = getShareUrl();
-  if (url) {
-    await navigator.clipboard.writeText(url);
-    console.log("Public link copied to clipboard");
-  } else {
-    console.error("Share URL not available");
-  }
-};
-```
-
-### 4.3 Simplificar handler do Share via Email (linhas 417-422)
-
-```typescript
-onClick={() => {
-  const url = getShareUrl();
-  if (url) {
-    setShareUrl(url);
-    setShareDialogOpen(true);
-  }
-}}
-```
-
-### 4.4 Remover função generateShareToken (linhas 165-170)
-
-Não é mais necessária no frontend - token é gerado no backend.
 
 ---
 
-## 5. Atualizar Types
+## Diferenças Exatas
 
-A migration atualizará automaticamente os types para incluir `share_url`.
+| Linha | Antes | Depois |
+|-------|-------|--------|
+| +2 linhas | - | `const controller = new AbortController();` |
+| +1 linha | - | `const timeoutId = setTimeout(() => controller.abort(), 150000);` |
+| Fetch | Sem signal | `signal: controller.signal` |
+| +1 linha | - | `clearTimeout(timeoutId);` |
+| Catch | `error` | Detecta `AbortError` para mensagem clara |
 
 ---
 
-## 6. Fluxo Atualizado
+## Por Que Isso Funciona
 
 ```text
-[Orchestrator executa Step 1-12]
-          │
-          └── Step 12: Business Plan ← NOVO
-          │
-          ▼
-[Após Step 12 completar com sucesso]
-          │
-          ▼
-[Gerar share_token + share_url + share_enabled=true]
-          │
-          ▼
-[Atualizar status = "completed"]
-          │
-          ▼
-[Dashboard carrega - share_url JÁ ESTÁ NO BANCO]
-          │
-          ▼
-[Usuário clica "Copy Link" → Copia share_url instantaneamente]
+[Cenário 1: n8n responde em 30s]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+fetch inicia → n8n processa → resposta em 30s
+              → clearTimeout()
+              → status = "Completed"
+              → próximo step
+
+[Cenário 2: n8n demora 90s]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+fetch inicia → n8n processa...
+              → 90s depois, resposta chega
+              → clearTimeout()
+              → status = "Completed"
+              → próximo step
+
+[Cenário 3: n8n demora 160s (TIMEOUT)]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+fetch inicia → n8n processa...
+              → 150s, AbortController dispara
+              → fetch lança AbortError
+              → catch executa
+              → status = "Fail" gravado no banco
+              → frontend detecta → tela de erro
 ```
 
 ---
 
-## 7. Dados no Banco (para debug)
+## O Que NÃO Muda
 
-| Coluna | Exemplo |
-|--------|---------|
-| `share_token` | `a3f7c2e8b1d4f6a9c5e2b8d1f4a7c3e9` |
-| `share_url` | `https://uaicodewebsite.lovable.app/planningmysaas/shared/a3f7c2e8b1d4f6a9c5e2b8d1f4a7c3e9` |
-| `share_enabled` | `true` |
-| `share_created_at` | `2026-01-31T15:30:00.000Z` |
-
----
-
-## 8. O que NÃO será modificado
-
-| Arquivo | Razão |
-|---------|-------|
-| `ShareReportDialog.tsx` | Nenhuma mudança necessária (já recebe `reportUrl` como prop) |
-| `useSharedReport.ts` | Nenhuma mudança necessária (busca por `share_token`) |
-| `PmsSharedReport.tsx` | Nenhuma mudança necessária |
-| Componentes em `public/` | Nenhuma mudança necessária |
-| RLS policies | Nenhuma mudança necessária |
+- Fluxo de 12 steps (TOOLS_SEQUENCE)
+- Geração de share_token/share_url
+- CORS headers
+- Lógica de resume_from_step
+- Todo o código do frontend
+- Polling do useReportData
+- Detecção de Fail no PmsLoading
+- UI do GeneratingReportSkeleton
 
 ---
 
-## 9. Resumo
+## Teste Pós-Implementação
 
-| Arquivo | Ação |
-|---------|------|
-| **Migration** | Adicionar coluna `share_url TEXT` |
-| `pms-orchestrate-report/index.ts` | +Step 12, +generateShareToken, +PRODUCTION_URL, modificar bloco final |
-| `GeneratingReportSkeleton.tsx` | +import Briefcase, +Step 12 na lista |
-| `PmsDashboard.tsx` | Simplificar para ler share_url do banco, remover generateShareToken |
+1. Gerar um relatório novo → verificar que funciona normalmente
+2. Se Step 12 demorar mais de 150s → verificar que grava "Fail"
+3. Verificar que a tela de erro aparece quando há "Fail"
+4. Verificar que o botão "Retry" funciona
 
