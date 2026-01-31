@@ -127,7 +127,7 @@ const WizardLayout = ({
                     </>
                   ) : (
                     <>
-                      🚀 Get my SaaS Analysis
+                      🚀 Is My Idea Viable?
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
