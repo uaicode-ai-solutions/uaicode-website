@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Phone, PhoneOff, Loader2, Sparkles, AlertCircle, RotateCcw, X } from "lucide-react";
+import { Sparkles, Loader2, AlertCircle, MessageSquare, X, Phone, PhoneOff } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import KyleAvatar from "@/components/chat/KyleAvatar";
 import { useKyleElevenLabs } from "@/hooks/useKyleElevenLabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface KyleConsultantDialogProps {
   open: boolean;
@@ -13,10 +13,8 @@ interface KyleConsultantDialogProps {
   wizardId?: string;
 }
 
-const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: KyleConsultantDialogProps) => {
-  const [callDuration, setCallDuration] = useState(0);
+const KyleConsultantDialog = ({ open, onOpenChange, wizardId }: KyleConsultantDialogProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const hasAutoStarted = useRef(false);
 
   const {
     isCallActive,
@@ -26,48 +24,26 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
     messages,
     toggleCall,
     endCall,
-    restartCall,
   } = useKyleElevenLabs({ wizardId });
 
-  // Auto-start call when dialog opens
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
-    if (open && wizardId && !isCallActive && !isConnecting && !hasAutoStarted.current) {
-      hasAutoStarted.current = true;
+    scrollToBottom();
+  }, [messages]);
+
+  // Auto-connect when dialog opens (if wizardId is available)
+  useEffect(() => {
+    if (open && wizardId && !isCallActive && !isConnecting) {
+      // Small delay to let dialog render
       const timer = setTimeout(() => {
         toggleCall();
       }, 500);
       return () => clearTimeout(timer);
     }
-    
-    // Reset when dialog closes
-    if (!open) {
-      hasAutoStarted.current = false;
-    }
-  }, [open, wizardId, isCallActive, isConnecting, toggleCall]);
-
-  // Timer for call duration
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isCallActive) {
-      timer = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-    } else {
-      setCallDuration(0);
-    }
-    return () => clearInterval(timer);
-  }, [isCallActive]);
-
-  // Auto-scroll to latest message
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, [open, wizardId]); // Only trigger on open change and wizardId
 
   const handleClose = useCallback(() => {
     if (isCallActive) {
@@ -76,56 +52,57 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
     onOpenChange(false);
   }, [isCallActive, endCall, onOpenChange]);
 
-  const handleReset = useCallback(() => {
-    restartCall();
-  }, [restartCall]);
-
-  const getStatusText = () => {
-    if (error) return "Connection error";
-    if (isConnecting) return "Connecting...";
-    if (!isCallActive) return "Disconnected";
-    if (isSpeaking) return "Kyle is speaking...";
-    return "Listening...";
-  };
-
-  const getStatusColor = () => {
-    if (error) return "text-destructive";
-    if (isConnecting) return "text-amber-400";
-    if (!isCallActive) return "text-muted-foreground";
-    if (isSpeaking) return "text-amber-400";
-    return "text-green-500";
+  const getStatusBadge = () => {
+    if (error) {
+      return (
+        <Badge variant="outline" className="mt-2 text-xs border-destructive/50 text-destructive">
+          <AlertCircle className="w-3 h-3 mr-1.5" />
+          Error
+        </Badge>
+      );
+    }
+    if (isConnecting) {
+      return (
+        <Badge variant="outline" className="mt-2 text-xs border-amber-500/50 text-amber-500">
+          <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+          Connecting...
+        </Badge>
+      );
+    }
+    if (isCallActive) {
+      return (
+        <Badge variant="outline" className="mt-2 text-xs border-green-500/50 text-green-500">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse" />
+          {isSpeaking ? "Kyle is speaking..." : "Listening..."}
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="mt-2 text-xs border-muted-foreground/50 text-muted-foreground">
+        <MessageSquare className="w-3 h-3 mr-1.5" />
+        Not connected
+      </Badge>
+    );
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 glass-card border-amber-500/20 h-[580px] flex flex-col overflow-hidden">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20 [&>button]:hidden">
         <DialogTitle className="sr-only">Talk to Kyle - AI Sales Consultant</DialogTitle>
         
-        {/* Header - Same style as KyleChatDialog */}
-        <div className="p-4 border-b border-border/50 bg-gradient-to-r from-amber-500/10 to-transparent flex-shrink-0">
+        {/* Header */}
+        <div className="p-4 border-b border-border/50 bg-gradient-to-r from-amber-500/10 to-transparent">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Sparkles className="h-5 w-5 text-amber-400" />
-              <div>
-                <span className="font-semibold text-foreground">AI Sales Consultant</span>
-                <p className="text-xs text-muted-foreground">Voice Chat</p>
-              </div>
+              <span className="font-semibold text-foreground">AI Sales Consultant</span>
             </div>
             <div className="flex items-center gap-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleReset}
-                disabled={isConnecting}
-                className="h-8 w-8 p-0 hover:bg-amber-500/10"
-              >
-                <RotateCcw className={`h-4 w-4 ${isConnecting ? 'animate-spin' : ''}`} />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleClose}
-                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -133,143 +110,135 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
           </div>
         </div>
 
-        {/* Avatar Section */}
-        <div className="flex flex-col items-center py-4 px-4 flex-shrink-0 border-b border-border/30">
-          <KyleAvatar 
-            isActive={isCallActive || isConnecting} 
-            isSpeaking={isSpeaking}
-            size="lg"
-          />
-          
-          <h3 className="mt-3 text-lg font-semibold text-foreground">Kyle</h3>
-          
-          {/* Status indicator */}
-          <div className="mt-2 flex items-center gap-2">
-            {error ? (
-              <AlertCircle className="w-3 h-3 text-destructive" />
-            ) : (
-              <div className={`w-2 h-2 rounded-full ${
-                isCallActive 
-                  ? isSpeaking 
-                    ? 'bg-amber-400 animate-pulse' 
-                    : 'bg-green-500'
-                  : isConnecting
-                    ? 'bg-amber-400 animate-pulse'
-                    : 'bg-muted-foreground/50'
-              }`} />
-            )}
-            <span className={`text-sm ${getStatusColor()}`}>
-              {getStatusText()}
-            </span>
-            {isCallActive && (
-              <span className="text-sm font-mono text-amber-400 ml-2">
-                {formatTime(callDuration)}
-              </span>
-            )}
-          </div>
+        {/* Kyle Info */}
+        <div className="flex flex-col items-center py-4 border-b border-border/30">
+          <KyleAvatar isActive={isCallActive} isSpeaking={isSpeaking} size="md" />
+          <h3 className="mt-2 font-semibold text-foreground">Kyle</h3>
+          <p className="text-sm text-muted-foreground">Sales Consultant</p>
+          {getStatusBadge()}
         </div>
 
-        {/* Transcript Area - Same style as KyleChatDialog */}
-        <ScrollArea className="flex-1 px-4">
-          <div className="py-4 space-y-4">
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[200px] text-center">
-                {isCallActive ? (
-                  <>
-                    <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-3">
-                      <Phone className="h-6 w-6 text-amber-400" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {isSpeaking ? "Kyle is speaking..." : "Listening... Start talking!"}
-                    </p>
-                  </>
-                ) : isConnecting ? (
-                  <>
-                    <Loader2 className="h-8 w-8 text-amber-400 animate-spin mb-3" />
-                    <p className="text-sm text-muted-foreground">Connecting to Kyle...</p>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-3">
-                      <Phone className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Call will start automatically...
-                    </p>
-                  </>
-                )}
+        {/* Messages Area */}
+        <div className="h-[300px] overflow-y-auto p-4 space-y-4">
+          {/* Initial prompt when no messages and connected */}
+          {messages.length === 0 && isCallActive && (
+            <div className="flex gap-3 justify-start animate-fade-in-up">
+              <div className="flex-shrink-0 mt-1">
+                <KyleAvatar size="sm" isActive={isCallActive} />
               </div>
-            ) : (
-              messages.map((msg, index) => (
+              <div className="bg-gradient-to-br from-secondary via-secondary to-secondary/80 text-foreground rounded-2xl rounded-bl-md px-4 py-3 border border-border/50 shadow-[0_0_20px_rgba(250,204,21,0.1)]">
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                  Hi! I'm Kyle, your sales consultant. I'm listening!
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Not connected state */}
+          {messages.length === 0 && !isCallActive && !isConnecting && (
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+              <MessageSquare className="h-8 w-8 mb-2 opacity-50" />
+              <p className="text-sm">Click the button below to start talking with Kyle</p>
+              {!wizardId && (
+                <p className="text-xs text-yellow-600 mt-2">Project context not available</p>
+              )}
+            </div>
+          )}
+
+          {/* Connecting state */}
+          {isConnecting && messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+              <Loader2 className="h-8 w-8 mb-2 animate-spin text-amber-400" />
+              <p className="text-sm">Connecting to Kyle...</p>
+            </div>
+          )}
+
+          {/* Real messages */}
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"} ${
+                index === messages.length - 1 ? "animate-fade-in-up" : ""
+              }`}
+            >
+              {/* Kyle Avatar - só para mensagens do assistente */}
+              {message.role === "assistant" && (
+                <div className="flex-shrink-0 mt-1">
+                  <KyleAvatar size="sm" isActive={isCallActive} />
+                </div>
+              )}
+
+              {/* Message bubble */}
+              <div className="flex flex-col max-w-[80%]">
                 <div
-                  key={index}
-                  className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  className={`rounded-2xl px-4 py-3 ${
+                    message.role === "user"
+                      ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-black rounded-br-md"
+                      : "bg-gradient-to-br from-secondary via-secondary to-secondary/80 text-foreground rounded-bl-md border border-border/50"
+                  } ${index === messages.length - 1 && message.role === "assistant" ? "shadow-[0_0_20px_rgba(250,204,21,0.1)]" : ""}`}
                 >
-                  {msg.role === "assistant" && (
-                    <div className="flex-shrink-0 mt-1">
-                      <KyleAvatar size="sm" isActive={true} isSpeaking={false} />
-                    </div>
-                  )}
-                  
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                    msg.role === "user"
-                      ? "bg-amber-500/20 text-foreground rounded-br-md"
-                      : "bg-secondary/80 text-foreground rounded-bl-md border border-border/50"
-                  }`}>
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Speaking indicator - quando Kyle está falando */}
+          {messages.length > 0 && messages[messages.length - 1].role === "user" && (
+            <div className="flex gap-3 justify-start animate-fade-in-up">
+              <div className="flex-shrink-0 mt-1">
+                <KyleAvatar size="sm" isActive />
+              </div>
+              <div className="bg-gradient-to-br from-secondary via-secondary to-secondary/80 text-foreground rounded-2xl rounded-bl-md px-4 py-3 border border-border/50">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Kyle is speaking</span>
+                  <div className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
+              </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
 
-        {/* Package Info */}
-        {packageName && (
-          <div className="mx-4 mb-2 text-center py-2 px-4 rounded-lg bg-amber-500/10 border border-amber-500/20 flex-shrink-0">
-            <p className="text-xs text-muted-foreground">Interested in:</p>
-            <p className="text-sm font-medium text-amber-400">{packageName}</p>
-          </div>
-        )}
-
-        {/* Error Message */}
+        {/* Error Display */}
         {error && (
-          <div className="mx-4 mb-2 text-center py-2 px-4 rounded-lg bg-destructive/10 border border-destructive/20 flex-shrink-0">
-            <p className="text-xs text-destructive">{error}</p>
+          <div className="px-4 pb-2">
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              <p className="text-xs text-destructive">{error}</p>
+            </div>
           </div>
         )}
 
-        {/* Footer with controls */}
-        <div className="p-4 border-t border-border/50 bg-background/50 flex-shrink-0">
-          <div className="flex items-center justify-center gap-4">
+        {/* Voice Control Area */}
+        <div className="p-4 border-t border-border/50 bg-muted/30">
+          <div className="flex justify-center">
             <Button
-              size="lg"
               onClick={toggleCall}
-              disabled={isConnecting || !wizardId}
-              className={`w-14 h-14 rounded-full transition-all duration-300 ${
+              disabled={isConnecting}
+              className={`px-4 ${
                 isCallActive
-                  ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30'
-                  : isConnecting
-                    ? 'bg-amber-500/50'
-                    : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-lg shadow-amber-500/30'
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-lg shadow-amber-500/30"
               }`}
             >
               {isConnecting ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : isCallActive ? (
-                <PhoneOff className="h-5 w-5" />
+                <PhoneOff className="h-4 w-4" />
               ) : (
-                <Phone className="h-5 w-5" />
+                <Phone className="h-4 w-4" />
               )}
             </Button>
           </div>
           
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <span className="text-xs text-muted-foreground">🎤 Voice powered by AI</span>
-            <span className="text-muted-foreground/30">•</span>
-            <span className="text-xs text-muted-foreground">Free consultation</span>
-          </div>
+          <p className="text-center text-xs text-muted-foreground mt-3">
+            🎤 Voice powered by AI • Free consultation
+          </p>
         </div>
       </DialogContent>
     </Dialog>
