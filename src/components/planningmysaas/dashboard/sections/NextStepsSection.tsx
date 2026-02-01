@@ -18,7 +18,8 @@ import {
   Zap,
   CreditCard,
   HandCoins,
-  MessageSquare
+  MessageSquare,
+  Mic
 } from "lucide-react";
 
 // Founder avatars
@@ -739,24 +740,32 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
           {/* Email Kyle Card */}
           <Card 
             onClick={() => setEmailDialogOpen(true)}
-            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
+            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift group"
           >
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="relative">
-                <KyleAvatar size="sm" isActive={true} />
-                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
-                  <Mail className="h-3 w-3 text-black" />
+            <CardContent className="p-6 flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <KyleAvatar size="md" isActive={true} />
+                  <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
+                    <Mail className="h-4 w-4 text-black" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-lg font-semibold text-foreground">Email Kyle</p>
+                    <span className="flex items-center gap-1 text-xs text-amber-400 font-medium">
+                      <Clock className="h-3 w-3" />
+                      24h reply
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Get a detailed, personalized response to your questions
+                  </p>
                 </div>
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-foreground">Email Kyle</p>
-                  <span className="flex items-center gap-1 text-xs text-amber-400 font-medium">
-                    <Clock className="h-3 w-3" />
-                    24h reply
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">Get a detailed response</p>
+              <div className="flex items-center gap-1 text-amber-400 text-sm font-medium group-hover:translate-x-1 transition-transform">
+                <ArrowRight className="h-4 w-4" />
+                <span>Send Email</span>
               </div>
             </CardContent>
           </Card>
@@ -764,27 +773,40 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
           {/* Call or Chat Kyle Card (hybrid) */}
           <Card 
             onClick={() => setKyleChatDialogOpen(true)}
-            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
+            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift group"
           >
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="relative">
-                <KyleAvatar size="sm" isActive={true} />
-                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
-                  <MessageSquare className="h-3 w-3 text-black" />
+            <CardContent className="p-6 flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <KyleAvatar size="md" isActive={true} />
+                  <div className="absolute -bottom-1 -right-1 flex">
+                    <div className="p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background -mr-1">
+                      <MessageSquare className="h-3.5 w-3.5 text-black" />
+                    </div>
+                    <div className="p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
+                      <Mic className="h-3.5 w-3.5 text-black" />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-lg font-semibold text-foreground">Call or Chat Kyle</p>
+                    <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      </span>
+                      Available
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Get instant answers via chat or voice - available 24/7
+                  </p>
                 </div>
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-foreground">Call or Chat Kyle</p>
-                  <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    Available
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">24/7 Chat and Voice Consultant</p>
+              <div className="flex items-center gap-1 text-amber-400 text-sm font-medium group-hover:translate-x-1 transition-transform">
+                <ArrowRight className="h-4 w-4" />
+                <span>Start Conversation</span>
               </div>
             </CardContent>
           </Card>
