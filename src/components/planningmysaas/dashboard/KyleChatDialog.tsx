@@ -51,6 +51,16 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     scrollToBottom();
   }, [messages, isLoading]);
 
+  // Auto-start voice call when dialog opens
+  useEffect(() => {
+    if (open && !isCallActive && !isConnecting) {
+      const timer = setTimeout(() => {
+        handleToggleVoice();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
   useEffect(() => {
     if (prevLoadingRef.current === true && isLoading === false && inputRef.current) {
       inputRef.current.focus();
@@ -168,7 +178,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
             <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-accent/3 rounded-full blur-3xl" />
           </div>
 
-          {/* Empty State - identical to Eve */}
+          {/* Connecting State - shows while auto-connecting */}
           {messages.length === 0 && !isLoading ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-6 py-8 animate-fade-in-up">
               {/* Decorative background */}
@@ -179,7 +189,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
               
               {/* Avatar with glow */}
               <div className="relative mb-6">
-                <div className="absolute inset-0 bg-accent/20 rounded-full blur-2xl scale-150" />
+                <div className="absolute inset-0 bg-accent/20 rounded-full blur-2xl scale-150 animate-pulse" />
                 <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-accent shadow-[0_0_30px_rgba(250,204,21,0.4)]">
                   <img 
                     src={kyleAvatarImage} 
@@ -189,24 +199,19 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
                 </div>
               </div>
               
-              {/* Welcome text */}
+              {/* Connecting text */}
               <h3 className="text-xl font-semibold text-foreground mb-2">
-                Hi! I'm <span className="text-gradient-gold">Kyle</span>
+                {isConnecting ? "Connecting to" : "Starting conversation with"} <span className="text-gradient-gold">Kyle</span>
               </h3>
               <p className="text-muted-foreground max-w-sm mb-6 leading-relaxed">
-                Your AI sales consultant. I'm here to help you understand our services and answer your questions.
+                {isConnecting ? "Please wait while we establish a connection..." : "Preparing your AI sales consultant..."}
               </p>
               
-              {/* Feature badges */}
-              <div className="flex flex-wrap gap-2 justify-center">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 text-xs text-muted-foreground">
-                  <MessageCircle className="w-3 h-3" />
-                  <span>Instant chat</span>
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 text-xs text-muted-foreground">
-                  <Mic className="w-3 h-3" />
-                  <span>Smart response</span>
-                </div>
+              {/* Loading indicator */}
+              <div className="flex gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           ) : (
