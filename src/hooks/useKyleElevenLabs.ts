@@ -225,6 +225,7 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
     startCall,
     endCall,
     resetMessages,
+    sendUserMessage: conversationHook.sendUserMessage,
     getInputVolume: () => conversationHook.getInputVolume?.() || 0,
     getOutputVolume: () => conversationHook.getOutputVolume?.() || 0,
   };

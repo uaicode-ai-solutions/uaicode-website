@@ -1,7 +1,8 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, RotateCcw, Mic, MicOff, Loader2, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Sparkles, RotateCcw, Loader2, AlertCircle, Send, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import KyleAvatar from "@/components/chat/KyleAvatar";
 import { useKyleElevenLabs } from "@/hooks/useKyleElevenLabs";
@@ -20,6 +21,7 @@ const QUICK_REPLIES = [
 
 const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [inputText, setInputText] = useState("");
 
   const {
     isCallActive,
@@ -30,6 +32,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     toggleCall,
     endCall,
     resetMessages,
+    sendUserMessage,
   } = useKyleElevenLabs({ wizardId });
 
   const scrollToBottom = () => {
@@ -51,11 +54,32 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     }
   }, [open, wizardId]); // Only trigger on open change and wizardId
 
+  const handleSend = useCallback(() => {
+    if (inputText.trim() && isCallActive && sendUserMessage) {
+      sendUserMessage(inputText.trim());
+      setInputText("");
+    }
+  }, [inputText, isCallActive, sendUserMessage]);
+
+  const handleQuickReply = useCallback((reply: string) => {
+    if (isCallActive && sendUserMessage) {
+      sendUserMessage(reply);
+    }
+  }, [isCallActive, sendUserMessage]);
+
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  }, [handleSend]);
+
   const handleReset = useCallback(() => {
     if (isCallActive) {
       endCall();
     }
     resetMessages();
+    setInputText("");
   }, [isCallActive, endCall, resetMessages]);
 
   const handleClose = useCallback(() => {
@@ -92,7 +116,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     }
     return (
       <Badge variant="outline" className="mt-2 text-xs border-muted-foreground/50 text-muted-foreground">
-        <MicOff className="w-3 h-3 mr-1.5" />
+        <MessageSquare className="w-3 h-3 mr-1.5" />
         Not connected
       </Badge>
     );
@@ -131,11 +155,11 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
 
         {/* Messages Area */}
         <div className="h-[250px] overflow-y-auto p-4 space-y-3">
-          {/* Initial prompt when no messages and connected */}
+        {/* Initial prompt when no messages and connected */}
           {messages.length === 0 && isCallActive && (
             <div className="flex justify-start">
               <div className="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm bg-muted text-foreground rounded-bl-md">
-                Hi! I'm Kyle, your sales consultant. How can I help you today?
+                Hi! I'm Kyle, your sales consultant. Type a message to start chatting!
               </div>
             </div>
           )}
@@ -143,8 +167,8 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
           {/* Not connected state */}
           {messages.length === 0 && !isCallActive && !isConnecting && (
             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-              <Mic className="h-8 w-8 mb-2 opacity-50" />
-              <p className="text-sm">Tap the microphone to start talking with Kyle</p>
+              <MessageSquare className="h-8 w-8 mb-2 opacity-50" />
+              <p className="text-sm">Type a message to start chatting with Kyle</p>
               {!wizardId && (
                 <p className="text-xs text-yellow-600 mt-2">Project context not available</p>
               )}
@@ -196,13 +220,14 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
         {/* Quick Replies - only show when connected and no messages yet */}
         {isCallActive && messages.length === 0 && !isSpeaking && (
           <div className="px-4 pb-2">
-            <p className="text-xs text-muted-foreground mb-2">Say something like:</p>
+            <p className="text-xs text-muted-foreground mb-2">Try asking:</p>
             <div className="flex flex-wrap gap-2">
               {QUICK_REPLIES.map((reply, index) => (
                 <Badge
                   key={index}
                   variant="outline"
-                  className="text-xs hover:bg-amber-500/10 hover:border-amber-500/50 cursor-default"
+                  className="text-xs hover:bg-amber-500/10 hover:border-amber-500/50 cursor-pointer transition-colors"
+                  onClick={() => handleQuickReply(reply)}
                 >
                   "{reply}"
                 </Badge>
@@ -220,40 +245,32 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
           </div>
         )}
 
-        {/* Microphone Control Area */}
+        {/* Text Input Area */}
         <div className="p-4 border-t border-border/50 bg-muted/30">
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex gap-2">
+            <Input
+              placeholder={isCallActive ? "Type your message..." : "Connecting..."}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyPress}
+              disabled={!isCallActive || isConnecting}
+              className="flex-1 bg-background/50 border-border/50 focus:border-amber-500/50"
+            />
             <Button
-              size="lg"
-              onClick={toggleCall}
-              disabled={isConnecting || !wizardId}
-              className={`w-14 h-14 rounded-full transition-all duration-300 ${
-                isCallActive
-                  ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30'
-                  : isConnecting
-                    ? 'bg-amber-500/50'
-                    : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-lg shadow-amber-500/30'
-              }`}
+              onClick={handleSend}
+              disabled={!isCallActive || isConnecting || !inputText.trim()}
+              className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-lg shadow-amber-500/30 px-4"
             >
               {isConnecting ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : isCallActive ? (
-                <MicOff className="h-5 w-5" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Mic className="h-5 w-5" />
+                <Send className="h-4 w-4" />
               )}
             </Button>
-            
-            <p className="text-xs text-muted-foreground text-center">
-              {isCallActive 
-                ? "Tap to end conversation" 
-                : "Tap to start voice chat"
-              }
-            </p>
           </div>
           
           <p className="text-center text-xs text-muted-foreground mt-3">
-            🎤 Voice powered by AI • Free consultation
+            💬 Chat with Kyle • Free consultation
           </p>
         </div>
       </DialogContent>
