@@ -1,155 +1,120 @@
 
-# Plano Simplificado: Kyle Chat + Voice (Mesmo Agente ElevenLabs)
+# Plano: Corrigir Animação de Áudio do Kyle Call
 
-## Resumo
+## Problema Identificado
 
-Usar o **mesmo agente ElevenLabs** para ambos os cards. A diferença é apenas a interface:
-- **KyleChatDialog**: Input de texto → `sendUserMessage()`
-- **KyleConsultantDialog**: Input de voz (microfone)
+A visualização de áudio no `KyleConsultantDialog` não está funcionando porque:
+
+1. `getInputVolume` e `getOutputVolume` são arrow functions inline no hook (linhas 229-230)
+2. Dentro do `requestAnimationFrame`, essas funções podem ter closures desatualizadas
+3. O `isSpeaking` usado dentro do loop de animação também pode estar stale
+
+## Solução
+
+Usar **refs** para armazenar os valores atuais das funções de volume e do estado `isSpeaking`, garantindo que o loop de animação sempre acesse os valores mais recentes.
 
 ## Arquivos a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/hooks/useKyleElevenLabs.ts` | Modificar - adicionar `sendUserMessage` |
-| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Modificar - usar texto ao invés de microfone |
+| `src/components/planningmysaas/dashboard/KyleConsultantDialog.tsx` | Corrigir visualização com refs |
 
-**NÃO precisa criar:**
-- ~~kyle-chat edge function~~
-- ~~useKyleChat hook~~
-- ~~Lovable AI Gateway integration~~
+## Mudanças Técnicas
 
-## Fase 1: Atualizar Hook `useKyleElevenLabs`
+### KyleConsultantDialog.tsx
 
-Adicionar método `sendUserMessage` que o ElevenLabs conversation hook já expõe:
-
+**Adicionar refs** para armazenar valores atuais (após linha 18):
 ```typescript
-// src/hooks/useKyleElevenLabs.ts
-
-return {
-  // ... existing returns
-  sendUserMessage: conversationHook.sendUserMessage, // NOVO
-};
+const getInputVolumeRef = useRef(getInputVolume);
+const getOutputVolumeRef = useRef(getOutputVolume);
+const isSpeakingRef = useRef(isSpeaking);
 ```
 
-## Fase 2: Atualizar `KyleChatDialog` (Chat de Texto)
-
-### Mudanças no Visual
-
-O layout atual será **preservado**. Apenas a área de controle inferior muda:
-
-**Antes (microfone):**
-```
-┌────────────────────────────────────┐
-│     [Botão Microfone Grande]       │
-│   "Tap to start voice chat"        │
-└────────────────────────────────────┘
-```
-
-**Depois (input texto):**
-```
-┌────────────────────────────────────┐
-│ [Input de texto........] [Enviar] │
-│   💬 Chat with Kyle                │
-└────────────────────────────────────┘
-```
-
-### Mudanças no Código
-
-1. **Manter**: Header, Kyle Info, Messages area, Quick Replies (visual)
-2. **Remover**: Botão de microfone grande, texto "Tap to start voice chat"
-3. **Adicionar**: 
-   - `<Input>` para digitar mensagem
-   - `<Button>` Send com ícone
-   - Estado local `inputText`
-   - Função `handleSend()` que chama `sendUserMessage(inputText)`
-
-4. **Auto-conectar**: Quando o dialog abre, conectar automaticamente ao ElevenLabs
-5. **Quick Replies**: Ao clicar, chamar `sendUserMessage(quickReply)`
-
-### Estrutura do Componente
-
+**Adicionar useEffect** para manter refs atualizadas (após linha 42):
 ```typescript
-const KyleChatDialog = ({ open, onOpenChange, wizardId }: Props) => {
-  const [inputText, setInputText] = useState("");
-  
-  const {
-    isCallActive,
-    isConnecting,
-    isSpeaking,
-    error,
-    messages,
-    toggleCall,
-    endCall,
-    sendUserMessage,  // NOVO
-    resetMessages,
-  } = useKyleElevenLabs({ wizardId });
+useEffect(() => {
+  getInputVolumeRef.current = getInputVolume;
+  getOutputVolumeRef.current = getOutputVolume;
+  isSpeakingRef.current = isSpeaking;
+}, [getInputVolume, getOutputVolume, isSpeaking]);
+```
 
-  // Auto-conectar ao abrir
-  useEffect(() => {
-    if (open && wizardId && !isCallActive && !isConnecting) {
-      toggleCall();
-    }
-  }, [open, wizardId]);
+**Corrigir useEffect de visualização** (linhas 44-81):
+- Usar `getInputVolumeRef.current()` ao invés de `getInputVolume()`
+- Usar `getOutputVolumeRef.current()` ao invés de `getOutputVolume()`
+- Usar `isSpeakingRef.current` ao invés de `isSpeaking`
+- Remover `isSpeaking`, `getInputVolume`, `getOutputVolume` das dependências
+- Manter apenas `isCallActive` como dependência
 
-  const handleSend = () => {
-    if (inputText.trim() && isCallActive) {
-      sendUserMessage(inputText);
-      setInputText("");
+**Código corrigido do useEffect:**
+```typescript
+useEffect(() => {
+  if (!isCallActive) {
+    setFrequencyBars(Array(12).fill(0.1));
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
     }
+    return;
+  }
+
+  const updateVisualization = () => {
+    const inputVol = getInputVolumeRef.current();
+    const outputVol = getOutputVolumeRef.current();
+    
+    // Use output volume when speaking, input volume when listening
+    const activeVolume = isSpeakingRef.current ? outputVol : inputVol;
+    const baseLevel = Math.max(0.1, activeVolume);
+    
+    // Generate bars with some randomness based on actual volume
+    setFrequencyBars(
+      Array(12).fill(0).map((_, i) => {
+        const variation = Math.sin(Date.now() / 100 + i) * 0.2;
+        const level = baseLevel + variation;
+        return Math.max(0.1, Math.min(1, level));
+      })
+    );
+
+    animationFrameRef.current = requestAnimationFrame(updateVisualization);
   };
 
-  const handleQuickReply = (reply: string) => {
-    if (isCallActive) {
-      sendUserMessage(reply);
+  animationFrameRef.current = requestAnimationFrame(updateVisualization);
+
+  return () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
     }
   };
-
-  // ... rest of component (visual mantido)
-};
+}, [isCallActive]); // Apenas isCallActive como dependência
 ```
 
-## Fase 3: KyleConsultantDialog (Voz)
+## Por que isso resolve?
 
-**Já está funcionando corretamente!** Não precisa de mudanças.
+1. **Refs não causam re-render** - podem ser atualizadas sem afetar o ciclo de render
+2. **requestAnimationFrame** acessa sempre o valor atual via `.current`
+3. **Sem closures stale** - o loop de animação sempre lê os valores mais recentes
+4. **Menos dependências** - useEffect só re-executa quando `isCallActive` muda
 
-Ele usa o mesmo `useKyleElevenLabs` hook, mas com interface de microfone.
-
-## Fluxo Final
+## Visualização do Fluxo
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Mesmo Agente Kyle                       │
-│                  ELEVENLABS_KYLE_AGENT_ID                    │
-│                                                              │
-│    ┌─────────────────────┐     ┌─────────────────────┐      │
-│    │   Chat with Kyle    │     │     Call Kyle       │      │
-│    │                     │     │                     │      │
-│    │  [Digita texto]     │     │  [Fala no mic]      │      │
-│    │        ↓            │     │        ↓            │      │
-│    │  sendUserMessage()  │     │  Auto via WebRTC    │      │
-│    │        ↓            │     │        ↓            │      │
-│    │  Kyle responde      │     │  Kyle responde      │      │
-│    │  (áudio + texto)    │     │  (áudio)            │      │
-│    └─────────────────────┘     └─────────────────────┘      │
-│                                                              │
-│              Mesma edge function: kyle-conversation-token    │
-│              Mesmo hook: useKyleElevenLabs                   │
-└─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────┐
+│          requestAnimationFrame loop            │
+│                                                │
+│  getInputVolumeRef.current() → valor atual     │
+│  getOutputVolumeRef.current() → valor atual    │
+│  isSpeakingRef.current → true/false atual      │
+│                                                │
+│  ↓                                             │
+│  Calcula barras baseado no volume real         │
+│  ↓                                             │
+│  setFrequencyBars([...])                       │
+│  ↓                                             │
+│  Barras animam na tela                         │
+└────────────────────────────────────────────────┘
 ```
 
-## Elementos Preservados no KyleChatDialog
+## O que NÃO será alterado
 
-- Header com Sparkles e "AI Sales Consultant"
-- Botão Reset (RotateCcw)
-- Kyle Info section com avatar e badge de status
-- Messages area com bolhas estilizadas (user gradient amarelo, assistant bg-muted)
-- Speaking indicator (3 dots animados)
-- Quick Replies badges
-- Footer com texto "Chat powered by AI"
-
-## Ordem de Implementação
-
-1. Atualizar `useKyleElevenLabs.ts` - expor `sendUserMessage`
-2. Atualizar `KyleChatDialog.tsx` - trocar microfone por input de texto
-3. Testar ambos os diálogos
+- Nenhuma mudança no `useKyleElevenLabs.ts`
+- Nenhuma mudança no visual do componente
+- Nenhuma mudança no `KyleChatDialog.tsx`
