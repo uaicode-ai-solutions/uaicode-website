@@ -1,181 +1,121 @@
 
-# Plano: Melhorar Visual do KyleChatDialog (Chat + Voice Híbrido)
+# Plano: Consolidar Cards do Kyle
 
 ## Objetivo
 
-Redesenhar o `KyleChatDialog` para deixar **claro que o usuário pode tanto digitar quanto falar**, inspirando-se no visual premium do chat da Eve.
+Remover o card de voz separado e manter apenas 2 cards do Kyle (Email + Chat/Voice híbrido), ajustando o layout para ficarem bem distribuídos.
 
-## Elementos Inspirados do Chat da Eve
+## Mudanças
 
-| Elemento | Eve (Atual) | Kyle (Novo) |
-|----------|-------------|-------------|
-| Input Area | Mic circular + Input texto + Send | Mesmo padrão |
-| Voice Visualization | Barras de frequência animadas | Adicionar igual |
-| Helper Text | "Type a message or tap the microphone" | Adicionar similar |
-| Quick Replies | Botões com ícones e hover effects | Melhorar design |
-| Empty State | Avatar com glow + badges | Adaptar para Kyle |
-
-## Mudanças Visuais Propostas
-
-### 1. Input Area Unificada (Mic + Texto)
+### 1. Alterar Grid de 3 para 2 colunas
 
 **Antes:**
 ```
-┌─────────────────────────────────────┐
-│ [Input de texto...........]  [Send] │
-└─────────────────────────────────────┘
+[Email Kyle] [Chat with Kyle] [Call Kyle]
+   1/3            1/3            1/3
 ```
 
-**Depois (Estilo Eve):**
+**Depois:**
 ```
-┌───────────────────────────────────────────────┐
-│ [🎤]  [Input de texto...............] [Send] │
-│                                               │
-│    "Type a message or tap mic to speak"       │
-└───────────────────────────────────────────────┘
+[Email Kyle] [Call or Chat Kyle]
+    1/2              1/2
 ```
 
-O botão de microfone terá:
-- Estado normal: Gradiente amber com glow
-- Estado ativo (chamada): Vermelho com ícone MicOff
-- Animação pulse quando inativo (convite para clicar)
+### 2. Remover Card "Call Kyle"
 
-### 2. Voice Visualization (Barras de Frequência)
+Remover completamente o card que está nas linhas 792-818, pois a funcionalidade de voz já está no card híbrido.
 
-Quando a chamada de voz estiver ativa, mostrar barras de frequência animadas acima do input (como na Eve):
+### 3. Atualizar Card "Chat with Kyle"
 
-```
-┌───────────────────────────────────────┐
-│     ▂ ▄ ▆ █ ▆ ▄ ▂ ▂ ▄ ▆ ▄ ▂         │
-│           ● Listening...              │
-└───────────────────────────────────────┘
-```
+| Campo | Antes | Depois |
+|-------|-------|--------|
+| Título | "Chat with Kyle" | "Call or Chat Kyle" |
+| Subtítulo | "AI Sales Consultant" | "24/7 Chat and Voice Consultant" |
+| Ícone | MessageSquare | Manter MessageSquare ou trocar para Headphones |
 
-Reutilizar o componente `VoiceVisualization.tsx` existente.
+### 4. Remover KyleConsultantDialog (opcional)
 
-### 3. Empty State Melhorado
+Se o `KyleConsultantDialog` não for mais usado em nenhum outro lugar, pode ser removido. Mas vou mantê-lo por enquanto caso seja usado futuramente.
 
-Quando não há mensagens, mostrar:
-- Avatar do Kyle com glow amber
-- Texto de boas-vindas
-- Badges indicando "Chat" e "Voice"
-
-```
-┌────────────────────────────────────┐
-│                                    │
-│         [Kyle Avatar + Glow]       │
-│                                    │
-│      Hi! I'm Kyle                  │
-│   Your AI sales consultant         │
-│                                    │
-│  [💬 Chat]  [🎤 Voice]             │
-│                                    │
-└────────────────────────────────────┘
-```
-
-### 4. Quick Replies com Ícones
-
-Transformar os badges simples em botões mais elaborados com ícones:
-
-```
-┌────────────────────────────────────────────────────┐
-│  [💰 Pricing]  [📅 Schedule]  [📦 Services]       │
-└────────────────────────────────────────────────────┘
-```
-
-### 5. Helper Text Dinâmico
-
-No footer do input, texto que muda conforme o estado:
-- Inativo: "Type a message or tap 🎤 to speak"
-- Chamada ativa: "Tap microphone to end call"
-- Speaking: "Kyle is responding..."
-
-## Arquivos a Modificar
+## Arquivo a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Modificar - redesign completo da área de input |
+| `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx` | Modificar |
 
-## Detalhes Técnicos
+## Código Atual (linhas 738-818)
 
-### Estados do Microfone
-
-```typescript
-// Cores do botão de microfone
-const micButtonClasses = isCallActive
-  ? 'bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]'
-  : isConnecting
-    ? 'bg-amber-500/50'
-    : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-[0_0_20px_rgba(250,204,21,0.3)]';
+```tsx
+{/* Kyle Contact Buttons - 3 cards grid */}
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  {/* Email Kyle Card */}
+  ...
+  {/* Chat with Kyle Card */}
+  ...
+  {/* Call Kyle Card */}  ← REMOVER
+  ...
+</div>
 ```
 
-### Voice Visualization
+## Código Novo
 
-Reutilizar a lógica existente do `useKyleElevenLabs`:
+```tsx
+{/* Kyle Contact Buttons - 2 cards grid */}
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  {/* Email Kyle Card */}
+  <Card ...>
+    ...
+  </Card>
 
-```typescript
-// Já expõe getInputVolume e getOutputVolume
-const { getInputVolume, getOutputVolume } = useKyleElevenLabs({ wizardId });
-
-// Criar frequencyBars baseado no volume real
-useEffect(() => {
-  if (isCallActive) {
-    const interval = setInterval(() => {
-      const vol = Math.max(getInputVolume(), getOutputVolume());
-      // Gerar barras animadas...
-    }, 50);
-  }
-}, [isCallActive]);
+  {/* Call or Chat Kyle Card (híbrido) */}
+  <Card 
+    onClick={() => setKyleChatDialogOpen(true)}
+    className="..."
+  >
+    <CardContent className="p-4 flex items-center gap-4">
+      <div className="relative">
+        <KyleAvatar size="sm" isActive={true} />
+        <div className="absolute -bottom-1 -right-1 ...">
+          <MessageSquare className="h-3 w-3 text-black" />
+        </div>
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <p className="font-semibold text-foreground">Call or Chat Kyle</p>
+          <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping ..."></span>
+              <span className="relative ... bg-green-500"></span>
+            </span>
+            Available
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground">24/7 Chat and Voice Consultant</p>
+      </div>
+    </CardContent>
+  </Card>
+</div>
 ```
 
-### Helper Text Dinâmico
+## Limpeza Adicional
 
-```typescript
-const getHelperText = () => {
-  if (isCallActive) {
-    return isSpeaking 
-      ? "Kyle is responding..." 
-      : "Tap 🎤 to end call";
-  }
-  return "Type a message or tap 🎤 to speak";
-};
-```
+- Manter o `KyleConsultantDialog` no código (pode ser útil futuramente)
+- O estado `kyleDialogOpen` e `setKyleDialogOpen` podem ser mantidos ou removidos
 
-## Layout Final
+## Resultado Visual
 
 ```
-┌────────────────────────────────────────────────┐
-│ ✨ AI Sales Consultant                   [🔄] │  Header
-├────────────────────────────────────────────────┤
-│                                                │
-│              [Kyle Avatar + Glow]              │
-│                    Kyle                        │
-│             Sales Consultant                   │
-│               [🟢 Online]                      │
-│                                                │
-│         [💬 Chat]    [🎤 Voice]               │  Feature badges
-│                                                │
-├────────────────────────────────────────────────┤
-│                                                │
-│  [Mensagens aqui...]                           │  Messages
-│                                                │
-├────────────────────────────────────────────────┤
-│  [💰 Pricing] [📅 Schedule] [📦 Services]     │  Quick Replies
-├────────────────────────────────────────────────┤
-│     ▂ ▄ ▆ █ ▆ ▄ ▂ ▂ ▄ ▆ ▄ ▂                  │  Voice Viz (quando ativo)
-│           ● Listening...                       │
-├────────────────────────────────────────────────┤
-│ [🎤]  [Type your message...]         [Send]   │  Input unificado
-│                                                │
-│    "Type a message or tap 🎤 to speak"        │  Helper text
-└────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│            Have a question? Get instant answers with Kyle   │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────────────────┐  ┌─────────────────────────┐   │
+│  │ [Avatar] Email Kyle     │  │ [Avatar] Call or Chat   │   │
+│  │          ⏰ 24h reply   │  │          Kyle  🟢 Avail │   │
+│  │ Get a detailed response │  │ 24/7 Chat and Voice     │   │
+│  │                         │  │ Consultant              │   │
+│  └─────────────────────────┘  └─────────────────────────┘   │
+│                                                              │
+│         50% de espaço          50% de espaço                │
+└─────────────────────────────────────────────────────────────┘
 ```
-
-## Ordem de Implementação
-
-1. Adicionar botão de microfone na área de input
-2. Implementar voice visualization (barras de frequência)
-3. Melhorar empty state com badges Chat/Voice
-4. Redesenhar quick replies com ícones
-5. Adicionar helper text dinâmico
-6. Ajustar estados visuais do microfone (normal/ativo/conectando)
