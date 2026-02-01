@@ -127,6 +127,19 @@ export const useKyleChatElevenLabs = (options: UseKyleChatElevenLabsOptions) => 
     setMessages([]);
   }, []);
 
+  // Wrapper que adiciona mensagem do usuário IMEDIATAMENTE ao array
+  const sendMessage = useCallback((text: string) => {
+    if (!text.trim()) return;
+    
+    // Adiciona mensagem do usuário ao array ANTES de enviar
+    const userMessage: Message = { role: "user", content: text.trim() };
+    setMessages(prev => [...prev, userMessage]);
+    onMessageRef.current?.(userMessage);
+    
+    // Envia para o ElevenLabs
+    conversationHook.sendUserMessage(text.trim());
+  }, [conversationHook]);
+
   return {
     isCallActive: conversationHook.status === "connected",
     isConnecting,
@@ -137,6 +150,6 @@ export const useKyleChatElevenLabs = (options: UseKyleChatElevenLabsOptions) => 
     startCall: startChat,
     endCall: endChat,
     resetMessages,
-    sendUserMessage: conversationHook.sendUserMessage,
+    sendUserMessage: sendMessage, // Usar wrapper ao invés do original
   };
 };
