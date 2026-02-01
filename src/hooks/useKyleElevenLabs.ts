@@ -25,6 +25,10 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
   const onMessageRef = useRef(onMessage);
   onMessageRef.current = onMessage;
 
+  // Refs for robust restart logic
+  const statusRef = useRef<string>("disconnected");
+  const isRestartingRef = useRef(false);
+
   // Memoize the conversation config to prevent re-initialization issues
   const conversationConfig = useMemo(() => ({
     onConnect: () => {
@@ -73,6 +77,11 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
       setLocalIsSpeaking(false);
     }
   }, [conversationHook.status, localIsSpeaking]);
+
+  // Keep statusRef in sync with conversationHook.status
+  useEffect(() => {
+    statusRef.current = conversationHook.status;
+  }, [conversationHook.status]);
 
   // Fetch token using supabase.functions.invoke
   const fetchConversationToken = async (mode: "webrtc" | "websocket" = "webrtc") => {
@@ -212,6 +221,44 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
     setMessages([]);
   }, []);
 
+  // Robust restart: end → wait for disconnected → start
+  const restartCall = useCallback(async () => {
+    // Guard against multiple restarts
+    if (isRestartingRef.current) {
+      console.log("Kyle Voice: Restart already in progress, ignoring");
+      return;
+    }
+    isRestartingRef.current = true;
+
+    try {
+      // End session if connected
+      if (statusRef.current === "connected") {
+        console.log("Kyle Voice: Ending current session for restart...");
+        await endCall();
+      }
+
+      // Poll until disconnected (max 3s)
+      const maxWait = 60; // 60 * 50ms = 3s
+      for (let i = 0; i < maxWait; i++) {
+        if (statusRef.current === "disconnected") {
+          console.log("Kyle Voice: Confirmed disconnected, starting new session...");
+          break;
+        }
+        await new Promise(r => setTimeout(r, 50));
+      }
+
+      // Clear messages before reconnecting
+      setMessages([]);
+
+      // Start new session
+      await startCall();
+    } catch (err) {
+      console.error("Kyle Voice: Restart failed:", err);
+    } finally {
+      isRestartingRef.current = false;
+    }
+  }, [endCall, startCall]);
+
   return {
     isCallActive: conversationHook.status === "connected",
     isConnecting,
@@ -225,6 +272,7 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
     startCall,
     endCall,
     resetMessages,
+    restartCall,
     sendUserMessage: conversationHook.sendUserMessage,
     getInputVolume: () => conversationHook.getInputVolume?.() || 0,
     getOutputVolume: () => conversationHook.getOutputVolume?.() || 0,
