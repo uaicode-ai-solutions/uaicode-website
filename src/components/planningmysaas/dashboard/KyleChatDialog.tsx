@@ -2,7 +2,7 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sparkles, RotateCcw, Loader2, AlertCircle, Send, MessageSquare } from "lucide-react";
+import { Sparkles, RotateCcw, Loader2, AlertCircle, Send, MessageSquare, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import KyleAvatar from "@/components/chat/KyleAvatar";
 import { useKyleChatElevenLabs } from "@/hooks/useKyleChatElevenLabs";
@@ -124,7 +124,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20 [&>button]:hidden">
         <DialogTitle className="sr-only">Chat with Kyle - AI Sales Consultant</DialogTitle>
         
         {/* Header */}
@@ -134,14 +134,24 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
               <Sparkles className="h-5 w-5 text-amber-400" />
               <span className="font-semibold text-foreground">AI Sales Consultant</span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClose}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
