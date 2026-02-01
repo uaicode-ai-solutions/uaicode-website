@@ -1,120 +1,126 @@
 
-# Plano: Corrigir Animação de Áudio do Kyle Call
 
-## Problema Identificado
+# Plano: Remover Animação de Áudio e Mostrar Transcrição
 
-A visualização de áudio no `KyleConsultantDialog` não está funcionando porque:
+## Resumo
 
-1. `getInputVolume` e `getOutputVolume` são arrow functions inline no hook (linhas 229-230)
-2. Dentro do `requestAnimationFrame`, essas funções podem ter closures desatualizadas
-3. O `isSpeaking` usado dentro do loop de animação também pode estar stale
+Remover toda a lógica de animação de áudio que não está funcionando e substituir pela exibição da transcrição da conversa em tempo real.
 
-## Solução
-
-Usar **refs** para armazenar os valores atuais das funções de volume e do estado `isSpeaking`, garantindo que o loop de animação sempre acesse os valores mais recentes.
-
-## Arquivos a Modificar
+## Arquivo a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/planningmysaas/dashboard/KyleConsultantDialog.tsx` | Corrigir visualização com refs |
+| `src/components/planningmysaas/dashboard/KyleConsultantDialog.tsx` | Substituir animação por transcrição |
 
 ## Mudanças Técnicas
 
-### KyleConsultantDialog.tsx
+### O que será REMOVIDO:
 
-**Adicionar refs** para armazenar valores atuais (após linha 18):
+1. **Estado e refs de animação:**
+   - `frequencyBars` state (linha 17)
+   - `animationFrameRef` ref (linha 18)
+   - `getInputVolumeRef`, `getOutputVolumeRef`, `isSpeakingRef` refs (linhas 31-34)
+
+2. **useEffects de animação:**
+   - useEffect que atualiza refs (linhas 36-41)
+   - useEffect de visualização com requestAnimationFrame (linhas 56-93)
+
+3. **Seção de barras de frequência:**
+   - Div com `frequencyBars.map()` (linhas 165-183)
+
+4. **Imports não utilizados:**
+   - `getInputVolume`, `getOutputVolume` do hook
+
+### O que será ADICIONADO:
+
+1. **Importar `messages` do hook:**
 ```typescript
-const getInputVolumeRef = useRef(getInputVolume);
-const getOutputVolumeRef = useRef(getOutputVolume);
-const isSpeakingRef = useRef(isSpeaking);
+const {
+  isCallActive,
+  isConnecting,
+  isSpeaking,
+  error,
+  messages,  // ADICIONAR
+  toggleCall,
+  endCall,
+} = useKyleElevenLabs({ wizardId });
 ```
 
-**Adicionar useEffect** para manter refs atualizadas (após linha 42):
+2. **Ref para auto-scroll:**
+```typescript
+const messagesEndRef = useRef<HTMLDivElement>(null);
+```
+
+3. **useEffect para auto-scroll:**
 ```typescript
 useEffect(() => {
-  getInputVolumeRef.current = getInputVolume;
-  getOutputVolumeRef.current = getOutputVolume;
-  isSpeakingRef.current = isSpeaking;
-}, [getInputVolume, getOutputVolume, isSpeaking]);
+  messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [messages]);
 ```
 
-**Corrigir useEffect de visualização** (linhas 44-81):
-- Usar `getInputVolumeRef.current()` ao invés de `getInputVolume()`
-- Usar `getOutputVolumeRef.current()` ao invés de `getOutputVolume()`
-- Usar `isSpeakingRef.current` ao invés de `isSpeaking`
-- Remover `isSpeaking`, `getInputVolume`, `getOutputVolume` das dependências
-- Manter apenas `isCallActive` como dependência
-
-**Código corrigido do useEffect:**
+4. **Área de transcrição** (substituindo as barras de frequência):
 ```typescript
-useEffect(() => {
-  if (!isCallActive) {
-    setFrequencyBars(Array(12).fill(0.1));
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    return;
-  }
-
-  const updateVisualization = () => {
-    const inputVol = getInputVolumeRef.current();
-    const outputVol = getOutputVolumeRef.current();
-    
-    // Use output volume when speaking, input volume when listening
-    const activeVolume = isSpeakingRef.current ? outputVol : inputVol;
-    const baseLevel = Math.max(0.1, activeVolume);
-    
-    // Generate bars with some randomness based on actual volume
-    setFrequencyBars(
-      Array(12).fill(0).map((_, i) => {
-        const variation = Math.sin(Date.now() / 100 + i) * 0.2;
-        const level = baseLevel + variation;
-        return Math.max(0.1, Math.min(1, level));
-      })
-    );
-
-    animationFrameRef.current = requestAnimationFrame(updateVisualization);
-  };
-
-  animationFrameRef.current = requestAnimationFrame(updateVisualization);
-
-  return () => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-  };
-}, [isCallActive]); // Apenas isCallActive como dependência
+{/* Conversation Transcript */}
+<div className="mx-4 h-32 overflow-y-auto rounded-lg bg-background/50 border border-border/30 p-3">
+  {messages.length === 0 ? (
+    <p className="text-xs text-muted-foreground text-center py-4">
+      {isCallActive ? "Listening..." : "Start a call to see the transcript"}
+    </p>
+  ) : (
+    <div className="space-y-2">
+      {messages.map((msg, index) => (
+        <div 
+          key={index}
+          className={`text-xs ${
+            msg.role === "user" 
+              ? "text-right text-amber-400" 
+              : "text-left text-muted-foreground"
+          }`}
+        >
+          <span className="font-medium">
+            {msg.role === "user" ? "You: " : "Kyle: "}
+          </span>
+          {msg.content}
+        </div>
+      ))}
+      <div ref={messagesEndRef} />
+    </div>
+  )}
+</div>
 ```
 
-## Por que isso resolve?
-
-1. **Refs não causam re-render** - podem ser atualizadas sem afetar o ciclo de render
-2. **requestAnimationFrame** acessa sempre o valor atual via `.current`
-3. **Sem closures stale** - o loop de animação sempre lê os valores mais recentes
-4. **Menos dependências** - useEffect só re-executa quando `isCallActive` muda
-
-## Visualização do Fluxo
+## Visual Final
 
 ```
-┌────────────────────────────────────────────────┐
-│          requestAnimationFrame loop            │
-│                                                │
-│  getInputVolumeRef.current() → valor atual     │
-│  getOutputVolumeRef.current() → valor atual    │
-│  isSpeakingRef.current → true/false atual      │
-│                                                │
-│  ↓                                             │
-│  Calcula barras baseado no volume real         │
-│  ↓                                             │
-│  setFrequencyBars([...])                       │
-│  ↓                                             │
-│  Barras animam na tela                         │
-└────────────────────────────────────────────────┘
+┌────────────────────────────────────────┐
+│     ✨ AI Sales Consultant ✨           │
+├────────────────────────────────────────┤
+│                                        │
+│           [Kyle Avatar]                │
+│              Kyle                      │
+│         Sales Consultant               │
+│            ● Listening...              │
+│              2:34                      │
+│                                        │
+├────────────────────────────────────────┤
+│  ┌──────────────────────────────────┐  │
+│  │ Kyle: Hello! How can I help...   │  │
+│  │                  You: I want...  │  │
+│  │ Kyle: Great choice! Let me...    │  │
+│  └──────────────────────────────────┘  │
+├────────────────────────────────────────┤
+│        [Interested in: Package]        │
+├────────────────────────────────────────┤
+│           (  📞 Botão  )               │
+│      Tap to end the conversation       │
+├────────────────────────────────────────┤
+│  🎤 Voice powered by AI • Free consult │
+└────────────────────────────────────────┘
 ```
 
-## O que NÃO será alterado
+## Resumo das Alterações
 
-- Nenhuma mudança no `useKyleElevenLabs.ts`
-- Nenhuma mudança no visual do componente
-- Nenhuma mudança no `KyleChatDialog.tsx`
+- **Remover:** ~40 linhas de código de animação
+- **Adicionar:** ~25 linhas de código de transcrição
+- **Resultado:** Interface mais simples e funcional com histórico visível da conversa
+
