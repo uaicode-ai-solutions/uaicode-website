@@ -1,65 +1,73 @@
 
-# Plano: Corrigir Botão Reset para Reiniciar Sessão
+## Objetivo
+Fazer o botão de refresh (↻) **reiniciar a sessão em 1 clique**, sem exigir “1 clique para encerrar + 1 clique para iniciar”.
 
-## Problema
+## Diagnóstico (por que hoje precisa de 2 cliques)
+No `KyleChatDialog.tsx`, o `handleReset` faz:
+1) `await endCall()`  
+2) depois chama `toggleCall()` com `setTimeout`.
 
-O `handleReset` atual:
-```typescript
-const handleReset = useCallback(() => {
-  if (isCallActive) {
-    endCall();  // ← Encerra
-  }
-  resetMessages();  // ← Limpa mensagens
-  setInputText("");
-}, [isCallActive, endCall, resetMessages]);
-```
+O problema é que o `toggleCall()` (no hook `useKyleChatElevenLabs`) decide “encerrar vs iniciar” baseado em `conversationHook.status`. Em muitos casos, **mesmo após `await endSession()`**, o status ainda está momentaneamente como `"connected"`.  
+Resultado: o `toggleCall()` entende que ainda está conectado e **encerra de novo**, ao invés de iniciar. Aí você precisa clicar novamente.
 
-Ele encerra e limpa, mas **não reconecta**. O usuário fica com a sessão encerrada.
+## Solução (robusta, 1 clique sempre)
+Em vez de usar `toggleCall()` para reiniciar, vamos criar uma ação explícita de “restart” no hook que:
+1) encerra a sessão se estiver conectada  
+2) **aguarda o status realmente ficar `disconnected`** (com polling e timeout)  
+3) inicia uma nova sessão (startChat)  
+4) bloqueia cliques repetidos durante o restart (guard)
 
-## Solução
+Isso elimina a corrida de estado (“race condition”) do status.
 
-Modificar `handleReset` para:
-1. Encerrar a sessão atual
-2. Limpar mensagens
-3. **Reconectar automaticamente** após um pequeno delay
+---
 
-## Arquivo a Modificar
+## Mudanças propostas
 
-| Arquivo | Ação |
-|---------|------|
-| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Ajustar `handleReset` para reconectar após encerrar |
+### 1) `src/hooks/useKyleChatElevenLabs.ts`
+Adicionar:
+- `statusRef` para sempre ler o status mais recente dentro de loops assíncronos.
+- `isRestartingRef` para impedir múltiplos restarts simultâneos.
+- Função `restartCall` (ou `restartChat`) que faz **end → wait disconnected → start**.
 
-## Código Novo
+Implementação (conceito):
+- `statusRef.current = conversationHook.status` a cada render.
+- `restartCall`:
+  - se já estiver reiniciando: retorna (no-op)
+  - se `statusRef.current === "connected"`: `await endChat()`
+  - loop com timeout (ex.: até 3s): enquanto `statusRef.current !== "disconnected"`, aguarda 50ms
+  - chama `await startChat()`
 
-```typescript
-const handleReset = useCallback(async () => {
-  // Encerra a sessão atual se estiver ativa
-  if (isCallActive) {
-    await endCall();
-  }
-  
-  // Limpa mensagens e input
-  resetMessages();
-  setInputText("");
-  
-  // Reconecta após um pequeno delay
-  setTimeout(() => {
-    if (wizardId) {
-      toggleCall();
-    }
-  }, 500);
-}, [isCallActive, endCall, resetMessages, wizardId, toggleCall]);
-```
+E expor no `return` do hook:
+- `restartCall`
 
-## Comportamento Final
+Observação importante: manteremos `toggleCall` existente para outras interações, mas o refresh vai usar o `restartCall`.
 
-| Ação | Antes | Depois |
-|------|-------|--------|
-| Clicar no ↻ | Encerra sessão e fica desconectado | Encerra, limpa e **reconecta automaticamente** |
+### 2) `src/components/planningmysaas/dashboard/KyleChatDialog.tsx`
+Ajustar o `handleReset` para usar o método novo:
+- Desestruturar `restartCall` do hook.
+- `handleReset` vira:
+  - limpar `inputText`
+  - chamar `await restartCall()` (sem `toggleCall`, sem `setTimeout`)
 
-## Resumo
+Opcional (recomendado):
+- Desabilitar o botão ↻ enquanto `isConnecting` for true para evitar spam (ele já existe; só garantir que o refresh respeita isso, se ainda não respeitar).
 
-- Apenas 1 mudança no `handleReset`
-- Adiciona `async/await` para garantir que o `endCall` termine
-- Adiciona `setTimeout` para reconectar após 500ms
-- Adiciona `wizardId` e `toggleCall` às dependências do `useCallback`
+---
+
+## Critérios de aceite (como vamos testar)
+1) Abrir o dialog do Kyle e conectar.
+2) Enviar uma mensagem (ver ela aparecer).
+3) Clicar **uma vez** no ↻.
+4) Esperado:
+   - Mensagens limpam
+   - Status passa por “Disconnected/Connecting…”
+   - Reconecta sozinho
+   - Não precisa clicar novamente
+5) Repetir o teste 3 vezes seguidas para garantir que não há intermitência.
+
+## Riscos / cuidados
+- O polling de status precisa de timeout para não travar (ex.: 3s). Se estourar, ainda tentamos `startChat()` (ou mostramos erro amigável).
+- Garantir que nada disso mexe no voice (`useKyleElevenLabs.ts` e edge function `kyle-conversation-token`) — isso fica intacto.
+
+## Resultado final
+O refresh (↻) vira um “reiniciar sessão” real: **um clique = encerra corretamente + reconecta automaticamente**, sempre.
