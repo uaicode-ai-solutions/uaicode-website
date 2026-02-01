@@ -32,6 +32,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     toggleCall,
     endCall,
     resetMessages,
+    restartCall,
     sendUserMessage,
   } = useKyleChatElevenLabs({ wizardId });
 
@@ -75,19 +76,9 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
   }, [handleSend]);
 
   const handleReset = useCallback(async () => {
-    if (isCallActive) {
-      await endCall();
-    }
-    resetMessages();
     setInputText("");
-    
-    // Reconecta após um pequeno delay
-    setTimeout(() => {
-      if (wizardId) {
-        toggleCall();
-      }
-    }, 500);
-  }, [isCallActive, endCall, resetMessages, wizardId, toggleCall]);
+    await restartCall();
+  }, [restartCall]);
 
   const handleClose = useCallback(() => {
     if (isCallActive) {

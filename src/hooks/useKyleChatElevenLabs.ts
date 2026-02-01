@@ -1,5 +1,5 @@
 import { useConversation } from "@elevenlabs/react";
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -22,6 +22,10 @@ export const useKyleChatElevenLabs = (options: UseKyleChatElevenLabsOptions) => 
   
   const onMessageRef = useRef(onMessage);
   onMessageRef.current = onMessage;
+
+  // Refs for robust restart logic
+  const statusRef = useRef<string>("disconnected");
+  const isRestartingRef = useRef(false);
 
   const conversationConfig = useMemo(() => ({
     onConnect: () => {
@@ -54,6 +58,11 @@ export const useKyleChatElevenLabs = (options: UseKyleChatElevenLabsOptions) => 
   }), []);
 
   const conversationHook = useConversation(conversationConfig);
+
+  // Keep statusRef in sync with conversationHook.status
+  useEffect(() => {
+    statusRef.current = conversationHook.status;
+  }, [conversationHook.status]);
 
   const startChat = useCallback(async () => {
     if (!wizardId) {
@@ -127,6 +136,44 @@ export const useKyleChatElevenLabs = (options: UseKyleChatElevenLabsOptions) => 
     setMessages([]);
   }, []);
 
+  // Robust restart: end → wait for disconnected → start
+  const restartCall = useCallback(async () => {
+    // Guard against multiple restarts
+    if (isRestartingRef.current) {
+      console.log("Kyle Chat: Restart already in progress, ignoring");
+      return;
+    }
+    isRestartingRef.current = true;
+
+    try {
+      // End session if connected
+      if (statusRef.current === "connected") {
+        console.log("Kyle Chat: Ending current session for restart...");
+        await endChat();
+      }
+
+      // Poll until disconnected (max 3s)
+      const maxWait = 60; // 60 * 50ms = 3s
+      for (let i = 0; i < maxWait; i++) {
+        if (statusRef.current === "disconnected") {
+          console.log("Kyle Chat: Confirmed disconnected, starting new session...");
+          break;
+        }
+        await new Promise(r => setTimeout(r, 50));
+      }
+
+      // Clear messages before reconnecting
+      setMessages([]);
+
+      // Start new session
+      await startChat();
+    } catch (err) {
+      console.error("Kyle Chat: Restart failed:", err);
+    } finally {
+      isRestartingRef.current = false;
+    }
+  }, [endChat, startChat]);
+
   // Wrapper que adiciona mensagem do usuário IMEDIATAMENTE ao array
   const sendMessage = useCallback((text: string) => {
     if (!text.trim()) return;
@@ -150,6 +197,7 @@ export const useKyleChatElevenLabs = (options: UseKyleChatElevenLabsOptions) => 
     startCall: startChat,
     endCall: endChat,
     resetMessages,
+    restartCall, // New: robust one-click restart
     sendUserMessage: sendMessage, // Usar wrapper ao invés do original
   };
 };
