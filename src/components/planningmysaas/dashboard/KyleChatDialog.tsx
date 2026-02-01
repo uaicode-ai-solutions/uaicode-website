@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, RotateCcw, Loader2, AlertCircle, Send, Mic, MicOff, MessageSquare, Phone, DollarSign, Calendar, Package } from "lucide-react";
+import { Sparkles, RotateCcw, Loader2, AlertCircle, Send, Mic, MicOff, MessageSquare, Phone, DollarSign, Calendar, Package, PhoneOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import KyleAvatar from "@/components/chat/KyleAvatar";
 import { useKyleElevenLabs } from "@/hooks/useKyleElevenLabs";
@@ -31,9 +31,11 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     isSpeaking,
     error,
     messages,
+    isMicMuted,
     toggleCall,
     endCall,
     resetMessages,
+    toggleMicMute,
     sendUserMessage,
     getInputVolume,
     getOutputVolume,
@@ -144,16 +146,17 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     if (error) return "Connection error. Try again.";
     if (isConnecting) return "Establishing connection...";
     if (isCallActive) {
+      if (isMicMuted) return "Microphone muted. Tap 🎤 to unmute";
       return isSpeaking 
         ? "Kyle is responding..." 
-        : "Type a message or tap 🎤 to end call";
+        : "Listening... Tap 🎤 to mute";
     }
-    return "Type a message or tap 🎤 to speak";
+    return "Tap 🎤 to start voice or type a message";
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20 max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20 h-[580px] flex flex-col">
         <DialogTitle className="sr-only">Chat with Kyle - AI Sales Consultant</DialogTitle>
         
         {/* Header */}
@@ -194,7 +197,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
         </div>
 
         {/* Messages Area */}
-        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[200px] max-h-[300px] relative">
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 relative">
           {/* Subtle background pattern */}
           <div className="absolute inset-0 pointer-events-none opacity-30">
             <div className="absolute top-1/3 left-1/4 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl" />
@@ -316,7 +319,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
                     background: isSpeaking 
                       ? `linear-gradient(to top, hsl(45, 93%, 47%), hsl(45, 93%, 47%, 0.6))` 
                       : `linear-gradient(to top, hsl(45, 93%, 47%, 0.5), hsl(45, 93%, 47%, 0.2))`,
-                    opacity: height > 0.2 ? 1 : 0.5,
+                    opacity: isMicMuted ? 0.3 : (height > 0.2 ? 1 : 0.5),
                     boxShadow: height > 0.5 && isSpeaking 
                       ? '0 0 8px hsla(45, 93%, 47%, 0.4)' 
                       : 'none',
@@ -324,11 +327,25 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
                 />
               ))}
             </div>
-            <div className="flex items-center justify-center gap-2 mt-2">
-              <div className={`w-2 h-2 rounded-full ${isSpeaking ? 'bg-amber-500' : 'bg-green-500'} animate-pulse`} />
-              <p className="text-xs text-muted-foreground">
-                {isSpeaking ? "Kyle is speaking..." : "Listening..."}
-              </p>
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  isMicMuted ? 'bg-red-500' : (isSpeaking ? 'bg-amber-500' : 'bg-green-500')
+                } animate-pulse`} />
+                <p className="text-xs text-muted-foreground">
+                  {isMicMuted ? "Muted" : (isSpeaking ? "Kyle is speaking..." : "Listening...")}
+                </p>
+              </div>
+              {/* End Call Button */}
+              <Button
+                onClick={endCall}
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-red-400 hover:text-red-500 hover:bg-red-500/10"
+              >
+                <PhoneOff className="h-3 w-3 mr-1" />
+                End Call
+              </Button>
             </div>
           </div>
         )}
@@ -343,19 +360,22 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
                 <div className="absolute inset-0 rounded-full border-2 border-amber-500/30 animate-ping" style={{ animationDuration: '2s' }} />
               )}
               <Button
-                onClick={handleToggleVoice}
+                onClick={isCallActive ? toggleMicMute : handleToggleVoice}
                 disabled={isConnecting}
                 size="icon"
                 className={`h-12 w-12 rounded-full shrink-0 transition-all duration-300 relative z-10 ${
                   isCallActive
-                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]'
+                    ? isMicMuted
+                      ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30'
+                      : 'bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30'
                     : isConnecting
                     ? 'bg-amber-500/50 text-amber-900'
                     : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)]'
                 }`}
+                title={isCallActive ? (isMicMuted ? "Unmute microphone" : "Mute microphone") : "Start voice call"}
               >
                 {isCallActive ? (
-                  <MicOff className="h-5 w-5" />
+                  isMicMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />
                 ) : isConnecting ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
