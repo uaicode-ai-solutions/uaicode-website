@@ -154,12 +154,17 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
         </div>
 
         {/* Messages Area */}
-        <div className="h-[250px] overflow-y-auto p-4 space-y-3">
-        {/* Initial prompt when no messages and connected */}
+        <div className="h-[300px] overflow-y-auto p-4 space-y-4">
+          {/* Initial prompt when no messages and connected */}
           {messages.length === 0 && isCallActive && (
-            <div className="flex justify-start">
-              <div className="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm bg-muted text-foreground rounded-bl-md">
-                Hi! I'm Kyle, your sales consultant. Type a message to start chatting!
+            <div className="flex gap-3 justify-start animate-fade-in-up">
+              <div className="flex-shrink-0 mt-1">
+                <KyleAvatar size="sm" isActive={isCallActive} />
+              </div>
+              <div className="bg-gradient-to-br from-secondary via-secondary to-secondary/80 text-foreground rounded-2xl rounded-bl-md px-4 py-3 border border-border/50 shadow-[0_0_20px_rgba(250,204,21,0.1)]">
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                  Hi! I'm Kyle, your sales consultant. Type a message to start chatting!
+                </p>
               </div>
             </div>
           )}
@@ -183,32 +188,50 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
             </div>
           )}
 
-          {/* Real messages from ElevenLabs */}
+          {/* Real messages */}
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"} ${
+                index === messages.length - 1 ? "animate-fade-in-up" : ""
+              }`}
             >
-              <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
-                  message.role === "user"
-                    ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-black rounded-br-md"
-                    : "bg-muted text-foreground rounded-bl-md"
-                }`}
-              >
-                {message.content}
+              {/* Kyle Avatar - só para mensagens do assistente */}
+              {message.role === "assistant" && (
+                <div className="flex-shrink-0 mt-1">
+                  <KyleAvatar size="sm" isActive={isCallActive} />
+                </div>
+              )}
+
+              {/* Message bubble */}
+              <div className="flex flex-col max-w-[80%]">
+                <div
+                  className={`rounded-2xl px-4 py-3 ${
+                    message.role === "user"
+                      ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-black rounded-br-md"
+                      : "bg-gradient-to-br from-secondary via-secondary to-secondary/80 text-foreground rounded-bl-md border border-border/50"
+                  } ${index === messages.length - 1 && message.role === "assistant" ? "shadow-[0_0_20px_rgba(250,204,21,0.1)]" : ""}`}
+                >
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                </div>
               </div>
             </div>
           ))}
-          
-          {/* Speaking indicator */}
-          {isSpeaking && (
-            <div className="flex justify-start">
-              <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-2.5">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+
+          {/* Typing indicator - quando enviou mensagem e aguarda resposta */}
+          {messages.length > 0 && messages[messages.length - 1].role === "user" && (
+            <div className="flex gap-3 justify-start animate-fade-in-up">
+              <div className="flex-shrink-0 mt-1">
+                <KyleAvatar size="sm" isActive />
+              </div>
+              <div className="bg-gradient-to-br from-secondary via-secondary to-secondary/80 text-foreground rounded-2xl rounded-bl-md px-4 py-3 border border-border/50">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Kyle is typing</span>
+                  <div className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
                 </div>
               </div>
             </div>
