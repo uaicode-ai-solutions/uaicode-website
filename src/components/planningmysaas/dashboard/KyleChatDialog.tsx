@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Sparkles, RotateCcw, Loader2, AlertCircle, Send, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import KyleAvatar from "@/components/chat/KyleAvatar";
-import { useKyleElevenLabs } from "@/hooks/useKyleElevenLabs";
+import { useKyleChatElevenLabs } from "@/hooks/useKyleChatElevenLabs";
 
 interface KyleChatDialogProps {
   open: boolean;
@@ -33,7 +33,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     endCall,
     resetMessages,
     sendUserMessage,
-  } = useKyleElevenLabs({ wizardId });
+  } = useKyleChatElevenLabs({ wizardId });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
