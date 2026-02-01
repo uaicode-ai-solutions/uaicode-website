@@ -324,16 +324,18 @@ const PmsDashboardContent = () => {
 
             {/* Right side - Download Button + Share + User Dropdown */}
             <div className="flex items-center gap-2">
-              {/* Regenerate Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRegenerateReport}
-                className="gap-2 border-accent/50 text-accent hover:bg-accent/10 hover:border-accent"
-              >
-                <RefreshCw className="h-4 w-4" />
-                <span className="hidden sm:inline">Regenerate</span>
-              </Button>
+              {/* Regenerate Button - Admin/Contributor only */}
+              {(isAdmin || isContributor) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRegenerateReport}
+                  className="gap-2 border-accent/50 text-accent hover:bg-accent/10 hover:border-accent"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  <span className="hidden sm:inline">Regenerate</span>
+                </Button>
+              )}
 
               <Button
                 onClick={handleNewReport}
