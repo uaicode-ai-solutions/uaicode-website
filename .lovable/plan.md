@@ -1,126 +1,301 @@
 
 
-# Plano: Remover Animação de Áudio e Mostrar Transcrição
+# Plano: Criar Estrutura SEPARADA para Kyle Chat (Text-Only)
 
-## Resumo
+## ⚠️ GARANTIA: ZERO ALTERAÇÕES NOS ARQUIVOS EXISTENTES
 
-Remover toda a lógica de animação de áudio que não está funcionando e substituir pela exibição da transcrição da conversa em tempo real.
+Os seguintes arquivos **NÃO SERÃO TOCADOS**:
+- ❌ `src/hooks/useKyleElevenLabs.ts` - **INTOCÁVEL**
+- ❌ `supabase/functions/kyle-conversation-token/index.ts` - **INTOCÁVEL**
+- ❌ `src/components/planningmysaas/dashboard/KyleConsultantDialog.tsx` - **INTOCÁVEL**
 
-## Arquivo a Modificar
+## Arquivos a CRIAR (novos, do zero)
 
-| Arquivo | Ação |
-|---------|------|
-| `src/components/planningmysaas/dashboard/KyleConsultantDialog.tsx` | Substituir animação por transcrição |
+| Arquivo | Descrição |
+|---------|-----------|
+| `supabase/functions/kyle-chat-token/index.ts` | **NOVA** edge function usando `ELEVENLABS_KYLE_AGENT_ID_CHAT` |
+| `src/hooks/useKyleChatElevenLabs.ts` | **NOVO** hook para modo text-only (sem microfone) |
 
-## Mudanças Técnicas
+## Arquivo a MODIFICAR (apenas 1 linha)
 
-### O que será REMOVIDO:
+| Arquivo | Mudança |
+|---------|---------|
+| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Trocar import de `useKyleElevenLabs` para `useKyleChatElevenLabs` |
 
-1. **Estado e refs de animação:**
-   - `frequencyBars` state (linha 17)
-   - `animationFrameRef` ref (linha 18)
-   - `getInputVolumeRef`, `getOutputVolumeRef`, `isSpeakingRef` refs (linhas 31-34)
+---
 
-2. **useEffects de animação:**
-   - useEffect que atualiza refs (linhas 36-41)
-   - useEffect de visualização com requestAnimationFrame (linhas 56-93)
+## Detalhes Técnicos
 
-3. **Seção de barras de frequência:**
-   - Div com `frequencyBars.map()` (linhas 165-183)
+### 1. NOVA Edge Function: `kyle-chat-token/index.ts`
 
-4. **Imports não utilizados:**
-   - `getInputVolume`, `getOutputVolume` do hook
-
-### O que será ADICIONADO:
-
-1. **Importar `messages` do hook:**
 ```typescript
-const {
-  isCallActive,
-  isConnecting,
-  isSpeaking,
-  error,
-  messages,  // ADICIONAR
-  toggleCall,
-  endCall,
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-session-id',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
+
+serve(async (req) => {
+  console.log('=== kyle-chat-token function called ===');
+  
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  try {
+    const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
+    // USA O AGENT ID DE CHAT - DIFERENTE DO VOICE!
+    const ELEVENLABS_KYLE_AGENT_ID_CHAT = Deno.env.get('ELEVENLABS_KYLE_AGENT_ID_CHAT');
+
+    if (!ELEVENLABS_API_KEY || !ELEVENLABS_KYLE_AGENT_ID_CHAT) {
+      return new Response(
+        JSON.stringify({ error: 'Chat agent configuration missing.' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Sempre WebRTC para chat
+    const apiUrl = `https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${ELEVENLABS_KYLE_AGENT_ID_CHAT}`;
+
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: { 'xi-api-key': ELEVENLABS_API_KEY },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return new Response(
+        JSON.stringify({ error: `ElevenLabs API error: ${errorText}` }),
+        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const data = await response.json();
+    
+    return new Response(
+      JSON.stringify({ 
+        token: data.token, 
+        agent_id: ELEVENLABS_KYLE_AGENT_ID_CHAT 
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});
+```
+
+### 2. NOVO Hook: `useKyleChatElevenLabs.ts`
+
+```typescript
+import { useConversation } from "@elevenlabs/react";
+import { useState, useCallback, useRef, useMemo } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface UseKyleChatElevenLabsOptions {
+  wizardId: string | undefined;
+  onMessage?: (message: Message) => void;
+}
+
+export const useKyleChatElevenLabs = (options: UseKyleChatElevenLabsOptions) => {
+  const { wizardId, onMessage } = options;
+  
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  
+  const onMessageRef = useRef(onMessage);
+  onMessageRef.current = onMessage;
+
+  const conversationConfig = useMemo(() => ({
+    onConnect: () => {
+      console.log("Kyle Chat: Connected");
+      setIsConnecting(false);
+      setError(null);
+    },
+    onDisconnect: () => {
+      console.log("Kyle Chat: Disconnected");
+      setIsConnecting(false);
+    },
+    onMessage: (payload: { role?: string; message?: string }) => {
+      console.log("Kyle Chat message:", payload);
+      const role = payload.role === "user" ? "user" : "assistant";
+      const content = payload.message;
+      if (content) {
+        const message: Message = { role, content };
+        setMessages(prev => [...prev, message]);
+        onMessageRef.current?.(message);
+      }
+    },
+    onError: (message: string) => {
+      console.error("Kyle Chat error:", message);
+      setError(message || "Connection error");
+      setIsConnecting(false);
+      toast.error("Chat connection error", {
+        description: message || "Failed to connect to Kyle Chat"
+      });
+    },
+  }), []);
+
+  const conversationHook = useConversation(conversationConfig);
+
+  const startChat = useCallback(async () => {
+    if (!wizardId) {
+      toast.error("Missing project context");
+      return;
+    }
+
+    setIsConnecting(true);
+    setError(null);
+    setMessages([]);
+
+    try {
+      // NÃO PEDE MICROFONE - É TEXT-ONLY!
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      // Chama a NOVA edge function de CHAT
+      const { data, error: invokeError } = await supabase.functions.invoke('kyle-chat-token');
+
+      if (invokeError || data?.error) {
+        throw new Error(data?.error || invokeError?.message || 'Failed to get chat token');
+      }
+
+      if (!data?.token) {
+        throw new Error('No chat token received');
+      }
+
+      // TEXT-ONLY MODE!
+      await conversationHook.startSession({
+        conversationToken: data.token,
+        connectionType: "webrtc",
+        textOnly: true,  // ← CRÍTICO: modo apenas texto
+        dynamicVariables: {
+          wizard_id: wizardId,
+          timezone: userTimezone,
+        },
+      });
+
+      console.log("Kyle Chat: Session started (text-only)");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to connect";
+      setError(errorMessage);
+      setIsConnecting(false);
+      throw err;
+    }
+  }, [conversationHook, wizardId]);
+
+  const endChat = useCallback(async () => {
+    try {
+      await conversationHook.endSession();
+    } catch (err) {
+      console.error("Kyle Chat: Error ending session:", err);
+    }
+  }, [conversationHook]);
+
+  const toggleChat = useCallback(async () => {
+    if (conversationHook.status === "connected") {
+      await endChat();
+    } else {
+      await startChat();
+    }
+  }, [conversationHook.status, startChat, endChat]);
+
+  const resetMessages = useCallback(() => {
+    setMessages([]);
+  }, []);
+
+  return {
+    isCallActive: conversationHook.status === "connected",
+    isConnecting,
+    isSpeaking: false, // Sempre false - é text-only
+    error,
+    messages,
+    toggleCall: toggleChat,
+    startCall: startChat,
+    endCall: endChat,
+    resetMessages,
+    sendUserMessage: conversationHook.sendUserMessage,
+  };
+};
+```
+
+### 3. Única Mudança no `KyleChatDialog.tsx`
+
+**APENAS TROCAR O IMPORT** (linha 8):
+
+```typescript
+// ANTES
+import { useKyleElevenLabs } from "@/hooks/useKyleElevenLabs";
+
+// DEPOIS
+import { useKyleChatElevenLabs } from "@/hooks/useKyleChatElevenLabs";
+```
+
+**E o uso do hook** (linha 26-36):
+
+```typescript
+// ANTES
 } = useKyleElevenLabs({ wizardId });
+
+// DEPOIS  
+} = useKyleChatElevenLabs({ wizardId });
 ```
 
-2. **Ref para auto-scroll:**
-```typescript
-const messagesEndRef = useRef<HTMLDivElement>(null);
-```
+---
 
-3. **useEffect para auto-scroll:**
-```typescript
-useEffect(() => {
-  messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-}, [messages]);
-```
-
-4. **Área de transcrição** (substituindo as barras de frequência):
-```typescript
-{/* Conversation Transcript */}
-<div className="mx-4 h-32 overflow-y-auto rounded-lg bg-background/50 border border-border/30 p-3">
-  {messages.length === 0 ? (
-    <p className="text-xs text-muted-foreground text-center py-4">
-      {isCallActive ? "Listening..." : "Start a call to see the transcript"}
-    </p>
-  ) : (
-    <div className="space-y-2">
-      {messages.map((msg, index) => (
-        <div 
-          key={index}
-          className={`text-xs ${
-            msg.role === "user" 
-              ? "text-right text-amber-400" 
-              : "text-left text-muted-foreground"
-          }`}
-        >
-          <span className="font-medium">
-            {msg.role === "user" ? "You: " : "Kyle: "}
-          </span>
-          {msg.content}
-        </div>
-      ))}
-      <div ref={messagesEndRef} />
-    </div>
-  )}
-</div>
-```
-
-## Visual Final
+## Arquitetura Final (Separação Total)
 
 ```
-┌────────────────────────────────────────┐
-│     ✨ AI Sales Consultant ✨           │
-├────────────────────────────────────────┤
-│                                        │
-│           [Kyle Avatar]                │
-│              Kyle                      │
-│         Sales Consultant               │
-│            ● Listening...              │
-│              2:34                      │
-│                                        │
-├────────────────────────────────────────┤
-│  ┌──────────────────────────────────┐  │
-│  │ Kyle: Hello! How can I help...   │  │
-│  │                  You: I want...  │  │
-│  │ Kyle: Great choice! Let me...    │  │
-│  └──────────────────────────────────┘  │
-├────────────────────────────────────────┤
-│        [Interested in: Package]        │
-├────────────────────────────────────────┤
-│           (  📞 Botão  )               │
-│      Tap to end the conversation       │
-├────────────────────────────────────────┤
-│  🎤 Voice powered by AI • Free consult │
-└────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         VOICE (INTOCADO)                        │
+├─────────────────────────────────────────────────────────────────┤
+│  KyleConsultantDialog                                           │
+│         ↓                                                       │
+│  useKyleElevenLabs                                              │
+│         ↓                                                       │
+│  kyle-conversation-token (edge)                                 │
+│         ↓                                                       │
+│  ELEVENLABS_KYLE_AGENT_ID (voz + microfone)                     │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                         CHAT (NOVO)                             │
+├─────────────────────────────────────────────────────────────────┤
+│  KyleChatDialog                                                 │
+│         ↓                                                       │
+│  useKyleChatElevenLabs (NOVO)                                   │
+│         ↓                                                       │
+│  kyle-chat-token (NOVA edge)                                    │
+│         ↓                                                       │
+│  ELEVENLABS_KYLE_AGENT_ID_CHAT (text-only, sem microfone)       │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-## Resumo das Alterações
+## Vantagens
 
-- **Remover:** ~40 linhas de código de animação
-- **Adicionar:** ~25 linhas de código de transcrição
-- **Resultado:** Interface mais simples e funcional com histórico visível da conversa
+1. **Zero risco** - Nenhum código existente é modificado
+2. **Sem microfone** - UX melhor para chat puro
+3. **Agente dedicado** - `ELEVENLABS_KYLE_AGENT_ID_CHAT` otimizado para texto
+4. **Fácil rollback** - Se algo der errado, basta trocar 1 import
+
+## Configuração no config.toml
+
+Adicionar a nova função:
+
+```toml
+[functions.kyle-chat-token]
+verify_jwt = false
+```
 
