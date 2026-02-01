@@ -1,155 +1,181 @@
 
-# Plano Simplificado: Kyle Chat + Voice (Mesmo Agente ElevenLabs)
+# Plano: Melhorar Visual do KyleChatDialog (Chat + Voice Híbrido)
 
-## Resumo
+## Objetivo
 
-Usar o **mesmo agente ElevenLabs** para ambos os cards. A diferença é apenas a interface:
-- **KyleChatDialog**: Input de texto → `sendUserMessage()`
-- **KyleConsultantDialog**: Input de voz (microfone)
+Redesenhar o `KyleChatDialog` para deixar **claro que o usuário pode tanto digitar quanto falar**, inspirando-se no visual premium do chat da Eve.
+
+## Elementos Inspirados do Chat da Eve
+
+| Elemento | Eve (Atual) | Kyle (Novo) |
+|----------|-------------|-------------|
+| Input Area | Mic circular + Input texto + Send | Mesmo padrão |
+| Voice Visualization | Barras de frequência animadas | Adicionar igual |
+| Helper Text | "Type a message or tap the microphone" | Adicionar similar |
+| Quick Replies | Botões com ícones e hover effects | Melhorar design |
+| Empty State | Avatar com glow + badges | Adaptar para Kyle |
+
+## Mudanças Visuais Propostas
+
+### 1. Input Area Unificada (Mic + Texto)
+
+**Antes:**
+```
+┌─────────────────────────────────────┐
+│ [Input de texto...........]  [Send] │
+└─────────────────────────────────────┘
+```
+
+**Depois (Estilo Eve):**
+```
+┌───────────────────────────────────────────────┐
+│ [🎤]  [Input de texto...............] [Send] │
+│                                               │
+│    "Type a message or tap mic to speak"       │
+└───────────────────────────────────────────────┘
+```
+
+O botão de microfone terá:
+- Estado normal: Gradiente amber com glow
+- Estado ativo (chamada): Vermelho com ícone MicOff
+- Animação pulse quando inativo (convite para clicar)
+
+### 2. Voice Visualization (Barras de Frequência)
+
+Quando a chamada de voz estiver ativa, mostrar barras de frequência animadas acima do input (como na Eve):
+
+```
+┌───────────────────────────────────────┐
+│     ▂ ▄ ▆ █ ▆ ▄ ▂ ▂ ▄ ▆ ▄ ▂         │
+│           ● Listening...              │
+└───────────────────────────────────────┘
+```
+
+Reutilizar o componente `VoiceVisualization.tsx` existente.
+
+### 3. Empty State Melhorado
+
+Quando não há mensagens, mostrar:
+- Avatar do Kyle com glow amber
+- Texto de boas-vindas
+- Badges indicando "Chat" e "Voice"
+
+```
+┌────────────────────────────────────┐
+│                                    │
+│         [Kyle Avatar + Glow]       │
+│                                    │
+│      Hi! I'm Kyle                  │
+│   Your AI sales consultant         │
+│                                    │
+│  [💬 Chat]  [🎤 Voice]             │
+│                                    │
+└────────────────────────────────────┘
+```
+
+### 4. Quick Replies com Ícones
+
+Transformar os badges simples em botões mais elaborados com ícones:
+
+```
+┌────────────────────────────────────────────────────┐
+│  [💰 Pricing]  [📅 Schedule]  [📦 Services]       │
+└────────────────────────────────────────────────────┘
+```
+
+### 5. Helper Text Dinâmico
+
+No footer do input, texto que muda conforme o estado:
+- Inativo: "Type a message or tap 🎤 to speak"
+- Chamada ativa: "Tap microphone to end call"
+- Speaking: "Kyle is responding..."
 
 ## Arquivos a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/hooks/useKyleElevenLabs.ts` | Modificar - adicionar `sendUserMessage` |
-| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Modificar - usar texto ao invés de microfone |
+| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Modificar - redesign completo da área de input |
 
-**NÃO precisa criar:**
-- ~~kyle-chat edge function~~
-- ~~useKyleChat hook~~
-- ~~Lovable AI Gateway integration~~
+## Detalhes Técnicos
 
-## Fase 1: Atualizar Hook `useKyleElevenLabs`
-
-Adicionar método `sendUserMessage` que o ElevenLabs conversation hook já expõe:
+### Estados do Microfone
 
 ```typescript
-// src/hooks/useKyleElevenLabs.ts
+// Cores do botão de microfone
+const micButtonClasses = isCallActive
+  ? 'bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]'
+  : isConnecting
+    ? 'bg-amber-500/50'
+    : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-[0_0_20px_rgba(250,204,21,0.3)]';
+```
 
-return {
-  // ... existing returns
-  sendUserMessage: conversationHook.sendUserMessage, // NOVO
+### Voice Visualization
+
+Reutilizar a lógica existente do `useKyleElevenLabs`:
+
+```typescript
+// Já expõe getInputVolume e getOutputVolume
+const { getInputVolume, getOutputVolume } = useKyleElevenLabs({ wizardId });
+
+// Criar frequencyBars baseado no volume real
+useEffect(() => {
+  if (isCallActive) {
+    const interval = setInterval(() => {
+      const vol = Math.max(getInputVolume(), getOutputVolume());
+      // Gerar barras animadas...
+    }, 50);
+  }
+}, [isCallActive]);
+```
+
+### Helper Text Dinâmico
+
+```typescript
+const getHelperText = () => {
+  if (isCallActive) {
+    return isSpeaking 
+      ? "Kyle is responding..." 
+      : "Tap 🎤 to end call";
+  }
+  return "Type a message or tap 🎤 to speak";
 };
 ```
 
-## Fase 2: Atualizar `KyleChatDialog` (Chat de Texto)
-
-### Mudanças no Visual
-
-O layout atual será **preservado**. Apenas a área de controle inferior muda:
-
-**Antes (microfone):**
-```
-┌────────────────────────────────────┐
-│     [Botão Microfone Grande]       │
-│   "Tap to start voice chat"        │
-└────────────────────────────────────┘
-```
-
-**Depois (input texto):**
-```
-┌────────────────────────────────────┐
-│ [Input de texto........] [Enviar] │
-│   💬 Chat with Kyle                │
-└────────────────────────────────────┘
-```
-
-### Mudanças no Código
-
-1. **Manter**: Header, Kyle Info, Messages area, Quick Replies (visual)
-2. **Remover**: Botão de microfone grande, texto "Tap to start voice chat"
-3. **Adicionar**: 
-   - `<Input>` para digitar mensagem
-   - `<Button>` Send com ícone
-   - Estado local `inputText`
-   - Função `handleSend()` que chama `sendUserMessage(inputText)`
-
-4. **Auto-conectar**: Quando o dialog abre, conectar automaticamente ao ElevenLabs
-5. **Quick Replies**: Ao clicar, chamar `sendUserMessage(quickReply)`
-
-### Estrutura do Componente
-
-```typescript
-const KyleChatDialog = ({ open, onOpenChange, wizardId }: Props) => {
-  const [inputText, setInputText] = useState("");
-  
-  const {
-    isCallActive,
-    isConnecting,
-    isSpeaking,
-    error,
-    messages,
-    toggleCall,
-    endCall,
-    sendUserMessage,  // NOVO
-    resetMessages,
-  } = useKyleElevenLabs({ wizardId });
-
-  // Auto-conectar ao abrir
-  useEffect(() => {
-    if (open && wizardId && !isCallActive && !isConnecting) {
-      toggleCall();
-    }
-  }, [open, wizardId]);
-
-  const handleSend = () => {
-    if (inputText.trim() && isCallActive) {
-      sendUserMessage(inputText);
-      setInputText("");
-    }
-  };
-
-  const handleQuickReply = (reply: string) => {
-    if (isCallActive) {
-      sendUserMessage(reply);
-    }
-  };
-
-  // ... rest of component (visual mantido)
-};
-```
-
-## Fase 3: KyleConsultantDialog (Voz)
-
-**Já está funcionando corretamente!** Não precisa de mudanças.
-
-Ele usa o mesmo `useKyleElevenLabs` hook, mas com interface de microfone.
-
-## Fluxo Final
+## Layout Final
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Mesmo Agente Kyle                       │
-│                  ELEVENLABS_KYLE_AGENT_ID                    │
-│                                                              │
-│    ┌─────────────────────┐     ┌─────────────────────┐      │
-│    │   Chat with Kyle    │     │     Call Kyle       │      │
-│    │                     │     │                     │      │
-│    │  [Digita texto]     │     │  [Fala no mic]      │      │
-│    │        ↓            │     │        ↓            │      │
-│    │  sendUserMessage()  │     │  Auto via WebRTC    │      │
-│    │        ↓            │     │        ↓            │      │
-│    │  Kyle responde      │     │  Kyle responde      │      │
-│    │  (áudio + texto)    │     │  (áudio)            │      │
-│    └─────────────────────┘     └─────────────────────┘      │
-│                                                              │
-│              Mesma edge function: kyle-conversation-token    │
-│              Mesmo hook: useKyleElevenLabs                   │
-└─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────┐
+│ ✨ AI Sales Consultant                   [🔄] │  Header
+├────────────────────────────────────────────────┤
+│                                                │
+│              [Kyle Avatar + Glow]              │
+│                    Kyle                        │
+│             Sales Consultant                   │
+│               [🟢 Online]                      │
+│                                                │
+│         [💬 Chat]    [🎤 Voice]               │  Feature badges
+│                                                │
+├────────────────────────────────────────────────┤
+│                                                │
+│  [Mensagens aqui...]                           │  Messages
+│                                                │
+├────────────────────────────────────────────────┤
+│  [💰 Pricing] [📅 Schedule] [📦 Services]     │  Quick Replies
+├────────────────────────────────────────────────┤
+│     ▂ ▄ ▆ █ ▆ ▄ ▂ ▂ ▄ ▆ ▄ ▂                  │  Voice Viz (quando ativo)
+│           ● Listening...                       │
+├────────────────────────────────────────────────┤
+│ [🎤]  [Type your message...]         [Send]   │  Input unificado
+│                                                │
+│    "Type a message or tap 🎤 to speak"        │  Helper text
+└────────────────────────────────────────────────┘
 ```
-
-## Elementos Preservados no KyleChatDialog
-
-- Header com Sparkles e "AI Sales Consultant"
-- Botão Reset (RotateCcw)
-- Kyle Info section com avatar e badge de status
-- Messages area com bolhas estilizadas (user gradient amarelo, assistant bg-muted)
-- Speaking indicator (3 dots animados)
-- Quick Replies badges
-- Footer com texto "Chat powered by AI"
 
 ## Ordem de Implementação
 
-1. Atualizar `useKyleElevenLabs.ts` - expor `sendUserMessage`
-2. Atualizar `KyleChatDialog.tsx` - trocar microfone por input de texto
-3. Testar ambos os diálogos
+1. Adicionar botão de microfone na área de input
+2. Implementar voice visualization (barras de frequência)
+3. Melhorar empty state com badges Chat/Voice
+4. Redesenhar quick replies com ícones
+5. Adicionar helper text dinâmico
+6. Ajustar estados visuais do microfone (normal/ativo/conectando)
