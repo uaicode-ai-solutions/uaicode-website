@@ -28,6 +28,18 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
     getOutputVolume,
   } = useKyleElevenLabs({ wizardId });
 
+  // Refs to store current values for animation loop (avoids stale closures)
+  const getInputVolumeRef = useRef(getInputVolume);
+  const getOutputVolumeRef = useRef(getOutputVolume);
+  const isSpeakingRef = useRef(isSpeaking);
+
+  // Keep refs updated with latest values
+  useEffect(() => {
+    getInputVolumeRef.current = getInputVolume;
+    getOutputVolumeRef.current = getOutputVolume;
+    isSpeakingRef.current = isSpeaking;
+  }, [getInputVolume, getOutputVolume, isSpeaking]);
+
   // Timer for call duration
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -41,7 +53,7 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
     return () => clearInterval(timer);
   }, [isCallActive]);
 
-  // Real voice visualization using actual volume levels
+  // Real voice visualization using actual volume levels via refs
   useEffect(() => {
     if (!isCallActive) {
       setFrequencyBars(Array(12).fill(0.1));
@@ -52,11 +64,11 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
     }
 
     const updateVisualization = () => {
-      const inputVol = getInputVolume();
-      const outputVol = getOutputVolume();
+      const inputVol = getInputVolumeRef.current();
+      const outputVol = getOutputVolumeRef.current();
       
       // Use output volume when speaking, input volume when listening
-      const activeVolume = isSpeaking ? outputVol : inputVol;
+      const activeVolume = isSpeakingRef.current ? outputVol : inputVol;
       const baseLevel = Math.max(0.1, activeVolume);
       
       // Generate bars with some randomness based on actual volume
@@ -78,7 +90,7 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isCallActive, isSpeaking, getInputVolume, getOutputVolume]);
+  }, [isCallActive]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
