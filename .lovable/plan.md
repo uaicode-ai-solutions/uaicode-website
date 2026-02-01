@@ -1,121 +1,195 @@
 
-# Plano: Consolidar Cards do Kyle
+# Plano: Melhorar Visual dos Cards do Kyle
 
 ## Objetivo
 
-Remover o card de voz separado e manter apenas 2 cards do Kyle (Email + Chat/Voice híbrido), ajustando o layout para ficarem bem distribuídos.
+Aumentar o tamanho e tornar os cards mais atrativos, aproveitando o espaço disponível agora que temos apenas 2 cards.
 
-## Mudanças
+## Mudanças Propostas
 
-### 1. Alterar Grid de 3 para 2 colunas
+### Layout Antes (compacto)
 
-**Antes:**
 ```
-[Email Kyle] [Chat with Kyle] [Call Kyle]
-   1/3            1/3            1/3
-```
-
-**Depois:**
-```
-[Email Kyle] [Call or Chat Kyle]
-    1/2              1/2
+┌────────────────────────────┐  ┌────────────────────────────┐
+│ [Avatar] Email Kyle  ⏰24h │  │ [Avatar] Call/Chat 🟢Avail │
+│          Get detailed...   │  │          24/7 Chat and...  │
+└────────────────────────────┘  └────────────────────────────┘
 ```
 
-### 2. Remover Card "Call Kyle"
+### Layout Depois (expandido e atrativo)
 
-Remover completamente o card que está nas linhas 792-818, pois a funcionalidade de voz já está no card híbrido.
+```
+┌─────────────────────────────────────┐  ┌─────────────────────────────────────┐
+│                                     │  │                                     │
+│  [Avatar Grande]                    │  │  [Avatar Grande]                    │
+│                                     │  │                                     │
+│  ✉️ Email Kyle           ⏰ 24h    │  │  💬🎤 Call or Chat Kyle  🟢 Avail  │
+│                                     │  │                                     │
+│  Get a detailed, personalized       │  │  Get instant answers via chat or    │
+│  response to your questions         │  │  voice - available 24/7             │
+│                                     │  │                                     │
+│  [→ Send Email]                     │  │  [→ Start Conversation]             │
+└─────────────────────────────────────┘  └─────────────────────────────────────┘
+```
 
-### 3. Atualizar Card "Chat with Kyle"
+## Detalhes das Mudanças
 
-| Campo | Antes | Depois |
-|-------|-------|--------|
-| Título | "Chat with Kyle" | "Call or Chat Kyle" |
-| Subtítulo | "AI Sales Consultant" | "24/7 Chat and Voice Consultant" |
-| Ícone | MessageSquare | Manter MessageSquare ou trocar para Headphones |
+### 1. Aumentar Padding do CardContent
 
-### 4. Remover KyleConsultantDialog (opcional)
+| Antes | Depois |
+|-------|--------|
+| `p-4` | `p-6` |
 
-Se o `KyleConsultantDialog` não for mais usado em nenhum outro lugar, pode ser removido. Mas vou mantê-lo por enquanto caso seja usado futuramente.
+### 2. Aumentar Avatar
+
+| Antes | Depois |
+|-------|--------|
+| `size="sm"` | `size="md"` |
+| Ícone `h-3 w-3` | Ícone `h-4 w-4` |
+
+### 3. Melhorar Tipografia
+
+| Elemento | Antes | Depois |
+|----------|-------|--------|
+| Título | `font-semibold` | `text-lg font-semibold` |
+| Subtítulo | `text-sm` | `text-sm` (mas com texto mais descritivo) |
+
+### 4. Adicionar Descrição Expandida
+
+**Email Card:**
+- Antes: "Get a detailed response"
+- Depois: "Get a detailed, personalized response to your questions"
+
+**Chat/Voice Card:**
+- Antes: "24/7 Chat and Voice Consultant"
+- Depois: "Get instant answers via chat or voice - available 24/7"
+
+### 5. Adicionar CTA Visual (Botão Sutil)
+
+Adicionar um indicador de ação no final de cada card:
+
+```tsx
+<div className="flex items-center gap-1 text-amber-400 text-sm font-medium mt-2">
+  <ArrowRight className="h-4 w-4" />
+  <span>Send Email</span>
+</div>
+```
+
+### 6. Adicionar Ícones Duplos no Card Híbrido
+
+Para deixar claro que suporta chat E voz:
+
+```tsx
+<div className="absolute -bottom-1 -right-1 flex gap-0.5">
+  <div className="p-1 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500">
+    <MessageSquare className="h-3 w-3 text-black" />
+  </div>
+  <div className="p-1 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500">
+    <Mic className="h-3 w-3 text-black" />
+  </div>
+</div>
+```
 
 ## Arquivo a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx` | Modificar |
+| `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx` | Modificar linhas 739-790 |
 
-## Código Atual (linhas 738-818)
-
-```tsx
-{/* Kyle Contact Buttons - 3 cards grid */}
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-  {/* Email Kyle Card */}
-  ...
-  {/* Chat with Kyle Card */}
-  ...
-  {/* Call Kyle Card */}  ← REMOVER
-  ...
-</div>
-```
-
-## Código Novo
+## Código Final Proposto
 
 ```tsx
 {/* Kyle Contact Buttons - 2 cards grid */}
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
   {/* Email Kyle Card */}
-  <Card ...>
-    ...
-  </Card>
-
-  {/* Call or Chat Kyle Card (híbrido) */}
   <Card 
-    onClick={() => setKyleChatDialogOpen(true)}
-    className="..."
+    onClick={() => setEmailDialogOpen(true)}
+    className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift group"
   >
-    <CardContent className="p-4 flex items-center gap-4">
-      <div className="relative">
-        <KyleAvatar size="sm" isActive={true} />
-        <div className="absolute -bottom-1 -right-1 ...">
-          <MessageSquare className="h-3 w-3 text-black" />
+    <CardContent className="p-6 flex flex-col gap-4">
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <KyleAvatar size="md" isActive={true} />
+          <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
+            <Mail className="h-4 w-4 text-black" />
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-lg font-semibold text-foreground">Email Kyle</p>
+            <span className="flex items-center gap-1 text-xs text-amber-400 font-medium">
+              <Clock className="h-3 w-3" />
+              24h reply
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Get a detailed, personalized response to your questions
+          </p>
         </div>
       </div>
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <p className="font-semibold text-foreground">Call or Chat Kyle</p>
-          <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping ..."></span>
-              <span className="relative ... bg-green-500"></span>
-            </span>
-            Available
-          </span>
+      <div className="flex items-center gap-1 text-amber-400 text-sm font-medium group-hover:translate-x-1 transition-transform">
+        <ArrowRight className="h-4 w-4" />
+        <span>Send Email</span>
+      </div>
+    </CardContent>
+  </Card>
+
+  {/* Call or Chat Kyle Card (hybrid) */}
+  <Card 
+    onClick={() => setKyleChatDialogOpen(true)}
+    className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift group"
+  >
+    <CardContent className="p-6 flex flex-col gap-4">
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <KyleAvatar size="md" isActive={true} />
+          <div className="absolute -bottom-1 -right-1 flex">
+            <div className="p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background -mr-1">
+              <MessageSquare className="h-3.5 w-3.5 text-black" />
+            </div>
+            <div className="p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
+              <Mic className="h-3.5 w-3.5 text-black" />
+            </div>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground">24/7 Chat and Voice Consultant</p>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-lg font-semibold text-foreground">Call or Chat Kyle</p>
+            <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              Available
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Get instant answers via chat or voice - available 24/7
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-1 text-amber-400 text-sm font-medium group-hover:translate-x-1 transition-transform">
+        <ArrowRight className="h-4 w-4" />
+        <span>Start Conversation</span>
       </div>
     </CardContent>
   </Card>
 </div>
 ```
 
-## Limpeza Adicional
+## Imports Necessários
 
-- Manter o `KyleConsultantDialog` no código (pode ser útil futuramente)
-- O estado `kyleDialogOpen` e `setKyleDialogOpen` podem ser mantidos ou removidos
+Adicionar `Mic` e `ArrowRight` aos imports do Lucide:
+
+```tsx
+import { ..., Mic, ArrowRight } from "lucide-react";
+```
 
 ## Resultado Visual
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│            Have a question? Get instant answers with Kyle   │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌─────────────────────────┐  ┌─────────────────────────┐   │
-│  │ [Avatar] Email Kyle     │  │ [Avatar] Call or Chat   │   │
-│  │          ⏰ 24h reply   │  │          Kyle  🟢 Avail │   │
-│  │ Get a detailed response │  │ 24/7 Chat and Voice     │   │
-│  │                         │  │ Consultant              │   │
-│  └─────────────────────────┘  └─────────────────────────┘   │
-│                                                              │
-│         50% de espaço          50% de espaço                │
-└─────────────────────────────────────────────────────────────┘
-```
+Cards mais espaçosos com:
+- Avatar maior (md ao invés de sm)
+- Título maior (text-lg)
+- Descrição mais completa
+- CTA claro com seta animada no hover
+- Ícones duplos (chat + mic) no card híbrido
