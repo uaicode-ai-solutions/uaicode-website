@@ -734,8 +734,8 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
           </p>
         </div>
         
-        {/* Kyle Contact Buttons - 3 cards grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Kyle Contact Buttons - 2 cards grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Email Kyle Card */}
           <Card 
             onClick={() => setEmailDialogOpen(true)}
@@ -761,7 +761,7 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
             </CardContent>
           </Card>
 
-          {/* Chat with Kyle Card */}
+          {/* Call or Chat Kyle Card (hybrid) */}
           <Card 
             onClick={() => setKyleChatDialogOpen(true)}
             className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
@@ -775,35 +775,7 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-semibold text-foreground">Chat with Kyle</p>
-                  <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    Online
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">AI Sales Consultant</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Call Kyle Card */}
-          <Card 
-            onClick={() => setKyleDialogOpen(true)}
-            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
-          >
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="relative">
-                <KyleAvatar size="sm" isActive={true} />
-                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
-                  <Phone className="h-3 w-3 text-black" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-foreground">Call Kyle</p>
+                  <p className="font-semibold text-foreground">Call or Chat Kyle</p>
                   <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -812,7 +784,7 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
                     Available
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground">24/7 Voice Support</p>
+                <p className="text-sm text-muted-foreground">24/7 Chat and Voice Consultant</p>
               </div>
             </CardContent>
           </Card>
