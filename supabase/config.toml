@@ -104,3 +104,6 @@ verify_jwt = false
 
 [functions.kyle-conversation-token]
 verify_jwt = false
+
+[functions.kyle-chat-token]
+verify_jwt = false
