@@ -74,13 +74,20 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     }
   }, [handleSend]);
 
-  const handleReset = useCallback(() => {
+  const handleReset = useCallback(async () => {
     if (isCallActive) {
-      endCall();
+      await endCall();
     }
     resetMessages();
     setInputText("");
-  }, [isCallActive, endCall, resetMessages]);
+    
+    // Reconecta após um pequeno delay
+    setTimeout(() => {
+      if (wizardId) {
+        toggleCall();
+      }
+    }, 500);
+  }, [isCallActive, endCall, resetMessages, wizardId, toggleCall]);
 
   const handleClose = useCallback(() => {
     if (isCallActive) {
