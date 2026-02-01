@@ -1,107 +1,99 @@
 
-# Plano: Iniciar Conversa Automaticamente ao Abrir o Dialog
 
-## Problema Identificado
+# Plano: Corrigir Problemas de Áudio do Kyle
 
-Atualmente, quando o `KyleChatDialog` abre, ele mostra a tela de apresentação ("Hi! I'm Kyle...") e espera o usuário clicar no botão do microfone para iniciar a chamada.
+## Problemas Identificados
 
-O usuário quer que a conversa inicie **automaticamente** assim que o dialog abrir, sem mostrar a tela de apresentação.
+### 1. Loop Infinito no `KyleConsultantDialog.tsx`
+O console mostra: "Maximum update depth exceeded" neste componente.
+
+**Causa**: O `useEffect` na linha 45-81 tem `getInputVolume` e `getOutputVolume` nas dependências:
+
+```tsx
+useEffect(() => {
+  // ...
+}, [isCallActive, isSpeaking, getInputVolume, getOutputVolume]); // ❌ Problema aqui!
+```
+
+Essas funções são recriadas a cada render, causando o `useEffect` disparar infinitamente, o que quebra a conexão de áudio.
+
+### 2. Auto-Start Mal Configurado no `KyleChatDialog.tsx`
+O `useEffect` de auto-start pode estar causando reconexões múltiplas:
+
+```tsx
+useEffect(() => {
+  if (open && !isCallActive && !isConnecting) {
+    const timer = setTimeout(() => {
+      handleToggleVoice(); // ← Chamado múltiplas vezes
+    }, 300);
+    return () => clearTimeout(timer);
+  }
+}, [open]); // ❌ Faltam dependências e controle de estado
+```
 
 ## Solução
 
-Adicionar um `useEffect` que detecta quando o dialog é aberto (`open === true`) e automaticamente inicia a chamada de voz via `startCall()`.
-
-## Mudanças Necessárias
-
-### Arquivo: `src/components/planningmysaas/dashboard/KyleChatDialog.tsx`
-
-**Adicionar useEffect para auto-iniciar:**
+### Correção 1: `KyleConsultantDialog.tsx`
+Usar `useRef` para as funções de volume (igual já foi feito no `KyleChatDialog.tsx`):
 
 ```tsx
-// Auto-start call when dialog opens
+// Store volume functions in refs to avoid dependency issues
+const getInputVolumeRef = useRef(getInputVolume);
+const getOutputVolumeRef = useRef(getOutputVolume);
+getInputVolumeRef.current = getInputVolume;
+getOutputVolumeRef.current = getOutputVolume;
+
 useEffect(() => {
-  if (open && !isCallActive && !isConnecting) {
-    // Small delay to ensure dialog is fully mounted
+  if (!isCallActive) {
+    setFrequencyBars(Array(12).fill(0.1));
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    return;
+  }
+
+  const updateVisualization = () => {
+    const inputVol = getInputVolumeRef.current();
+    const outputVol = getOutputVolumeRef.current();
+    // ... resto do código
+  };
+  // ...
+}, [isCallActive, isSpeaking]); // ← Sem as funções de volume
+```
+
+### Correção 2: `KyleChatDialog.tsx`
+Adicionar um ref para controlar se já tentou iniciar e prevenir múltiplas tentativas:
+
+```tsx
+const hasAutoStarted = useRef(false);
+
+// Auto-start voice call when dialog opens
+useEffect(() => {
+  if (open && !isCallActive && !isConnecting && !hasAutoStarted.current) {
+    hasAutoStarted.current = true;
     const timer = setTimeout(() => {
       handleToggleVoice();
     }, 300);
     return () => clearTimeout(timer);
   }
-}, [open]);
-```
-
-**Atualizar Empty State:**
-
-Como a chamada inicia automaticamente, o empty state pode mostrar "Connecting..." ao invés da apresentação do Kyle. Podemos simplificar para mostrar apenas o loading/connecting state:
-
-```tsx
-{/* Connecting State - shows while connecting */}
-{messages.length === 0 && (isConnecting || (!isCallActive && open)) ? (
-  <div className="flex flex-col items-center justify-center h-full">
-    <KyleAvatar isActive={true} isSpeaking={false} size="lg" />
-    <p className="text-muted-foreground mt-4">
-      {isConnecting ? "Connecting to Kyle..." : "Starting conversation..."}
-    </p>
-    <div className="flex gap-1.5 mt-4">
-      <span className="w-2 h-2 rounded-full bg-accent animate-bounce" />
-      <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "150ms" }} />
-      <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "300ms" }} />
-    </div>
-  </div>
-) : null}
-```
-
-### Arquivo a Modificar
-
-| Arquivo | Ação |
-|---------|------|
-| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Adicionar useEffect para auto-start e atualizar empty state |
-
-## Fluxo Atualizado
-
-```
-┌────────────────────────────────────────────┐
-│ Usuário clica em "Talk to Kyle"            │
-└────────────────────────────────────────────┘
-                    ↓
-┌────────────────────────────────────────────┐
-│ Dialog abre                                │
-└────────────────────────────────────────────┘
-                    ↓
-┌────────────────────────────────────────────┐
-│ useEffect detecta open === true            │
-│ Chama handleToggleVoice() automaticamente  │
-└────────────────────────────────────────────┘
-                    ↓
-┌────────────────────────────────────────────┐
-│ Mostra "Connecting to Kyle..."             │
-│ com avatar e animação de loading           │
-└────────────────────────────────────────────┘
-                    ↓
-┌────────────────────────────────────────────┐
-│ Conexão estabelecida                       │
-│ Kyle começa a falar automaticamente        │
-│ Voice visualization aparece                │
-└────────────────────────────────────────────┘
-```
-
-## Considerações
-
-1. **Delay de 300ms**: Pequeno delay para garantir que o dialog está montado antes de iniciar a chamada
-2. **Permissão do microfone**: O browser vai pedir permissão do microfone automaticamente
-3. **Tratamento de erro**: Se a conexão falhar, o usuário pode tentar novamente clicando no botão do mic
-4. **Reset**: O botão de reset (`RotateCcw`) encerra a chamada atual e reinicia automaticamente
-
-## Código Final
-
-```tsx
-// Auto-start voice call when dialog opens
-useEffect(() => {
-  if (open && !isCallActive && !isConnecting) {
-    const timer = setTimeout(() => {
-      handleToggleVoice();
-    }, 300);
-    return () => clearTimeout(timer);
+  
+  // Reset when dialog closes
+  if (!open) {
+    hasAutoStarted.current = false;
   }
 }, [open, isCallActive, isConnecting, handleToggleVoice]);
 ```
+
+## Arquivos a Modificar
+
+| Arquivo | Ação |
+|---------|------|
+| `src/components/planningmysaas/dashboard/KyleConsultantDialog.tsx` | Corrigir loop infinito das funções de volume |
+| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Adicionar controle de auto-start com ref |
+
+## Resultado Esperado
+
+1. O loop infinito será eliminado
+2. O áudio do Kyle funcionará corretamente
+3. O auto-start iniciará apenas uma vez quando o dialog abrir
+
