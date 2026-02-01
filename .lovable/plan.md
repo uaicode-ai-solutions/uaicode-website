@@ -1,195 +1,193 @@
 
-# Plano: Melhorar Visual dos Cards do Kyle
 
-## Objetivo
+# Plano: Corrigir Comportamento do Mute e Padronizar Altura do KyleChatDialog
 
-Aumentar o tamanho e tornar os cards mais atrativos, aproveitando o espaço disponível agora que temos apenas 2 cards.
+## Problema Identificado
 
-## Mudanças Propostas
+O botão do microfone atualmente **encerra a chamada** ao invés de apenas mutar o microfone. E quando a chamada não está ativa, desabilita o envio de texto completamente.
 
-### Layout Antes (compacto)
-
-```
-┌────────────────────────────┐  ┌────────────────────────────┐
-│ [Avatar] Email Kyle  ⏰24h │  │ [Avatar] Call/Chat 🟢Avail │
-│          Get detailed...   │  │          24/7 Chat and...  │
-└────────────────────────────┘  └────────────────────────────┘
-```
-
-### Layout Depois (expandido e atrativo)
-
-```
-┌─────────────────────────────────────┐  ┌─────────────────────────────────────┐
-│                                     │  │                                     │
-│  [Avatar Grande]                    │  │  [Avatar Grande]                    │
-│                                     │  │                                     │
-│  ✉️ Email Kyle           ⏰ 24h    │  │  💬🎤 Call or Chat Kyle  🟢 Avail  │
-│                                     │  │                                     │
-│  Get a detailed, personalized       │  │  Get instant answers via chat or    │
-│  response to your questions         │  │  voice - available 24/7             │
-│                                     │  │                                     │
-│  [→ Send Email]                     │  │  [→ Start Conversation]             │
-└─────────────────────────────────────┘  └─────────────────────────────────────┘
-```
-
-## Detalhes das Mudanças
-
-### 1. Aumentar Padding do CardContent
-
-| Antes | Depois |
-|-------|--------|
-| `p-4` | `p-6` |
-
-### 2. Aumentar Avatar
-
-| Antes | Depois |
-|-------|--------|
-| `size="sm"` | `size="md"` |
-| Ícone `h-3 w-3` | Ícone `h-4 w-4` |
-
-### 3. Melhorar Tipografia
-
-| Elemento | Antes | Depois |
-|----------|-------|--------|
-| Título | `font-semibold` | `text-lg font-semibold` |
-| Subtítulo | `text-sm` | `text-sm` (mas com texto mais descritivo) |
-
-### 4. Adicionar Descrição Expandida
-
-**Email Card:**
-- Antes: "Get a detailed response"
-- Depois: "Get a detailed, personalized response to your questions"
-
-**Chat/Voice Card:**
-- Antes: "24/7 Chat and Voice Consultant"
-- Depois: "Get instant answers via chat or voice - available 24/7"
-
-### 5. Adicionar CTA Visual (Botão Sutil)
-
-Adicionar um indicador de ação no final de cada card:
+### Código atual problemático:
 
 ```tsx
-<div className="flex items-center gap-1 text-amber-400 text-sm font-medium mt-2">
-  <ArrowRight className="h-4 w-4" />
-  <span>Send Email</span>
-</div>
+// Linha 376-377: Input desabilitado quando não está em chamada
+disabled={!isCallActive || isConnecting}
+
+// Linha 384: Send desabilitado quando não está em chamada  
+disabled={!isCallActive || isConnecting || !inputText.trim()}
 ```
 
-### 6. Adicionar Ícones Duplos no Card Híbrido
+O fluxo atual:
+1. Usuário clica no mic → Inicia chamada de voz
+2. Usuário quer mutar → Clica no mic (que mostra MicOff)
+3. Resultado: Chamada é encerrada, input fica desabilitado
 
-Para deixar claro que suporta chat E voz:
+## Solução Proposta
+
+### 1. Mudar o comportamento do botão do microfone
+
+O botão deve ter 3 estados:
+
+| Estado | Ícone | Cor | Ação ao clicar |
+|--------|-------|-----|----------------|
+| Inativo (sem chamada) | `Mic` | Amber/dourado | Iniciar chamada |
+| Ativo (chamada ativa) | `Mic` | Verde | Mutar microfone |
+| Mutado (mic silenciado) | `MicOff` | Vermelho | Desmutar microfone |
+
+### 2. Adicionar botão separado para encerrar chamada (opcional)
+
+Ou manter o X do dialog para encerrar, mas o mic passa a ser só para mutar.
+
+### 3. Permitir enviar texto mesmo sem chamada ativa
+
+Mas para isso precisa que o ElevenLabs suporte `sendUserMessage` sem chamada ativa. Vou verificar se isso é possível ou se precisa manter a chamada ativa.
+
+**Decisão**: Manter chamada ativa para enviar texto (como está), mas o botão do mic **muta o microfone**, não encerra a chamada.
+
+### 4. Padronizar altura do dialog
+
+Adicionar altura fixa similar ao EmailKyleDialog (que tem conteúdo de ~500px):
 
 ```tsx
-<div className="absolute -bottom-1 -right-1 flex gap-0.5">
-  <div className="p-1 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500">
-    <MessageSquare className="h-3 w-3 text-black" />
-  </div>
-  <div className="p-1 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500">
-    <Mic className="h-3 w-3 text-black" />
-  </div>
-</div>
+<DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20 h-[580px] flex flex-col">
 ```
 
-## Arquivo a Modificar
+## Arquivos a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx` | Modificar linhas 739-790 |
+| `src/hooks/useKyleElevenLabs.ts` | Adicionar estados e funções de mute |
+| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Corrigir lógica do botão de mic e padronizar altura |
 
-## Código Final Proposto
+## Mudanças Detalhadas
 
-```tsx
-{/* Kyle Contact Buttons - 2 cards grid */}
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-  {/* Email Kyle Card */}
-  <Card 
-    onClick={() => setEmailDialogOpen(true)}
-    className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift group"
-  >
-    <CardContent className="p-6 flex flex-col gap-4">
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <KyleAvatar size="md" isActive={true} />
-          <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
-            <Mail className="h-4 w-4 text-black" />
-          </div>
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-lg font-semibold text-foreground">Email Kyle</p>
-            <span className="flex items-center gap-1 text-xs text-amber-400 font-medium">
-              <Clock className="h-3 w-3" />
-              24h reply
-            </span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Get a detailed, personalized response to your questions
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-1 text-amber-400 text-sm font-medium group-hover:translate-x-1 transition-transform">
-        <ArrowRight className="h-4 w-4" />
-        <span>Send Email</span>
-      </div>
-    </CardContent>
-  </Card>
+### useKyleElevenLabs.ts
 
-  {/* Call or Chat Kyle Card (hybrid) */}
-  <Card 
-    onClick={() => setKyleChatDialogOpen(true)}
-    className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift group"
-  >
-    <CardContent className="p-6 flex flex-col gap-4">
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <KyleAvatar size="md" isActive={true} />
-          <div className="absolute -bottom-1 -right-1 flex">
-            <div className="p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background -mr-1">
-              <MessageSquare className="h-3.5 w-3.5 text-black" />
-            </div>
-            <div className="p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
-              <Mic className="h-3.5 w-3.5 text-black" />
-            </div>
-          </div>
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-lg font-semibold text-foreground">Call or Chat Kyle</p>
-            <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              Available
-            </span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Get instant answers via chat or voice - available 24/7
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-1 text-amber-400 text-sm font-medium group-hover:translate-x-1 transition-transform">
-        <ArrowRight className="h-4 w-4" />
-        <span>Start Conversation</span>
-      </div>
-    </CardContent>
-  </Card>
-</div>
+Adicionar:
+```typescript
+const [isMicMuted, setIsMicMuted] = useState(false);
+
+// Função para mutar/desmutar microfone
+const toggleMicMute = useCallback(() => {
+  setIsMicMuted(prev => !prev);
+  // O ElevenLabs SDK suporta isso via setVolume ou controlando o stream de áudio
+}, []);
+
+return {
+  // ... existing
+  isMicMuted,
+  toggleMicMute,
+};
 ```
 
-## Imports Necessários
+### KyleChatDialog.tsx
 
-Adicionar `Mic` e `ArrowRight` aos imports do Lucide:
+1. **Corrigir lógica do botão de mic**:
 
 ```tsx
-import { ..., Mic, ArrowRight } from "lucide-react";
+// ANTES: Botão alterna entre iniciar/encerrar chamada
+<Button onClick={handleToggleVoice}>
+  {isCallActive ? <MicOff /> : <Mic />}
+</Button>
+
+// DEPOIS: Botão inicia chamada OU muta/desmuta quando ativo
+<Button onClick={isCallActive ? toggleMicMute : handleToggleVoice}>
+  {isCallActive 
+    ? (isMicMuted ? <MicOff /> : <Mic />) 
+    : <Mic />
+  }
+</Button>
 ```
 
-## Resultado Visual
+2. **Adicionar botão para encerrar chamada** (no header ou na área de voice):
 
-Cards mais espaçosos com:
-- Avatar maior (md ao invés de sm)
-- Título maior (text-lg)
-- Descrição mais completa
-- CTA claro com seta animada no hover
-- Ícones duplos (chat + mic) no card híbrido
+```tsx
+{isCallActive && (
+  <Button 
+    variant="ghost" 
+    size="sm"
+    onClick={endCall}
+    className="text-red-400 hover:text-red-500"
+  >
+    End Call
+  </Button>
+)}
+```
+
+3. **Padronizar altura**:
+
+```tsx
+<DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20 h-[580px] flex flex-col">
+```
+
+E remover `min-h` e `max-h` da área de mensagens:
+```tsx
+// ANTES
+<div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[200px] max-h-[300px]">
+
+// DEPOIS  
+<div className="flex-1 overflow-y-auto p-4 space-y-3">
+```
+
+## Layout Visual Atualizado
+
+```
+┌────────────────────────────────────────────────────┐
+│ [Kyle Avatar] Kyle ✨                        [🔄] │
+│               🟢 Online        [End Call]         │
+├────────────────────────────────────────────────────┤
+│                                                    │
+│  [Área de mensagens - flex-1, sem altura fixa]    │
+│                                                    │
+├────────────────────────────────────────────────────┤
+│  [💰 Pricing] [📅 Schedule] [📦 Services]        │
+├────────────────────────────────────────────────────┤
+│     ▂ ▄ ▆ █ ▆ ▄ ▂ ▂ ▄ ▆ ▄ ▂                      │
+│           ● Listening...                           │
+├────────────────────────────────────────────────────┤
+│ [🎤]  [Type your message...]             [Send]   │  ← Mic muta, não encerra
+│    "Type a message or tap 🎤 to mute"             │
+└────────────────────────────────────────────────────┘
+          Altura padronizada: 580px
+```
+
+## Estados do Botão de Microfone
+
+| Condição | Ícone | Cor | Ação |
+|----------|-------|-----|------|
+| `!isCallActive && !isConnecting` | `Mic` | Amber com pulse | Iniciar chamada |
+| `isConnecting` | `Loader2` (spinning) | Amber 50% | Desabilitado |
+| `isCallActive && !isMicMuted` | `Mic` | Verde | Mutar microfone |
+| `isCallActive && isMicMuted` | `MicOff` | Vermelho | Desmutar microfone |
+
+## Helper Text Atualizado
+
+```typescript
+const getHelperText = () => {
+  if (error) return "Connection error. Try again.";
+  if (isConnecting) return "Establishing connection...";
+  if (isCallActive) {
+    if (isMicMuted) return "Microphone muted. Tap 🎤 to unmute";
+    return isSpeaking 
+      ? "Kyle is responding..." 
+      : "Listening... Tap 🎤 to mute";
+  }
+  return "Tap 🎤 to start voice or type a message";
+};
+```
+
+## Ordem de Implementação
+
+1. Atualizar `useKyleElevenLabs.ts`:
+   - Adicionar estado `isMicMuted`
+   - Adicionar função `toggleMicMute` (pode usar `setVolume({ volume: 0 })` para silenciar input)
+   - Expor novos valores no retorno
+
+2. Atualizar `KyleChatDialog.tsx`:
+   - Importar `isMicMuted` e `toggleMicMute` do hook
+   - Padronizar altura do DialogContent para `h-[580px]`
+   - Remover `min-h` e `max-h` da área de mensagens
+   - Corrigir lógica do botão de microfone
+   - Adicionar botão "End Call" na voice visualization
+   - Atualizar helper text
+   - Ajustar cores do botão de mic baseado no estado
+
