@@ -14,31 +14,17 @@ interface KyleConsultantDialogProps {
 
 const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: KyleConsultantDialogProps) => {
   const [callDuration, setCallDuration] = useState(0);
-  const [frequencyBars, setFrequencyBars] = useState<number[]>(Array(12).fill(0.1));
-  const animationFrameRef = useRef<number>();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
     isCallActive,
     isConnecting,
     isSpeaking,
     error,
+    messages,
     toggleCall,
     endCall,
-    getInputVolume,
-    getOutputVolume,
   } = useKyleElevenLabs({ wizardId });
-
-  // Refs to store current values for animation loop (avoids stale closures)
-  const getInputVolumeRef = useRef(getInputVolume);
-  const getOutputVolumeRef = useRef(getOutputVolume);
-  const isSpeakingRef = useRef(isSpeaking);
-
-  // Keep refs updated with latest values
-  useEffect(() => {
-    getInputVolumeRef.current = getInputVolume;
-    getOutputVolumeRef.current = getOutputVolume;
-    isSpeakingRef.current = isSpeaking;
-  }, [getInputVolume, getOutputVolume, isSpeaking]);
 
   // Timer for call duration
   useEffect(() => {
@@ -53,44 +39,10 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
     return () => clearInterval(timer);
   }, [isCallActive]);
 
-  // Real voice visualization using actual volume levels via refs
+  // Auto-scroll to latest message
   useEffect(() => {
-    if (!isCallActive) {
-      setFrequencyBars(Array(12).fill(0.1));
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      return;
-    }
-
-    const updateVisualization = () => {
-      const inputVol = getInputVolumeRef.current();
-      const outputVol = getOutputVolumeRef.current();
-      
-      // Use output volume when speaking, input volume when listening
-      const activeVolume = isSpeakingRef.current ? outputVol : inputVol;
-      const baseLevel = Math.max(0.1, activeVolume);
-      
-      // Generate bars with some randomness based on actual volume
-      setFrequencyBars(
-        Array(12).fill(0).map((_, i) => {
-          const variation = Math.sin(Date.now() / 100 + i) * 0.2;
-          const level = baseLevel + variation;
-          return Math.max(0.1, Math.min(1, level));
-        })
-      );
-
-      animationFrameRef.current = requestAnimationFrame(updateVisualization);
-    };
-
-    animationFrameRef.current = requestAnimationFrame(updateVisualization);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [isCallActive]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -126,7 +78,7 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
         </div>
 
         {/* Avatar Section */}
-        <div className="flex flex-col items-center py-6">
+        <div className="flex flex-col items-center py-4">
           <KyleAvatar 
             isActive={isCallActive || isConnecting} 
             isSpeaking={isSpeaking}
@@ -162,24 +114,32 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
           )}
         </div>
 
-        {/* Voice Visualization */}
-        <div className="flex items-center justify-center gap-1 h-12 px-4">
-          {frequencyBars.map((height, index) => (
-            <div
-              key={index}
-              className={`w-2 rounded-full transition-all duration-75 ${
-                isCallActive 
-                  ? isSpeaking 
-                    ? 'bg-gradient-to-t from-amber-500 to-yellow-500/60' 
-                    : 'bg-amber-500/50'
-                  : 'bg-muted-foreground/20'
-              }`}
-              style={{
-                height: `${height * 40}px`,
-                minHeight: '4px'
-              }}
-            />
-          ))}
+        {/* Conversation Transcript */}
+        <div className="mx-4 h-32 overflow-y-auto rounded-lg bg-background/50 border border-border/30 p-3">
+          {messages.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">
+              {isCallActive ? "Listening..." : "Start a call to see the transcript"}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {messages.map((msg, index) => (
+                <div 
+                  key={index}
+                  className={`text-xs ${
+                    msg.role === "user" 
+                      ? "text-right text-amber-400" 
+                      : "text-left text-muted-foreground"
+                  }`}
+                >
+                  <span className="font-medium">
+                    {msg.role === "user" ? "You: " : "Kyle: "}
+                  </span>
+                  {msg.content}
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </div>
 
         {/* Package Info */}
