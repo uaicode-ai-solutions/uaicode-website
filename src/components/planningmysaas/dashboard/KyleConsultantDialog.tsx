@@ -1,22 +1,32 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Phone, PhoneOff, Loader2, Sparkles } from "lucide-react";
+import { Phone, PhoneOff, Loader2, Sparkles, AlertCircle } from "lucide-react";
 import KyleAvatar from "@/components/chat/KyleAvatar";
+import { useKyleElevenLabs } from "@/hooks/useKyleElevenLabs";
 
 interface KyleConsultantDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   packageName?: string;
+  wizardId?: string;
 }
 
-const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultantDialogProps) => {
-  // Mocked states - replace with real useVapi hook when Kyle is configured
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isCallActive, setIsCallActive] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: KyleConsultantDialogProps) => {
   const [callDuration, setCallDuration] = useState(0);
   const [frequencyBars, setFrequencyBars] = useState<number[]>(Array(12).fill(0.1));
+  const animationFrameRef = useRef<number>();
+
+  const {
+    isCallActive,
+    isConnecting,
+    isSpeaking,
+    error,
+    toggleCall,
+    endCall,
+    getInputVolume,
+    getOutputVolume,
+  } = useKyleElevenLabs({ wizardId });
 
   // Timer for call duration
   useEffect(() => {
@@ -25,42 +35,50 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
       timer = setInterval(() => {
         setCallDuration(prev => prev + 1);
       }, 1000);
+    } else {
+      setCallDuration(0);
     }
     return () => clearInterval(timer);
   }, [isCallActive]);
 
-  // Simulate voice visualization when speaking
+  // Real voice visualization using actual volume levels
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isCallActive && isSpeaking) {
-      interval = setInterval(() => {
-        setFrequencyBars(
-          Array(12).fill(0).map(() => 0.2 + Math.random() * 0.8)
-        );
-      }, 100);
-    } else if (isCallActive) {
-      // Listening state - subtle animation
-      interval = setInterval(() => {
-        setFrequencyBars(
-          Array(12).fill(0).map(() => 0.1 + Math.random() * 0.3)
-        );
-      }, 150);
-    } else {
+    if (!isCallActive) {
       setFrequencyBars(Array(12).fill(0.1));
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      return;
     }
-    return () => clearInterval(interval);
-  }, [isCallActive, isSpeaking]);
 
-  // Simulate Kyle speaking periodically (MOCK - remove when connecting real VAPI)
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isCallActive) {
-      interval = setInterval(() => {
-        setIsSpeaking(prev => !prev);
-      }, 3000);
-    }
-    return () => clearInterval(interval);
-  }, [isCallActive]);
+    const updateVisualization = () => {
+      const inputVol = getInputVolume();
+      const outputVol = getOutputVolume();
+      
+      // Use output volume when speaking, input volume when listening
+      const activeVolume = isSpeaking ? outputVol : inputVol;
+      const baseLevel = Math.max(0.1, activeVolume);
+      
+      // Generate bars with some randomness based on actual volume
+      setFrequencyBars(
+        Array(12).fill(0).map((_, i) => {
+          const variation = Math.sin(Date.now() / 100 + i) * 0.2;
+          const level = baseLevel + variation;
+          return Math.max(0.1, Math.min(1, level));
+        })
+      );
+
+      animationFrameRef.current = requestAnimationFrame(updateVisualization);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(updateVisualization);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isCallActive, isSpeaking, getInputVolume, getOutputVolume]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -68,32 +86,15 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleToggleCall = useCallback(() => {
-    if (isCallActive) {
-      // End call
-      setIsCallActive(false);
-      setIsSpeaking(false);
-      setCallDuration(0);
-    } else {
-      // Start call (simulate connecting)
-      setIsConnecting(true);
-      setTimeout(() => {
-        setIsConnecting(false);
-        setIsCallActive(true);
-      }, 1500);
-    }
-  }, [isCallActive]);
-
   const handleClose = useCallback(() => {
     if (isCallActive) {
-      setIsCallActive(false);
-      setIsSpeaking(false);
-      setCallDuration(0);
+      endCall();
     }
     onOpenChange(false);
-  }, [isCallActive, onOpenChange]);
+  }, [isCallActive, endCall, onOpenChange]);
 
   const getStatusText = () => {
+    if (error) return "Connection error";
     if (isConnecting) return "Connecting...";
     if (!isCallActive) return "Tap to start talking";
     if (isSpeaking) return "Kyle is speaking...";
@@ -125,14 +126,20 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
           
           {/* Status */}
           <div className="mt-3 flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${
-              isCallActive 
-                ? isSpeaking 
-                  ? 'bg-amber-400 animate-pulse' 
-                  : 'bg-green-500'
-                : 'bg-muted-foreground/50'
-            }`} />
-            <span className="text-sm text-muted-foreground">{getStatusText()}</span>
+            {error ? (
+              <AlertCircle className="w-4 h-4 text-destructive" />
+            ) : (
+              <div className={`w-2 h-2 rounded-full ${
+                isCallActive 
+                  ? isSpeaking 
+                    ? 'bg-amber-400 animate-pulse' 
+                    : 'bg-green-500'
+                  : 'bg-muted-foreground/50'
+              }`} />
+            )}
+            <span className={`text-sm ${error ? 'text-destructive' : 'text-muted-foreground'}`}>
+              {getStatusText()}
+            </span>
           </div>
           
           {/* Timer */}
@@ -148,7 +155,7 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
           {frequencyBars.map((height, index) => (
             <div
               key={index}
-              className={`w-2 rounded-full transition-all duration-100 ${
+              className={`w-2 rounded-full transition-all duration-75 ${
                 isCallActive 
                   ? isSpeaking 
                     ? 'bg-gradient-to-t from-amber-500 to-yellow-500/60' 
@@ -171,12 +178,26 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName }: KyleConsultan
           </div>
         )}
 
+        {/* Error Message */}
+        {error && (
+          <div className="text-center py-2 px-4 rounded-lg bg-destructive/10 border border-destructive/20 mx-4">
+            <p className="text-xs text-destructive">{error}</p>
+          </div>
+        )}
+
+        {/* Missing wizardId Warning */}
+        {!wizardId && (
+          <div className="text-center py-2 px-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mx-4">
+            <p className="text-xs text-yellow-600">Project context not available</p>
+          </div>
+        )}
+
         {/* Call Button */}
         <div className="flex flex-col items-center gap-4 py-4">
           <Button
             size="lg"
-            onClick={handleToggleCall}
-            disabled={isConnecting}
+            onClick={toggleCall}
+            disabled={isConnecting || !wizardId}
             className={`w-16 h-16 rounded-full transition-all duration-300 ${
               isCallActive
                 ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30'

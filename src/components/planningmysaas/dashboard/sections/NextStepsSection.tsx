@@ -824,10 +824,12 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
         open={kyleDialogOpen} 
         onOpenChange={setKyleDialogOpen}
         packageName={selectedConsultPackage}
+        wizardId={wizardId}
       />
       <KyleChatDialog 
         open={kyleChatDialogOpen} 
         onOpenChange={setKyleChatDialogOpen}
+        wizardId={wizardId}
       />
       <EmailKyleDialog 
         open={emailDialogOpen} 
