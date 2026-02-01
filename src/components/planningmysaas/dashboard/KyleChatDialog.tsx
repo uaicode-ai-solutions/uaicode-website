@@ -21,6 +21,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
   const [frequencyBars, setFrequencyBars] = useState<number[]>(Array(16).fill(0));
   const [isLoading, setIsLoading] = useState(false);
   const prevLoadingRef = useRef(isLoading);
+  const hasAutoStarted = useRef(false);
 
   const {
     isCallActive,
@@ -51,15 +52,29 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     scrollToBottom();
   }, [messages, isLoading]);
 
-  // Auto-start voice call when dialog opens
+  const handleToggleVoice = useCallback(async () => {
+    try {
+      await toggleCall();
+    } catch (error) {
+      console.error("Voice toggle error:", error);
+    }
+  }, [toggleCall]);
+
+  // Auto-start voice call when dialog opens (with guard to prevent multiple attempts)
   useEffect(() => {
-    if (open && !isCallActive && !isConnecting) {
+    if (open && !isCallActive && !isConnecting && !hasAutoStarted.current) {
+      hasAutoStarted.current = true;
       const timer = setTimeout(() => {
         handleToggleVoice();
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [open]);
+    
+    // Reset when dialog closes
+    if (!open) {
+      hasAutoStarted.current = false;
+    }
+  }, [open, isCallActive, isConnecting, handleToggleVoice]);
 
   useEffect(() => {
     if (prevLoadingRef.current === true && isLoading === false && inputRef.current) {
@@ -115,13 +130,6 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     onOpenChange(false);
   }, [isCallActive, endCall, onOpenChange]);
 
-  const handleToggleVoice = useCallback(async () => {
-    try {
-      await toggleCall();
-    } catch (error) {
-      console.error("Voice toggle error:", error);
-    }
-  }, [toggleCall]);
 
   const getStatusText = () => {
     if (isConnecting) return "Connecting...";

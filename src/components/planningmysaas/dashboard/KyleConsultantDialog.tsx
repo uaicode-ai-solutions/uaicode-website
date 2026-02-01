@@ -16,6 +16,8 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
   const [callDuration, setCallDuration] = useState(0);
   const [frequencyBars, setFrequencyBars] = useState<number[]>(Array(12).fill(0.1));
   const animationFrameRef = useRef<number>();
+  const getInputVolumeRef = useRef<() => number>(() => 0);
+  const getOutputVolumeRef = useRef<() => number>(() => 0);
 
   const {
     isCallActive,
@@ -27,6 +29,10 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
     getInputVolume,
     getOutputVolume,
   } = useKyleElevenLabs({ wizardId });
+
+  // Keep refs updated to avoid dependency issues (prevents infinite loop)
+  getInputVolumeRef.current = getInputVolume;
+  getOutputVolumeRef.current = getOutputVolume;
 
   // Timer for call duration
   useEffect(() => {
@@ -41,7 +47,7 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
     return () => clearInterval(timer);
   }, [isCallActive]);
 
-  // Real voice visualization using actual volume levels
+  // Real voice visualization using actual volume levels (using refs to avoid infinite loop)
   useEffect(() => {
     if (!isCallActive) {
       setFrequencyBars(Array(12).fill(0.1));
@@ -52,8 +58,8 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
     }
 
     const updateVisualization = () => {
-      const inputVol = getInputVolume();
-      const outputVol = getOutputVolume();
+      const inputVol = getInputVolumeRef.current();
+      const outputVol = getOutputVolumeRef.current();
       
       // Use output volume when speaking, input volume when listening
       const activeVolume = isSpeaking ? outputVol : inputVol;
@@ -78,7 +84,7 @@ const KyleConsultantDialog = ({ open, onOpenChange, packageName, wizardId }: Kyl
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isCallActive, isSpeaking, getInputVolume, getOutputVolume]);
+  }, [isCallActive, isSpeaking]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
