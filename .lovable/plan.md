@@ -1,276 +1,155 @@
 
-# Plan: Integrar Kyle ao Sistema (Chat + Voice via ElevenLabs)
+# Plano Simplificado: Kyle Chat + Voice (Mesmo Agente ElevenLabs)
 
 ## Resumo
 
-Conectar o Kyle (AI Sales Consultant) aos diálogos de Chat e Voice usando ElevenLabs. O sistema usará o Agent ID já cadastrado como secret `ELEVENLABS_KYLE_AGENT_ID`. Não precisamos passar `user_email` pois o Kyle já obtém essa informação via tool `kyle_get_lead_context`.
+Usar o **mesmo agente ElevenLabs** para ambos os cards. A diferença é apenas a interface:
+- **KyleChatDialog**: Input de texto → `sendUserMessage()`
+- **KyleConsultantDialog**: Input de voz (microfone)
 
-## Arquitetura
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                     PmsDashboard                             │
-│                  (ReportProvider context)                    │
-│                       ↓ wizardId                             │
-├─────────────────────────────────────────────────────────────┤
-│  NextStepsSection                                            │
-│    │                                                         │
-│    ├── KyleChatDialog ────→ useKyleElevenLabs hook          │
-│    │        (wizardId)              ↓                        │
-│    │                    kyle-conversation-token              │
-│    │                              ↓                          │
-│    │                    ElevenLabs WebRTC                    │
-│    │                    dynamicVariables:                    │
-│    │                      - wizard_id                        │
-│    │                      - timezone                         │
-│    │                                                         │
-│    └── KyleConsultantDialog ─→ useKyleElevenLabs (same)     │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## Arquivos a Criar/Modificar
+## Arquivos a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `supabase/functions/kyle-conversation-token/index.ts` | Criar |
-| `supabase/config.toml` | Modificar |
-| `src/hooks/useKyleElevenLabs.ts` | Criar |
-| `src/components/planningmysaas/dashboard/KyleConsultantDialog.tsx` | Modificar |
-| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Modificar |
-| `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx` | Modificar |
+| `src/hooks/useKyleElevenLabs.ts` | Modificar - adicionar `sendUserMessage` |
+| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Modificar - usar texto ao invés de microfone |
 
----
+**NÃO precisa criar:**
+- ~~kyle-chat edge function~~
+- ~~useKyleChat hook~~
+- ~~Lovable AI Gateway integration~~
 
-## Fase 1: Edge Function
+## Fase 1: Atualizar Hook `useKyleElevenLabs`
 
-### Criar `supabase/functions/kyle-conversation-token/index.ts`
-
-Nova edge function que:
-- Usa `ELEVENLABS_KYLE_AGENT_ID` (secret já cadastrada)
-- Usa `ELEVENLABS_API_KEY` (secret existente)
-- Gera token WebRTC ou signed URL WebSocket
-- Estrutura idêntica a `elevenlabs-conversation-token`, apenas muda a variável do Agent ID
+Adicionar método `sendUserMessage` que o ElevenLabs conversation hook já expõe:
 
 ```typescript
-const ELEVENLABS_KYLE_AGENT_ID = Deno.env.get('ELEVENLABS_KYLE_AGENT_ID');
-// Rest same as elevenlabs-conversation-token
+// src/hooks/useKyleElevenLabs.ts
+
+return {
+  // ... existing returns
+  sendUserMessage: conversationHook.sendUserMessage, // NOVO
+};
 ```
 
-### Modificar `supabase/config.toml`
+## Fase 2: Atualizar `KyleChatDialog` (Chat de Texto)
 
-Adicionar:
-```toml
-[functions.kyle-conversation-token]
-verify_jwt = false
+### Mudanças no Visual
+
+O layout atual será **preservado**. Apenas a área de controle inferior muda:
+
+**Antes (microfone):**
+```
+┌────────────────────────────────────┐
+│     [Botão Microfone Grande]       │
+│   "Tap to start voice chat"        │
+└────────────────────────────────────┘
 ```
 
----
-
-## Fase 2: Hook useKyleElevenLabs
-
-### Criar `src/hooks/useKyleElevenLabs.ts`
-
-Hook customizado baseado em `useElevenLabs.ts`:
-
-**Props:**
-```typescript
-interface UseKyleElevenLabsOptions {
-  wizardId: string | undefined;
-  onMessage?: (message: Message) => void;
-}
+**Depois (input texto):**
+```
+┌────────────────────────────────────┐
+│ [Input de texto........] [Enviar] │
+│   💬 Chat with Kyle                │
+└────────────────────────────────────┘
 ```
 
-**Diferenças do hook existente:**
-1. Chama `kyle-conversation-token` ao invés de `elevenlabs-conversation-token`
-2. Passa `dynamicVariables` no `startSession`:
-   - `wizard_id`: UUID do relatório (para MCP tools chamarem `kyle_get_lead_context`)
-   - `timezone`: Timezone do usuário
-3. Expõe `messages` array para modo texto
-4. Bloqueia `startCall` se `wizardId` não existir
+### Mudanças no Código
 
-**Return:**
-```typescript
-{
-  isCallActive: boolean;
-  isConnecting: boolean;
-  isSpeaking: boolean;
-  error: string | null;
-  messages: Message[];
-  toggleCall: () => Promise<void>;
-  startCall: () => Promise<void>;
-  endCall: () => Promise<void>;
-  getInputVolume: () => number;
-  getOutputVolume: () => number;
-}
-```
+1. **Manter**: Header, Kyle Info, Messages area, Quick Replies (visual)
+2. **Remover**: Botão de microfone grande, texto "Tap to start voice chat"
+3. **Adicionar**: 
+   - `<Input>` para digitar mensagem
+   - `<Button>` Send com ícone
+   - Estado local `inputText`
+   - Função `handleSend()` que chama `sendUserMessage(inputText)`
 
----
+4. **Auto-conectar**: Quando o dialog abre, conectar automaticamente ao ElevenLabs
+5. **Quick Replies**: Ao clicar, chamar `sendUserMessage(quickReply)`
 
-## Fase 3: Atualizar KyleConsultantDialog (Voice)
-
-### Modificar `src/components/planningmysaas/dashboard/KyleConsultantDialog.tsx`
-
-**Mudanças:**
-
-1. Adicionar prop `wizardId`:
-```typescript
-interface KyleConsultantDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  packageName?: string;
-  wizardId?: string;  // NOVO
-}
-```
-
-2. Substituir estados mock pelo hook real:
-```typescript
-// ANTES (mock)
-const [isConnecting, setIsConnecting] = useState(false);
-const [isCallActive, setIsCallActive] = useState(false);
-const [isSpeaking, setIsSpeaking] = useState(false);
-
-// DEPOIS (real)
-const { 
-  isCallActive, 
-  isConnecting, 
-  isSpeaking,
-  error,
-  toggleCall,
-  getInputVolume,
-  getOutputVolume 
-} = useKyleElevenLabs({ wizardId });
-```
-
-3. Usar `getInputVolume()` / `getOutputVolume()` para visualização de frequência real
-
-4. Remover:
-   - Simulação de speaking periódica
-   - Timer de conexão fake
-   - Estados mock
-
-5. Mostrar toast de erro se conexão falhar
-
----
-
-## Fase 4: Atualizar KyleChatDialog (Text Chat)
-
-### Modificar `src/components/planningmysaas/dashboard/KyleChatDialog.tsx`
-
-**Estratégia**: Usar ElevenLabs para voz bidirecionalmente. O usuário fala (microfone) e Kyle responde (áudio + transcrição). As mensagens são capturadas via `onMessage` callback.
-
-**Mudanças:**
-
-1. Adicionar prop `wizardId`:
-```typescript
-interface KyleChatDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  wizardId?: string;  // NOVO
-}
-```
-
-2. Integrar hook com callback `onMessage`:
-```typescript
-const { 
-  isCallActive, 
-  isConnecting, 
-  isSpeaking,
-  messages,
-  toggleCall,
-  endCall,
-  error
-} = useKyleElevenLabs({ 
-  wizardId,
-  onMessage: handleNewMessage
-});
-```
-
-3. Remover completamente:
-   - `getMockResponse()` function
-   - `INITIAL_MESSAGE` constant
-   - `setTimeout` para simular resposta
-
-4. Adicionar botão de microfone para ativar voz
-5. Mostrar transcrições em tempo real (user + assistant)
-6. Auto-conectar ao abrir o diálogo (ou botão manual)
-
----
-
-## Fase 5: Atualizar NextStepsSection
-
-### Modificar `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx`
-
-**Mudanças:**
-
-1. Já tem acesso a `wizardId` via `useReportContext()` (linha 112)
-
-2. Passar `wizardId` para os diálogos:
+### Estrutura do Componente
 
 ```typescript
-// ANTES (linha 823-831)
-<KyleConsultantDialog 
-  open={kyleDialogOpen} 
-  onOpenChange={setKyleDialogOpen}
-  packageName={selectedConsultPackage}
-/>
-<KyleChatDialog 
-  open={kyleChatDialogOpen} 
-  onOpenChange={setKyleChatDialogOpen}
-/>
+const KyleChatDialog = ({ open, onOpenChange, wizardId }: Props) => {
+  const [inputText, setInputText] = useState("");
+  
+  const {
+    isCallActive,
+    isConnecting,
+    isSpeaking,
+    error,
+    messages,
+    toggleCall,
+    endCall,
+    sendUserMessage,  // NOVO
+    resetMessages,
+  } = useKyleElevenLabs({ wizardId });
 
-// DEPOIS
-<KyleConsultantDialog 
-  open={kyleDialogOpen} 
-  onOpenChange={setKyleDialogOpen}
-  packageName={selectedConsultPackage}
-  wizardId={wizardId}  // NOVO
-/>
-<KyleChatDialog 
-  open={kyleChatDialogOpen} 
-  onOpenChange={setKyleChatDialogOpen}
-  wizardId={wizardId}  // NOVO
-/>
+  // Auto-conectar ao abrir
+  useEffect(() => {
+    if (open && wizardId && !isCallActive && !isConnecting) {
+      toggleCall();
+    }
+  }, [open, wizardId]);
+
+  const handleSend = () => {
+    if (inputText.trim() && isCallActive) {
+      sendUserMessage(inputText);
+      setInputText("");
+    }
+  };
+
+  const handleQuickReply = (reply: string) => {
+    if (isCallActive) {
+      sendUserMessage(reply);
+    }
+  };
+
+  // ... rest of component (visual mantido)
+};
 ```
 
----
+## Fase 3: KyleConsultantDialog (Voz)
 
-## Detalhes Técnicos
+**Já está funcionando corretamente!** Não precisa de mudanças.
 
-### Dynamic Variables para MCP Tools
+Ele usa o mesmo `useKyleElevenLabs` hook, mas com interface de microfone.
 
-O Kyle precisa do `wizard_id` para suas tools MCP funcionarem:
+## Fluxo Final
 
-```typescript
-await conversationHook.startSession({
-  conversationToken: token,
-  connectionType: "webrtc",
-  dynamicVariables: {
-    wizard_id: wizardId,    // Kyle usa para kyle_get_lead_context
-    timezone: userTimezone, // Kyle usa para referências de tempo
-  },
-});
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Mesmo Agente Kyle                       │
+│                  ELEVENLABS_KYLE_AGENT_ID                    │
+│                                                              │
+│    ┌─────────────────────┐     ┌─────────────────────┐      │
+│    │   Chat with Kyle    │     │     Call Kyle       │      │
+│    │                     │     │                     │      │
+│    │  [Digita texto]     │     │  [Fala no mic]      │      │
+│    │        ↓            │     │        ↓            │      │
+│    │  sendUserMessage()  │     │  Auto via WebRTC    │      │
+│    │        ↓            │     │        ↓            │      │
+│    │  Kyle responde      │     │  Kyle responde      │      │
+│    │  (áudio + texto)    │     │  (áudio)            │      │
+│    └─────────────────────┘     └─────────────────────┘      │
+│                                                              │
+│              Mesma edge function: kyle-conversation-token    │
+│              Mesmo hook: useKyleElevenLabs                   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-Quando Kyle chama `kyle_get_lead_context`, o n8n recebe o `wizard_id` e retorna:
-- Nome do projeto
-- Email do usuário (para confirmação antes de enviar)
-- Dados de mercado e pesquisa
+## Elementos Preservados no KyleChatDialog
 
-### Secrets Necessárias
-
-| Secret | Status | Uso |
-|--------|--------|-----|
-| `ELEVENLABS_API_KEY` | Existe | Autenticação ElevenLabs API |
-| `ELEVENLABS_KYLE_AGENT_ID` | Existe | Agent ID do Kyle |
-
----
+- Header com Sparkles e "AI Sales Consultant"
+- Botão Reset (RotateCcw)
+- Kyle Info section com avatar e badge de status
+- Messages area com bolhas estilizadas (user gradient amarelo, assistant bg-muted)
+- Speaking indicator (3 dots animados)
+- Quick Replies badges
+- Footer com texto "Chat powered by AI"
 
 ## Ordem de Implementação
 
-1. Criar edge function `kyle-conversation-token`
-2. Atualizar `supabase/config.toml`
-3. Criar hook `useKyleElevenLabs`
-4. Atualizar `NextStepsSection` (passar wizardId)
-5. Atualizar `KyleConsultantDialog` (Voice)
-6. Atualizar `KyleChatDialog` (Chat)
-7. Deploy e testar
+1. Atualizar `useKyleElevenLabs.ts` - expor `sendUserMessage`
+2. Atualizar `KyleChatDialog.tsx` - trocar microfone por input de texto
+3. Testar ambos os diálogos
