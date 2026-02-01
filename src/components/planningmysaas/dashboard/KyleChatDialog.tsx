@@ -1,21 +1,16 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Send, RotateCcw } from "lucide-react";
+import { Sparkles, RotateCcw, Mic, MicOff, Loader2, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import KyleAvatar from "@/components/chat/KyleAvatar";
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
+import { useKyleElevenLabs } from "@/hooks/useKyleElevenLabs";
 
 interface KyleChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  wizardId?: string;
 }
-
-const INITIAL_MESSAGE = "Hi! I'm Kyle, your sales consultant. How can I help you today?";
 
 const QUICK_REPLIES = [
   "Tell me about pricing",
@@ -23,32 +18,19 @@ const QUICK_REPLIES = [
   "What services do you offer?"
 ];
 
-const getMockResponse = (message: string): string => {
-  const lowerMessage = message.toLowerCase();
-  
-  if (lowerMessage.includes("pricing") || lowerMessage.includes("price") || lowerMessage.includes("cost")) {
-    return "Great question! Our Marketing service starts at $5,000/month and includes comprehensive market analysis, brand strategy, and growth planning. Would you like to schedule a call to discuss your specific needs?";
-  }
-  
-  if (lowerMessage.includes("schedule") || lowerMessage.includes("call") || lowerMessage.includes("meeting")) {
-    return "I'd love to set up a call! You can book directly through our calendar. Just scroll down to the 'Schedule Call' section in this report, or I can help you find a suitable time.";
-  }
-  
-  if (lowerMessage.includes("service") || lowerMessage.includes("offer") || lowerMessage.includes("what do you")) {
-    return "We offer end-to-end SaaS development and marketing services! This includes market validation, MVP development, brand identity, and growth strategy. The report you're viewing gives you a taste of our marketing analysis capabilities.";
-  }
-  
-  return "Thanks for your message! I'm here to help you understand how we can accelerate your SaaS journey. Feel free to ask about our services, pricing, or schedule a call with our team.";
-};
-
-const KyleChatDialog = ({ open, onOpenChange }: KyleChatDialogProps) => {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: INITIAL_MESSAGE }
-  ]);
-  const [inputValue, setInputValue] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    isCallActive,
+    isConnecting,
+    isSpeaking,
+    error,
+    messages,
+    toggleCall,
+    endCall,
+    resetMessages,
+  } = useKyleElevenLabs({ wizardId });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,48 +40,66 @@ const KyleChatDialog = ({ open, onOpenChange }: KyleChatDialogProps) => {
     scrollToBottom();
   }, [messages]);
 
+  // Auto-connect when dialog opens (if wizardId is available)
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 100);
+    if (open && wizardId && !isCallActive && !isConnecting) {
+      // Small delay to let dialog render
+      const timer = setTimeout(() => {
+        toggleCall();
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [open]);
+  }, [open, wizardId]); // Only trigger on open change and wizardId
 
-  const handleSendMessage = (content: string) => {
-    if (!content.trim()) return;
+  const handleReset = useCallback(() => {
+    if (isCallActive) {
+      endCall();
+    }
+    resetMessages();
+  }, [isCallActive, endCall, resetMessages]);
 
-    // Add user message
-    setMessages(prev => [...prev, { role: "user", content }]);
-    setInputValue("");
-    setIsTyping(true);
-
-    // Simulate typing delay and add mock response
-    setTimeout(() => {
-      const response = getMockResponse(content);
-      setMessages(prev => [...prev, { role: "assistant", content: response }]);
-      setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleSendMessage(inputValue);
-  };
-
-  const handleQuickReply = (reply: string) => {
-    handleSendMessage(reply);
-  };
-
-  const handleReset = () => {
-    setMessages([{ role: "assistant", content: INITIAL_MESSAGE }]);
-    setInputValue("");
-  };
-
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
+    if (isCallActive) {
+      endCall();
+    }
     onOpenChange(false);
+  }, [isCallActive, endCall, onOpenChange]);
+
+  const getStatusBadge = () => {
+    if (error) {
+      return (
+        <Badge variant="outline" className="mt-2 text-xs border-destructive/50 text-destructive">
+          <AlertCircle className="w-3 h-3 mr-1.5" />
+          Error
+        </Badge>
+      );
+    }
+    if (isConnecting) {
+      return (
+        <Badge variant="outline" className="mt-2 text-xs border-amber-500/50 text-amber-500">
+          <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+          Connecting...
+        </Badge>
+      );
+    }
+    if (isCallActive) {
+      return (
+        <Badge variant="outline" className="mt-2 text-xs border-green-500/50 text-green-500">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse" />
+          {isSpeaking ? "Kyle is speaking..." : "Listening..."}
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="mt-2 text-xs border-muted-foreground/50 text-muted-foreground">
+        <MicOff className="w-3 h-3 mr-1.5" />
+        Not connected
+      </Badge>
+    );
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20">
         <DialogTitle className="sr-only">Chat with Kyle - AI Sales Consultant</DialogTitle>
         
@@ -123,17 +123,43 @@ const KyleChatDialog = ({ open, onOpenChange }: KyleChatDialogProps) => {
 
         {/* Kyle Info */}
         <div className="flex flex-col items-center py-4 border-b border-border/30">
-          <KyleAvatar isActive size="md" />
+          <KyleAvatar isActive={isCallActive} isSpeaking={isSpeaking} size="md" />
           <h3 className="mt-2 font-semibold text-foreground">Kyle</h3>
           <p className="text-sm text-muted-foreground">Sales Consultant</p>
-          <Badge variant="outline" className="mt-2 text-xs border-green-500/50 text-green-500">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse" />
-            Online
-          </Badge>
+          {getStatusBadge()}
         </div>
 
         {/* Messages Area */}
         <div className="h-[250px] overflow-y-auto p-4 space-y-3">
+          {/* Initial prompt when no messages and connected */}
+          {messages.length === 0 && isCallActive && (
+            <div className="flex justify-start">
+              <div className="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm bg-muted text-foreground rounded-bl-md">
+                Hi! I'm Kyle, your sales consultant. How can I help you today?
+              </div>
+            </div>
+          )}
+
+          {/* Not connected state */}
+          {messages.length === 0 && !isCallActive && !isConnecting && (
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+              <Mic className="h-8 w-8 mb-2 opacity-50" />
+              <p className="text-sm">Tap the microphone to start talking with Kyle</p>
+              {!wizardId && (
+                <p className="text-xs text-yellow-600 mt-2">Project context not available</p>
+              )}
+            </div>
+          )}
+
+          {/* Connecting state */}
+          {isConnecting && messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+              <Loader2 className="h-8 w-8 mb-2 animate-spin text-amber-400" />
+              <p className="text-sm">Connecting to Kyle...</p>
+            </div>
+          )}
+
+          {/* Real messages from ElevenLabs */}
           {messages.map((message, index) => (
             <div
               key={index}
@@ -151,13 +177,14 @@ const KyleChatDialog = ({ open, onOpenChange }: KyleChatDialogProps) => {
             </div>
           ))}
           
-          {isTyping && (
+          {/* Speaking indicator */}
+          {isSpeaking && (
             <div className="flex justify-start">
               <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-2.5">
                 <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
               </div>
             </div>
@@ -166,50 +193,67 @@ const KyleChatDialog = ({ open, onOpenChange }: KyleChatDialogProps) => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Quick Replies */}
-        {messages.length === 1 && !isTyping && (
+        {/* Quick Replies - only show when connected and no messages yet */}
+        {isCallActive && messages.length === 0 && !isSpeaking && (
           <div className="px-4 pb-2">
-            <p className="text-xs text-muted-foreground mb-2">Quick replies:</p>
+            <p className="text-xs text-muted-foreground mb-2">Say something like:</p>
             <div className="flex flex-wrap gap-2">
               {QUICK_REPLIES.map((reply, index) => (
-                <Button
+                <Badge
                   key={index}
                   variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickReply(reply)}
-                  className="text-xs h-7 hover:bg-amber-500/10 hover:border-amber-500/50"
+                  className="text-xs hover:bg-amber-500/10 hover:border-amber-500/50 cursor-default"
                 >
-                  {reply}
-                </Button>
+                  "{reply}"
+                </Badge>
               ))}
             </div>
           </div>
         )}
 
-        {/* Input Area */}
+        {/* Error Display */}
+        {error && (
+          <div className="px-4 pb-2">
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              <p className="text-xs text-destructive">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Microphone Control Area */}
         <div className="p-4 border-t border-border/50 bg-muted/30">
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 bg-background border border-border/50 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
-              disabled={isTyping}
-            />
+          <div className="flex flex-col items-center gap-3">
             <Button
-              type="submit"
-              size="icon"
-              disabled={!inputValue.trim() || isTyping}
-              className="rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black h-10 w-10"
+              size="lg"
+              onClick={toggleCall}
+              disabled={isConnecting || !wizardId}
+              className={`w-14 h-14 rounded-full transition-all duration-300 ${
+                isCallActive
+                  ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30'
+                  : isConnecting
+                    ? 'bg-amber-500/50'
+                    : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-lg shadow-amber-500/30'
+              }`}
             >
-              <Send className="h-4 w-4" />
+              {isConnecting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : isCallActive ? (
+                <MicOff className="h-5 w-5" />
+              ) : (
+                <Mic className="h-5 w-5" />
+              )}
             </Button>
-          </form>
+            
+            <p className="text-xs text-muted-foreground text-center">
+              {isCallActive 
+                ? "Tap to end conversation" 
+                : "Tap to start voice chat"
+              }
+            </p>
+          </div>
           
           <p className="text-center text-xs text-muted-foreground mt-3">
-            💬 Chat powered by AI • Free consultation
+            🎤 Voice powered by AI • Free consultation
           </p>
         </div>
       </DialogContent>
