@@ -152,19 +152,6 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
 
         {/* Messages Area */}
         <div className="h-[300px] overflow-y-auto p-4 space-y-4">
-          {/* Initial prompt when no messages and connected */}
-          {messages.length === 0 && isCallActive && (
-            <div className="flex gap-3 justify-start animate-fade-in-up">
-              <div className="flex-shrink-0 mt-1">
-                <KyleAvatar size="sm" isActive={isCallActive} />
-              </div>
-              <div className="bg-gradient-to-br from-secondary via-secondary to-secondary/80 text-foreground rounded-2xl rounded-bl-md px-4 py-3 border border-border/50 shadow-[0_0_20px_rgba(250,204,21,0.1)]">
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  Hi! I'm Kyle, your sales consultant. Type a message to start chatting!
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Not connected state */}
           {messages.length === 0 && !isCallActive && !isConnecting && (
