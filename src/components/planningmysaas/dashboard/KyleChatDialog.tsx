@@ -13,12 +13,6 @@ interface KyleChatDialogProps {
   wizardId?: string;
 }
 
-const QUICK_REPLIES = [
-  "Tell me about pricing",
-  "I want to schedule a call",
-  "What services do you offer?"
-];
-
 const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState("");
@@ -62,11 +56,6 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     }
   }, [inputText, isCallActive, sendUserMessage]);
 
-  const handleQuickReply = useCallback((reply: string) => {
-    if (isCallActive && sendUserMessage) {
-      sendUserMessage(reply);
-    }
-  }, [isCallActive, sendUserMessage]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -247,25 +236,6 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
           
           <div ref={messagesEndRef} />
         </div>
-
-        {/* Quick Replies - only show when connected and no messages yet */}
-        {isCallActive && messages.length === 0 && !isSpeaking && (
-          <div className="px-4 pb-2">
-            <p className="text-xs text-muted-foreground mb-2">Try asking:</p>
-            <div className="flex flex-wrap gap-2">
-              {QUICK_REPLIES.map((reply, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className="text-xs hover:bg-amber-500/10 hover:border-amber-500/50 cursor-pointer transition-colors"
-                  onClick={() => handleQuickReply(reply)}
-                >
-                  "{reply}"
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Error Display */}
         {error && (
