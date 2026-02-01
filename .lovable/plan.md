@@ -1,99 +1,155 @@
 
+# Plano Simplificado: Kyle Chat + Voice (Mesmo Agente ElevenLabs)
 
-# Plano: Corrigir Problemas de Áudio do Kyle
+## Resumo
 
-## Problemas Identificados
-
-### 1. Loop Infinito no `KyleConsultantDialog.tsx`
-O console mostra: "Maximum update depth exceeded" neste componente.
-
-**Causa**: O `useEffect` na linha 45-81 tem `getInputVolume` e `getOutputVolume` nas dependências:
-
-```tsx
-useEffect(() => {
-  // ...
-}, [isCallActive, isSpeaking, getInputVolume, getOutputVolume]); // ❌ Problema aqui!
-```
-
-Essas funções são recriadas a cada render, causando o `useEffect` disparar infinitamente, o que quebra a conexão de áudio.
-
-### 2. Auto-Start Mal Configurado no `KyleChatDialog.tsx`
-O `useEffect` de auto-start pode estar causando reconexões múltiplas:
-
-```tsx
-useEffect(() => {
-  if (open && !isCallActive && !isConnecting) {
-    const timer = setTimeout(() => {
-      handleToggleVoice(); // ← Chamado múltiplas vezes
-    }, 300);
-    return () => clearTimeout(timer);
-  }
-}, [open]); // ❌ Faltam dependências e controle de estado
-```
-
-## Solução
-
-### Correção 1: `KyleConsultantDialog.tsx`
-Usar `useRef` para as funções de volume (igual já foi feito no `KyleChatDialog.tsx`):
-
-```tsx
-// Store volume functions in refs to avoid dependency issues
-const getInputVolumeRef = useRef(getInputVolume);
-const getOutputVolumeRef = useRef(getOutputVolume);
-getInputVolumeRef.current = getInputVolume;
-getOutputVolumeRef.current = getOutputVolume;
-
-useEffect(() => {
-  if (!isCallActive) {
-    setFrequencyBars(Array(12).fill(0.1));
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    return;
-  }
-
-  const updateVisualization = () => {
-    const inputVol = getInputVolumeRef.current();
-    const outputVol = getOutputVolumeRef.current();
-    // ... resto do código
-  };
-  // ...
-}, [isCallActive, isSpeaking]); // ← Sem as funções de volume
-```
-
-### Correção 2: `KyleChatDialog.tsx`
-Adicionar um ref para controlar se já tentou iniciar e prevenir múltiplas tentativas:
-
-```tsx
-const hasAutoStarted = useRef(false);
-
-// Auto-start voice call when dialog opens
-useEffect(() => {
-  if (open && !isCallActive && !isConnecting && !hasAutoStarted.current) {
-    hasAutoStarted.current = true;
-    const timer = setTimeout(() => {
-      handleToggleVoice();
-    }, 300);
-    return () => clearTimeout(timer);
-  }
-  
-  // Reset when dialog closes
-  if (!open) {
-    hasAutoStarted.current = false;
-  }
-}, [open, isCallActive, isConnecting, handleToggleVoice]);
-```
+Usar o **mesmo agente ElevenLabs** para ambos os cards. A diferença é apenas a interface:
+- **KyleChatDialog**: Input de texto → `sendUserMessage()`
+- **KyleConsultantDialog**: Input de voz (microfone)
 
 ## Arquivos a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/planningmysaas/dashboard/KyleConsultantDialog.tsx` | Corrigir loop infinito das funções de volume |
-| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Adicionar controle de auto-start com ref |
+| `src/hooks/useKyleElevenLabs.ts` | Modificar - adicionar `sendUserMessage` |
+| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Modificar - usar texto ao invés de microfone |
 
-## Resultado Esperado
+**NÃO precisa criar:**
+- ~~kyle-chat edge function~~
+- ~~useKyleChat hook~~
+- ~~Lovable AI Gateway integration~~
 
-1. O loop infinito será eliminado
-2. O áudio do Kyle funcionará corretamente
-3. O auto-start iniciará apenas uma vez quando o dialog abrir
+## Fase 1: Atualizar Hook `useKyleElevenLabs`
 
+Adicionar método `sendUserMessage` que o ElevenLabs conversation hook já expõe:
+
+```typescript
+// src/hooks/useKyleElevenLabs.ts
+
+return {
+  // ... existing returns
+  sendUserMessage: conversationHook.sendUserMessage, // NOVO
+};
+```
+
+## Fase 2: Atualizar `KyleChatDialog` (Chat de Texto)
+
+### Mudanças no Visual
+
+O layout atual será **preservado**. Apenas a área de controle inferior muda:
+
+**Antes (microfone):**
+```
+┌────────────────────────────────────┐
+│     [Botão Microfone Grande]       │
+│   "Tap to start voice chat"        │
+└────────────────────────────────────┘
+```
+
+**Depois (input texto):**
+```
+┌────────────────────────────────────┐
+│ [Input de texto........] [Enviar] │
+│   💬 Chat with Kyle                │
+└────────────────────────────────────┘
+```
+
+### Mudanças no Código
+
+1. **Manter**: Header, Kyle Info, Messages area, Quick Replies (visual)
+2. **Remover**: Botão de microfone grande, texto "Tap to start voice chat"
+3. **Adicionar**: 
+   - `<Input>` para digitar mensagem
+   - `<Button>` Send com ícone
+   - Estado local `inputText`
+   - Função `handleSend()` que chama `sendUserMessage(inputText)`
+
+4. **Auto-conectar**: Quando o dialog abre, conectar automaticamente ao ElevenLabs
+5. **Quick Replies**: Ao clicar, chamar `sendUserMessage(quickReply)`
+
+### Estrutura do Componente
+
+```typescript
+const KyleChatDialog = ({ open, onOpenChange, wizardId }: Props) => {
+  const [inputText, setInputText] = useState("");
+  
+  const {
+    isCallActive,
+    isConnecting,
+    isSpeaking,
+    error,
+    messages,
+    toggleCall,
+    endCall,
+    sendUserMessage,  // NOVO
+    resetMessages,
+  } = useKyleElevenLabs({ wizardId });
+
+  // Auto-conectar ao abrir
+  useEffect(() => {
+    if (open && wizardId && !isCallActive && !isConnecting) {
+      toggleCall();
+    }
+  }, [open, wizardId]);
+
+  const handleSend = () => {
+    if (inputText.trim() && isCallActive) {
+      sendUserMessage(inputText);
+      setInputText("");
+    }
+  };
+
+  const handleQuickReply = (reply: string) => {
+    if (isCallActive) {
+      sendUserMessage(reply);
+    }
+  };
+
+  // ... rest of component (visual mantido)
+};
+```
+
+## Fase 3: KyleConsultantDialog (Voz)
+
+**Já está funcionando corretamente!** Não precisa de mudanças.
+
+Ele usa o mesmo `useKyleElevenLabs` hook, mas com interface de microfone.
+
+## Fluxo Final
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Mesmo Agente Kyle                       │
+│                  ELEVENLABS_KYLE_AGENT_ID                    │
+│                                                              │
+│    ┌─────────────────────┐     ┌─────────────────────┐      │
+│    │   Chat with Kyle    │     │     Call Kyle       │      │
+│    │                     │     │                     │      │
+│    │  [Digita texto]     │     │  [Fala no mic]      │      │
+│    │        ↓            │     │        ↓            │      │
+│    │  sendUserMessage()  │     │  Auto via WebRTC    │      │
+│    │        ↓            │     │        ↓            │      │
+│    │  Kyle responde      │     │  Kyle responde      │      │
+│    │  (áudio + texto)    │     │  (áudio)            │      │
+│    └─────────────────────┘     └─────────────────────┘      │
+│                                                              │
+│              Mesma edge function: kyle-conversation-token    │
+│              Mesmo hook: useKyleElevenLabs                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Elementos Preservados no KyleChatDialog
+
+- Header com Sparkles e "AI Sales Consultant"
+- Botão Reset (RotateCcw)
+- Kyle Info section com avatar e badge de status
+- Messages area com bolhas estilizadas (user gradient amarelo, assistant bg-muted)
+- Speaking indicator (3 dots animados)
+- Quick Replies badges
+- Footer com texto "Chat powered by AI"
+
+## Ordem de Implementação
+
+1. Atualizar `useKyleElevenLabs.ts` - expor `sendUserMessage`
+2. Atualizar `KyleChatDialog.tsx` - trocar microfone por input de texto
+3. Testar ambos os diálogos

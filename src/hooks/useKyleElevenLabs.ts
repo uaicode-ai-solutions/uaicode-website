@@ -20,7 +20,6 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
   const [error, setError] = useState<string | null>(null);
   const [localIsSpeaking, setLocalIsSpeaking] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isMicMuted, setIsMicMuted] = useState(false);
   
   // Store callback in ref to avoid stale closures
   const onMessageRef = useRef(onMessage);
@@ -213,20 +212,6 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
     setMessages([]);
   }, []);
 
-  // Toggle microphone mute (controls input volume)
-  const toggleMicMute = useCallback(() => {
-    setIsMicMuted(prev => !prev);
-    // Note: ElevenLabs SDK doesn't have direct mic mute, but we can use this state
-    // to control UI behavior and potentially stop sending audio in future implementations
-  }, []);
-
-  // Reset mic mute when call ends
-  useEffect(() => {
-    if (conversationHook.status !== "connected") {
-      setIsMicMuted(false);
-    }
-  }, [conversationHook.status]);
-
   return {
     isCallActive: conversationHook.status === "connected",
     isConnecting,
@@ -236,12 +221,10 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
       : false,
     error,
     messages,
-    isMicMuted,
     toggleCall,
     startCall,
     endCall,
     resetMessages,
-    toggleMicMute,
     sendUserMessage: conversationHook.sendUserMessage,
     getInputVolume: () => conversationHook.getInputVolume?.() || 0,
     getOutputVolume: () => conversationHook.getOutputVolume?.() || 0,

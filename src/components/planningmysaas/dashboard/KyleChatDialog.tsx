@@ -1,11 +1,11 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, RotateCcw, Send, Mic, MicOff, MessageCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Sparkles, RotateCcw, Loader2, AlertCircle, Send, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import KyleAvatar from "@/components/chat/KyleAvatar";
 import { useKyleElevenLabs } from "@/hooks/useKyleElevenLabs";
-import kyleAvatarImage from "@/assets/kyle-avatar.webp";
 
 interface KyleChatDialogProps {
   open: boolean;
@@ -13,107 +13,66 @@ interface KyleChatDialogProps {
   wizardId?: string;
 }
 
+const QUICK_REPLIES = [
+  "Tell me about pricing",
+  "I want to schedule a call",
+  "What services do you offer?"
+];
+
 const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [inputText, setInputText] = useState("");
-  const [frequencyBars, setFrequencyBars] = useState<number[]>(Array(16).fill(0));
-  const [isLoading, setIsLoading] = useState(false);
-  const prevLoadingRef = useRef(isLoading);
-  const hasAutoStarted = useRef(false);
 
   const {
     isCallActive,
     isConnecting,
     isSpeaking,
+    error,
     messages,
     toggleCall,
     endCall,
     resetMessages,
     sendUserMessage,
-    getInputVolume,
-    getOutputVolume,
   } = useKyleElevenLabs({ wizardId });
 
-  // Store volume functions in refs to avoid dependency issues
-  const getInputVolumeRef = useRef(getInputVolume);
-  const getOutputVolumeRef = useRef(getOutputVolume);
-  getInputVolumeRef.current = getInputVolume;
-  getOutputVolumeRef.current = getOutputVolume;
-
   const scrollToBottom = () => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages]);
 
-  const handleToggleVoice = useCallback(async () => {
-    try {
-      await toggleCall();
-    } catch (error) {
-      console.error("Voice toggle error:", error);
-    }
-  }, [toggleCall]);
-
-  // Auto-start voice call when dialog opens (with guard to prevent multiple attempts)
+  // Auto-connect when dialog opens (if wizardId is available)
   useEffect(() => {
-    if (open && !isCallActive && !isConnecting && !hasAutoStarted.current) {
-      hasAutoStarted.current = true;
+    if (open && wizardId && !isCallActive && !isConnecting) {
+      // Small delay to let dialog render
       const timer = setTimeout(() => {
-        handleToggleVoice();
-      }, 300);
+        toggleCall();
+      }, 500);
       return () => clearTimeout(timer);
     }
-    
-    // Reset when dialog closes
-    if (!open) {
-      hasAutoStarted.current = false;
-    }
-  }, [open, isCallActive, isConnecting, handleToggleVoice]);
+  }, [open, wizardId]); // Only trigger on open change and wizardId
 
-  useEffect(() => {
-    if (prevLoadingRef.current === true && isLoading === false && inputRef.current) {
-      inputRef.current.focus();
-    }
-    prevLoadingRef.current = isLoading;
-  }, [isLoading]);
-
-  // Voice visualization - frequency bars (identical to Eve)
-  useEffect(() => {
-    if (isCallActive) {
-      const interval = setInterval(() => {
-        const inputVol = getInputVolumeRef.current();
-        const outputVol = getOutputVolumeRef.current();
-        const volumeLevel = Math.max(inputVol, outputVol);
-        
-        const newBars = Array(16).fill(0).map((_, index) => {
-          const centerDistance = Math.abs(index - 8) / 8;
-          const baseHeight = volumeLevel * (1 - centerDistance * 0.5);
-          const variation = (Math.random() - 0.5) * 0.3;
-          return Math.max(0.1, Math.min(1, baseHeight + variation));
-        });
-        
-        setFrequencyBars(newBars);
-      }, 50);
-      
-      return () => clearInterval(interval);
-    } else {
-      setFrequencyBars(Array(16).fill(0));
-    }
-  }, [isCallActive]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSend = useCallback(() => {
     if (inputText.trim() && isCallActive && sendUserMessage) {
       sendUserMessage(inputText.trim());
       setInputText("");
     }
-  };
+  }, [inputText, isCallActive, sendUserMessage]);
+
+  const handleQuickReply = useCallback((reply: string) => {
+    if (isCallActive && sendUserMessage) {
+      sendUserMessage(reply);
+    }
+  }, [isCallActive, sendUserMessage]);
+
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  }, [handleSend]);
 
   const handleReset = useCallback(() => {
     if (isCallActive) {
@@ -130,238 +89,188 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
     onOpenChange(false);
   }, [isCallActive, endCall, onOpenChange]);
 
-
-  const getStatusText = () => {
-    if (isConnecting) return "Connecting...";
-    if (isSpeaking) return "Kyle is speaking...";
-    if (isCallActive) return "Listening...";
-    return "Ready";
+  const getStatusBadge = () => {
+    if (error) {
+      return (
+        <Badge variant="outline" className="mt-2 text-xs border-destructive/50 text-destructive">
+          <AlertCircle className="w-3 h-3 mr-1.5" />
+          Error
+        </Badge>
+      );
+    }
+    if (isConnecting) {
+      return (
+        <Badge variant="outline" className="mt-2 text-xs border-amber-500/50 text-amber-500">
+          <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+          Connecting...
+        </Badge>
+      );
+    }
+    if (isCallActive) {
+      return (
+        <Badge variant="outline" className="mt-2 text-xs border-green-500/50 text-green-500">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse" />
+          {isSpeaking ? "Kyle is speaking..." : "Listening..."}
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="mt-2 text-xs border-muted-foreground/50 text-muted-foreground">
+        <MessageSquare className="w-3 h-3 mr-1.5" />
+        Not connected
+      </Badge>
+    );
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-4xl p-0 overflow-hidden glass-card border-accent/10 h-[85vh] sm:h-[600px] md:h-[650px] flex flex-col">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20">
         <DialogTitle className="sr-only">Chat with Kyle - AI Sales Consultant</DialogTitle>
         
-        {/* Header - identical to Eve */}
-        <div className="relative bg-gradient-to-r from-secondary/80 via-secondary/60 to-secondary/80 backdrop-blur-xl border-b border-accent/20 p-4 flex items-center justify-between">
-          {/* Subtle golden accent line at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
-          
-          <div className="flex items-center gap-3">
-            <KyleAvatar isActive={isCallActive} isSpeaking={isSpeaking} size="md" />
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-foreground">Kyle</h3>
-                <Sparkles className="w-4 h-4 text-accent" />
-              </div>
-              <Badge 
-                variant="secondary" 
-                className={`text-xs mt-0.5 ${
-                  isCallActive 
-                    ? 'bg-green-500/15 text-green-400 border border-green-500/30' 
-                    : 'bg-accent/10 text-accent border border-accent/20'
-                }`}
-              >
-                {getStatusText()}
-              </Badge>
+        {/* Header */}
+        <div className="p-4 border-b border-border/50 bg-gradient-to-r from-amber-500/10 to-transparent">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Sparkles className="h-5 w-5 text-amber-400" />
+              <span className="font-semibold text-foreground">AI Sales Consultant</span>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReset}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
           </div>
-          <Button
-            onClick={handleReset}
-            size="icon"
-            variant="ghost"
-            className="h-9 w-9 hover:bg-accent/10 hover:text-accent transition-colors"
-            title="Reset conversation"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
         </div>
 
-        {/* Messages Area - identical to Eve */}
-        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 relative">
-          {/* Subtle background pattern */}
-          <div className="absolute inset-0 pointer-events-none opacity-30">
-            <div className="absolute top-1/3 left-1/4 w-48 h-48 bg-accent/5 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-accent/3 rounded-full blur-3xl" />
-          </div>
+        {/* Kyle Info */}
+        <div className="flex flex-col items-center py-4 border-b border-border/30">
+          <KyleAvatar isActive={isCallActive} isSpeaking={isSpeaking} size="md" />
+          <h3 className="mt-2 font-semibold text-foreground">Kyle</h3>
+          <p className="text-sm text-muted-foreground">Sales Consultant</p>
+          {getStatusBadge()}
+        </div>
 
-          {/* Connecting State - shows while auto-connecting */}
-          {messages.length === 0 && !isLoading ? (
-            <div className="flex flex-col items-center justify-center h-full text-center px-6 py-8 animate-fade-in-up">
-              {/* Decorative background */}
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-accent/5 rounded-full blur-3xl" />
-                <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-accent/3 rounded-full blur-3xl" />
-              </div>
-              
-              {/* Avatar with glow */}
-              <div className="relative mb-6">
-                <div className="absolute inset-0 bg-accent/20 rounded-full blur-2xl scale-150 animate-pulse" />
-                <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-accent shadow-[0_0_30px_rgba(250,204,21,0.4)]">
-                  <img 
-                    src={kyleAvatarImage} 
-                    alt="Kyle - AI Sales Consultant"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              
-              {/* Connecting text */}
-              <h3 className="text-xl font-semibold text-foreground mb-2">
-                {isConnecting ? "Connecting to" : "Starting conversation with"} <span className="text-gradient-gold">Kyle</span>
-              </h3>
-              <p className="text-muted-foreground max-w-sm mb-6 leading-relaxed">
-                {isConnecting ? "Please wait while we establish a connection..." : "Preparing your AI sales consultant..."}
-              </p>
-              
-              {/* Loading indicator */}
-              <div className="flex gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "300ms" }} />
+        {/* Messages Area */}
+        <div className="h-[250px] overflow-y-auto p-4 space-y-3">
+        {/* Initial prompt when no messages and connected */}
+          {messages.length === 0 && isCallActive && (
+            <div className="flex justify-start">
+              <div className="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm bg-muted text-foreground rounded-bl-md">
+                Hi! I'm Kyle, your sales consultant. Type a message to start chatting!
               </div>
             </div>
-          ) : (
-            <div className="relative z-10 space-y-4">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"} ${
-                    index === messages.length - 1 ? "animate-fade-in-up" : ""
-                  }`}
-                >
-                  {/* Kyle Avatar for assistant messages */}
-                  {message.role !== "user" && (
-                    <div className="flex-shrink-0 mt-1">
-                      <KyleAvatar size="sm" isActive={index === messages.length - 1} isSpeaking={isSpeaking && index === messages.length - 1} />
-                    </div>
-                  )}
+          )}
 
-                  {/* Message bubble */}
-                  <div className="flex flex-col max-w-[80%]">
-                    <div
-                      className={`rounded-2xl px-4 py-3 ${
-                        message.role === "user"
-                          ? "bg-accent text-accent-foreground rounded-br-md"
-                          : "bg-gradient-to-br from-secondary via-secondary to-secondary/80 text-foreground rounded-bl-md border border-border/50"
-                      } ${index === messages.length - 1 && message.role !== "user" ? "shadow-[0_0_20px_rgba(250,204,21,0.1)]" : ""}`}
-                    >
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <div className="flex-shrink-0 mt-1">
-                    <KyleAvatar size="sm" isActive={true} isSpeaking={true} />
-                  </div>
-                  <div className="bg-gradient-to-br from-secondary via-secondary to-secondary/80 rounded-2xl rounded-bl-md px-4 py-3 border border-border/50">
-                    <div className="flex gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                  </div>
-                </div>
+          {/* Not connected state */}
+          {messages.length === 0 && !isCallActive && !isConnecting && (
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+              <MessageSquare className="h-8 w-8 mb-2 opacity-50" />
+              <p className="text-sm">Type a message to start chatting with Kyle</p>
+              {!wizardId && (
+                <p className="text-xs text-yellow-600 mt-2">Project context not available</p>
               )}
             </div>
           )}
+
+          {/* Connecting state */}
+          {isConnecting && messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+              <Loader2 className="h-8 w-8 mb-2 animate-spin text-amber-400" />
+              <p className="text-sm">Connecting to Kyle...</p>
+            </div>
+          )}
+
+          {/* Real messages from ElevenLabs */}
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
+                  message.role === "user"
+                    ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-black rounded-br-md"
+                    : "bg-muted text-foreground rounded-bl-md"
+                }`}
+              >
+                {message.content}
+              </div>
+            </div>
+          ))}
+          
+          {/* Speaking indicator */}
+          {isSpeaking && (
+            <div className="flex justify-start">
+              <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-2.5">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Voice Visualization (when call is active) - identical to Eve */}
-        {isCallActive && (
-          <div className="px-4 py-4 border-t border-border bg-gradient-to-b from-secondary/50 to-secondary/30">
-            <div className="flex items-end justify-center gap-1 h-14">
-              {frequencyBars.map((height, i) => (
-                <div
-                  key={i}
-                  className="w-2 rounded-full transition-all duration-75 ease-out"
-                  style={{
-                    height: `${Math.max(height * 100, 12)}%`,
-                    background: isSpeaking 
-                      ? `linear-gradient(to top, hsl(var(--accent)), hsl(var(--accent) / 0.6))` 
-                      : `linear-gradient(to top, hsl(var(--muted-foreground)), hsl(var(--muted-foreground) / 0.4))`,
-                    opacity: height > 0.2 ? 1 : 0.5,
-                    boxShadow: height > 0.5 && isSpeaking 
-                      ? '0 0 10px hsla(var(--accent) / 0.4)' 
-                      : 'none',
-                  }}
-                />
+        {/* Quick Replies - only show when connected and no messages yet */}
+        {isCallActive && messages.length === 0 && !isSpeaking && (
+          <div className="px-4 pb-2">
+            <p className="text-xs text-muted-foreground mb-2">Try asking:</p>
+            <div className="flex flex-wrap gap-2">
+              {QUICK_REPLIES.map((reply, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="text-xs hover:bg-amber-500/10 hover:border-amber-500/50 cursor-pointer transition-colors"
+                  onClick={() => handleQuickReply(reply)}
+                >
+                  "{reply}"
+                </Badge>
               ))}
-            </div>
-            <div className="flex items-center justify-center gap-2 mt-3">
-              <div className={`w-2 h-2 rounded-full ${isSpeaking ? 'bg-accent' : 'bg-green-500'} animate-pulse`} />
-              <p className="text-sm text-muted-foreground">
-                {isSpeaking ? "Kyle is speaking..." : "Listening..."}
-              </p>
             </div>
           </div>
         )}
 
-        {/* Input Area - identical to Eve */}
-        <div className="border-t border-accent/10 p-4 bg-gradient-to-t from-secondary/30 to-transparent">
-          <div className="flex items-center gap-3">
-            {/* Voice Button with premium styling */}
-            <div className="relative">
-              {/* Pulse ring when inactive */}
-              {!isCallActive && !isConnecting && (
-                <div className="absolute inset-0 rounded-full border-2 border-accent/30 animate-ping-slow" />
-              )}
-              <Button
-                onClick={handleToggleVoice}
-                disabled={isConnecting}
-                size="icon"
-                className={`h-12 w-12 rounded-full shrink-0 transition-all duration-300 relative z-10 ${
-                  isCallActive
-                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]'
-                    : isConnecting
-                    ? 'bg-accent/50 text-accent-foreground'
-                    : 'bg-accent hover:bg-accent/90 text-accent-foreground shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)]'
-                }`}
-              >
-                {isCallActive ? (
-                  <MicOff className="h-5 w-5" />
-                ) : isConnecting ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-accent-foreground border-t-transparent" />
-                ) : (
-                  <Mic className="h-5 w-5" />
-                )}
-              </Button>
+        {/* Error Display */}
+        {error && (
+          <div className="px-4 pb-2">
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              <p className="text-xs text-destructive">{error}</p>
             </div>
-
-            {/* Text Input with enhanced styling */}
-            <form onSubmit={handleSubmit} className="flex-1 flex gap-2">
-              <div className="flex-1 relative">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder={isCallActive ? "Voice mode active..." : "Type your message..."}
-                  disabled={isLoading || isCallActive}
-                  className="w-full px-5 py-3 bg-secondary/80 border border-border/50 rounded-full focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 text-foreground placeholder:text-muted-foreground/70 disabled:opacity-50 transition-all duration-300"
-                />
-              </div>
-              <Button
-                type="submit"
-                size="icon"
-                disabled={!inputText.trim() || isLoading || isCallActive}
-                className="h-12 w-12 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground shrink-0 transition-all duration-300 hover:shadow-[0_0_20px_rgba(250,204,21,0.3)] disabled:opacity-50 disabled:shadow-none"
-              >
-                <Send className="h-5 w-5" />
-              </Button>
-            </form>
           </div>
+        )}
 
-          {/* Helper text */}
-          <p className="text-xs text-center text-muted-foreground/70 mt-3">
-            {isCallActive 
-              ? "Tap the microphone to end the call" 
-              : "Type a message or tap the microphone to speak"
-            }
+        {/* Text Input Area */}
+        <div className="p-4 border-t border-border/50 bg-muted/30">
+          <div className="flex gap-2">
+            <Input
+              placeholder={isCallActive ? "Type your message..." : "Connecting..."}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyPress}
+              disabled={!isCallActive || isConnecting}
+              className="flex-1 bg-background/50 border-border/50 focus:border-amber-500/50"
+            />
+            <Button
+              onClick={handleSend}
+              disabled={!isCallActive || isConnecting || !inputText.trim()}
+              className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-lg shadow-amber-500/30 px-4"
+            >
+              {isConnecting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          
+          <p className="text-center text-xs text-muted-foreground mt-3">
+            💬 Chat with Kyle • Free consultation
           </p>
         </div>
       </DialogContent>
