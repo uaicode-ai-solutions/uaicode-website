@@ -156,7 +156,7 @@ const KyleChatDialog = ({ open, onOpenChange, wizardId }: KyleChatDialogProps) =
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden glass-card border-amber-500/20 h-[580px] flex flex-col">
+      <DialogContent className="w-[95vw] max-w-4xl p-0 overflow-hidden glass-card border-amber-500/20 h-[85vh] sm:h-[600px] md:h-[650px] flex flex-col">
         <DialogTitle className="sr-only">Chat with Kyle - AI Sales Consultant</DialogTitle>
         
         {/* Header */}
