@@ -1,73 +1,64 @@
 
-## Objetivo
-Fazer o botão de refresh (↻) **reiniciar a sessão em 1 clique**, sem exigir “1 clique para encerrar + 1 clique para iniciar”.
+# Plano: Remover Sugestões de Perguntas
 
-## Diagnóstico (por que hoje precisa de 2 cliques)
-No `KyleChatDialog.tsx`, o `handleReset` faz:
-1) `await endCall()`  
-2) depois chama `toggleCall()` com `setTimeout`.
+## Resumo
 
-O problema é que o `toggleCall()` (no hook `useKyleChatElevenLabs`) decide “encerrar vs iniciar” baseado em `conversationHook.status`. Em muitos casos, **mesmo após `await endSession()`**, o status ainda está momentaneamente como `"connected"`.  
-Resultado: o `toggleCall()` entende que ainda está conectado e **encerra de novo**, ao invés de iniciar. Aí você precisa clicar novamente.
+Remover completamente as sugestões de perguntas ("Try asking:") que estão aparecendo e sumindo no chat do Kyle.
 
-## Solução (robusta, 1 clique sempre)
-Em vez de usar `toggleCall()` para reiniciar, vamos criar uma ação explícita de “restart” no hook que:
-1) encerra a sessão se estiver conectada  
-2) **aguarda o status realmente ficar `disconnected`** (com polling e timeout)  
-3) inicia uma nova sessão (startChat)  
-4) bloqueia cliques repetidos durante o restart (guard)
+## Arquivo a Modificar
 
-Isso elimina a corrida de estado (“race condition”) do status.
+| Arquivo | Ação |
+|---------|------|
+| `src/components/planningmysaas/dashboard/KyleChatDialog.tsx` | Remover Quick Replies |
 
----
+## O Que Será Removido
 
-## Mudanças propostas
+### 1. Constante QUICK_REPLIES (linhas 16-20)
+```typescript
+const QUICK_REPLIES = [
+  "Tell me about pricing",
+  "I want to schedule a call",
+  "What services do you offer?"
+];
+```
 
-### 1) `src/hooks/useKyleChatElevenLabs.ts`
-Adicionar:
-- `statusRef` para sempre ler o status mais recente dentro de loops assíncronos.
-- `isRestartingRef` para impedir múltiplos restarts simultâneos.
-- Função `restartCall` (ou `restartChat`) que faz **end → wait disconnected → start**.
+### 2. Função handleQuickReply (linhas 65-69)
+```typescript
+const handleQuickReply = useCallback((reply: string) => {
+  if (isCallActive && sendUserMessage) {
+    sendUserMessage(reply);
+  }
+}, [isCallActive, sendUserMessage]);
+```
 
-Implementação (conceito):
-- `statusRef.current = conversationHook.status` a cada render.
-- `restartCall`:
-  - se já estiver reiniciando: retorna (no-op)
-  - se `statusRef.current === "connected"`: `await endChat()`
-  - loop com timeout (ex.: até 3s): enquanto `statusRef.current !== "disconnected"`, aguarda 50ms
-  - chama `await startChat()`
+### 3. Bloco de Renderização (linhas 251-268)
+```typescript
+{/* Quick Replies - only show when connected and no messages yet */}
+{isCallActive && messages.length === 0 && !isSpeaking && (
+  <div className="px-4 pb-2">
+    <p className="text-xs text-muted-foreground mb-2">Try asking:</p>
+    <div className="flex flex-wrap gap-2">
+      {QUICK_REPLIES.map((reply, index) => (
+        <Badge
+          key={index}
+          variant="outline"
+          className="text-xs hover:bg-amber-500/10 hover:border-amber-500/50 cursor-pointer transition-colors"
+          onClick={() => handleQuickReply(reply)}
+        >
+          "{reply}"
+        </Badge>
+      ))}
+    </div>
+  </div>
+)}
+```
 
-E expor no `return` do hook:
-- `restartCall`
+## Visual Antes vs Depois
 
-Observação importante: manteremos `toggleCall` existente para outras interações, mas o refresh vai usar o `restartCall`.
+| Antes | Depois |
+|-------|--------|
+| Mostra "Try asking:" com 3 sugestões que aparecem/somem | Interface limpa sem sugestões |
 
-### 2) `src/components/planningmysaas/dashboard/KyleChatDialog.tsx`
-Ajustar o `handleReset` para usar o método novo:
-- Desestruturar `restartCall` do hook.
-- `handleReset` vira:
-  - limpar `inputText`
-  - chamar `await restartCall()` (sem `toggleCall`, sem `setTimeout`)
+## Resultado Final
 
-Opcional (recomendado):
-- Desabilitar o botão ↻ enquanto `isConnecting` for true para evitar spam (ele já existe; só garantir que o refresh respeita isso, se ainda não respeitar).
-
----
-
-## Critérios de aceite (como vamos testar)
-1) Abrir o dialog do Kyle e conectar.
-2) Enviar uma mensagem (ver ela aparecer).
-3) Clicar **uma vez** no ↻.
-4) Esperado:
-   - Mensagens limpam
-   - Status passa por “Disconnected/Connecting…”
-   - Reconecta sozinho
-   - Não precisa clicar novamente
-5) Repetir o teste 3 vezes seguidas para garantir que não há intermitência.
-
-## Riscos / cuidados
-- O polling de status precisa de timeout para não travar (ex.: 3s). Se estourar, ainda tentamos `startChat()` (ou mostramos erro amigável).
-- Garantir que nada disso mexe no voice (`useKyleElevenLabs.ts` e edge function `kyle-conversation-token`) — isso fica intacto.
-
-## Resultado final
-O refresh (↻) vira um “reiniciar sessão” real: **um clique = encerra corretamente + reconecta automaticamente**, sempre.
+O chat do Kyle ficará mais limpo, sem as sugestões de perguntas que estavam causando o comportamento de aparecer e sumir.
