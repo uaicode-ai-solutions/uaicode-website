@@ -1,292 +1,191 @@
 
 
-# Plano: Nova Section "Meet Kyle" (Estilo Premium)
+# Plano: Diferenciar os Títulos das Duas Sections
 
 ## Análise do Problema
 
-Os banners atuais do Kyle (linhas 728-820 de `NextStepsSection.tsx`):
-- Muito compactos e funcionais
-- Parecem botões utilitários, não convidativos
-- Avatar pequeno (size="sm" = 48px)
-- Texto técnico demais ("AI Sales Consultant")
-- Muita informação competindo no mesmo espaço
+Atualmente temos duas sections com o título idêntico "Lock In Your Discount":
 
-Comparando com "Meet the Founder":
-- Layout 2 colunas (texto + foto grande)
-- Foto humanizada e destacada
-- Subtítulo explicando o papel
-- Texto descritivo sobre a pessoa
-- CTA único e claro
+| Section | Localização | Conteúdo | Objetivo no Funil |
+|---------|-------------|----------|-------------------|
+| NextStepsSection | Linha 322 | Cards de pricing (Flash Deal 25%, Bundle 30%) | **DECISÃO** - Escolher o pacote |
+| ScheduleCallSection | Linha 105 | Calendário Cal.com para agendar | **AÇÃO** - Marcar a reunião |
+
+Isso causa **confusão cognitiva** e reduz a taxa de conversão porque o usuário não entende que são duas etapas diferentes.
 
 ---
 
-## Solução: Section Dedicada "Meet Kyle"
+## Estratégia de Marketing: Diferenciar por Etapa do Funil
 
-Criar uma section premium inspirada no "Meet the Founder" que humaniza o Kyle e torna os CTAs muito mais atrativos.
-
-### Design Visual Proposto
+Do ponto de vista de marketing, cada section representa uma etapa distinta no funil de conversão:
 
 ```text
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                                                                                 │
-│    Meet Kyle                                              ┌──────────────────┐  │
-│    Your AI Sales Consultant                               │                  │  │
-│                                                           │   [Kyle Photo]   │  │
-│    Kyle is your dedicated AI sales consultant at          │     (Large)      │  │
-│    Uaicode.ai. He's here 24/7 to answer your questions,   │                  │  │
-│    walk you through pricing options, and help you make    │   Kyle Williams  │  │
-│    the best decision for your project.                    │  AI Consultant   │  │
-│                                                           └──────────────────┘  │
-│    Whether you prefer a quick chat, voice call, or                              │
-│    detailed email response, Kyle is always ready                                │
-│    to assist.                                                                   │
-│                                                                                 │
-│    ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                            │
-│    │ 📧 Email    │  │ 💬 Chat     │  │ 📞 Call     │                            │
-│    │  24h reply  │  │  Instant    │  │  24/7       │                            │
-│    └─────────────┘  └─────────────┘  └─────────────┘                            │
-│                                                                                 │
-└─────────────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│  FUNIL DE CONVERSÃO                                            │
+│                                                                │
+│  1. AWARENESS    → (já passou - viu o Report)                  │
+│                                                                │
+│  2. CONSIDERATION → NextStepsSection                           │
+│     "Qual pacote é melhor para mim?"                           │
+│     Títuo sugerido: "Choose Your Package"                      │
+│                     ou "Pick Your Plan"                        │
+│                                                                │
+│  3. ACTION        → ScheduleCallSection                        │
+│     "Quero garantir meu desconto agora"                        │
+│     Título sugerido: "Book Your Call" (mais direto)            │
+│                     ou "Schedule & Save" (combina ação+valor)  │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
 ```
-
-### Características do Design
-
-1. **Layout 2 Colunas** (igual ao Meet the Founder)
-   - Esquerda: Título, descrição humanizada, 3 botões de ação
-   - Direita: Foto grande do Kyle com nome/cargo
-
-2. **Foto Destacada**
-   - Avatar grande (max-w-md, rounded-2xl)
-   - Badge com nome "Kyle Williams" e cargo "AI Sales Consultant"
-   - Borda amber com glow sutil
-
-3. **Texto Humanizado**
-   - Título: "Meet Kyle" (gradient gold)
-   - Subtítulo: "Your AI Sales Consultant"
-   - 2 parágrafos explicando o que ele faz
-
-4. **3 Botões de Ação** (lado a lado)
-   - Email Kyle (ícone Mail + "24h reply")
-   - Chat with Kyle (ícone MessageSquare + "Instant")
-   - Call Kyle (ícone Phone + "24/7")
-   - Estilo: ghost buttons com hover amber
 
 ---
 
-## Estratégia de Implementação
+## Sugestões de Títulos (Opções)
 
-### Opção A: Componente Novo (Recomendado)
+### Para NextStepsSection (Cards de Pricing)
 
-Criar um novo componente `MeetKyleSection.tsx` que:
-- Importa os mesmos dialogs (KyleConsultantDialog, KyleChatDialog, EmailKyleDialog)
-- Usa a foto do Kyle (`kyle-avatar.webp`)
-- Gerencia os states dos dialogs internamente
-- Recebe `wizardId` como prop
+| Opção | Título | Subtítulo | Psicologia |
+|-------|--------|-----------|------------|
+| A | **Choose Your Package** | Select the plan that fits your goals | Empoderamento - usuário no controle |
+| B | **Pick Your Plan** | Limited-time discounts on all packages | Simplicidade + urgência |
+| C | **Special Launch Offers** | Exclusive pricing for early founders | Exclusividade + FOMO |
+| D | **Exclusive Pricing** | Lock in your discount today | Escassez + valor |
 
-### Opção B: Refatorar NextStepsSection
+**Recomendação:** Opção A - "Choose Your Package"
+- Claro e direto
+- Foca na **decisão** que o usuário precisa tomar
+- Não compete semanticamente com "Book Your Call"
 
-Substituir os banners atuais (linhas 728-820) pela nova section dentro do mesmo arquivo.
+### Para ScheduleCallSection (Calendário)
 
-**Escolha:** Opção A - Componente novo é mais seguro e não mexe no NextStepsSection existente.
+| Opção | Título | Subtítulo | Psicologia |
+|-------|--------|-----------|------------|
+| A | **Book Your Call** | Secure your discount before time runs out | Ação clara + urgência |
+| B | **Schedule & Lock In** | Your exclusive discount awaits | Benefício embutido |
+| C | **Claim Your Discount** | Book a call to secure your pricing | Foco no ganho |
+| D | **Ready? Let's Talk** | Schedule your strategy session | Tom conversacional |
+
+**Recomendação:** Opção A - "Book Your Call"
+- Extremamente claro - usuário sabe exatamente o que fazer
+- "Book" é uma action word forte
+- Combina bem com "Choose Your Package" (Choose → Book)
+
+---
+
+## Fluxo Visual Proposto
+
+```text
+Next Steps Tab
+│
+├── NextStepsSection
+│   ├── "Next Steps" (header principal)
+│   ├── Viability Score
+│   ├── "What happens when you choose Uaicode" (4 cards)
+│   └── 🆕 "Choose Your Package" ← ANTES: "Lock In Your Discount"
+│       ├── MVP Flash Deal (25% OFF)
+│       └── Complete Launch Bundle (30% OFF)
+│
+├── MeetKyleSection
+│   └── "Meet Kyle" (sem mudança)
+│
+└── ScheduleCallSection
+    └── 🆕 "Book Your Call" ← ANTES: "Lock In Your Discount"
+        ├── Countdown Timer
+        └── Calendário Cal.com
+```
 
 ---
 
 ## Alterações Propostas
 
-### 1. Criar novo componente `MeetKyleSection.tsx`
+### Alteração 1: NextStepsSection.tsx
 
-**Arquivo:** `src/components/planningmysaas/dashboard/sections/MeetKyleSection.tsx`
+**Arquivo:** `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx`  
+**Linha:** 322
 
+**De:**
 ```typescript
-import { useState } from "react";
-import { Mail, MessageSquare, Phone } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import kyleAvatar from "@/assets/kyle-avatar.webp";
-import KyleConsultantDialog from "../KyleConsultantDialog";
-import KyleChatDialog from "../KyleChatDialog";
-import EmailKyleDialog from "../EmailKyleDialog";
+<h2 className="text-2xl font-bold text-foreground">Lock In Your Discount</h2>
+```
 
-interface MeetKyleSectionProps {
-  wizardId: string | undefined;
-}
+**Para:**
+```typescript
+<h2 className="text-2xl font-bold text-foreground">Choose Your Package</h2>
+```
 
-const MeetKyleSection = ({ wizardId }: MeetKyleSectionProps) => {
-  const [kyleDialogOpen, setKyleDialogOpen] = useState(false);
-  const [kyleChatDialogOpen, setKyleChatDialogOpen] = useState(false);
-  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+**Subtítulo (linha 327):**
 
-  return (
-    <section className="py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        {/* Left Column - Content */}
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              <span className="text-gradient-gold">Meet Kyle</span>
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Your AI Sales Consultant
-            </p>
-          </div>
+**De:**
+```typescript
+<p className="text-sm text-muted-foreground">Limited time offers available</p>
+```
 
-          <div className="space-y-4 text-base text-muted-foreground">
-            <p>
-              Kyle is your dedicated AI sales consultant at Uaicode.ai. 
-              He's here 24/7 to answer your questions, walk you through 
-              pricing options, and help you make the best decision for your project.
-            </p>
-            <p>
-              Whether you prefer a quick chat, voice call, or detailed email 
-              response, Kyle is always ready to assist with expert knowledge 
-              about your specific report and our services.
-            </p>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3">
-            <Button 
-              onClick={() => setEmailDialogOpen(true)}
-              variant="outline"
-              size="lg"
-              className="gap-2 border-amber-500/30 hover:bg-amber-500 hover:text-black"
-            >
-              <Mail className="h-5 w-5" />
-              Email Kyle
-              <span className="text-xs opacity-70">24h reply</span>
-            </Button>
-            
-            <Button 
-              onClick={() => setKyleChatDialogOpen(true)}
-              variant="outline"
-              size="lg"
-              className="gap-2 border-amber-500/30 hover:bg-amber-500 hover:text-black"
-            >
-              <MessageSquare className="h-5 w-5" />
-              Chat with Kyle
-              <span className="text-xs opacity-70">Instant</span>
-            </Button>
-            
-            <Button 
-              onClick={() => setKyleDialogOpen(true)}
-              size="lg"
-              className="gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-400 hover:to-yellow-400"
-            >
-              <Phone className="h-5 w-5" />
-              Call Kyle
-              <span className="text-xs opacity-70">24/7</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Right Column - Photo */}
-        <div className="flex justify-center lg:justify-end">
-          <div className="relative">
-            <img
-              src={kyleAvatar}
-              alt="Kyle - AI Sales Consultant"
-              className="w-full h-auto max-w-md rounded-2xl shadow-2xl border-2 border-amber-500/30"
-            />
-            {/* Name Badge */}
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-background/95 backdrop-blur-sm px-6 py-3 rounded-xl border border-amber-500/30 shadow-lg">
-              <p className="font-bold text-foreground text-center">Kyle Williams</p>
-              <p className="text-sm text-amber-400 text-center">AI Sales Consultant</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Dialogs */}
-      <KyleConsultantDialog 
-        open={kyleDialogOpen} 
-        onOpenChange={setKyleDialogOpen}
-        wizardId={wizardId}
-      />
-      <KyleChatDialog 
-        open={kyleChatDialogOpen} 
-        onOpenChange={setKyleChatDialogOpen}
-        wizardId={wizardId}
-      />
-      <EmailKyleDialog 
-        open={emailDialogOpen} 
-        onOpenChange={setEmailDialogOpen}
-      />
-    </section>
-  );
-};
-
-export default MeetKyleSection;
+**Para:**
+```typescript
+<p className="text-sm text-muted-foreground">Limited-time discounts on all packages</p>
 ```
 
 ---
 
-### 2. Remover banners antigos do NextStepsSection
+### Alteração 2: ScheduleCallSection.tsx
 
-**Arquivo:** `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx`
+**Arquivo:** `src/components/planningmysaas/dashboard/sections/ScheduleCallSection.tsx`  
+**Linha:** 105
 
-Remover linhas 728-820 (o bloco "Have a Question? Kyle Contact Row" e os 3 cards).
-
-Manter apenas os dialogs existentes pois agora serão gerenciados pelo MeetKyleSection.
-
-**Remoção:**
-- Linha 729-820: Todo o bloco de contact com Kyle
-- Linhas 146-148: States dos dialogs (mover para MeetKyleSection)
-- Linhas 822-837: Renderização dos dialogs
-
----
-
-### 3. Adicionar MeetKyleSection no PmsDashboard
-
-**Arquivo:** `src/pages/PmsDashboard.tsx`
-
-Na tab "nextsteps", adicionar MeetKyleSection entre NextStepsSection e ScheduleCallSection:
-
+**De:**
 ```typescript
-{activeTab === "nextsteps" && (
-  <div className="space-y-16">
-    <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
-    <MeetKyleSection wizardId={wizardId} />
-    <ScheduleCallSection projectName={projectName} />
-  </div>
-)}
+<h2 className="text-2xl font-bold text-foreground">Lock In Your Discount</h2>
+```
+
+**Para:**
+```typescript
+<h2 className="text-2xl font-bold text-foreground">Book Your Call</h2>
+```
+
+**Subtítulo (linhas 113-115):**
+
+**De:**
+```typescript
+<p className="text-sm text-muted-foreground">
+  Schedule your call now to secure your exclusive discount on {projectName ? `"${projectName}"` : "your project"}
+</p>
+```
+
+**Para:**
+```typescript
+<p className="text-sm text-muted-foreground">
+  Secure your exclusive discount before time runs out
+</p>
 ```
 
 ---
 
 ## Resumo de Alterações
 
-| Arquivo | Ação | Linhas |
-|---------|------|--------|
-| `MeetKyleSection.tsx` | Criar novo | +100 |
-| `NextStepsSection.tsx` | Remover banners Kyle | -95 |
-| `PmsDashboard.tsx` | Adicionar import + componente | +3 |
+| Arquivo | Local | De | Para |
+|---------|-------|-----|------|
+| NextStepsSection.tsx | Linha 322 | "Lock In Your Discount" | "Choose Your Package" |
+| NextStepsSection.tsx | Linha 327 | "Limited time offers available" | "Limited-time discounts on all packages" |
+| ScheduleCallSection.tsx | Linha 105 | "Lock In Your Discount" | "Book Your Call" |
+| ScheduleCallSection.tsx | Linhas 113-115 | Subtítulo longo | "Secure your exclusive discount before time runs out" |
 
-**Resultado líquido:** +8 linhas
+**Total: 4 linhas modificadas em 2 arquivos**
 
 ---
 
 ## Arquivos Tocados
 
-| Arquivo | Tipo |
+| Arquivo | Ação |
 |---------|------|
-| `src/components/planningmysaas/dashboard/sections/MeetKyleSection.tsx` | Novo |
 | `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx` | Modificar |
-| `src/pages/PmsDashboard.tsx` | Modificar |
+| `src/components/planningmysaas/dashboard/sections/ScheduleCallSection.tsx` | Modificar |
 
 ---
 
-## Benefícios
+## Benefícios de Marketing
 
-1. **Humanização** - Kyle deixa de ser 3 botões e vira uma "pessoa" com foto grande e bio
-2. **Clareza** - Usuário entende imediatamente o que é e o que pode fazer
-3. **Conversão** - Layout premium igual ao Founder inspira mais confiança
-4. **CTAs Claros** - 3 botões grandes lado a lado, fáceis de clicar
-5. **Menos Poluição Visual** - Remove os 3 cards pequenos que competiam espaço
-
----
-
-## Segurança
-
-- Os dialogs existentes (KyleConsultantDialog, KyleChatDialog, EmailKyleDialog) **não serão tocados**
-- Apenas movemos os states e a renderização para o novo componente
-- Os hooks (useKyleElevenLabs, useKyleChatElevenLabs) continuam funcionando igual
+1. **Clareza** - Usuário entende que são duas etapas diferentes
+2. **Progressão** - Choose → Book cria sensação de avanço no funil
+3. **Reduz Fricção** - Menos confusão = maior conversão
+4. **Action Words** - "Choose" e "Book" são verbos de ação que motivam cliques
 
