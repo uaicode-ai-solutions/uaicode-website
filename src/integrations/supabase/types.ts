@@ -179,66 +179,6 @@ export type Database = {
         }
         Relationships: []
       }
-      tb_pms_payments: {
-        Row: {
-          amount_cents: number
-          created_at: string
-          currency: string
-          id: string
-          paid_at: string | null
-          plan_type: string
-          report_id: string
-          status: string
-          stripe_customer_id: string | null
-          stripe_payment_intent_id: string | null
-          stripe_session_id: string | null
-          user_id: string
-        }
-        Insert: {
-          amount_cents: number
-          created_at?: string
-          currency?: string
-          id?: string
-          paid_at?: string | null
-          plan_type: string
-          report_id: string
-          status?: string
-          stripe_customer_id?: string | null
-          stripe_payment_intent_id?: string | null
-          stripe_session_id?: string | null
-          user_id: string
-        }
-        Update: {
-          amount_cents?: number
-          created_at?: string
-          currency?: string
-          id?: string
-          paid_at?: string | null
-          plan_type?: string
-          report_id?: string
-          status?: string
-          stripe_customer_id?: string | null
-          stripe_payment_intent_id?: string | null
-          stripe_session_id?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tb_pln_payments_report_id_fkey"
-            columns: ["report_id"]
-            isOneToOne: false
-            referencedRelation: "tb_pms_wizard"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tb_pln_payments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "tb_pms_users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       tb_pms_price_model: {
         Row: {
           created_at: string | null
@@ -511,30 +451,6 @@ export type Database = {
           eventType?: string | null
           eventUid?: string | null
           id?: number
-        }
-        Relationships: []
-      }
-      tb_web_call: {
-        Row: {
-          created_at: string
-          date: string | null
-          id: number
-          outcome: string | null
-          summary: string | null
-        }
-        Insert: {
-          created_at?: string
-          date?: string | null
-          id?: number
-          outcome?: string | null
-          summary?: string | null
-        }
-        Update: {
-          created_at?: string
-          date?: string | null
-          id?: number
-          outcome?: string | null
-          summary?: string | null
         }
         Relationships: []
       }
