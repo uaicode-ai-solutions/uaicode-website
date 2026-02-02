@@ -1,128 +1,113 @@
 
-# Plano: Nova Aba "Next Steps" (Abordagem Ultra-Conservadora)
 
-## Análise do Código Atual
+# Plano: Banners "Call to Action" no Final das Telas Report e My Plan
 
-Após análise detalhada, a estrutura atual é:
+## Objetivo
+Adicionar um banner premium com visual UaiCode no **final** das telas Report e My Plan que incentive o usuário a ir para a aba Next Steps.
+
+---
+
+## Estratégia: Banner Reutilizável Inline
+
+Vou criar um **componente inline** dentro do próprio PmsDashboard para o banner, seguindo o padrão visual UaiCode (gradiente amber/gold, bordas com brilho).
+
+### Design Visual do Banner
 
 ```text
-PmsDashboard.tsx (linhas 446-480)
-├── Tab "Report"
-│   └── 18 seções + NextStepsSection + ScheduleCallSection
-├── Tab "Business Plan" → "My Plan"
-│   └── BusinessPlanTab.tsx
+┌─────────────────────────────────────────────────────────────────────┐
+│  🚀  Ready to Turn This Analysis Into Reality?                     │
+│                                                                     │
+│  Your exclusive discount expires in 47:59:32. Lock in your          │
+│  pricing now and start building with Uaicode.                       │
+│                                                                     │
+│                                    [ View Next Steps → ]            │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Componentes Críticos que NÃO Serão Tocados:
-- `NextStepsSection.tsx` (842 linhas) - Intacto, apenas **re-exportado**
-- `ScheduleCallSection.tsx` - Intacto, apenas **re-exportado**
-- `BusinessPlanTab.tsx` - **Zero alterações**
-- Toda a lógica de pricing, countdown, Kyle dialogs - **Intocável**
+**Características visuais:**
+- Fundo com gradiente `from-amber-500/10 via-yellow-500/5 to-amber-500/10`
+- Borda amber com glow sutil `border-amber-500/30 shadow-amber-500/10`
+- Ícone Rocket animado (pulse suave)
+- Texto principal em branco, subtexto em muted
+- Botão CTA com gradiente amber → yellow
 
 ---
 
-## Estratégia: ZERO Refatoração de Componentes
+## Alterações (Apenas PmsDashboard.tsx)
 
-Em vez de mover código, vou apenas:
-1. **Adicionar** uma nova tab "Next Steps" no array de tabs
-2. **Reutilizar** os componentes existentes como estão
-3. **Adicionar** um banner simples no My Plan
+### Alteração 1: Criar componente local `NextStepsCTABanner`
 
-### O que NÃO farei:
-- Mexer em NextStepsSection.tsx
-- Mexer em ScheduleCallSection.tsx  
-- Mexer em BusinessPlanTab.tsx
-- Alterar lógica de pricing/countdown
-- Refatorar imports ou exports
-
----
-
-## Alterações Mínimas (Apenas PmsDashboard.tsx)
-
-### Alteração 1: Adicionar nova tab no array (linha ~446)
+Dentro do PmsDashboard, vou definir um componente funcional simples:
 
 ```typescript
-// DE:
-{ id: "report", label: "Report", icon: FileText },
-{ id: "businessplan", label: "Business Plan", icon: Briefcase },
-
-// PARA:
-{ id: "report", label: "Report", icon: FileText },
-{ id: "businessplan", label: "My Plan", icon: Briefcase },
-{ id: "nextsteps", label: "Next Steps", icon: Rocket },  // NOVO
+const NextStepsCTABanner = ({ onViewNextSteps }: { onViewNextSteps: () => void }) => (
+  <div className="mt-12 p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-amber-500/10 border border-amber-500/30 shadow-lg shadow-amber-500/5">
+    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="flex items-center gap-4">
+        <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/30 to-yellow-500/20 animate-pulse">
+          <Rocket className="h-6 w-6 text-amber-400" />
+        </div>
+        <div className="text-center md:text-left">
+          <h3 className="text-xl font-bold text-foreground">
+            Ready to Turn This Analysis Into Reality?
+          </h3>
+          <p className="text-muted-foreground mt-1">
+            Lock in your exclusive discount and start building with Uaicode.
+          </p>
+        </div>
+      </div>
+      <Button 
+        onClick={onViewNextSteps}
+        size="lg"
+        className="gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-semibold hover:from-amber-400 hover:to-yellow-400 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all hover:scale-105"
+      >
+        View Next Steps
+        <ArrowRight className="h-5 w-5" />
+      </Button>
+    </div>
+  </div>
+);
 ```
 
-**Impacto:** Adiciona 1 linha, altera 1 label
+**Localização:** Entre as linhas 70-90 (após imports, antes do componente principal)
 
 ---
 
-### Alteração 2: Adicionar conteúdo da nova tab (após linha ~526)
+### Alteração 2: Adicionar banner no final da tab Report (linha ~522)
 
 ```typescript
-{activeTab === "nextsteps" && (
+{activeTab === "report" && (
   <div className="space-y-16">
-    <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
-    <ScheduleCallSection projectName={projectName} />
+    <ReportHero projectName={projectName} onScheduleCall={handleScheduleCall} />
+    <ExecutiveVerdict />
+    {/* ... outras seções ... */}
+    <WhyUaicodeSection />
+    
+    {/* NOVO: Banner CTA para Next Steps */}
+    <NextStepsCTABanner onViewNextSteps={() => setActiveTab("nextsteps")} />
   </div>
 )}
 ```
 
-**Impacto:** Adiciona ~6 linhas, reutiliza componentes existentes
-
 ---
 
-### Alteração 3: Adicionar import do ícone Rocket (linha ~21)
-
-```typescript
-import { Rocket } from "lucide-react";
-```
-
-**Impacto:** Adiciona 1 import
-
----
-
-### Alteração 4: Remover sections duplicadas da tab Report (linhas 519-520)
-
-```typescript
-// REMOVER estas 2 linhas da tab "report":
-<NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
-<ScheduleCallSection projectName={projectName} />
-```
-
-**Impacto:** Remove 2 linhas
-
----
-
-### Alteração 5: Adicionar banner no Business Plan (linha ~525)
-
-Criar um componente inline simples DENTRO do próprio PmsDashboard:
+### Alteração 3: Adicionar banner no final da tab My Plan (linha ~545)
 
 ```typescript
 {activeTab === "businessplan" && (
   <>
-    {/* CTA Banner para Next Steps */}
-    <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <Rocket className="h-5 w-5 text-amber-400" />
-        <div>
-          <p className="font-medium text-foreground">Ready to start building?</p>
-          <p className="text-sm text-muted-foreground">Lock in your exclusive discount</p>
-        </div>
-      </div>
-      <Button 
-        onClick={() => setActiveTab("nextsteps")}
-        className="gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-400 hover:to-yellow-400"
-      >
-        <ArrowRight className="h-4 w-4" />
-        View Next Steps
-      </Button>
+    {/* Banner superior existente - MANTER */}
+    <div className="mb-6 p-4 rounded-xl ...">
+      ...
     </div>
+    
     <BusinessPlanTab />
+    
+    {/* NOVO: Banner CTA no final */}
+    <NextStepsCTABanner onViewNextSteps={() => setActiveTab("nextsteps")} />
   </>
 )}
 ```
-
-**Impacto:** Adiciona ~20 linhas inline (nenhum arquivo novo)
 
 ---
 
@@ -130,14 +115,11 @@ Criar um componente inline simples DENTRO do próprio PmsDashboard:
 
 | Local | Tipo | Linhas |
 |-------|------|--------|
-| PmsDashboard.tsx | Adicionar import Rocket | +1 |
-| PmsDashboard.tsx | Adicionar tab no array | +1 |
-| PmsDashboard.tsx | Mudar label "Business Plan" → "My Plan" | 0 (já feito) |
-| PmsDashboard.tsx | Remover sections duplicadas do Report | -2 |
-| PmsDashboard.tsx | Adicionar banner no businessplan | +20 |
-| PmsDashboard.tsx | Adicionar conteúdo da nova tab | +6 |
+| PmsDashboard.tsx | Criar componente `NextStepsCTABanner` | +25 |
+| PmsDashboard.tsx | Adicionar banner no final da tab Report | +3 |
+| PmsDashboard.tsx | Adicionar banner no final da tab My Plan | +3 |
 
-**Total: ~26 linhas alteradas em 1 ÚNICO arquivo**
+**Total: ~31 linhas adicionadas em 1 ÚNICO arquivo**
 
 ---
 
@@ -151,39 +133,30 @@ Criar um componente inline simples DENTRO do próprio PmsDashboard:
 
 ---
 
-## Fluxo do Usuário Após Implementação
+## Fluxo Visual Final
 
 ```text
 Report Tab
-├── 16 seções de análise (sem mudança)
+├── 15 seções de análise
 ├── WhyUaicodeSection
-└── [FIM - não tem mais Next Steps aqui]
+└── 🆕 NextStepsCTABanner → "View Next Steps" → vai para Next Steps
 
-My Plan Tab
-├── Banner CTA "Ready to start?" → clica → vai para Next Steps
-└── BusinessPlanTab (sem mudança)
+My Plan Tab  
+├── Banner topo (pequeno) ← já existe
+├── BusinessPlanTab
+└── 🆕 NextStepsCTABanner → "View Next Steps" → vai para Next Steps
 
-Next Steps Tab (NOVA)
-├── NextStepsSection (viability score, pricing cards, Kyle contact)
-└── ScheduleCallSection (Cal.com embed)
+Next Steps Tab
+├── NextStepsSection
+└── ScheduleCallSection
 ```
 
 ---
 
-## Rollback Fácil
+## Segurança
 
-Se algo quebrar, basta:
-1. Remover a tab "nextsteps" do array
-2. Adicionar as 2 sections de volta na tab "report"
-3. Remover o banner do businessplan
+- **Zero alterações** em componentes existentes
+- Apenas adição de conteúdo novo
+- Reutiliza ícones já importados (Rocket, ArrowRight)
+- Componente inline = sem novos arquivos
 
----
-
-## Técnica de Segurança
-
-Antes de implementar, vou:
-1. Ler o arquivo completo atual
-2. Fazer as alterações de forma cirúrgica
-3. Testar via browser tool para garantir que funciona
-
-Essa abordagem é a mais segura possível - nenhum componente existente é modificado, apenas reutilizados.
