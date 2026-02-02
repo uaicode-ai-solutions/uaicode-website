@@ -445,7 +445,7 @@ const PmsDashboardContent = () => {
             <div className="flex justify-center">
               {[
                 { id: "report", label: "Report", icon: FileText },
-                { id: "businessplan", label: "Business Plan", icon: Briefcase },
+                { id: "businessplan", label: "My Plan", icon: Briefcase },
                 // { id: "marketing", label: "Marketing", icon: TrendingUp }, // HIDDEN v1.0 - will return in future version
                 // { id: "assets", label: "Branding", icon: Palette }, // HIDDEN v1.0 - will return in future version
               ].map((tab) => {
