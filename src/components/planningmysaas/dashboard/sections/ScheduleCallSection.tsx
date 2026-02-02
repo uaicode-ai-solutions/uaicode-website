@@ -102,7 +102,7 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-2xl font-bold text-foreground">Lock In Your Discount</h2>
+              <h2 className="text-2xl font-bold text-foreground">Book Your Call</h2>
               <Badge 
                 className="text-xs font-semibold border-0 text-black"
                 style={{ background: 'linear-gradient(135deg, #FFD700, #FFA500)' }}
@@ -111,7 +111,7 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              Schedule your call now to secure your exclusive discount on {projectName ? `"${projectName}"` : "your project"}
+              Secure your exclusive discount before time runs out
             </p>
           </div>
         </div>
