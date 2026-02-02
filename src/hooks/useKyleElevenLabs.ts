@@ -150,6 +150,10 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
       console.log("Kyle: User timezone detected:", userTimezone);
       console.log("Kyle: wizard_id for MCP tools:", wizardId);
 
+      // Current date in UTC ISO 8601 format (without milliseconds)
+      const currentDateUTC = new Date().toISOString().split('.')[0] + 'Z';
+      console.log("Kyle: Current date (UTC):", currentDateUTC);
+
       // Try WebRTC first (recommended by ElevenLabs docs)
       console.log("Kyle: Attempting WebRTC connection...");
       try {
@@ -163,6 +167,7 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
             dynamicVariables: {
               wizard_id: wizardId,
               timezone: userTimezone,
+              current_date: currentDateUTC,
             },
           });
           console.log("Kyle: ElevenLabs WebRTC session started successfully");
@@ -185,6 +190,7 @@ export const useKyleElevenLabs = (options: UseKyleElevenLabsOptions) => {
           dynamicVariables: {
             wizard_id: wizardId,
             timezone: userTimezone,
+            current_date: currentDateUTC,
           },
         });
         console.log("Kyle: ElevenLabs WebSocket session started successfully");
