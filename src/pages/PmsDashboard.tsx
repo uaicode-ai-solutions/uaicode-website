@@ -76,6 +76,35 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+// CTA Banner component for navigating to Next Steps
+const NextStepsCTABanner = ({ onViewNextSteps }: { onViewNextSteps: () => void }) => (
+  <div className="mt-12 p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-amber-500/10 border border-amber-500/30 shadow-lg shadow-amber-500/5">
+    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="flex items-center gap-4">
+        <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/30 to-yellow-500/20 animate-pulse">
+          <Rocket className="h-6 w-6 text-amber-400" />
+        </div>
+        <div className="text-center md:text-left">
+          <h3 className="text-xl font-bold text-foreground">
+            Ready to Turn This Analysis Into Reality?
+          </h3>
+          <p className="text-muted-foreground mt-1">
+            Lock in your exclusive discount and start building with Uaicode.
+          </p>
+        </div>
+      </div>
+      <Button 
+        onClick={onViewNextSteps}
+        size="lg"
+        className="gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-semibold hover:from-amber-400 hover:to-yellow-400 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all hover:scale-105"
+      >
+        View Next Steps
+        <ArrowRight className="h-5 w-5" />
+      </Button>
+    </div>
+  </div>
+);
+
 const PmsDashboardContent = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -519,6 +548,9 @@ const PmsDashboardContent = () => {
                   <ComparableSuccessesSection />
                   <ExecutionPlanSection />
                   <WhyUaicodeSection />
+                  
+                  {/* CTA Banner to Next Steps */}
+                  <NextStepsCTABanner onViewNextSteps={() => setActiveTab("nextsteps")} />
                 </div>
             )}
 
@@ -542,6 +574,9 @@ const PmsDashboardContent = () => {
                   </Button>
                 </div>
                 <BusinessPlanTab />
+                
+                {/* CTA Banner at the bottom */}
+                <NextStepsCTABanner onViewNextSteps={() => setActiveTab("nextsteps")} />
               </>
             )}
 
