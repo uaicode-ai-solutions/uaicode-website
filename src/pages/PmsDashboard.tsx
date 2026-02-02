@@ -556,23 +556,6 @@ const PmsDashboardContent = () => {
 
             {activeTab === "businessplan" && (
               <>
-                {/* CTA Banner para Next Steps */}
-                <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <Rocket className="h-5 w-5 text-amber-400" />
-                    <div>
-                      <p className="font-medium text-foreground">Ready to start building?</p>
-                      <p className="text-sm text-muted-foreground">Lock in your exclusive discount</p>
-                    </div>
-                  </div>
-                  <Button 
-                    onClick={() => setActiveTab("nextsteps")}
-                    className="gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-400 hover:to-yellow-400"
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                    View Next Steps
-                  </Button>
-                </div>
                 <BusinessPlanTab />
                 
                 {/* CTA Banner at the bottom */}
