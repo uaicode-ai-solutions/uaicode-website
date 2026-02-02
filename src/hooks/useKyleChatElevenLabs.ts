@@ -77,9 +77,14 @@ export const useKyleChatElevenLabs = (options: UseKyleChatElevenLabsOptions) => 
     try {
       // NÃO PEDE MICROFONE - É TEXT-ONLY!
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Current date in UTC ISO 8601 format (without milliseconds)
+      const currentDateUTC = new Date().toISOString().split('.')[0] + 'Z';
+      
       console.log("Kyle Chat: Starting text-only session");
       console.log("Kyle Chat: wizard_id:", wizardId);
       console.log("Kyle Chat: timezone:", userTimezone);
+      console.log("Kyle Chat: current_date:", currentDateUTC);
 
       // Chama a NOVA edge function de CHAT
       const { data, error: invokeError } = await supabase.functions.invoke('kyle-chat-token');
@@ -103,6 +108,7 @@ export const useKyleChatElevenLabs = (options: UseKyleChatElevenLabsOptions) => 
         dynamicVariables: {
           wizard_id: wizardId,
           timezone: userTimezone,
+          current_date: currentDateUTC,
         },
       });
 

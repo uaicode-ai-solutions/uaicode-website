@@ -483,33 +483,33 @@ export type Database = {
       }
       tb_web_appointment: {
         Row: {
-          appointmentDate: string | null
-          appointmentId: string | null
-          appointmentNotes: string | null
-          appointmentType: string | null
-          appointmentUid: string | null
           created_at: string
           email: string | null
+          eventDate: string | null
+          eventId: string | null
+          eventNotes: string | null
+          eventType: string | null
+          eventUid: string | null
           id: number
         }
         Insert: {
-          appointmentDate?: string | null
-          appointmentId?: string | null
-          appointmentNotes?: string | null
-          appointmentType?: string | null
-          appointmentUid?: string | null
           created_at?: string
           email?: string | null
+          eventDate?: string | null
+          eventId?: string | null
+          eventNotes?: string | null
+          eventType?: string | null
+          eventUid?: string | null
           id?: number
         }
         Update: {
-          appointmentDate?: string | null
-          appointmentId?: string | null
-          appointmentNotes?: string | null
-          appointmentType?: string | null
-          appointmentUid?: string | null
           created_at?: string
           email?: string | null
+          eventDate?: string | null
+          eventId?: string | null
+          eventNotes?: string | null
+          eventType?: string | null
+          eventUid?: string | null
           id?: number
         }
         Relationships: []
