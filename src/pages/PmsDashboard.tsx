@@ -57,6 +57,7 @@ import ComparableSuccessesSection from "@/components/planningmysaas/dashboard/se
 import ExecutionPlanSection from "@/components/planningmysaas/dashboard/sections/ExecutionPlanSection";
 import WhyUaicodeSection from "@/components/planningmysaas/dashboard/sections/WhyUaicodeSection";
 import NextStepsSection from "@/components/planningmysaas/dashboard/sections/NextStepsSection";
+import MeetKyleSection from "@/components/planningmysaas/dashboard/sections/MeetKyleSection";
 import ScheduleCallSection from "@/components/planningmysaas/dashboard/sections/ScheduleCallSection";
 import BrandAssetsTab from "@/components/planningmysaas/dashboard/sections/BrandAssetsTab";
 import MarketingAnalysisTab from "@/components/planningmysaas/dashboard/sections/MarketingAnalysisTab";
@@ -566,6 +567,7 @@ const PmsDashboardContent = () => {
             {activeTab === "nextsteps" && (
               <div className="space-y-16">
                 <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
+                <MeetKyleSection wizardId={wizardId} />
                 <ScheduleCallSection projectName={projectName} />
               </div>
             )}

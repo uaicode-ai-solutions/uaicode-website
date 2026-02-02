@@ -5,9 +5,6 @@ import {
   Package, 
   ArrowRight, 
   Download,
-  Mail,
-  MessageCircle,
-  Phone,
   CheckCircle2,
   DollarSign,
   Sparkles,
@@ -17,8 +14,7 @@ import {
   Star,
   Zap,
   CreditCard,
-  HandCoins,
-  MessageSquare
+  HandCoins
 } from "lucide-react";
 
 // Founder avatars
@@ -35,10 +31,6 @@ import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
 import { NextSteps, ExecutionPhase, HeroScoreSection, safeNumber } from "@/types/report";
 import { useState, useEffect } from "react";
-import KyleConsultantDialog from "../KyleConsultantDialog";
-import KyleChatDialog from "../KyleChatDialog";
-import KyleAvatar from "@/components/chat/KyleAvatar";
-import EmailKyleDialog from "../EmailKyleDialog";
 import { getSectionInvestment, getDiscountStrategy, getDiscountSavings } from "@/lib/sectionInvestmentUtils";
 import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
 
@@ -142,11 +134,7 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
     "...";
   const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
   
-  
-  const [kyleDialogOpen, setKyleDialogOpen] = useState(false);
-  const [kyleChatDialogOpen, setKyleChatDialogOpen] = useState(false);
-  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
-  const [selectedConsultPackage, setSelectedConsultPackage] = useState<string>('');
+
   const { hours, minutes, seconds } = useCountdownTimer();
 
   // Calculate total weeks from timeline
@@ -725,116 +713,6 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
         </p>
       </div>
 
-      {/* Have a Question? Kyle Contact Row */}
-      <div className="mt-6 space-y-4">
-        {/* CTA Header */}
-        <div className="text-center">
-          <p className="text-sm font-medium text-foreground">
-            Have a question? Get instant answers with Kyle
-          </p>
-        </div>
-        
-        {/* Kyle Contact Buttons - 3 cards grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Email Kyle Card */}
-          <Card 
-            onClick={() => setEmailDialogOpen(true)}
-            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
-          >
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="relative">
-                <KyleAvatar size="sm" isActive={true} />
-                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
-                  <Mail className="h-3 w-3 text-black" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-foreground">Email Kyle</p>
-                  <span className="flex items-center gap-1 text-xs text-amber-400 font-medium">
-                    <Clock className="h-3 w-3" />
-                    24h reply
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">Get a detailed response</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Chat with Kyle Card */}
-          <Card 
-            onClick={() => setKyleChatDialogOpen(true)}
-            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
-          >
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="relative">
-                <KyleAvatar size="sm" isActive={true} />
-                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
-                  <MessageSquare className="h-3 w-3 text-black" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-foreground">Chat with Kyle</p>
-                  <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    Online
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">AI Sales Consultant</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Call Kyle Card */}
-          <Card 
-            onClick={() => setKyleDialogOpen(true)}
-            className="cursor-pointer glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift"
-          >
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="relative">
-                <KyleAvatar size="sm" isActive={true} />
-                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 shadow-lg border-2 border-background">
-                  <Phone className="h-3 w-3 text-black" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-foreground">Call Kyle</p>
-                  <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    Available
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">24/7 Voice Support</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Kyle Consultant Dialog */}
-      <KyleConsultantDialog 
-        open={kyleDialogOpen} 
-        onOpenChange={setKyleDialogOpen}
-        packageName={selectedConsultPackage}
-        wizardId={wizardId}
-      />
-      <KyleChatDialog 
-        open={kyleChatDialogOpen} 
-        onOpenChange={setKyleChatDialogOpen}
-        wizardId={wizardId}
-      />
-      <EmailKyleDialog 
-        open={emailDialogOpen} 
-        onOpenChange={setEmailDialogOpen}
-      />
     </section>
   );
 };
