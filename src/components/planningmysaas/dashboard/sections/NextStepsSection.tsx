@@ -319,12 +319,12 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-foreground">Lock In Your Discount</h2>
+            <h2 className="text-2xl font-bold text-foreground">Choose Your Package</h2>
             <InfoTooltip side="right" size="sm">
               Limited-time offers to help you save on your MVP development.
             </InfoTooltip>
           </div>
-          <p className="text-sm text-muted-foreground">Limited time offers available</p>
+          <p className="text-sm text-muted-foreground">Limited-time discounts on all packages</p>
         </div>
       </div>
 
