@@ -231,19 +231,19 @@ O `SharedReportContent.tsx` também será atualizado para usar a estrutura fixa,
 
 ## Checklist de Implementacao
 
-1. [ ] Simplificar interface `BusinessPlanSection` em `types/report.ts`
-2. [ ] Criar pasta `src/components/planningmysaas/dashboard/businessplan/`
-3. [ ] Criar componente `ExecutiveSnapshotCard` (grid 4x3 de KPIs)
-4. [ ] Criar componente `ExecutiveNarrativeCard` (texto AI)
-5. [ ] Criar componente `MarketAnalysisCard` (TAM/SAM/SOM + chart)
-6. [ ] Criar componente `CompetitiveLandscapeCard` (wrapper)
-7. [ ] Criar componente `TargetCustomerCard` (wrapper ICP)
-8. [ ] Criar componente `BusinessModelCard` (pricing tiers)
-9. [ ] Criar componente `FinancialProjectionsCard` (J-Curve)
-10. [ ] Criar componente `InvestmentAskCard` (breakdown)
-11. [ ] Criar componente `StrategicVerdictCard` (verdict + recommendations)
-12. [ ] Reescrever `BusinessPlanTab.tsx` para usar novos componentes
-13. [ ] Atualizar `SharedReportContent.tsx` para mesma estrutura
+1. [x] Simplificar interface `BusinessPlanSection` em `types/report.ts`
+2. [x] Criar pasta `src/components/planningmysaas/dashboard/businessplan/`
+3. [x] Criar componente `ExecutiveSnapshotCard` (grid 4x3 de KPIs)
+4. [x] Criar componente `ExecutiveNarrativeCard` (texto AI)
+5. [x] Criar componente `MarketAnalysisCard` (TAM/SAM/SOM + chart)
+6. [x] Criar componente `CompetitiveLandscapeCard` (wrapper)
+7. [x] Criar componente `TargetCustomerCard` (wrapper ICP)
+8. [x] Criar componente `BusinessModelCard` (pricing tiers)
+9. [x] Criar componente `FinancialProjectionsCard` (J-Curve)
+10. [x] Criar componente `InvestmentAskCard` (breakdown)
+11. [x] Criar componente `StrategicVerdictCard` (verdict + recommendations)
+12. [x] Reescrever `BusinessPlanTab.tsx` para usar novos componentes
+13. [x] Atualizar `SharedReportContent.tsx` para mesma estrutura
 14. [ ] Atualizar `businessPlanPdfExport.ts` para nova estrutura
 15. [ ] Atualizar prompt da IA no n8n (simplificado)
 16. [ ] Testar com wizard_id existente

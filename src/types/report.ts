@@ -1707,15 +1707,37 @@ export interface BusinessPlanChartsData {
   }>;
 }
 
+/**
+ * BusinessPlanSection - Simplified AI-generated narratives only
+ * All data (TAM/SAM, KPIs, competitors, etc.) comes from other JSONB columns
+ * The AI only generates ~400 tokens of strategic narrative
+ */
 export interface BusinessPlanSection {
-  title: string;
-  subtitle: string;
+  // Metadata
   generated_at: string;
   viability_score: number;
   viability_label: string;
-  markdown_content: string;
-  charts_data: BusinessPlanChartsData;
-  word_count: number;
+  
+  // AI-generated narratives only (~400 tokens total)
+  ai_executive_narrative: string;    // ~150 words - compelling overview
+  ai_strategic_verdict: string;      // ~100 words - Go/No-Go recommendation
+  ai_key_recommendations: string[];  // 3-5 actionable next steps
+  
+  // Optional: AI-generated one-liners for each section
+  ai_section_insights?: {
+    market_insight?: string;      // 1 sentence about the market
+    competition_insight?: string; // 1 sentence about competition
+    customer_insight?: string;    // 1 sentence about ICP
+    financial_insight?: string;   // 1 sentence about financials
+  };
+  
+  // Legacy fields for backwards compatibility with existing data
+  // These will be ignored in the new structured UI
+  title?: string;
+  subtitle?: string;
+  markdown_content?: string;
+  charts_data?: BusinessPlanChartsData;
+  word_count?: number;
 }
 
 // ==========================================

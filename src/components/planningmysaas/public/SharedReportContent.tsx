@@ -1,18 +1,32 @@
 import React from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, Calendar, Hash } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  TrendingUp, 
+  Calendar, 
+  Hash, 
+  Globe,
+  Target,
+  Crosshair,
+  DollarSign,
+  Scale,
+  Clock,
+  CheckCircle2,
+  Wallet,
+  BadgePercent,
+  BarChart3,
+  FileText,
+  ArrowRight,
+} from "lucide-react";
 import { BusinessPlanSection } from "@/types/report";
-import { SharedChartRenderer } from "./SharedReportCharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 // ==========================================
 // Viability Score Badge Styling
@@ -35,80 +49,7 @@ const getViabilityStyle = (score: number) => {
   };
 };
 
-// ==========================================
-// Custom Markdown Components (Isolated copy)
-// ==========================================
-const markdownComponents = {
-  h1: ({ children }: { children?: React.ReactNode }) => (
-    <h1 className="text-3xl font-bold text-gradient-gold mt-8 mb-4">{children}</h1>
-  ),
-  h2: ({ children }: { children?: React.ReactNode }) => (
-    <h2 className="text-2xl font-bold text-foreground border-b border-accent/20 pb-2 mt-8 mb-4">{children}</h2>
-  ),
-  h3: ({ children }: { children?: React.ReactNode }) => (
-    <h3 className="text-xl font-semibold text-foreground mt-6 mb-3">{children}</h3>
-  ),
-  h4: ({ children }: { children?: React.ReactNode }) => (
-    <h4 className="text-lg font-medium text-foreground mt-4 mb-2">{children}</h4>
-  ),
-  p: ({ children }: { children?: React.ReactNode }) => (
-    <p className="text-muted-foreground leading-relaxed mb-4">{children}</p>
-  ),
-  ul: ({ children }: { children?: React.ReactNode }) => (
-    <ul className="list-disc list-inside space-y-2 mb-4 text-muted-foreground">{children}</ul>
-  ),
-  ol: ({ children }: { children?: React.ReactNode }) => (
-    <ol className="list-decimal list-inside space-y-2 mb-4 text-muted-foreground">{children}</ol>
-  ),
-  li: ({ children }: { children?: React.ReactNode }) => (
-    <li className="ml-2">{children}</li>
-  ),
-  blockquote: ({ children }: { children?: React.ReactNode }) => (
-    <div className="p-4 rounded-xl bg-accent/10 border-l-4 border-accent my-4">
-      {children}
-    </div>
-  ),
-  code: ({ children, className }: { children?: React.ReactNode; className?: string }) => {
-    const isInline = !className;
-    if (isInline) {
-      return <code className="bg-muted/50 px-1.5 py-0.5 rounded text-sm">{children}</code>;
-    }
-    return (
-      <pre className="bg-muted/30 p-4 rounded-lg overflow-x-auto mb-4">
-        <code className="text-sm">{children}</code>
-      </pre>
-    );
-  },
-  table: ({ children }: { children?: React.ReactNode }) => (
-    <div className="my-6 overflow-hidden rounded-lg border border-accent/20">
-      <Table>{children}</Table>
-    </div>
-  ),
-  thead: ({ children }: { children?: React.ReactNode }) => (
-    <TableHeader className="bg-accent/10">{children}</TableHeader>
-  ),
-  tbody: ({ children }: { children?: React.ReactNode }) => (
-    <TableBody>{children}</TableBody>
-  ),
-  tr: ({ children }: { children?: React.ReactNode }) => (
-    <TableRow className="border-accent/10">{children}</TableRow>
-  ),
-  th: ({ children }: { children?: React.ReactNode }) => (
-    <TableHead className="text-accent font-semibold">{children}</TableHead>
-  ),
-  td: ({ children }: { children?: React.ReactNode }) => (
-    <TableCell className="text-muted-foreground">{children}</TableCell>
-  ),
-  strong: ({ children }: { children?: React.ReactNode }) => (
-    <strong className="font-semibold text-foreground">{children}</strong>
-  ),
-  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
-    <a href={href} className="text-accent hover:underline" target="_blank" rel="noopener noreferrer">
-      {children}
-    </a>
-  ),
-  hr: () => <hr className="my-8 border-accent/20" />,
-};
+const CHART_COLORS = ["#F59E0B", "#D97706", "#B45309"];
 
 // ==========================================
 // Main SharedReportContent Component
@@ -119,37 +60,39 @@ interface SharedReportContentProps {
 
 const SharedReportContent = ({ businessPlan }: SharedReportContentProps) => {
   const viabilityStyle = getViabilityStyle(businessPlan.viability_score || 0);
+  
+  // Extract AI-generated content
+  const narrative = businessPlan.ai_executive_narrative;
+  const verdict = businessPlan.ai_strategic_verdict;
+  const recommendations = businessPlan.ai_key_recommendations || [];
+  const insights = businessPlan.ai_section_insights;
+  
+  // Check if we have the new structured format
+  const hasStructuredContent = narrative || verdict;
 
-  // Split markdown by chart placeholders and render inline charts
-  const renderContentWithCharts = () => {
-    const markdown = businessPlan.markdown_content || "";
-    const chartsData = businessPlan.charts_data || {};
-    
-    // Split by [CHART:xxx] pattern
-    const parts = markdown.split(/(\[CHART:\w+\])/g);
-    
-    return parts.map((part, index) => {
-      const chartMatch = part.match(/\[CHART:(\w+)\]/);
-      if (chartMatch) {
-        const chartType = chartMatch[1];
-        return <SharedChartRenderer key={index} type={chartType} data={chartsData} />;
-      }
-      // Regular markdown content
-      return (
-        <ReactMarkdown 
-          key={index} 
-          remarkPlugins={[remarkGfm]}
-          components={markdownComponents}
-        >
-          {part}
-        </ReactMarkdown>
-      );
-    });
+  // For legacy support, extract chart data if available
+  const chartsData = businessPlan.charts_data;
+  const marketSizing = chartsData?.market_sizing;
+  
+  // Parse chart data for visualization
+  const parseValue = (val: string | undefined): number => {
+    if (!val) return 0;
+    const num = parseFloat(val.replace(/[^0-9.]/g, ""));
+    if (val.toLowerCase().includes("b")) return num * 1000;
+    if (val.toLowerCase().includes("m")) return num;
+    if (val.toLowerCase().includes("k")) return num / 1000;
+    return num;
   };
+
+  const marketChartData = marketSizing ? [
+    { name: "TAM", value: parseValue(marketSizing.tam), label: marketSizing.tam },
+    { name: "SAM", value: parseValue(marketSizing.sam), label: marketSizing.sam },
+    { name: "SOM", value: parseValue(marketSizing.som), label: marketSizing.som },
+  ].filter(d => d.value > 0) : [];
 
   return (
     <div className="space-y-8">
-      {/* Header Card */}
+      {/* Header Card with Viability Score */}
       <Card className="glass-card border-accent/20 overflow-hidden">
         <div className="bg-gradient-to-r from-accent/20 to-accent/5 border-b border-accent/20 p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -164,12 +107,14 @@ const SharedReportContent = ({ businessPlan }: SharedReportContentProps) => {
             </div>
 
             {/* Viability Score Badge */}
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${viabilityStyle.bg} ${viabilityStyle.border}`}>
+            <Badge 
+              className={`inline-flex items-center gap-2 px-4 py-2 ${viabilityStyle.bg} ${viabilityStyle.border} border`}
+            >
               <TrendingUp className={`h-5 w-5 ${viabilityStyle.text}`} />
               <span className={`font-semibold ${viabilityStyle.text}`}>
                 {businessPlan.viability_label || "Score"}: {businessPlan.viability_score || 0}/100
               </span>
-            </div>
+            </Badge>
           </div>
 
           {/* Metadata */}
@@ -190,12 +135,145 @@ const SharedReportContent = ({ businessPlan }: SharedReportContentProps) => {
         </div>
       </Card>
 
-      {/* Markdown Content with Charts */}
-      <Card className="glass-card border-accent/20">
-        <CardContent className="p-6 md:p-8 prose prose-invert max-w-none">
-          {renderContentWithCharts()}
-        </CardContent>
-      </Card>
+      {/* Executive Narrative (AI Generated) */}
+      {narrative && (
+        <Card className="glass-card border-accent/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FileText className="h-5 w-5 text-accent" />
+              Executive Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground leading-relaxed">{narrative}</p>
+            {insights?.market_insight && (
+              <div className="mt-4 p-4 rounded-lg bg-accent/10 border-l-4 border-accent">
+                <p className="text-sm text-foreground italic">"{insights.market_insight}"</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Market Sizing Chart (if available) */}
+      {marketChartData.length > 0 && (
+        <Card className="glass-card border-accent/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-accent" />
+              Market Opportunity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Market Size Cards */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/10 border border-border/20">
+                  <Globe className="h-5 w-5 text-accent shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">TAM</p>
+                    <p className="text-xl font-bold text-foreground">{marketSizing?.tam}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/10 border border-border/20">
+                  <Target className="h-5 w-5 text-accent shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">SAM</p>
+                    <p className="text-xl font-bold text-foreground">{marketSizing?.sam}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/10 border border-border/20">
+                  <Crosshair className="h-5 w-5 text-accent shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">SOM</p>
+                    <p className="text-xl font-bold text-foreground">{marketSizing?.som}</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Chart */}
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={marketChartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {marketChartData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--accent) / 0.3)",
+                        borderRadius: "0.5rem",
+                      }}
+                      formatter={(_, name, props) => [props.payload.label, name]}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Strategic Verdict (AI Generated) */}
+      {verdict && (
+        <Card className={`glass-card ${viabilityStyle.border} border-2`}>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Target className={`h-5 w-5 ${viabilityStyle.text}`} />
+              Strategic Verdict
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className={`p-5 rounded-lg ${viabilityStyle.bg} border ${viabilityStyle.border}`}>
+              <p className="text-foreground leading-relaxed">{verdict}</p>
+            </div>
+            
+            {recommendations.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <ArrowRight className="h-4 w-4 text-accent" />
+                  Next Steps
+                </h4>
+                <div className="space-y-2">
+                  {recommendations.map((rec, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-3 rounded-lg bg-muted/10 border border-border/20"
+                    >
+                      <div className="h-6 w-6 rounded-full bg-accent/20 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-accent">{index + 1}</span>
+                      </div>
+                      <p className="text-sm text-foreground">{rec}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Legacy Markdown Support */}
+      {!hasStructuredContent && businessPlan.markdown_content && (
+        <Card className="glass-card border-accent/20">
+          <CardContent className="p-6 md:p-8 prose prose-invert max-w-none">
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {businessPlan.markdown_content}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
