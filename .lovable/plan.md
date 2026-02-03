@@ -1,119 +1,97 @@
 
-
-# Plano: Adicionar Linha de Valor Comparativo com InfoTooltip
+# Plano: Atualizar FAQ do PlanningMySaas
 
 ## Objetivo
 
-Adicionar a linha **"Worth $10,000+ in traditional consulting"** na seção de pricing, com um InfoTooltip que mostra as fontes de pesquisa quando o usuário passa o mouse.
+Atualizar as perguntas e respostas do FAQ para refletir exatamente o que o produto oferece hoje, removendo referências a features que não existem mais (logos, mockups, brand assets) e ajustando para o modelo gratuito.
 
 ---
 
-## Localização no Card
+## Problemas Atuais no FAQ
 
-A linha será adicionada logo abaixo do preço "Free", antes do separador:
+| # | FAQ Atual | Problema |
+|---|-----------|----------|
+| 1 | "Complex analyses for the Enterprise tier may take up to 15 minutes" | **Não existe mais Enterprise tier** - o produto é 100% free |
+| 3 | "Can I edit the logo and colors after generation?" | **Não geramos mais logos** - brand assets foram removidos |
+| 4 | "Can I use the assets commercially?" | **Não geramos mais assets** - logos, mockups não existem |
+| 6 | "Each purchase validates one idea" | **Não há mais purchase** - o produto é gratuito |
 
-```text
-                   Free
-        Start validating your idea today
-        
-   Worth $10,000+ in traditional consulting ⓘ
-           Yours free
-```
+---
+
+## Novas FAQs Propostas
+
+Baseado no que o app realmente oferece (3 tabs: Report, My Plan, Next Steps):
+
+| # | Pergunta | Resposta |
+|---|----------|----------|
+| 1 | **How long does it take to generate my report?** | Most reports are generated within 5 minutes. Our AI analyzes your idea in real-time, compiling comprehensive market insights, financial projections, and a complete business plan. |
+| 2 | **What's included in my validation report?** | You receive a complete package: viability score (0-100), market size analysis (TAM/SAM/SOM), competitor intelligence, customer pain points, risk assessment, financial projections, and a full AI-generated business plan. |
+| 3 | **Where does the market data come from?** | We aggregate data from multiple reliable sources including industry reports, public databases, and real-time market trends. Our AI cross-references this data to provide accurate, up-to-date insights. |
+| 4 | **Is my idea kept confidential?** | Absolutely. Your idea and all submitted information are encrypted and never shared. We take confidentiality seriously and have strict data protection policies in place. |
+| 5 | **Can I share my report with investors or partners?** | Yes! Each report includes a shareable public link that you can send to investors, co-founders, or advisors. You can also export your business plan as a PDF. |
+| 6 | **Can I validate multiple ideas?** | Yes, you can create unlimited reports — it's completely free. Each idea gets its own dedicated dashboard with full analysis. |
+| 7 | **Who is Kyle and how can he help me?** | Kyle is your AI business consultant available in the "Next Steps" tab. He can answer questions about your report, explain metrics, and provide strategic advice based on your specific analysis. |
+| 8 | **Is PlanningMySaas really free?** | Yes, 100% free with no hidden costs. You get the same comprehensive validation that traditional consulting firms charge $10,000+ for — viability analysis, business plan, financials, and AI consultant access. |
 
 ---
 
 ## Alterações Técnicas
 
-### Arquivo: `src/components/planningmysaas/PmsPricing.tsx`
+### Arquivo: `src/components/planningmysaas/PmsFaq.tsx`
 
-**1. Adicionar Import**
+Substituir o array `faqs` (linhas 10-35) pelo novo conteúdo:
+
 ```typescript
-import { InfoTooltip } from "@/components/ui/info-tooltip";
-```
-
-**2. Atualizar Seção de Preço (linhas 91-99)**
-
-De:
-```tsx
-<div className="text-center mb-10 pt-4">
-  <div className="flex items-baseline justify-center gap-3 mb-3">
-    <span className="text-6xl md:text-7xl font-bold text-gradient-gold">
-      Free
-    </span>
-  </div>
-  <p className="text-lg text-muted-foreground">
-    Start validating your idea today
-  </p>
-</div>
-```
-
-Para:
-```tsx
-<div className="text-center mb-10 pt-4">
-  <div className="flex items-baseline justify-center gap-3 mb-3">
-    <span className="text-6xl md:text-7xl font-bold text-gradient-gold">
-      Free
-    </span>
-  </div>
-  <p className="text-lg text-muted-foreground mb-3">
-    Start validating your idea today
-  </p>
-  <div className="flex items-center justify-center gap-1 text-sm">
-    <span className="text-muted-foreground">Worth</span>
-    <span className="font-semibold text-foreground">$10,000+</span>
-    <span className="text-muted-foreground">in traditional consulting</span>
-    <InfoTooltip term="How we calculated this" side="bottom">
-      Based on market research from professional business plan services.
-      Growthink and Wise Business Plans charge $1,500-$15,000 for investor-ready plans.
-      MBA-level validation packages range $15,000-$50,000+.
-      Our estimate reflects the combined value of market validation, 
-      financial projections, and strategic analysis.
-    </InfoTooltip>
-  </div>
-  <p className="text-sm font-medium text-accent mt-1">
-    Yours free
-  </p>
-</div>
+const faqs = [
+  {
+    question: "How long does it take to generate my report?",
+    answer: "Most reports are generated within 5 minutes. Our AI analyzes your idea in real-time, compiling comprehensive market insights, financial projections, and a complete business plan.",
+  },
+  {
+    question: "What's included in my validation report?",
+    answer: "You receive a complete package: viability score (0-100), market size analysis (TAM/SAM/SOM), competitor intelligence, customer pain points, risk assessment, financial projections, and a full AI-generated business plan.",
+  },
+  {
+    question: "Where does the market data come from?",
+    answer: "We aggregate data from multiple reliable sources including industry reports, public databases, and real-time market trends. Our AI cross-references this data to provide accurate, up-to-date insights.",
+  },
+  {
+    question: "Is my idea kept confidential?",
+    answer: "Absolutely. Your idea and all submitted information are encrypted and never shared. We take confidentiality seriously and have strict data protection policies in place.",
+  },
+  {
+    question: "Can I share my report with investors or partners?",
+    answer: "Yes! Each report includes a shareable public link that you can send to investors, co-founders, or advisors. You can also export your business plan as a PDF.",
+  },
+  {
+    question: "Can I validate multiple ideas?",
+    answer: "Yes, you can create unlimited reports — it's completely free. Each idea gets its own dedicated dashboard with full analysis.",
+  },
+  {
+    question: "Who is Kyle and how can he help me?",
+    answer: "Kyle is your AI business consultant available in the \"Next Steps\" tab. He can answer questions about your report, explain metrics, and provide strategic advice based on your specific analysis.",
+  },
+  {
+    question: "Is PlanningMySaas really free?",
+    answer: "Yes, 100% free with no hidden costs. You get the same comprehensive validation that traditional consulting firms charge $10,000+ for — viability analysis, business plan, financials, and AI consultant access.",
+  },
+];
 ```
 
 ---
 
-## Preview Visual
+## Comparativo: Antes vs Depois
 
-```text
-┌─────────────────────────────────────────────────────┐
-│              [✨ 100% FREE]                         │
-│                                                     │
-│                   Free                              │
-│        Start validating your idea today             │
-│                                                     │
-│   Worth $10,000+ in traditional consulting ⓘ       │
-│              Yours free                             │
-│                                                     │
-├─────────────────────────────────────────────────────┤
-```
-
----
-
-## Conteúdo do Tooltip (ao passar o mouse)
-
-```text
-┌──────────────────────────────────────────┐
-│ How we calculated this                   │
-├──────────────────────────────────────────┤
-│ Based on market research from            │
-│ professional business plan services.     │
-│                                          │
-│ Growthink and Wise Business Plans        │
-│ charge $1,500-$15,000 for investor-      │
-│ ready plans. MBA-level validation        │
-│ packages range $15,000-$50,000+.         │
-│                                          │
-│ Our estimate reflects the combined       │
-│ value of market validation, financial    │
-│ projections, and strategic analysis.     │
-└──────────────────────────────────────────┘
-```
+| Aspecto | Antes | Depois |
+|---------|-------|--------|
+| **Quantidade de FAQs** | 6 | 8 |
+| **Referência a logos/assets** | ❌ Sim (incorreto) | ✅ Removido |
+| **Referência a payment/purchase** | ❌ Sim (incorreto) | ✅ Removido |
+| **Referência a Enterprise tier** | ❌ Sim (incorreto) | ✅ Removido |
+| **Menciona Kyle AI** | ❌ Não | ✅ Sim |
+| **Menciona share/PDF export** | ❌ Não | ✅ Sim |
+| **Destaca que é FREE** | ❌ Não | ✅ Sim |
+| **Precisão** | ~50% | 100% |
 
 ---
 
@@ -121,15 +99,4 @@ Para:
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/planningmysaas/PmsPricing.tsx` | Adicionar import + linha de valor com InfoTooltip |
-
----
-
-## Impacto
-
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| **Proposta de Valor** | Apenas "Free" | Free + valor comparativo $10,000+ |
-| **Credibilidade** | Sem referência | Fontes no tooltip |
-| **Conversão** | Boa | Melhor (percepção de valor) |
-
+| `src/components/planningmysaas/PmsFaq.tsx` | Substituir array `faqs` (linhas 10-35) |
