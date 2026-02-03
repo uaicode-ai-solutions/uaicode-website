@@ -1,193 +1,204 @@
 
+# Plano: Atualizar Pricing para Free + Features Reais
 
-# Plano: Atualizar Sample Report para Refletir o Produto Real
+## Objetivo
 
-## Análise do Produto Atual
-
-### Estrutura Real do Dashboard (3 tabs)
-
-| Tab | Nome | Conteúdo |
-|-----|------|----------|
-| **Report** | Viability Report | 15 seções de análise completa |
-| **My Plan** | Business Plan | Documento markdown + gráficos interativos |
-| **Next Steps** | Próximos Passos | Agendamento + Kyle AI + CTAs |
-
-### Seções do Report Tab (em ordem)
-1. Executive Summary (Verdict + Score)
-2. Market Opportunity (TAM/SAM/SOM)
-3. Demand Signals
-4. Market Timing
-5. Customer Pain Points
-6. Macro Trends
-7. Risk Factors
-8. Competitors & Differentiation
-9. Marketing Intelligence
-10. Investment Required
-11. Financial Return (J-Curve)
-12. Growth Potential
-13. Comparable Successes
-14. Execution Plan
-15. Why Uaicode
-
-### Tabs REMOVIDOS (v1.0)
-- ❌ Marketing (hidden)
-- ❌ Branding/Assets (hidden)
+Alterar a seção de pricing do PlanningMySaas para mostrar **Free** em vez de $199 e ajustar as features listadas para refletir exatamente o que o produto oferece hoje.
 
 ---
 
-## Problema Atual do Sample Report
+## Situação Atual (Incorreta)
 
-O componente `PmsSampleReport.tsx` mostra:
-- ❌ Tab "Brand Assets" (não existe mais)
-- ❌ Tab "Competitors" separado (está no Report)
-- ❌ Métricas genéricas que não refletem o relatório real
-- ❌ Não menciona o Business Plan
+```
+Preço: $499 riscado → $199
+Features listadas:
+- Brand Assets (Complete Brand Manual, AI-Generated Logo, Product Mockups) ← NÃO EXISTE MAIS
+- Marketing Intelligence, Go-to-Market Plan, Landing Page Blueprint ← PARCIALMENTE
+- Target Audience (ICP), PDF Export, Priority Support ← PARCIALMENTE
+```
+
+---
+
+## Estrutura Real do Produto (3 Tabs)
+
+| Tab | Conteúdo Real |
+|-----|---------------|
+| **Report** | 15 seções de análise de viabilidade |
+| **My Plan** | Business Plan AI-generated (markdown + charts) |
+| **Next Steps** | Kyle AI, Schedule Call, Discounts |
 
 ---
 
 ## Nova Estrutura Proposta
 
-### 3 Tabs Reais
+### Preço
+- Remover preço riscado ($499)
+- Mostrar: **Free**
+- Subtítulo: "Start validating your idea today"
 
-| Tab | Label | Ícone | Preview |
-|-----|-------|-------|---------|
-| **report** | Viability Report | FileText | Key metrics do relatório |
-| **businessplan** | Business Plan | Briefcase | Preview do documento AI |
-| **nextsteps** | Next Steps | Rocket | CTAs e benefícios |
+### Badge
+- De: "ALL-INCLUSIVE"
+- Para: **"100% FREE"** (mais impactante para conversão)
 
-### Conteúdo por Tab
+### 4 Categorias de Features Reais
 
-#### Tab 1: Viability Report
-Métricas que realmente existem no dashboard:
-- **Viability Score** (score ring, 0-100)
-- **Market Opportunity** (TAM size)
-- **Competition Level** (badge)
-- **Market Timing** (percentage)
-- **Investment Required** (currency)
-- **ROI Projection** (percentage)
-
-#### Tab 2: Business Plan
-Preview do documento AI-generated:
-- **Word Count** (ex: "8,500+ words")
-- **Sections** (ex: "10 sections")
-- **Charts Included** (ex: "5 interactive")
-- **Export Options** (PDF, Share Link)
-- Blurred preview de markdown content
-
-#### Tab 3: Next Steps
-O que o usuário ganha:
-- **AI Consultant** (Kyle chat disponível)
-- **Schedule Call** (link Cal.com)
-- **Exclusive Discount** (oferta para MVP)
-- **Share Report** (link público)
+| Categoria | Ícone | Features (o que realmente existe) |
+|-----------|-------|-----------------------------------|
+| **Validation** | ChartBar | Viability Score (0-100), Market Size (TAM/SAM/SOM), Competition Analysis |
+| **Business Plan** | Briefcase | AI-Generated Document, Financial Projections, Investment Breakdown |
+| **Intelligence** | Target | Customer Pain Points, Market Timing, Risk Factors |
+| **Extras** | Zap | Kyle AI Consultant, Shareable Link, PDF Export |
 
 ---
 
-## Alterações Técnicas
+## Código: Antes vs Depois
 
-### Arquivo: `src/components/planningmysaas/PmsSampleReport.tsx`
-
-**Mudanças:**
-1. Atualizar array `tabs` para refletir estrutura real
-2. Atualizar `tabContent` com métricas do dashboard real
-3. Substituir Brand Assets por Business Plan preview
-4. Adicionar tab Next Steps com CTAs
-5. Manter componentes auxiliares (ScoreRing, MetricCard, etc.)
-
----
-
-## Nova Estrutura de Código
-
-```text
-tabs = [
-  { id: "report", label: "Viability Report", icon: FileText },
-  { id: "businessplan", label: "Business Plan", icon: Briefcase },
-  { id: "nextsteps", label: "Next Steps", icon: Rocket },
-]
-
-tabContent = {
-  report: {
-    title: "Viability Analysis",
-    metrics: [
-      { label: "Viability Score", value: 87, type: "score" },
-      { label: "Market Size (TAM)", value: "$4.2B", type: "text" },
-      { label: "Competition", value: "Moderate", type: "badge" },
-      { label: "Market Timing", value: 92, type: "percentage" },
-      { label: "Investment Required", value: "$15,000", type: "text" },
-      { label: "Projected ROI Y1", value: 180, type: "percentage" },
-    ]
+### featureCategories (Antes)
+```typescript
+const featureCategories = [
+  {
+    icon: ChartBar,
+    title: "Validation",
+    features: ["Market Validation Report", "Competitor Analysis", "Financial Projections"],
   },
-  businessplan: {
-    title: "AI-Generated Business Plan",
-    // Layout especial com preview
+  {
+    icon: Palette,          // ← REMOVER (não existe mais)
+    title: "Brand Assets",  // ← REMOVER
+    features: ["Complete Brand Manual", "AI-Generated Logo", "Product Mockups"], // ← REMOVER
   },
-  nextsteps: {
-    title: "What's Included",
-    // Layout com benefícios
-  }
-}
+  {
+    icon: Target,
+    title: "Strategy",
+    features: ["Marketing Intelligence", "Go-to-Market Plan", "Landing Page Blueprint"],
+  },
+  {
+    icon: Zap,
+    title: "Extras",
+    features: ["Target Audience (ICP)", "PDF Export", "Priority Support"],
+  },
+];
+```
+
+### featureCategories (Depois)
+```typescript
+const featureCategories = [
+  {
+    icon: ChartBar,
+    title: "Validation",
+    features: [
+      "Viability Score (0-100)",
+      "Market Size (TAM/SAM/SOM)",
+      "Competition Analysis",
+    ],
+  },
+  {
+    icon: Briefcase,
+    title: "Business Plan",
+    features: [
+      "AI-Generated Document",
+      "Financial Projections",
+      "Investment Breakdown",
+    ],
+  },
+  {
+    icon: Target,
+    title: "Intelligence",
+    features: [
+      "Customer Pain Points",
+      "Market Timing Analysis",
+      "Risk Assessment",
+    ],
+  },
+  {
+    icon: Zap,
+    title: "Extras",
+    features: [
+      "Kyle AI Consultant",
+      "Shareable Public Link",
+      "PDF Export",
+    ],
+  },
+];
 ```
 
 ---
 
-## Preview Visual (Business Plan Tab)
+## Alterações na Seção de Preço
 
-```text
-┌─────────────────────────────────────────┐
-│  📄 AI-Generated Business Plan           │
-├─────────────────────────────────────────┤
-│                                         │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
-│  │ 8,500+  │ │   10    │ │    5    │   │
-│  │  Words  │ │Sections │ │ Charts  │   │
-│  └─────────┘ └─────────┘ └─────────┘   │
-│                                         │
-│  ┌───────────────────────────────────┐  │
-│  │  # Executive Summary              │  │
-│  │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  │
-│  │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  │
-│  │                                   │  │
-│  │  ## Market Analysis               │  │
-│  │  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  │
-│  │  [CHART PREVIEW - blurred]        │  │
-│  └───────────────────────────────────┘  │
-│                                         │
-│  📥 Export to PDF    🔗 Share Link      │
-│                                         │
-└─────────────────────────────────────────┘
+### Antes
+```tsx
+<div className="flex items-baseline justify-center gap-3 mb-3">
+  <span className="text-2xl text-muted-foreground line-through">$499</span>
+  <span className="text-6xl md:text-7xl font-bold text-gradient-gold">$199</span>
+</div>
+<p className="text-lg text-muted-foreground">
+  One-time payment • Lifetime access
+</p>
+```
+
+### Depois
+```tsx
+<div className="flex items-baseline justify-center gap-3 mb-3">
+  <span className="text-6xl md:text-7xl font-bold text-gradient-gold">Free</span>
+</div>
+<p className="text-lg text-muted-foreground">
+  Start validating your idea today
+</p>
 ```
 
 ---
 
-## Preview Visual (Next Steps Tab)
+## Badge
 
-```text
-┌─────────────────────────────────────────┐
-│  🚀 What's Included                      │
-├─────────────────────────────────────────┤
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ 🤖 AI Consultant (Kyle)         │   │
-│  │ Ask questions about your report │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ 📅 Schedule Strategy Call       │   │
-│  │ 30-min call with our founder    │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ 💰 Exclusive MVP Discount       │   │
-│  │ Special pricing for report users │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ 🔗 Shareable Public Link        │   │
-│  │ Share with investors & partners │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-└─────────────────────────────────────────┘
+### Antes
+```tsx
+<Sparkles className="w-4 h-4" />
+ALL-INCLUSIVE
 ```
+
+### Depois
+```tsx
+<Sparkles className="w-4 h-4" />
+100% FREE
+```
+
+---
+
+## Texto de Ajuda (Helper Text)
+
+### Antes
+```
+Takes only 5 minutes to start • No credit card required
+```
+
+### Depois
+```
+Takes only 5 minutes • No credit card required
+```
+
+---
+
+## Importações
+
+### Antes
+```typescript
+import { Check, ArrowRight, Sparkles, ChartBar, Palette, Target, Zap } from "lucide-react";
+```
+
+### Depois
+```typescript
+import { Check, ArrowRight, Sparkles, ChartBar, Briefcase, Target, Zap } from "lucide-react";
+```
+
+(Remover `Palette`, adicionar `Briefcase`)
+
+---
+
+## Arquivo Alterado
+
+| Arquivo | Ação |
+|---------|------|
+| `src/components/planningmysaas/PmsPricing.tsx` | Atualizar preço, badge, features e imports |
 
 ---
 
@@ -195,17 +206,39 @@ tabContent = {
 
 | Aspecto | Antes | Depois |
 |---------|-------|--------|
-| **Tabs** | 4 (com Brand Assets) | 3 (estrutura real) |
-| **Métricas** | Genéricas | Refletem dashboard |
-| **Business Plan** | Não mencionado | Tab dedicado |
-| **Next Steps** | Não mostrado | Destaca benefícios |
-| **Precisão** | ~40% | 100% |
+| **Preço** | $199 (riscado $499) | Free |
+| **Badge** | ALL-INCLUSIVE | 100% FREE |
+| **Features** | 4 categorias (1 inexistente) | 4 categorias (todas reais) |
+| **Precisão** | ~60% | 100% |
 
 ---
 
-## Arquivos Alterados
+## Preview Visual (Nova Seção)
 
-| Arquivo | Ação |
-|---------|------|
-| `src/components/planningmysaas/PmsSampleReport.tsx` | Reescrever tabs e conteúdo |
-
+```
+┌─────────────────────────────────────────────────────┐
+│              [✨ 100% FREE]                         │
+│                                                     │
+│                   Free                              │
+│        Start validating your idea today             │
+│                                                     │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  📊 Validation    │  💼 Business Plan              │
+│  ✓ Viability Score│  ✓ AI-Generated Document       │
+│  ✓ Market Size    │  ✓ Financial Projections       │
+│  ✓ Competition    │  ✓ Investment Breakdown        │
+│                   │                                 │
+│  🎯 Intelligence  │  ⚡ Extras                      │
+│  ✓ Pain Points    │  ✓ Kyle AI Consultant          │
+│  ✓ Market Timing  │  ✓ Shareable Public Link       │
+│  ✓ Risk Assessment│  ✓ PDF Export                  │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐ │
+│  │      [Validate My Idea Now →]                  │ │
+│  └───────────────────────────────────────────────┘ │
+│                                                     │
+│    Takes only 5 minutes • No credit card required   │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
