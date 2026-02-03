@@ -1,4 +1,4 @@
-import { Lightbulb, BarChart3, FileText, Palette, Rocket } from "lucide-react";
+import { Lightbulb, BarChart3, FileText, Rocket } from "lucide-react";
 import stepIdea from "@/assets/pms-step-idea.webp";
 import stepAnalysis from "@/assets/pms-step-analysis.webp";
 import stepReport from "@/assets/pms-step-report.webp";
@@ -37,10 +37,10 @@ const steps: Step[] = [
     image: stepReport,
   },
   {
-    icon: Palette,
+    icon: FileText,
     step: 4,
-    title: "Download Your Brand Kit",
-    description: "Get your logo, colors, mockups, and landing page suggestion — ready to use.",
+    title: "Download Your Launch Plan",
+    description: "Get your complete business plan, financial projections, and go-to-market strategy.",
     image: stepBrand,
   },
   {
