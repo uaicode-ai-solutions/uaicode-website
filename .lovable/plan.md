@@ -1,94 +1,79 @@
 
-# Plano: Corrigir Validação no Dashboard e Verificar Link Compartilhável
+# Plano: Fazer o Link Compartilhável Mostrar Todas as Seções
 
-## Diagnóstico
+## O Problema (Simples)
 
-### Problema 1: PDF Bloqueado no Dashboard
-**Arquivo:** `src/pages/PmsDashboard.tsx` (linha 248)
+O Dashboard busca dados de **7 colunas** do banco.
+O Link Compartilhável busca dados de **1 coluna** apenas.
 
-O código atual ainda verifica `markdown_content`:
-```typescript
-if (!bp || !bp.markdown_content) {  // ❌ BLOQUEIA RELATÓRIOS ESTRUTURADOS
-  setPdfErrorDialog({ ... });
-  return;
-}
-```
-
-Isso impede que a função `generateBusinessPlanPDF` (que já foi corrigida) seja chamada.
-
-### Problema 2: Link Compartilhável no Preview
-O hook `useSharedReport.ts` já foi corrigido para validar campos estruturados, mas:
-- O Preview pode estar com código antigo em cache
-- Precisamos verificar se o deploy está atualizado
+Por isso faltam 6 seções no link compartilhável.
 
 ---
 
-## Solução
+## A Solução (Simples)
 
-### Correção 1: Dashboard - Validação do PDF
-**Arquivo:** `src/pages/PmsDashboard.tsx`
+### Passo 1: Expandir a query do hook
 
-Trocar a validação de `markdown_content` para campos estruturados:
+**Arquivo:** `src/hooks/useSharedReport.ts`
 
+Mudar linha 19 de:
 ```typescript
-// ❌ ANTES (linha 248):
-if (!bp || !bp.markdown_content) {
-
-// ✅ DEPOIS:
-const hasStructuredContent = 
-  bp?.ai_executive_narrative || 
-  bp?.ai_strategic_verdict || 
-  (bp?.ai_key_recommendations && bp.ai_key_recommendations.length > 0);
-
-if (!bp || !hasStructuredContent) {
+.select("business_plan_section, wizard_id")
 ```
 
-### Correção 2: Remover Legado do BusinessPlanTab
-**Arquivo:** `src/components/planningmysaas/dashboard/sections/BusinessPlanTab.tsx`
-
-Remover bloco de fallback para markdown legado (linhas 132-145):
+Para:
 ```typescript
-// ❌ REMOVER: Legacy markdown support que não será mais usado
-{businessPlan?.markdown_content && !businessPlan?.ai_executive_narrative && ( ... )}
+.select(`
+  business_plan_section,
+  opportunity_section,
+  competitive_analysis_section,
+  icp_intelligence_section,
+  price_intelligence_section,
+  growth_intelligence_section,
+  section_investment,
+  wizard_id
+`)
 ```
 
-### Correção 3: Remover Legado do SharedReportContent
+E expandir a interface `SharedReportData` para incluir todas as seções.
+
+---
+
+### Passo 2: Atualizar o componente para usar os mesmos cards do Dashboard
+
 **Arquivo:** `src/components/planningmysaas/public/SharedReportContent.tsx`
 
-Remover bloco de fallback para markdown legado (linhas 266-274):
-```typescript
-// ❌ REMOVER: Legacy Markdown Support que não será mais usado
-{!hasStructuredContent && businessPlan.markdown_content && ( ... )}
-```
+Importar e usar os mesmos componentes que o Dashboard usa:
+- `ExecutiveSnapshotCard`
+- `ExecutiveNarrativeCard`
+- `MarketAnalysisCard`
+- `CompetitiveLandscapeCard`
+- `TargetCustomerCard`
+- `BusinessModelCard`
+- `FinancialProjectionsCard`
+- `InvestmentAskCard`
+- `StrategicVerdictCard`
+
+---
+
+### Passo 3: Passar os dados da página para o componente
+
+**Arquivo:** `src/pages/PmsSharedReport.tsx`
+
+Passar todas as seções como props para `SharedReportContent`.
 
 ---
 
 ## Arquivos a Modificar
 
-| Arquivo | Mudança |
-|---------|---------|
-| `src/pages/PmsDashboard.tsx` | Validação estruturada no `handleExportPDF` |
-| `src/components/planningmysaas/dashboard/sections/BusinessPlanTab.tsx` | Remover fallback markdown |
-| `src/components/planningmysaas/public/SharedReportContent.tsx` | Remover fallback markdown |
+| Arquivo | O que fazer |
+|---------|-------------|
+| `useSharedReport.ts` | Adicionar mais colunas na query |
+| `SharedReportContent.tsx` | Usar os mesmos componentes do Dashboard |
+| `PmsSharedReport.tsx` | Passar as novas props |
 
 ---
 
-## Resultado Esperado
+## Resultado
 
-| Funcionalidade | Antes | Depois |
-|----------------|-------|--------|
-| Export PDF no Dashboard | Popup "Not Available" | Gera PDF com narrativas AI |
-| Link Compartilhável | "Report Not Found" | Mostra Executive Summary, Verdict, Next Steps |
-
----
-
-## Teste End-to-End
-
-1. **Dashboard PDF:**
-   - Abrir `/planningmysaas/dashboard/c7c6223a-596c-4e38-911b-d1df048e5976`
-   - Clicar em Share → Export to PDF
-   - Verificar download de arquivo `BusinessPlan_*.pdf`
-
-2. **Link Compartilhável:**
-   - Abrir `/planningmysaas/shared/a7ea613da8898c4f43de943742240aa9` no Preview
-   - Verificar que mostra o conteúdo estruturado (não "Report Not Found")
+O link compartilhável vai mostrar **exatamente as mesmas 9 seções** do Dashboard.
