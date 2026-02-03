@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
-import { Calendar, Shield, Clock, Users } from "lucide-react";
+import { Calendar, Shield, Clock } from "lucide-react";
+
+// Avatar imports
+import sarahJohnsonImg from "@/assets/testimonial-sarah-johnson.webp";
+import emmaThompsonImg from "@/assets/testimonial-emma-thompson.webp";
+import johnSmithImg from "@/assets/testimonial-john-smith.webp";
+import mariaSantosImg from "@/assets/testimonial-maria-santos.webp";
+import marcusChenImg from "@/assets/author-marcus.webp";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -99,7 +106,16 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
         
         {/* Social Proof */}
         <div className="flex items-center gap-2 text-sm glass-card px-4 py-2 rounded-full border border-amber-500/20">
-          <Users className="h-4 w-4 text-amber-400" />
+          <div className="flex -space-x-2">
+            {[sarahJohnsonImg, marcusChenImg, emmaThompsonImg, johnSmithImg, mariaSantosImg].map((img, i) => (
+              <img 
+                key={i} 
+                src={img} 
+                alt="Founder" 
+                className="w-6 h-6 rounded-full border-2 border-card object-cover"
+              />
+            ))}
+          </div>
           <span className="text-foreground/80"><strong className="text-foreground">47</strong> founders booked this month</span>
         </div>
       </div>
