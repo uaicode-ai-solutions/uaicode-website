@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { DollarSign, Check, Minus, PieChart, AlertCircle, Sparkles, Megaphone, TrendingUp, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
 import { useMvpTier } from "@/hooks/useMvpTier";
-import { useMarketingTiers, MarketingTotals } from "@/hooks/useMarketingTiers";
+import { useMarketingTiers, MarketingTotals, calculateMarketingTotals } from "@/hooks/useMarketingTiers";
 import { getSectionInvestment, getInvestmentBreakdown } from "@/lib/sectionInvestmentUtils";
 import PricingComparisonSlider from "../PricingComparisonSlider";
 import MarketingComparisonSlider from "../MarketingComparisonSlider";
@@ -27,6 +27,21 @@ const InvestmentSection = () => {
   const selectedFeatures = report?.selected_features || [];
   const { tier, pricing, featureCounts, isLoading: tierLoading } = useMvpTier(selectedFeatures);
   const { services, isLoading: marketingLoading } = useMarketingTiers();
+  
+  // Initialize marketing totals with ALL services (readOnly mode always uses all)
+  useEffect(() => {
+    if (!marketingLoading && services.length > 0) {
+      const allServiceIds = services.map(s => s.service_id);
+      setSelectedMarketingIds(allServiceIds);
+      
+      const totals = calculateMarketingTotals(allServiceIds, services);
+      console.log('[InvestmentSection] Initialized marketing totals with all services:', { 
+        count: allServiceIds.length, 
+        uaicodeTotal: totals.uaicodeTotal / 100 
+      });
+      setMarketingTotals(totals);
+    }
+  }, [services, marketingLoading, setSelectedMarketingIds, setMarketingTotals]);
   
   // Calculate suggested paid media based on wizard budget selection
   // Uses shared utility with correct budget ranges from StepGoals.tsx
