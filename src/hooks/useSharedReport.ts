@@ -26,7 +26,13 @@ export const useSharedReport = (shareToken: string | undefined) => {
       // Cast business_plan_section to typed interface (unknown first for safety)
       const bp = report.business_plan_section as unknown as BusinessPlanSection | null;
       
-      if (!bp || !bp.markdown_content) return null;
+      // Validate: must have AI narratives (structured format)
+      const hasContent = 
+        bp?.ai_executive_narrative || 
+        bp?.ai_strategic_verdict || 
+        (bp?.ai_key_recommendations && bp.ai_key_recommendations.length > 0);
+
+      if (!bp || !hasContent) return null;
 
       return {
         saas_name: bp.title || "SaaS Project",
