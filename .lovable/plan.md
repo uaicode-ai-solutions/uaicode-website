@@ -1,111 +1,124 @@
 
 
-# Plano: Corrigir FinancialProjectionsCard para Normalizar Cenários
+# Plano: Adicionar Bundle Marketing no InvestmentAskCard
 
-## Problema Identificado
+## Contexto
 
-O componente `FinancialProjectionsCard.tsx` no Business Plan está quebrando porque:
+O usuário quer mostrar no card "Investment Ask" (Business Plan) uma opção para o usuário ver o investimento caso opte por contratar marketing junto com o MVP.
 
-1. **Banco de dados** retorna cenário com `name: "Base"`
-2. **JCurveChart** espera `name: "Realistic"`
-3. O mapeamento atual (linhas 33-40) assume que o nome já vem correto
-4. O chart falha silenciosamente retornando array vazio
+## Dados Disponíveis
+
+### Dados já no banco (section_investment)
+| Campo | Valor Exemplo |
+|-------|---------------|
+| `investment_one_payment_cents` | $145,000 (MVP only) |
+| `discount_strategy.bundle.price_cents` | $101,500 (MVP + Marketing 30% off) |
+| `discount_strategy.bundle.percent` | 30% |
+| `discount_strategy.bundle.name` | "MVP + Marketing Bundle" |
+| `discount_strategy.bundle.bonus_support_days` | 30 |
+
+### Serviços de Marketing (tb_pms_mkt_tier)
+| Serviço | Uaicode/mês | Tradicional/mês |
+|---------|-------------|-----------------|
+| Project Manager | $1,200 | $6,000 |
+| Paid Media Manager | $1,800 | $3,000 |
+| Digital Media | $1,800 | $3,500 |
+| Social Media | $900 | $2,000 |
+| CRM Pipeline | $300 | $2,000 |
+
+**Total mensal marketing (todos serviços recomendados):** ~$4,800/mês
 
 ## Solução
 
-Replicar a lógica do `FinancialReturnSection.tsx` que já funciona:
+Adicionar uma seção "MVP + Marketing Bundle" abaixo do Total Investment atual, mostrando:
 
-```text
-ANTES (FinancialProjectionsCard):
-┌─────────────────────────────────────────────────────┐
-│  financialScenarios.map(s => ({                    │
-│    name: s.name as 'Conservative' | 'Realistic'...  │ ← Assume nome correto
-│  }))                                                │
-└─────────────────────────────────────────────────────┘
+1. **Preço do Bundle** com desconto aplicado
+2. **Economia vs comprar separado** 
+3. **Serviços de marketing incluídos** (lista resumida)
+4. **Bônus extra** (dias de suporte adicional)
 
-DEPOIS (Corrigido):
-┌─────────────────────────────────────────────────────┐
-│  1. Buscar cada cenário pelo nome correto:         │
-│     - conservativeDb = find(s => s.name === 'Conservative')
-│     - baseDb = find(s => s.name === 'Base')        │ ← Busca "Base"
-│     - optimisticDb = find(s => s.name === 'Optimistic')
-│                                                     │
-│  2. Construir array com nomes normalizados:        │
-│     - { name: "Conservative", ...conservativeDb }   │
-│     - { name: "Realistic", ...baseDb }             │ ← Renomeia!
-│     - { name: "Optimistic", ...optimisticDb }      │
-│                                                     │
-│  3. Filtrar cenários com valores null              │
-└─────────────────────────────────────────────────────┘
+## Layout Proposto
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Investment Ask                                              │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │  MVP Only                                               ││
+│  │  $145K                                                   ││
+│  │  [Save 50% vs Traditional]                              ││
+│  └─────────────────────────────────────────────────────────┘│
+│                                                             │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │  🚀 MVP + Marketing Bundle          [BEST VALUE]        ││
+│  │  $101.5K                                                 ││
+│  │  [Save 30% + 30 bonus support days]                     ││
+│  │                                                          ││
+│  │  Includes monthly marketing:                            ││
+│  │  ✓ Project Manager  ✓ Paid Media  ✓ Digital Media      ││
+│  └─────────────────────────────────────────────────────────┘│
+│                                                             │
+│  [Investment Breakdown]                                     │
+│  [What's Included]                                          │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Arquivo a Modificar
+## Arquivos a Modificar
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/components/planningmysaas/dashboard/businessplan/FinancialProjectionsCard.tsx` | Normalizar nomes de cenários |
+| `src/components/planningmysaas/dashboard/businessplan/InvestmentAskCard.tsx` | Adicionar seção de Bundle Marketing |
 
-## Código Corrigido (Linhas 32-40)
+## Detalhes Técnicos
+
+### 1. Extrair dados do discount_strategy.bundle
 
 ```typescript
-// Build scenarios for J-Curve - NORMALIZE "Base" to "Realistic"
-const dbScenarios = financialMetrics.financialScenarios || [];
-const conservativeDb = dbScenarios.find(s => s.name === 'Conservative');
-const baseDb = dbScenarios.find(s => s.name === 'Base');
-const optimisticDb = dbScenarios.find(s => s.name === 'Optimistic');
-
-// Build chart scenarios with normalized names
-const rawScenarios = [
-  {
-    name: "Conservative" as const,
-    mrrMonth12: conservativeDb?.mrrMonth12 ?? null,
-    breakEvenMonths: conservativeDb?.breakEven ?? null,
-    probability: conservativeDb?.probability ?? "25%",
-  },
-  {
-    name: "Realistic" as const, // UI name for "Base" from DB
-    mrrMonth12: baseDb?.mrrMonth12 ?? null,
-    breakEvenMonths: baseDb?.breakEven ?? null,
-    probability: baseDb?.probability ?? "50%",
-  },
-  {
-    name: "Optimistic" as const,
-    mrrMonth12: optimisticDb?.mrrMonth12 ?? null,
-    breakEvenMonths: optimisticDb?.breakEven ?? null,
-    probability: optimisticDb?.probability ?? "25%",
-  },
-];
-
-// Filter out scenarios with null values
-const scenarios = rawScenarios
-  .filter(s => s.mrrMonth12 !== null && s.breakEvenMonths !== null)
-  .map(s => ({
-    name: s.name,
-    mrrMonth12: s.mrrMonth12!,
-    breakEvenMonths: s.breakEvenMonths!,
-    probability: s.probability,
-  }));
+// Extrair bundle do discount_strategy
+const discountStrategy = investment.discount_strategy as DiscountStrategyMap | undefined;
+const bundle = discountStrategy?.bundle;
+const bundlePriceCents = bundle?.price_cents;
+const bundlePercent = bundle?.percent;
+const bundleBonusDays = bundle?.bonus_support_days;
 ```
 
-## Verificação Adicional
+### 2. Calcular economia do bundle
 
-Também validar se as métricas do grid (Year 1 ARR, Year 2 ARR, Break-even, LTV/CAC) estão aparecendo. Se não:
+```typescript
+const bundleSavingsCents = totalCents && bundlePriceCents 
+  ? totalCents - bundlePriceCents 
+  : 0;
+```
 
-- Verificar se `growth?.financial_metrics` existe no banco
-- Fallback para `financialMetrics` do hook já está implementado
+### 3. Lista de serviços de marketing incluídos
+
+Usar lista estática baseada nos serviços `is_recommended = true`:
+- Project Manager
+- Paid Media Manager
+- Digital Media
+
+### 4. UI do Bundle Card
+
+- Background diferenciado (gradient verde/accent para destacar)
+- Badge "BEST VALUE" ou "RECOMMENDED"
+- Preço com desconto bem visível
+- Lista compacta de serviços incluídos
+- Bônus de support days destacado
 
 ## Resultado Esperado
 
-1. J-Curve chart renderiza com 3 cenários (Conservative, Realistic, Optimistic)
-2. Métricas do grid aparecem (ARR, Break-even, LTV/CAC)
-3. ROI Year 1/2 aparecem
+1. Usuário vê duas opções claras de investimento
+2. Bundle aparece destacado como "melhor valor"
+3. Economia e benefícios extras ficam evidentes
+4. Informação vem do banco (discount_strategy.bundle)
 
 ## Checklist de Implementação
 
-1. [ ] Atualizar lógica de mapeamento de cenários no FinancialProjectionsCard
-2. [ ] Buscar cada cenário pelo nome correto do banco ("Base")
-3. [ ] Renomear "Base" → "Realistic" para compatibilidade com JCurveChart
-4. [ ] Adicionar filtro para remover cenários com valores null
-5. [ ] Testar no dashboard com report existente
-6. [ ] Verificar que J-Curve chart renderiza corretamente
+1. [ ] Importar tipo DiscountStrategyMap de sectionInvestmentUtils
+2. [ ] Extrair dados do bundle do discount_strategy
+3. [ ] Adicionar seção visual do Bundle abaixo do MVP Only
+4. [ ] Mostrar preço, desconto, economia e bônus
+5. [ ] Listar serviços de marketing incluídos
+6. [ ] Aplicar estilo diferenciado para destacar Bundle
+7. [ ] Testar renderização com dados reais
 
