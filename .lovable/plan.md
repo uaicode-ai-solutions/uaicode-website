@@ -1,323 +1,251 @@
 
 
-# Plano: Adicionar Chart Roadmap Timeline (Sem Quebrar Funcionalidades)
+# Plano: Criar Business Plan Estruturado (Zero Markdown da IA)
 
-## Arquivos Impactados
+## Conceito
 
-| Arquivo | Tipo de Alteração | Risco |
-|---------|-------------------|-------|
-| `src/types/report.ts` | Adicionar campo opcional | Baixo |
-| `src/components/planningmysaas/public/SharedReportCharts.tsx` | Adicionar novo case + componente | Baixo |
-| `src/components/planningmysaas/dashboard/sections/BusinessPlanTab.tsx` | Adicionar novo case + componente | Baixo |
-| `src/lib/businessPlanPdfExport.ts` | Adicionar novo case | Baixo |
+Substituir o Business Plan baseado em markdown por uma **UI estruturada fixa** que:
+1. Busca **todos os dados direto do banco** (já existem nas JSONB columns)
+2. Usa a IA **apenas para 2-3 parágrafos narrativos** (Executive Summary e Strategic Verdict)
+3. Reaproveita os **componentes visuais já existentes** no projeto
 
-## Garantias de Compatibilidade
+## Arquitetura Proposta
 
-1. **Campo opcional**: O novo `roadmap_timeline?` e opcional, entao reports antigos sem esse campo continuam funcionando
-2. **Graceful degradation**: Se dados nao existirem, o componente retorna `null` (nao renderiza nada)
-3. **Fallback existente**: O `default` case no switch ja existe e funciona para tipos desconhecidos
-4. **Sem breaking changes**: Nenhum campo existente e modificado ou removido
+```text
+ANTES (atual):
+┌─────────────────────────────────────────────────────┐
+│  IA gera ~3500 palavras de markdown + charts_data  │
+│  ↓                                                  │
+│  Frontend parseia markdown e renderiza             │
+│  ↓                                                  │
+│  Problema: truncamento, lentidão, inconsistências  │
+└─────────────────────────────────────────────────────┘
 
-## Alteracoes Detalhadas
+DEPOIS (proposto):
+┌─────────────────────────────────────────────────────┐
+│  IA gera APENAS:                                    │
+│  - executive_narrative (~150 palavras)             │
+│  - strategic_verdict (~100 palavras)               │
+│  - key_recommendations (3-5 bullet points)         │
+│  ↓                                                  │
+│  Frontend busca TODOS os dados do banco            │
+│  e renderiza em componentes visuais fixos          │
+│  ↓                                                  │
+│  Resultado: rápido, consistente, sem truncamento   │
+└─────────────────────────────────────────────────────┘
+```
 
-### 1. Types (src/types/report.ts)
+## Seções do Business Plan Estruturado
 
-Adicionar ao `BusinessPlanChartsData` interface (linha ~1700):
+| Seção | Fonte de Dados | Componente Visual |
+|-------|----------------|-------------------|
+| 1. Executive Snapshot | `opportunity_section` + `growth_intelligence_section` | Grid 4x3 de KPIs |
+| 2. Executive Narrative | IA (novo campo `ai_narrative`) | Card com texto |
+| 3. Market Analysis | `opportunity_section` (TAM/SAM/SOM, trends) | Cards + Chart |
+| 4. Competitive Landscape | `competitive_analysis_section` | Competitor Cards (já existe!) |
+| 5. Target Customer | `icp_intelligence_section` | Persona Card (já existe!) |
+| 6. Business Model | `price_intelligence_section` | Pricing Tiers Table |
+| 7. Financial Projections | `growth_intelligence_section.financial_metrics` | J-Curve + Metrics |
+| 8. Investment Ask | `section_investment` | Investment Breakdown (já existe!) |
+| 9. Strategic Verdict | IA (novo campo `ai_verdict`) | Callout Card |
+
+## Estrutura do Novo `business_plan_section` JSONB
+
+Simplificado para conter apenas o que a IA gera:
 
 ```typescript
-export interface BusinessPlanChartsData {
-  market_sizing?: { /* ... existente ... */ };
-  financial_projections?: { /* ... existente ... */ };
-  competitor_pricing?: Array<{ /* ... existente ... */ }>;
-  investment_breakdown?: Array<{ /* ... existente ... */ }>;
+interface BusinessPlanSection {
+  // Metadata
+  generated_at: string;
+  viability_score: number;
+  viability_label: string;
   
-  // NOVO: Roadmap Timeline
-  roadmap_timeline?: Array<{
-    phase: string;      // "Phase 1: MVP"
-    focus: string;      // "Core platform functionality..."
-    timeline: string;   // "13-23 weeks"
-    outcomes: string[]; // ["Launch secure platform", ...]
-  }>;
+  // AI-generated narratives only (~400 tokens total)
+  ai_executive_narrative: string;  // ~150 palavras
+  ai_strategic_verdict: string;    // ~100 palavras
+  ai_key_recommendations: string[];  // 3-5 bullet points
+  
+  // Optional: AI-generated one-liners for each section
+  ai_section_insights?: {
+    market_insight?: string;      // 1 frase sobre o mercado
+    competition_insight?: string; // 1 frase sobre competição
+    customer_insight?: string;    // 1 frase sobre ICP
+    financial_insight?: string;   // 1 frase sobre finanças
+  };
 }
 ```
 
-### 2. SharedReportCharts.tsx (Pagina Publica)
-
-Adicionar novo case no switch e componente:
+## Novo Componente: BusinessPlanStructured.tsx
 
 ```typescript
-// No SharedChartRenderer switch (linha ~44):
-case "roadmap_timeline":
-  return <SharedRoadmapTimelineChart data={data.roadmap_timeline} />;
-
-// Novo componente (apos Investment Breakdown):
-const SharedRoadmapTimelineChart = ({ 
-  data 
-}: { 
-  data?: BusinessPlanChartsData["roadmap_timeline"] 
-}) => {
-  if (!data || data.length === 0) return null;
-  // ... implementacao visual
-};
-```
-
-### 3. BusinessPlanTab.tsx (Dashboard)
-
-Adicionar mesmo chart ao dashboard interno:
-
-```typescript
-// No ChartRenderer switch (linha ~86):
-case "roadmap_timeline":
-  return <RoadmapTimelineChart data={data.roadmap_timeline} />;
-
-// Novo componente (apos Investment Breakdown):
-const RoadmapTimelineChart = ({ 
-  data 
-}: { 
-  data?: BusinessPlanChartsData["roadmap_timeline"] 
-}) => {
-  if (!data || data.length === 0) return null;
-  // ... mesma implementacao visual
-};
-```
-
-### 4. businessPlanPdfExport.ts (PDF)
-
-Adicionar case para exportar timeline como tabela:
-
-```typescript
-// No switch (linha ~278, antes do default):
-case "roadmap_timeline": {
-  const data = chartsData.roadmap_timeline;
-  if (!data || data.length === 0) return yPos;
-
-  pdf.text("Product Roadmap", tableStartX, yPos);
-  yPos += 8;
-
-  data.forEach((phase) => {
-    // Render phase name + timeline
-    pdf.setFont("helvetica", "bold");
-    pdf.text(`${phase.phase} (${phase.timeline})`, tableStartX + 5, yPos);
-    yPos += LINE_HEIGHT;
-    
-    // Render focus
-    pdf.setFont("helvetica", "normal");
-    const focusLines = pdf.splitTextToSize(phase.focus, CONTENT_WIDTH - 10);
-    focusLines.forEach((line: string) => {
-      pdf.text(line, tableStartX + 5, yPos);
-      yPos += LINE_HEIGHT;
-    });
-    
-    // Render outcomes
-    phase.outcomes.forEach((outcome) => {
-      pdf.text(`• ${outcome}`, tableStartX + 10, yPos);
-      yPos += LINE_HEIGHT;
-    });
-    
-    yPos += 5;
-  });
-
-  break;
-}
-```
-
-## Design Visual do Componente
-
-O timeline tera design responsivo:
-
-### Desktop (Horizontal)
-```text
-┌──────────────────────────────────────────────────────────┐
-│  📅 Product Roadmap                                      │
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│  ●────────────────●────────────────●                     │
-│  │                │                │                     │
-│ Phase 1          Phase 2         Phase 3                │
-│ 13-23 weeks      +3-6 months     +6-12 months           │
-│                                                          │
-│ • Core platform  • Advanced       • Prescription        │
-│ • Discovery      filtering        support               │
-│ • Booking        • Progress       • EHR integrations   │
-│                  tracking                               │
-└──────────────────────────────────────────────────────────┘
-```
-
-### Mobile (Vertical)
-```text
-┌─────────────────────┐
-│ 📅 Product Roadmap  │
-├─────────────────────┤
-│  ●                  │
-│  │ Phase 1: MVP     │
-│  │ 13-23 weeks      │
-│  │ • Core platform  │
-│  │ • Discovery      │
-│  │                  │
-│  ●                  │
-│  │ Phase 2          │
-│  │ +3-6 months      │
-│  │ ...              │
-└─────────────────────┘
-```
-
-## Codigo do Componente Timeline
-
-```typescript
-const RoadmapTimelineChart = ({ 
-  data 
-}: { 
-  data?: BusinessPlanChartsData["roadmap_timeline"] 
-}) => {
-  if (!data || data.length === 0) return null;
-
+// Estrutura do componente principal
+const BusinessPlanStructured = () => {
+  const { reportData, report } = useReportContext();
+  const financialMetrics = useFinancialMetrics(reportData, report?.market_type);
+  
+  // Parse all JSONB sections (já existe!)
+  const opportunity = reportData?.opportunity_section;
+  const competitive = reportData?.competitive_analysis_section;
+  const icp = reportData?.icp_intelligence_section;
+  const pricing = reportData?.price_intelligence_section;
+  const growth = reportData?.growth_intelligence_section;
+  const investment = reportData?.section_investment;
+  const businessPlan = reportData?.business_plan_section;
+  
   return (
-    <Card className="glass-card border-accent/20 my-6">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-accent" />
-          Product Roadmap
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* Desktop: Horizontal Timeline */}
-        <div className="hidden md:block">
-          <div className="relative">
-            {/* Connecting Line */}
-            <div 
-              className="absolute top-4 h-0.5 bg-accent/30" 
-              style={{ 
-                left: `${100 / (data.length * 2)}%`, 
-                right: `${100 / (data.length * 2)}%` 
-              }} 
-            />
-            
-            {/* Phases Grid */}
-            <div 
-              className="grid gap-4" 
-              style={{ gridTemplateColumns: `repeat(${data.length}, 1fr)` }}
-            >
-              {data.map((phase, index) => (
-                <div key={index} className="relative">
-                  {/* Timeline Dot */}
-                  <div className="w-8 h-8 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center mb-4 mx-auto z-10 relative">
-                    <span className="text-xs font-bold text-accent">
-                      {index + 1}
-                    </span>
-                  </div>
-                  
-                  {/* Phase Content */}
-                  <div className="p-4 rounded-lg bg-muted/10 border border-border/30">
-                    <h4 className="font-semibold text-foreground text-sm mb-1 text-center">
-                      {phase.phase}
-                    </h4>
-                    <p className="text-xs text-accent mb-2 text-center">
-                      {phase.timeline}
-                    </p>
-                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                      {phase.focus}
-                    </p>
-                    <ul className="space-y-1">
-                      {phase.outcomes.slice(0, 3).map((outcome, i) => (
-                        <li 
-                          key={i} 
-                          className="text-xs text-muted-foreground flex items-start gap-1.5"
-                        >
-                          <span className="text-accent shrink-0">•</span>
-                          <span className="line-clamp-1">{outcome}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        
-        {/* Mobile: Vertical Timeline */}
-        <div className="md:hidden">
-          <div className="relative pl-6">
-            {/* Vertical Line */}
-            <div className="absolute left-3 top-4 bottom-4 w-0.5 bg-accent/30" />
-            
-            <div className="space-y-6">
-              {data.map((phase, index) => (
-                <div key={index} className="relative">
-                  {/* Timeline Dot */}
-                  <div className="absolute -left-6 w-6 h-6 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center">
-                    <span className="text-xs font-bold text-accent">
-                      {index + 1}
-                    </span>
-                  </div>
-                  
-                  {/* Phase Content */}
-                  <div className="p-3 rounded-lg bg-muted/10 border border-border/30 ml-2">
-                    <h4 className="font-semibold text-foreground text-sm">
-                      {phase.phase}
-                    </h4>
-                    <p className="text-xs text-accent mb-2">{phase.timeline}</p>
-                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                      {phase.focus}
-                    </p>
-                    <ul className="space-y-0.5">
-                      {phase.outcomes.slice(0, 2).map((outcome, i) => (
-                        <li 
-                          key={i} 
-                          className="text-xs text-muted-foreground flex items-start gap-1"
-                        >
-                          <span className="text-accent">•</span>
-                          <span className="line-clamp-1">{outcome}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-8">
+      {/* 1. Executive Snapshot - KPI Grid */}
+      <ExecutiveSnapshotCard 
+        opportunity={opportunity}
+        growth={growth}
+        investment={investment}
+        viabilityScore={businessPlan?.viability_score}
+      />
+      
+      {/* 2. Executive Narrative - AI Generated */}
+      <ExecutiveNarrativeCard 
+        narrative={businessPlan?.ai_executive_narrative}
+      />
+      
+      {/* 3. Market Analysis - Data from DB */}
+      <MarketAnalysisCard 
+        opportunity={opportunity}
+      />
+      
+      {/* 4. Competitive Landscape - Reuse existing component */}
+      <CompetitiveLandscapeCard 
+        competitive={competitive}
+      />
+      
+      {/* 5. Target Customer - Reuse existing ICP Card */}
+      <TargetCustomerCard 
+        icp={icp}
+      />
+      
+      {/* 6. Business Model - Pricing from DB */}
+      <BusinessModelCard 
+        pricing={pricing}
+      />
+      
+      {/* 7. Financial Projections - Reuse J-Curve */}
+      <FinancialProjectionsCard 
+        growth={growth}
+        metrics={financialMetrics}
+      />
+      
+      {/* 8. Investment Ask - Reuse existing section */}
+      <InvestmentAskCard 
+        investment={investment}
+      />
+      
+      {/* 9. Strategic Verdict - AI Generated */}
+      <StrategicVerdictCard 
+        verdict={businessPlan?.ai_strategic_verdict}
+        recommendations={businessPlan?.ai_key_recommendations}
+      />
+    </div>
   );
 };
 ```
 
-## Acao Necessaria no n8n
+## Arquivos a Criar/Modificar
 
-Apos implementar a UI, atualizar o prompt do Document Writer para incluir no `charts_data`:
+| Arquivo | Ação | Descrição |
+|---------|------|-----------|
+| `src/types/report.ts` | Modificar | Simplificar `BusinessPlanSection` interface |
+| `src/components/planningmysaas/dashboard/sections/BusinessPlanTab.tsx` | Reescrever | Nova estrutura fixa |
+| `src/components/planningmysaas/dashboard/businessplan/ExecutiveSnapshotCard.tsx` | Criar | Grid de KPIs |
+| `src/components/planningmysaas/dashboard/businessplan/ExecutiveNarrativeCard.tsx` | Criar | Texto da IA |
+| `src/components/planningmysaas/dashboard/businessplan/MarketAnalysisCard.tsx` | Criar | TAM/SAM/SOM + trends |
+| `src/components/planningmysaas/dashboard/businessplan/CompetitiveLandscapeCard.tsx` | Criar | Wrapper do CompetitorsDifferentiationSection |
+| `src/components/planningmysaas/dashboard/businessplan/TargetCustomerCard.tsx` | Criar | Wrapper do ICP Card |
+| `src/components/planningmysaas/dashboard/businessplan/BusinessModelCard.tsx` | Criar | Pricing tiers |
+| `src/components/planningmysaas/dashboard/businessplan/FinancialProjectionsCard.tsx` | Criar | J-Curve + metrics |
+| `src/components/planningmysaas/dashboard/businessplan/InvestmentAskCard.tsx` | Criar | Investment breakdown |
+| `src/components/planningmysaas/dashboard/businessplan/StrategicVerdictCard.tsx` | Criar | Verdict + recommendations |
 
-```json
-"roadmap_timeline": [
-  {
-    "phase": "Phase 1: MVP",
-    "focus": "Core platform functionality for provider discovery, vetting, and booking.",
-    "timeline": "13-23 weeks",
-    "outcomes": ["Launch secure platform", "Connect users with verified professionals"]
-  },
-  {
-    "phase": "Phase 2: Feature Expansion",
-    "focus": "Introduce advanced filtering, progress tracking, and behavioral coaches.",
-    "timeline": "+3-6 months",
-    "outcomes": ["Enhance user engagement", "Expand professional network"]
-  },
-  {
-    "phase": "Phase 3: Scaling",
-    "focus": "Implement prescription support and EHR integrations.",
-    "timeline": "+6-12 months",
-    "outcomes": ["Establish comprehensive ecosystem", "Explore new monetization"]
+## Novo System Prompt da IA (Ultra-Simples)
+
+```text
+You are a Business Strategist. Generate ONLY strategic narratives for a SaaS business plan.
+
+Return valid JSON with EXACTLY these fields:
+
+{
+  "generated_at": "February 3, 2026",
+  "viability_score": 66,
+  "viability_label": "Promising",
+  "ai_executive_narrative": "string (150 words max - compelling overview)",
+  "ai_strategic_verdict": "string (100 words max - Go/No-Go recommendation)",
+  "ai_key_recommendations": ["string array - 3-5 actionable next steps"],
+  "ai_section_insights": {
+    "market_insight": "string (1 sentence)",
+    "competition_insight": "string (1 sentence)",
+    "customer_insight": "string (1 sentence)",
+    "financial_insight": "string (1 sentence)"
   }
-]
+}
+
+RULES:
+- Write for investors and executives
+- Be data-driven and specific
+- Use confident, decisive language
+- Maximum 400 words total
+- Return ONLY valid JSON
 ```
 
-## Checklist de Validacao
+## Benefícios
 
-Antes de deploy, verificar:
+| Aspecto | Antes | Depois |
+|---------|-------|--------|
+| Tokens IA | ~12,000 | ~600 |
+| Tempo geração | 4-6 min | 15-30 seg |
+| Risco truncamento | Alto | Zero |
+| Consistência dados | Baixa (IA duplica) | 100% (DB único) |
+| Manutenibilidade | Difícil (markdown) | Fácil (componentes) |
+| Investor-ready layout | Irregular | Fixo e profissional |
 
-- [ ] Reports antigos (sem `roadmap_timeline`) continuam funcionando
-- [ ] Os 4 charts existentes continuam renderizando corretamente
-- [ ] O novo chart aparece apenas quando dados existem
-- [ ] PDF export funciona com e sem dados de roadmap
-- [ ] Layout responsivo (desktop horizontal, mobile vertical)
-- [ ] Cores consistentes com tema gold/amber
+## Compatibilidade com PDF Export
+
+O export de PDF será adaptado para usar a mesma estrutura:
+
+```typescript
+// businessPlanPdfExport.ts - Nova versão
+const exportBusinessPlanToPdf = (
+  reportData: ReportData,
+  report: ReportRow,
+  metrics: FinancialMetrics
+) => {
+  // Seção 1: Executive Snapshot (tabela de KPIs)
+  // Seção 2: AI Narrative (texto simples)
+  // Seção 3: Market Analysis (TAM/SAM/SOM tabela)
+  // ... etc
+  
+  // Tudo vem do DB, mesma fonte da UI
+};
+```
+
+## Compatibilidade com Public Shared Report
+
+O `SharedReportContent.tsx` também será atualizado para usar a estrutura fixa, garantindo que relatórios compartilhados tenham o mesmo visual profissional.
+
+## Checklist de Implementacao
+
+1. [ ] Simplificar interface `BusinessPlanSection` em `types/report.ts`
+2. [ ] Criar pasta `src/components/planningmysaas/dashboard/businessplan/`
+3. [ ] Criar componente `ExecutiveSnapshotCard` (grid 4x3 de KPIs)
+4. [ ] Criar componente `ExecutiveNarrativeCard` (texto AI)
+5. [ ] Criar componente `MarketAnalysisCard` (TAM/SAM/SOM + chart)
+6. [ ] Criar componente `CompetitiveLandscapeCard` (wrapper)
+7. [ ] Criar componente `TargetCustomerCard` (wrapper ICP)
+8. [ ] Criar componente `BusinessModelCard` (pricing tiers)
+9. [ ] Criar componente `FinancialProjectionsCard` (J-Curve)
+10. [ ] Criar componente `InvestmentAskCard` (breakdown)
+11. [ ] Criar componente `StrategicVerdictCard` (verdict + recommendations)
+12. [ ] Reescrever `BusinessPlanTab.tsx` para usar novos componentes
+13. [ ] Atualizar `SharedReportContent.tsx` para mesma estrutura
+14. [ ] Atualizar `businessPlanPdfExport.ts` para nova estrutura
+15. [ ] Atualizar prompt da IA no n8n (simplificado)
+16. [ ] Testar com wizard_id existente
+17. [ ] Validar PDF export
 
