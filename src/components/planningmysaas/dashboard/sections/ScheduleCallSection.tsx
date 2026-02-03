@@ -123,51 +123,6 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
         </div>
       </div>
 
-      {/* What to Expect Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {features.map((feature, index) => (
-          <Card key={index} className="glass-card border-border/30 hover:border-amber-500/30 transition-all duration-300 hover-lift">
-            <CardContent className="p-4 flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border border-amber-500/20 shrink-0">
-                <feature.icon className="h-4 w-4 text-amber-400" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground text-sm">{feature.title}</h3>
-                <p className="text-xs text-muted-foreground">{feature.description}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Countdown Timer */}
-      <Card className="glass-card border-amber-500/30 overflow-hidden">
-        <CardContent className="py-4 px-6 relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-transparent to-amber-500/5" />
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 relative">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-amber-400" />
-              <span className="text-sm font-medium text-foreground">Offer expires in:</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <span className="bg-black/40 text-amber-400 font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-amber-500/40 shadow-lg shadow-amber-500/10">
-                  {formatTime(timeLeft.hours)}
-                </span>
-                <span className="text-amber-400 font-bold">:</span>
-                <span className="bg-black/40 text-amber-400 font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-amber-500/40 shadow-lg shadow-amber-500/10">
-                  {formatTime(timeLeft.minutes)}
-                </span>
-                <span className="text-amber-400 font-bold">:</span>
-                <span className="bg-black/40 text-amber-400 font-mono font-bold text-xl px-3 py-1.5 rounded-lg border border-amber-500/40 shadow-lg shadow-amber-500/10">
-                  {formatTime(timeLeft.seconds)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Guarantees */}
       <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
         {guarantees.map((guarantee, index) => (
