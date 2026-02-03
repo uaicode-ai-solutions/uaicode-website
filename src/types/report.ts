@@ -1698,6 +1698,13 @@ export interface BusinessPlanChartsData {
     category: string;
     amount: number;
   }>;
+  // Roadmap Timeline for Product Strategy section
+  roadmap_timeline?: Array<{
+    phase: string;      // e.g., "Phase 1: MVP"
+    focus: string;      // Brief description of phase focus
+    timeline: string;   // e.g., "13-23 weeks"
+    outcomes: string[]; // Key outcomes/deliverables
+  }>;
 }
 
 export interface BusinessPlanSection {

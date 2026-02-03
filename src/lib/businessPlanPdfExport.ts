@@ -275,6 +275,48 @@ const renderChartAsTable = (
       break;
     }
 
+    case "roadmap_timeline": {
+      const data = chartsData.roadmap_timeline;
+      if (!data || data.length === 0) return yPos;
+
+      pdf.text("Product Roadmap", tableStartX, yPos);
+      yPos += 8;
+
+      data.forEach((phase, index) => {
+        // Check page break before each phase
+        if (yPos > PAGE_HEIGHT - MARGIN - FOOTER_HEIGHT - 40) {
+          return yPos; // Will be handled by caller
+        }
+
+        // Phase header
+        pdf.setFont("helvetica", "bold");
+        pdf.setTextColor(...COLORS.darkGray);
+        pdf.text(`${phase.phase} (${phase.timeline})`, tableStartX + 5, yPos);
+        yPos += LINE_HEIGHT;
+
+        // Focus description
+        pdf.setFont("helvetica", "normal");
+        pdf.setTextColor(...COLORS.textLight);
+        const focusLines = pdf.splitTextToSize(phase.focus, CONTENT_WIDTH - 15);
+        focusLines.forEach((line: string) => {
+          pdf.text(line, tableStartX + 10, yPos);
+          yPos += LINE_HEIGHT;
+        });
+
+        // Outcomes
+        phase.outcomes.slice(0, 3).forEach((outcome) => {
+          const sanitizedOutcome = sanitizeTextForPDF(outcome);
+          pdf.text(`• ${sanitizedOutcome}`, tableStartX + 15, yPos);
+          yPos += LINE_HEIGHT;
+        });
+
+        yPos += 3;
+      });
+
+      yPos += 5;
+      break;
+    }
+
     default:
       // Unknown chart type - skip
       break;
