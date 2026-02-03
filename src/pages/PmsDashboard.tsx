@@ -244,8 +244,13 @@ const PmsDashboardContent = () => {
   const handleExportPDF = async () => {
     const bp = reportData?.business_plan_section as BusinessPlanSection | null;
     
-    // Cenário 1: Business Plan vazio
-    if (!bp || !bp.markdown_content) {
+    // Validar conteúdo estruturado (não usa mais markdown_content legado)
+    const hasStructuredContent = 
+      bp?.ai_executive_narrative || 
+      bp?.ai_strategic_verdict || 
+      (bp?.ai_key_recommendations && bp.ai_key_recommendations.length > 0);
+
+    if (!bp || !hasStructuredContent) {
       setPdfErrorDialog({
         open: true,
         title: "Business Plan Not Available",
