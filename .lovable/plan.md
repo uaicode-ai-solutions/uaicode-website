@@ -1,191 +1,214 @@
 
 
-# Plano: Diferenciar os Títulos das Duas Sections
+# Plano: Reorganizar Tela "Next Steps" (Preservando Kyle + Cálculos)
 
-## Análise do Problema
+## Resumo Executivo
 
-Atualmente temos duas sections com o título idêntico "Lock In Your Discount":
-
-| Section | Localização | Conteúdo | Objetivo no Funil |
-|---------|-------------|----------|-------------------|
-| NextStepsSection | Linha 322 | Cards de pricing (Flash Deal 25%, Bundle 30%) | **DECISÃO** - Escolher o pacote |
-| ScheduleCallSection | Linha 105 | Calendário Cal.com para agendar | **AÇÃO** - Marcar a reunião |
-
-Isso causa **confusão cognitiva** e reduz a taxa de conversão porque o usuário não entende que são duas etapas diferentes.
+Reorganizar a tela "Next Steps" para focar no **calendário como hero**, removendo elementos redundantes e simplificando a hierarquia visual - **sem quebrar nenhuma lógica de cálculos ou o Kyle**.
 
 ---
 
-## Estratégia de Marketing: Diferenciar por Etapa do Funil
+## O Que Será PRESERVADO (Intacto)
 
-Do ponto de vista de marketing, cada section representa uma etapa distinta no funil de conversão:
+| Elemento | Arquivo | Razão |
+|----------|---------|-------|
+| `useReportContext` | NextStepsSection.tsx | Fornece dados calculados |
+| `getSectionInvestment()` | sectionInvestmentUtils.ts | Cálculos de pricing |
+| `getDiscountStrategy()` | sectionInvestmentUtils.ts | Estratégias de desconto |
+| `useCountdownTimer()` | NextStepsSection.tsx | Timer funcional |
+| `formatCurrency()` | NextStepsSection.tsx | Formatação monetária |
+| **Pricing Cards completos** | NextStepsSection.tsx | Flash Deal + Bundle (todo o cálculo) |
+| **MeetKyleSection** | MeetKyleSection.tsx | 100% intacto |
+| **Dialogs do Kyle** | KyleConsultantDialog, etc. | 100% intactos |
+
+---
+
+## O Que Será REMOVIDO (Limpar Ruído)
+
+| Elemento | Linhas | Justificativa |
+|----------|--------|---------------|
+| Viability Score Card | 241-258 | Já aparece no ReportHero - redundante |
+| 4 cards "What happens when you choose" | 260-312 | Info secundária que distrai |
+| 3 cards "What to Expect" no ScheduleCallSection | 126-152 | Repete info do pricing |
+| Segundo countdown timer no ScheduleCallSection | 155-180 | Redundante - já tem no NextStepsSection |
+
+---
+
+## O Que Será SIMPLIFICADO
+
+| Elemento | Mudança |
+|----------|---------|
+| Header do NextStepsSection | Remover score card, manter apenas "Choose Your Package" |
+| ScheduleCallSection | Mover calendário para cima, remover cards de feature |
+
+---
+
+## Nova Ordem da Tela (De Cima para Baixo)
 
 ```text
-┌────────────────────────────────────────────────────────────────┐
-│  FUNIL DE CONVERSÃO                                            │
-│                                                                │
-│  1. AWARENESS    → (já passou - viu o Report)                  │
-│                                                                │
-│  2. CONSIDERATION → NextStepsSection                           │
-│     "Qual pacote é melhor para mim?"                           │
-│     Títuo sugerido: "Choose Your Package"                      │
-│                     ou "Pick Your Plan"                        │
-│                                                                │
-│  3. ACTION        → ScheduleCallSection                        │
-│     "Quero garantir meu desconto agora"                        │
-│     Título sugerido: "Book Your Call" (mais direto)            │
-│                     ou "Schedule & Save" (combina ação+valor)  │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│  1. SCHEDULE CALL SECTION (promovido para HERO)                     │
+│     - Header simplificado "Book Your Call"                          │
+│     - Timer único e grande                                          │
+│     - Calendário Cal.com (destaque máximo)                          │
+│     - Garantias em linha                                            │
+├─────────────────────────────────────────────────────────────────────┤
+│  2. MEET KYLE SECTION (sem mudanças)                                │
+│     - Mantido exatamente como está                                  │
+│     - Botões Email/Chat/Call funcionando                            │
+├─────────────────────────────────────────────────────────────────────┤
+│  3. PRICING SECTION (movido para o final)                           │
+│     - Header "Choose Your Package"                                  │
+│     - 2 Pricing Cards (Flash Deal + Bundle) - TODOS OS CÁLCULOS     │
+│     - Marketing billing notice                                      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Sugestões de Títulos (Opções)
+## Alterações Detalhadas
 
-### Para NextStepsSection (Cards de Pricing)
+### 1. PmsDashboard.tsx - Reordenar Componentes
 
-| Opção | Título | Subtítulo | Psicologia |
-|-------|--------|-----------|------------|
-| A | **Choose Your Package** | Select the plan that fits your goals | Empoderamento - usuário no controle |
-| B | **Pick Your Plan** | Limited-time discounts on all packages | Simplicidade + urgência |
-| C | **Special Launch Offers** | Exclusive pricing for early founders | Exclusividade + FOMO |
-| D | **Exclusive Pricing** | Lock in your discount today | Escassez + valor |
+**Arquivo:** `src/pages/PmsDashboard.tsx`  
+**Linhas:** 567-573
 
-**Recomendação:** Opção A - "Choose Your Package"
-- Claro e direto
-- Foca na **decisão** que o usuário precisa tomar
-- Não compete semanticamente com "Book Your Call"
+**De:**
+```typescript
+{activeTab === "nextsteps" && (
+  <div className="space-y-16">
+    <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
+    <MeetKyleSection wizardId={wizardId} />
+    <ScheduleCallSection projectName={projectName} />
+  </div>
+)}
+```
 
-### Para ScheduleCallSection (Calendário)
+**Para:**
+```typescript
+{activeTab === "nextsteps" && (
+  <div className="space-y-16">
+    <ScheduleCallSection projectName={projectName} />
+    <MeetKyleSection wizardId={wizardId} />
+    <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
+  </div>
+)}
+```
 
-| Opção | Título | Subtítulo | Psicologia |
-|-------|--------|-----------|------------|
-| A | **Book Your Call** | Secure your discount before time runs out | Ação clara + urgência |
-| B | **Schedule & Lock In** | Your exclusive discount awaits | Benefício embutido |
-| C | **Claim Your Discount** | Book a call to secure your pricing | Foco no ganho |
-| D | **Ready? Let's Talk** | Schedule your strategy session | Tom conversacional |
-
-**Recomendação:** Opção A - "Book Your Call"
-- Extremamente claro - usuário sabe exatamente o que fazer
-- "Book" é uma action word forte
-- Combina bem com "Choose Your Package" (Choose → Book)
+**Justificativa:** Calendário vira o HERO da página (primeira coisa que o usuário vê).
 
 ---
 
-## Fluxo Visual Proposto
+### 2. ScheduleCallSection.tsx - Simplificar (Remover 3 Cards)
+
+**Arquivo:** `src/components/planningmysaas/dashboard/sections/ScheduleCallSection.tsx`
+
+**Remoções:**
+- Linhas 126-152: Bloco `{/* What to Expect Cards */}` (3 cards de features)
+- Linhas 155-180: Bloco `{/* Countdown Timer */}` (timer redundante)
+
+O componente ficará apenas com:
+- Header "Book Your Call" + badge + social proof
+- Garantias (Shield icons)
+- Calendário Cal.com (destaque máximo)
+- Link "Having trouble?"
+
+---
+
+### 3. NextStepsSection.tsx - Remover Elementos Redundantes
+
+**Arquivo:** `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx`
+
+**Remoções:**
+- Linhas 241-258: Viability Score Card
+- Linhas 260-312: 4 cards "What happens when you choose"
+
+**O que PERMANECE (linhas 315-720):**
+- Header "Choose Your Package"
+- Timer countdown (o único da página)
+- Pricing Card 1: MVP Flash Deal (25% OFF)
+- Pricing Card 2: Complete Launch Bundle (30% OFF)
+- Marketing Billing Notice
+
+**TODOS os cálculos permanecem intactos:**
+- `getSectionInvestment(reportData)`
+- `getDiscountStrategy(sectionInvestment, mvpPriceCents)`
+- `getDiscountSavings()`
+- `formatCurrency()`
+- `useCountdownTimer()`
+
+---
+
+## Comparação Visual: Antes vs Depois
 
 ```text
-Next Steps Tab
-│
-├── NextStepsSection
-│   ├── "Next Steps" (header principal)
-│   ├── Viability Score
-│   ├── "What happens when you choose Uaicode" (4 cards)
-│   └── 🆕 "Choose Your Package" ← ANTES: "Lock In Your Discount"
-│       ├── MVP Flash Deal (25% OFF)
-│       └── Complete Launch Bundle (30% OFF)
-│
-├── MeetKyleSection
-│   └── "Meet Kyle" (sem mudança)
-│
-└── ScheduleCallSection
-    └── 🆕 "Book Your Call" ← ANTES: "Lock In Your Discount"
-        ├── Countdown Timer
-        └── Calendário Cal.com
+ANTES (12+ elementos)                    DEPOIS (6 elementos)
+─────────────────────                    ──────────────────────
+1. Header "Next Steps"                   1. Header "Book Your Call"
+2. Viability Score Card                  2. Garantias inline
+3. 4 cards "What happens"                3. Calendário Cal.com (HERO)
+4. Header "Choose Your Package"          4. Meet Kyle Section
+5. Timer                                 5. Header "Choose Your Package"
+6. 2 Pricing Cards                       6. Timer + 2 Pricing Cards
+7. Marketing Notice                      
+8. Meet Kyle Section (grande)            
+9. Header "Book Your Call"               
+10. 3 cards "What to Expect"             
+11. Timer (duplicado)                    
+12. Garantias                            
+13. Calendário Cal.com (afogado)         
 ```
-
----
-
-## Alterações Propostas
-
-### Alteração 1: NextStepsSection.tsx
-
-**Arquivo:** `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx`  
-**Linha:** 322
-
-**De:**
-```typescript
-<h2 className="text-2xl font-bold text-foreground">Lock In Your Discount</h2>
-```
-
-**Para:**
-```typescript
-<h2 className="text-2xl font-bold text-foreground">Choose Your Package</h2>
-```
-
-**Subtítulo (linha 327):**
-
-**De:**
-```typescript
-<p className="text-sm text-muted-foreground">Limited time offers available</p>
-```
-
-**Para:**
-```typescript
-<p className="text-sm text-muted-foreground">Limited-time discounts on all packages</p>
-```
-
----
-
-### Alteração 2: ScheduleCallSection.tsx
-
-**Arquivo:** `src/components/planningmysaas/dashboard/sections/ScheduleCallSection.tsx`  
-**Linha:** 105
-
-**De:**
-```typescript
-<h2 className="text-2xl font-bold text-foreground">Lock In Your Discount</h2>
-```
-
-**Para:**
-```typescript
-<h2 className="text-2xl font-bold text-foreground">Book Your Call</h2>
-```
-
-**Subtítulo (linhas 113-115):**
-
-**De:**
-```typescript
-<p className="text-sm text-muted-foreground">
-  Schedule your call now to secure your exclusive discount on {projectName ? `"${projectName}"` : "your project"}
-</p>
-```
-
-**Para:**
-```typescript
-<p className="text-sm text-muted-foreground">
-  Secure your exclusive discount before time runs out
-</p>
-```
-
----
-
-## Resumo de Alterações
-
-| Arquivo | Local | De | Para |
-|---------|-------|-----|------|
-| NextStepsSection.tsx | Linha 322 | "Lock In Your Discount" | "Choose Your Package" |
-| NextStepsSection.tsx | Linha 327 | "Limited time offers available" | "Limited-time discounts on all packages" |
-| ScheduleCallSection.tsx | Linha 105 | "Lock In Your Discount" | "Book Your Call" |
-| ScheduleCallSection.tsx | Linhas 113-115 | Subtítulo longo | "Secure your exclusive discount before time runs out" |
-
-**Total: 4 linhas modificadas em 2 arquivos**
 
 ---
 
 ## Arquivos Tocados
 
-| Arquivo | Ação |
-|---------|------|
-| `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx` | Modificar |
-| `src/components/planningmysaas/dashboard/sections/ScheduleCallSection.tsx` | Modificar |
+| Arquivo | Ação | Linhas Afetadas |
+|---------|------|-----------------|
+| `src/pages/PmsDashboard.tsx` | Reordenar componentes | ~3 linhas |
+| `src/components/planningmysaas/dashboard/sections/ScheduleCallSection.tsx` | Remover 3 cards + timer | ~55 linhas removidas |
+| `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx` | Remover score + 4 cards | ~75 linhas removidas |
 
 ---
 
-## Benefícios de Marketing
+## Segurança dos Cálculos
 
-1. **Clareza** - Usuário entende que são duas etapas diferentes
-2. **Progressão** - Choose → Book cria sensação de avanço no funil
-3. **Reduz Fricção** - Menos confusão = maior conversão
-4. **Action Words** - "Choose" e "Book" são verbos de ação que motivam cliques
+```text
+✅ useReportContext()           → NÃO TOCADO
+✅ getSectionInvestment()       → NÃO TOCADO
+✅ getDiscountStrategy()        → NÃO TOCADO
+✅ getDiscountSavings()         → NÃO TOCADO
+✅ useCountdownTimer()          → MANTIDO (1 único)
+✅ formatCurrency()             → NÃO TOCADO
+✅ discountStrategy.flash_24h   → NÃO TOCADO
+✅ discountStrategy.bundle      → NÃO TOCADO
+✅ mvpPriceCents                → NÃO TOCADO
+✅ marketingAnnualUaicode       → NÃO TOCADO
+```
+
+---
+
+## Segurança do Kyle
+
+```text
+✅ MeetKyleSection.tsx          → 100% INTACTO
+✅ KyleConsultantDialog         → NÃO TOCADO
+✅ KyleChatDialog               → NÃO TOCADO
+✅ EmailKyleDialog              → NÃO TOCADO
+✅ useKyleElevenLabs            → NÃO TOCADO
+✅ useKyleChatElevenLabs        → NÃO TOCADO
+```
+
+---
+
+## Resultado Esperado
+
+| Métrica | Antes | Depois |
+|---------|-------|--------|
+| Elementos visuais | 12+ | 6 |
+| Scroll necessário | 4-5 telas | 2 telas |
+| Timers duplicados | 2 | 1 |
+| Tempo para ver calendário | ~30s scroll | Imediato |
+| Cálculos funcionando | ✅ | ✅ |
+| Kyle funcionando | ✅ | ✅ |
 
