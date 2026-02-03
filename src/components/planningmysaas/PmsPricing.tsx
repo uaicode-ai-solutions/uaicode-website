@@ -1,42 +1,42 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, ArrowRight, Sparkles, ChartBar, Palette, Target, Zap } from "lucide-react";
+import { Check, ArrowRight, Sparkles, ChartBar, Briefcase, Target, Zap } from "lucide-react";
 
 const featureCategories = [
   {
     icon: ChartBar,
     title: "Validation",
     features: [
-      "Market Validation Report",
-      "Competitor Analysis",
-      "Financial Projections",
+      "Viability Score (0-100)",
+      "Market Size (TAM/SAM/SOM)",
+      "Competition Analysis",
     ],
   },
   {
-    icon: Palette,
-    title: "Brand Assets",
+    icon: Briefcase,
+    title: "Business Plan",
     features: [
-      "Complete Brand Manual",
-      "AI-Generated Logo",
-      "Product Mockups",
+      "AI-Generated Document",
+      "Financial Projections",
+      "Investment Breakdown",
     ],
   },
   {
     icon: Target,
-    title: "Strategy",
+    title: "Intelligence",
     features: [
-      "Marketing Intelligence",
-      "Go-to-Market Plan",
-      "Landing Page Blueprint",
+      "Customer Pain Points",
+      "Market Timing Analysis",
+      "Risk Assessment",
     ],
   },
   {
     icon: Zap,
     title: "Extras",
     features: [
-      "Target Audience (ICP)",
+      "Kyle AI Consultant",
+      "Shareable Public Link",
       "PDF Export",
-      "Priority Support",
     ],
   },
 ];
@@ -84,20 +84,19 @@ const PmsPricing = () => {
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-accent to-yellow-400 text-background font-bold text-sm shadow-lg shadow-accent/30">
                   <Sparkles className="w-4 h-4" />
-                  ALL-INCLUSIVE
+                  100% FREE
                 </div>
               </div>
 
               {/* Price Section */}
               <div className="text-center mb-10 pt-4">
                 <div className="flex items-baseline justify-center gap-3 mb-3">
-                  <span className="text-2xl text-muted-foreground line-through">$499</span>
                   <span className="text-6xl md:text-7xl font-bold text-gradient-gold">
-                    $199
+                    Free
                   </span>
                 </div>
                 <p className="text-lg text-muted-foreground">
-                  One-time payment • Lifetime access
+                  Start validating your idea today
                 </p>
               </div>
 
@@ -141,7 +140,7 @@ const PmsPricing = () => {
 
               {/* Helper Text */}
               <p className="text-center text-sm text-muted-foreground mt-4">
-                Takes only 5 minutes to start • No credit card required
+                Takes only 5 minutes • No credit card required
               </p>
             </div>
           </div>
