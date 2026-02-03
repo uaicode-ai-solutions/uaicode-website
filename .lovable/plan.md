@@ -1,44 +1,42 @@
-# Plano: Reutilizar BusinessPlanTab na Página Pública
 
-## ✅ IMPLEMENTADO
+# Correção: Largura do Footer na Página Pública
 
-### Resumo
-A página pública `/planningmysaas/shared/:token` agora renderiza o **mesmo** `BusinessPlanTab` do dashboard autenticado, garantindo 100% de paridade visual com gráficos interativos Recharts.
+## Problema
+O `SharedReportFooter` está renderizado **fora** do container `max-w-5xl mx-auto px-4`, resultando em largura total da tela ao invés de alinhar com o conteúdo.
 
-### Arquitetura Final
-
+## Estrutura Atual
 ```text
-DASHBOARD (autenticado)              PÁGINA PÚBLICA
-────────────────────────             ──────────────────────────
-                                     
-    ReportProvider                      SharedReportProvider
-    ├─ useReport(wizardId)              └─ useSharedReport(token)
-    └─ useReportData(wizardId)              │
-         │                                  ▼
-         ▼                              SELECT * FROM tb_pms_reports
-    tb_pms_wizard +                     WHERE share_token = :token
-    tb_pms_reports                      AND share_enabled = true
-         │                                  │
-         ▼                                  ▼
-    ReportContext.Provider              SharedReportContext.Provider
-         │                                  │
-         ▼                                  ▼
-    BusinessPlanTab ◄───────────────► BusinessPlanTab (MESMO!)
+<main className="pt-24 pb-16">
+  <div className="max-w-5xl mx-auto px-4">   ← Container limitado
+    <BusinessPlanTab />                       ← Conteúdo alinhado
+  </div>
+</main>
+<SharedReportFooter />                        ← FORA do container!
 ```
 
-### Mudanças Realizadas
+## Solução
+Mover o `SharedReportFooter` para dentro do container existente, ou aplicar o mesmo `max-w-5xl mx-auto px-4` ao footer.
 
-| Arquivo | Ação |
-|---------|------|
-| Migração SQL | ✅ Criado - colunas `wizard_snapshot` e `marketing_snapshot` |
-| `src/contexts/SharedReportContext.tsx` | ✅ Criado - provider para página pública |
-| `src/contexts/ReportContext.tsx` | ✅ Modificado - fallback para SharedReportContext |
-| `src/hooks/useSharedReport.ts` | ✅ Modificado - retorna dados completos JSONB |
-| `src/pages/PmsSharedReport.tsx` | ✅ Modificado - usa Provider + BusinessPlanTab |
-| `pms-orchestrate-report` | ✅ Modificado - salva snapshots, removido HTML estático |
+## Arquivo a Modificar
 
-### Próximos Passos para Testar
+**`src/pages/PmsSharedReport.tsx`** (linhas 29-41)
 
-1. Regenerar um relatório (ou criar novo) para popular `wizard_snapshot` e `marketing_snapshot`
-2. Acessar a URL de compartilhamento: `/planningmysaas/shared/:token`
-3. Verificar que o Business Plan renderiza com gráficos interativos
+```tsx
+return (
+  <div className="min-h-screen bg-background">
+    <SharedReportHeader />
+    
+    <main className="pt-24 pb-16">
+      <div className="max-w-5xl mx-auto px-4 lg:px-6">
+        <BusinessPlanTab />
+        
+        {/* Footer agora dentro do container */}
+        <SharedReportFooter />
+      </div>
+    </main>
+  </div>
+);
+```
+
+## Resultado
+O banner CTA e o footer terão a mesma largura máxima de 5xl (1024px) alinhados com o BusinessPlanTab.
