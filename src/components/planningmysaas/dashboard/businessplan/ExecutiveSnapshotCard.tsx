@@ -53,8 +53,14 @@ const formatCurrency = (value: number | null | undefined): string => {
 
 const formatPercentage = (value: string | number | null | undefined): string => {
   if (!value) return "...";
-  if (typeof value === "number") return `${value.toFixed(1)}%`;
-  return value;
+  if (typeof value === "number") {
+    // Se o valor for decimal (< 1), multiplica por 100 para converter para porcentagem
+    // Ex: 0.177 → 17.7%
+    const percentage = value < 1 ? value * 100 : value;
+    return `${percentage.toFixed(1)}%`;
+  }
+  // Remove sufixos como " CAGR" do string para manter consistência visual
+  return value.replace(/\s*CAGR\s*/i, '');
 };
 
 const ExecutiveSnapshotCard: React.FC<ExecutiveSnapshotCardProps> = ({
