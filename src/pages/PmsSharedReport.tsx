@@ -32,12 +32,10 @@ const SharedReportContent = () => {
       
       <main className="pt-24 pb-16">
         <div className="max-w-5xl mx-auto px-4 lg:px-6">
-          {/* Reuse the exact same BusinessPlanTab component */}
           <BusinessPlanTab />
+          <SharedReportFooter />
         </div>
       </main>
-      
-      <SharedReportFooter />
     </div>
   );
 };
