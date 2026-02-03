@@ -496,30 +496,6 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
               </div>
             </div>
 
-            {/* Social Proof */}
-            <div className="mb-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <div className="flex flex-col items-center gap-3">
-                <div className="flex -space-x-3">
-                  {[sarahJohnsonImg, marcusChenImg, emmaThompsonImg, johnSmithImg, mariaSantosImg].map((img, i) => (
-                    <img 
-                      key={i} 
-                      src={img} 
-                      alt="Founder" 
-                      className="w-8 h-8 rounded-full border-2 border-card object-cover"
-                    />
-                  ))}
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-semibold text-foreground">
-                    <span className="text-yellow-400">127 founders</span> chose this bundle
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    Last month • Average rating: ⭐ 4.9/5
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* CTA */}
             <Button 
               onClick={(e) => {
