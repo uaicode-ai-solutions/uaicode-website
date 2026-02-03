@@ -1,13 +1,17 @@
 import { useParams } from "react-router-dom";
-import { useSharedReport } from "@/hooks/useSharedReport";
+import { SharedReportProvider } from "@/contexts/SharedReportContext";
+import { useReportContext } from "@/contexts/ReportContext";
 import SharedReportHeader from "@/components/planningmysaas/public/SharedReportHeader";
 import SharedReportFooter from "@/components/planningmysaas/public/SharedReportFooter";
 import SharedReportSkeleton from "@/components/planningmysaas/public/SharedReportSkeleton";
 import SharedReportError from "@/components/planningmysaas/public/SharedReportError";
+import BusinessPlanTab from "@/components/planningmysaas/dashboard/sections/BusinessPlanTab";
 
-const PmsSharedReport = () => {
-  const { shareToken } = useParams<{ shareToken: string }>();
-  const { data: html, isLoading, error } = useSharedReport(shareToken);
+/**
+ * Content component that uses the shared report context.
+ */
+const SharedReportContent = () => {
+  const { report, reportData, isLoading, error } = useReportContext();
 
   // Loading state
   if (isLoading) {
@@ -15,25 +19,45 @@ const PmsSharedReport = () => {
   }
 
   // Error state or no data
-  if (error || !html) {
+  if (error || !reportData) {
     return <SharedReportError />;
   }
+
+  // Extract project name from wizard snapshot
+  const projectName = report?.saas_name || "Business Plan";
 
   return (
     <div className="min-h-screen bg-background">
       <SharedReportHeader />
       
       <main className="pt-24 pb-16">
-        {/* Render the pre-generated static HTML */}
-        <div 
-          className="shared-report-content max-w-4xl mx-auto px-4 lg:px-6"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        <div className="max-w-5xl mx-auto px-4 lg:px-6">
+          {/* Reuse the exact same BusinessPlanTab component */}
+          <BusinessPlanTab />
+        </div>
       </main>
       
-      {/* Footer with CTAs - no PDF for now since we use static HTML */}
       <SharedReportFooter />
     </div>
+  );
+};
+
+/**
+ * Public shared report page.
+ * Wraps content with SharedReportProvider to fetch data by share_token.
+ */
+const PmsSharedReport = () => {
+  const { shareToken } = useParams<{ shareToken: string }>();
+
+  // No token provided
+  if (!shareToken) {
+    return <SharedReportError />;
+  }
+
+  return (
+    <SharedReportProvider shareToken={shareToken}>
+      <SharedReportContent />
+    </SharedReportProvider>
   );
 };
 
