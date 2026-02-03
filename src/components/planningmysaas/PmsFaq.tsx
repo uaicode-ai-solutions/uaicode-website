@@ -10,27 +10,35 @@ import EmailContactDialog from "@/components/chat/EmailContactDialog";
 const faqs = [
   {
     question: "How long does it take to generate my report?",
-    answer: "Most reports are generated within 5 minutes. Our AI works in real-time to analyze your idea and compile comprehensive insights. Complex analyses for the Enterprise tier may take up to 15 minutes.",
+    answer: "Most reports are generated within 5 minutes. Our AI analyzes your idea in real-time, compiling comprehensive market insights, financial projections, and a complete business plan.",
+  },
+  {
+    question: "What's included in my validation report?",
+    answer: "You receive a complete package: viability score (0-100), market size analysis (TAM/SAM/SOM), competitor intelligence, customer pain points, risk assessment, financial projections, and a full AI-generated business plan.",
   },
   {
     question: "Where does the market data come from?",
-    answer: "We aggregate data from multiple reliable sources including industry reports, public databases, competitor analysis tools, and real-time market trends. Our AI cross-references this data to provide accurate, up-to-date insights.",
-  },
-  {
-    question: "Can I edit the logo and colors after generation?",
-    answer: "Absolutely! All generated assets are fully editable. You receive source files that you can modify in any design tool. We also provide multiple variations so you can choose what works best.",
-  },
-  {
-    question: "Can I use the assets commercially?",
-    answer: "Yes, all generated assets (logos, mockups, brand materials) are yours to use commercially without any restrictions. You have full ownership and licensing rights.",
+    answer: "We aggregate data from multiple reliable sources including industry reports, public databases, and real-time market trends. Our AI cross-references this data to provide accurate, up-to-date insights.",
   },
   {
     question: "Is my idea kept confidential?",
     answer: "Absolutely. Your idea and all submitted information are encrypted and never shared. We take confidentiality seriously and have strict data protection policies in place.",
   },
   {
+    question: "Can I share my report with investors or partners?",
+    answer: "Yes! Each report includes a shareable public link that you can send to investors, co-founders, or advisors. You can also export your business plan as a PDF.",
+  },
+  {
     question: "Can I validate multiple ideas?",
-    answer: "Each purchase validates one idea. If you want to validate multiple ideas, you can purchase additional reports at a discounted rate. Contact us for bulk pricing.",
+    answer: "Yes, you can create unlimited reports — it's completely free. Each idea gets its own dedicated dashboard with full analysis.",
+  },
+  {
+    question: "Who is Kyle and how can he help me?",
+    answer: "Kyle is your AI business consultant available in the \"Next Steps\" tab. He can answer questions about your report, explain metrics, and provide strategic advice based on your specific analysis.",
+  },
+  {
+    question: "Is PlanningMySaas really free?",
+    answer: "Yes, 100% free with no hidden costs. You get the same comprehensive validation that traditional consulting firms charge $10,000+ for — viability analysis, business plan, financials, and AI consultant access.",
   },
 ];
 
