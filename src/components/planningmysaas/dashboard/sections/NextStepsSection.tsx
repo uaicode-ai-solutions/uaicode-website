@@ -3,18 +3,11 @@ import {
   FileText, 
   PlayCircle, 
   Package, 
-  ArrowRight, 
-  Download,
-  CheckCircle2,
-  DollarSign,
   Sparkles,
   Check,
-  Clock,
   AlertCircle,
   Star,
-  Zap,
-  CreditCard,
-  HandCoins
+  Zap
 } from "lucide-react";
 
 // Founder avatars
@@ -30,45 +23,8 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useReportContext } from "@/contexts/ReportContext";
 import { parseJsonField } from "@/lib/reportDataUtils";
 import { NextSteps, ExecutionPhase, HeroScoreSection, safeNumber } from "@/types/report";
-import { useState, useEffect } from "react";
 import { getSectionInvestment, getDiscountStrategy, getDiscountSavings } from "@/lib/sectionInvestmentUtils";
-import ScoreCircle from "@/components/planningmysaas/dashboard/ui/ScoreCircle";
 
-
-// Countdown Timer Hook
-const useCountdownTimer = () => {
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const saved = localStorage.getItem('pms_offer_expiry_24h');
-    if (saved) {
-      const remaining = parseInt(saved) - Date.now();
-      return remaining > 0 ? remaining : 24 * 60 * 60 * 1000;
-    }
-    const expiry = Date.now() + 24 * 60 * 60 * 1000;
-    localStorage.setItem('pms_offer_expiry_24h', expiry.toString());
-    return 24 * 60 * 60 * 1000;
-  });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        const newTime = prev - 1000;
-        if (newTime <= 0) {
-          const newExpiry = Date.now() + 24 * 60 * 60 * 1000;
-          localStorage.setItem('pms_offer_expiry_24h', newExpiry.toString());
-          return 24 * 60 * 60 * 1000;
-        }
-        return newTime;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-  return { hours, minutes, seconds };
-};
 const iconMap: Record<string, React.ElementType> = {
   Calendar,
   FileText,
@@ -133,9 +89,6 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
     (sectionInvestmentRaw?.verdict_headline as string | null) || 
     "...";
   const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
-  
-
-  const { hours, minutes, seconds } = useCountdownTimer();
 
   // Calculate total weeks from timeline
   const totalWeeks = timeline.reduce((acc, phase) => {
@@ -222,22 +175,6 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
 
   return (
     <section id="next-steps" className="space-y-6 animate-fade-in">
-      {/* Section Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
-          <ArrowRight className="h-5 w-5 text-accent" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-foreground">Next Steps</h2>
-            <InfoTooltip side="right" size="sm">
-              Choose your package and start building your project today.
-            </InfoTooltip>
-          </div>
-          <p className="text-sm text-muted-foreground">Choose your package and start building</p>
-        </div>
-      </div>
-
       {/* ========== CHOOSE YOUR PACKAGE SECTION ========== */}
       <div className="flex items-center gap-3 mt-8 mb-6">
         <div className="p-2 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10">
@@ -261,7 +198,7 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
           {/* Badge */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
             <Badge className="px-3 py-1 text-xs font-bold text-amber-950 border-0 hover:bg-none" style={{ background: 'linear-gradient(135deg, hsl(45, 100%, 55%), hsl(38, 100%, 50%))' }}>
-              <Clock className="h-3 w-3 mr-1" />
+              <Zap className="h-3 w-3 mr-1" />
               24H FLASH DEAL
             </Badge>
           </div>
@@ -392,30 +329,6 @@ const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps
               <div className="mt-2 pt-2 border-t border-amber-500/20 flex justify-between">
                 <span className="text-xs text-foreground font-bold">Total Bonus Value:</span>
                 <span className="text-xs text-amber-400 font-bold">$2,250</span>
-              </div>
-            </div>
-
-            {/* Prominent Timer */}
-            <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 mb-4">
-              <div className="flex items-center justify-center gap-2 text-foreground mb-2">
-                <Clock className="h-4 w-4 text-accent animate-pulse" />
-                <span className="text-sm font-medium">Offer expires in:</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
-                  <span className="text-2xl font-bold text-gradient-gold">{hours.toString().padStart(2, '0')}</span>
-                  <span className="text-[10px] text-muted-foreground block">HOURS</span>
-                </div>
-                <span className="text-2xl font-bold text-muted-foreground">:</span>
-                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
-                  <span className="text-2xl font-bold text-gradient-gold">{minutes.toString().padStart(2, '0')}</span>
-                  <span className="text-[10px] text-muted-foreground block">MINS</span>
-                </div>
-                <span className="text-2xl font-bold text-muted-foreground">:</span>
-                <div className="bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
-                  <span className="text-2xl font-bold text-gradient-gold">{seconds.toString().padStart(2, '0')}</span>
-                  <span className="text-[10px] text-muted-foreground block">SECS</span>
-                </div>
               </div>
             </div>
 

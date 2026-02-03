@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
-import { Calendar, Lock, FileText, Rocket, Shield, Clock, Users } from "lucide-react";
+import { Calendar, Shield, Clock, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -8,7 +8,7 @@ interface ScheduleCallSectionProps {
   projectName?: string;
 }
 
-// Countdown timer hook
+// Countdown timer hook (synced with NextStepsSection via localStorage)
 const useCountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 59, seconds: 59 });
 
@@ -28,7 +28,6 @@ const useCountdownTimer = () => {
       const diff = expiryTime - now;
 
       if (diff <= 0) {
-        // Reset timer for another 24h
         expiryTime = Date.now() + 24 * 60 * 60 * 1000;
         localStorage.setItem('pms_offer_expiry_24h', expiryTime.toString());
       }
@@ -65,24 +64,6 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
       });
     })();
   }, []);
-
-  const features = [
-    {
-      icon: Lock,
-      title: "Lock Your Discount",
-      description: "Confirm your exclusive pricing before the timer expires"
-    },
-    {
-      icon: FileText,
-      title: "Custom Proposal",
-      description: "Get your detailed quote within 24 hours"
-    },
-    {
-      icon: Rocket,
-      title: "Fast Start",
-      description: "Begin your project in just 7 days after approval"
-    }
-  ];
 
   const guarantees = [
     "No payment required to schedule",
@@ -123,14 +104,31 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
         </div>
       </div>
 
-      {/* Guarantees */}
-      <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-        {guarantees.map((guarantee, index) => (
-          <div key={index} className="flex items-center gap-2 text-sm text-foreground/80">
-            <Shield className="h-4 w-4 text-emerald-500" />
-            <span>{guarantee}</span>
+      {/* Countdown Timer - PROMINENT */}
+      <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2 text-foreground">
+            <Clock className="h-5 w-5 text-amber-400 animate-pulse" />
+            <span className="text-base font-semibold">Offer expires in:</span>
           </div>
-        ))}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-background/80 border border-amber-500/30 px-3 sm:px-4 py-2 rounded-lg text-center min-w-[60px] sm:min-w-[72px]">
+              <span className="text-2xl sm:text-3xl font-bold text-gradient-gold">{formatTime(timeLeft.hours)}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground block">HOURS</span>
+            </div>
+            <span className="text-xl sm:text-2xl font-bold text-amber-400">:</span>
+            <div className="bg-background/80 border border-amber-500/30 px-3 sm:px-4 py-2 rounded-lg text-center min-w-[60px] sm:min-w-[72px]">
+              <span className="text-2xl sm:text-3xl font-bold text-gradient-gold">{formatTime(timeLeft.minutes)}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground block">MINS</span>
+            </div>
+            <span className="text-xl sm:text-2xl font-bold text-amber-400">:</span>
+            <div className="bg-background/80 border border-amber-500/30 px-3 sm:px-4 py-2 rounded-lg text-center min-w-[60px] sm:min-w-[72px]">
+              <span className="text-2xl sm:text-3xl font-bold text-gradient-gold">{formatTime(timeLeft.seconds)}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground block">SECS</span>
+            </div>
+          </div>
+          <p className="text-sm text-amber-400 font-medium text-center">Lock in your 25% discount before time runs out!</p>
+        </div>
       </div>
 
       {/* Cal.com Embed */}
@@ -157,6 +155,16 @@ const ScheduleCallSection = ({ projectName }: ScheduleCallSectionProps) => {
           </p>
         </CardContent>
       </Card>
+
+      {/* Guarantees */}
+      <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+        {guarantees.map((guarantee, index) => (
+          <div key={index} className="flex items-center gap-2 text-sm text-foreground/80">
+            <Shield className="h-4 w-4 text-emerald-500" />
+            <span>{guarantee}</span>
+          </div>
+        ))}
+      </div>
     </section>
   );
 };
