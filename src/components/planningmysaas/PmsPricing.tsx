@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Check, ArrowRight, Sparkles, ChartBar, Briefcase, Target, Zap } from "lucide-react";
 
 const featureCategories = [
@@ -95,8 +96,23 @@ const PmsPricing = () => {
                     Free
                   </span>
                 </div>
-                <p className="text-lg text-muted-foreground">
+                <p className="text-lg text-muted-foreground mb-3">
                   Start validating your idea today
+                </p>
+                <div className="flex items-center justify-center gap-1 text-sm">
+                  <span className="text-muted-foreground">Worth</span>
+                  <span className="font-semibold text-foreground">$10,000+</span>
+                  <span className="text-muted-foreground">in traditional consulting</span>
+                  <InfoTooltip term="How we calculated this" side="bottom">
+                    Based on market research from professional business plan services.
+                    Growthink and Wise Business Plans charge $1,500-$15,000 for investor-ready plans.
+                    MBA-level validation packages range $15,000-$50,000+.
+                    Our estimate reflects the combined value of market validation, 
+                    financial projections, and strategic analysis.
+                  </InfoTooltip>
+                </div>
+                <p className="text-sm font-medium text-accent mt-1">
+                  Yours free
                 </p>
               </div>
 
