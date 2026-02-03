@@ -1,50 +1,44 @@
-# Plano: Otimizar Tela "Next Steps" - CONCLUÍDO ✅
 
-## Status: Implementado
 
-Todas as alterações foram aplicadas com sucesso.
+# Plano: Remover Banner "127 founders chose this bundle"
 
-## Alterações Realizadas
+## Alteração
 
-### 1. ScheduleCallSection.tsx ✅
-- Timer countdown GRANDE adicionado entre header e calendário
-- Array `features` morto removido
-- Garantias movidas para baixo do calendário
+**Arquivo:** `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx`
 
-### 2. MeetKyleSection.tsx ✅
-- Layout compacto de 1 linha horizontal
-- Avatar 64px ao invés de grande
-- Botões compactos com labels ocultos em mobile
-- Bio/parágrafos removidos
+**Ação:** Remover o bloco de Social Proof (linhas 499-521) do card "Complete Launch Bundle"
 
-### 3. NextStepsSection.tsx ✅
-- Timer redundante removido (agora está no ScheduleCallSection)
-- Header "Next Steps" removido (duplicava "Choose Your Package")
-- Hook `useCountdownTimer` removido
-- Imports limpos
+## Código a Remover
 
-## Nova Estrutura
-
-```text
-1. ScheduleCallSection (HERO)
-   - Header + Badge + Social Proof
-   - Timer countdown GRANDE
-   - Calendário Cal.com
-   - Garantias
-
-2. MeetKyleSection (COMPACTO)
-   - [Avatar 64px] Questions? Talk to Kyle [📧] [💬] [📞]
-
-3. NextStepsSection (PRICING)
-   - Header "Choose Your Package"
-   - 2 Pricing Cards (sem timer interno)
-   - Marketing Notice
+```typescript
+{/* Social Proof */}
+<div className="mb-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+  <div className="flex flex-col items-center gap-3">
+    <div className="flex -space-x-3">
+      {[sarahJohnsonImg, marcusChenImg, emmaThompsonImg, johnSmithImg, mariaSantosImg].map((img, i) => (
+        <img 
+          key={i} 
+          src={img} 
+          alt="Founder" 
+          className="w-8 h-8 rounded-full border-2 border-card object-cover"
+        />
+      ))}
+    </div>
+    <div className="text-center">
+      <p className="text-sm font-semibold text-foreground">
+        <span className="text-yellow-400">127 founders</span> chose this bundle
+      </p>
+      <p className="text-[10px] text-muted-foreground mt-1">
+        Last month • Average rating: ⭐ 4.9/5
+      </p>
+    </div>
+  </div>
+</div>
 ```
 
-## Arquivos Tocados
+## Impacto
 
-| Arquivo | Linhas Antes | Linhas Depois |
-|---------|--------------|---------------|
-| ScheduleCallSection.tsx | 164 | 165 |
-| MeetKyleSection.tsx | 121 | 87 |
-| NextStepsSection.tsx | 646 | ~580 |
+- **Linhas removidas:** ~22 linhas
+- **Cálculos:** Nenhum impacto (o bloco é puramente visual)
+- **Layout:** O botão CTA ficará mais próximo da lista de bonuses
+
