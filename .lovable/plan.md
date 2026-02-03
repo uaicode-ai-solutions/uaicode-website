@@ -1,58 +1,65 @@
 
-# Plano: Corrigir Link Compartilhável e PDF para Formato Estruturado
+# Plano: Corrigir Validação no Dashboard e Verificar Link Compartilhável
 
-## Resumo do Problema
+## Diagnóstico
 
-O sistema de Business Plan foi migrado para um formato **estruturado** (sem `markdown_content`), mas dois componentes ainda dependem do formato antigo:
+### Problema 1: PDF Bloqueado no Dashboard
+**Arquivo:** `src/pages/PmsDashboard.tsx` (linha 248)
 
-| Componente | Problema |
-|------------|----------|
-| `useSharedReport.ts` | Retorna `null` se `markdown_content` não existir |
-| `businessPlanPdfExport.ts` | Gera PDF parseando `markdown_content` |
+O código atual ainda verifica `markdown_content`:
+```typescript
+if (!bp || !bp.markdown_content) {  // ❌ BLOQUEIA RELATÓRIOS ESTRUTURADOS
+  setPdfErrorDialog({ ... });
+  return;
+}
+```
+
+Isso impede que a função `generateBusinessPlanPDF` (que já foi corrigida) seja chamada.
+
+### Problema 2: Link Compartilhável no Preview
+O hook `useSharedReport.ts` já foi corrigido para validar campos estruturados, mas:
+- O Preview pode estar com código antigo em cache
+- Precisamos verificar se o deploy está atualizado
+
+---
 
 ## Solução
 
-### 1. Corrigir `useSharedReport.ts`
+### Correção 1: Dashboard - Validação do PDF
+**Arquivo:** `src/pages/PmsDashboard.tsx`
 
-Trocar a validação de `markdown_content` para aceitar o formato estruturado:
+Trocar a validação de `markdown_content` para campos estruturados:
 
-**Antes:**
 ```typescript
-if (!bp || !bp.markdown_content) return null;
-```
+// ❌ ANTES (linha 248):
+if (!bp || !bp.markdown_content) {
 
-**Depois:**
-```typescript
-// Validate: must have AI narratives (structured format)
-const hasContent = 
+// ✅ DEPOIS:
+const hasStructuredContent = 
   bp?.ai_executive_narrative || 
   bp?.ai_strategic_verdict || 
   (bp?.ai_key_recommendations && bp.ai_key_recommendations.length > 0);
 
-if (!bp || !hasContent) return null;
+if (!bp || !hasStructuredContent) {
 ```
 
----
+### Correção 2: Remover Legado do BusinessPlanTab
+**Arquivo:** `src/components/planningmysaas/dashboard/sections/BusinessPlanTab.tsx`
 
-### 2. Reescrever `businessPlanPdfExport.ts` para Formato Estruturado
+Remover bloco de fallback para markdown legado (linhas 132-145):
+```typescript
+// ❌ REMOVER: Legacy markdown support que não será mais usado
+{businessPlan?.markdown_content && !businessPlan?.ai_executive_narrative && ( ... )}
+```
 
-O PDF atual parseia markdown linha por linha. O novo formato não tem markdown, então precisamos gerar o PDF diretamente a partir dos campos estruturados.
+### Correção 3: Remover Legado do SharedReportContent
+**Arquivo:** `src/components/planningmysaas/public/SharedReportContent.tsx`
 
-**Estrutura do novo PDF:**
-
-| Página | Conteúdo |
-|--------|----------|
-| **Capa** | Título, Viability Score, Data |
-| **Executive Summary** | `ai_executive_narrative` + insights |
-| **Strategic Verdict** | `ai_strategic_verdict` |
-| **Next Steps** | Lista numerada de `ai_key_recommendations` |
-| **Footer** | "uaicode.ai \| PlanningMySaaS" |
-
-**Mudanças principais:**
-- Remover toda a lógica de parsing de markdown (`parseMarkdownLine`, `preprocessMarkdown`)
-- Remover lógica de chart placeholders (`[CHART:...]`)
-- Criar funções específicas para cada seção estruturada
-- Manter a estética visual (cores, fontes, layout A4)
+Remover bloco de fallback para markdown legado (linhas 266-274):
+```typescript
+// ❌ REMOVER: Legacy Markdown Support que não será mais usado
+{!hasStructuredContent && businessPlan.markdown_content && ( ... )}
+```
 
 ---
 
@@ -60,23 +67,28 @@ O PDF atual parseia markdown linha por linha. O novo formato não tem markdown, 
 
 | Arquivo | Mudança |
 |---------|---------|
-| `src/hooks/useSharedReport.ts` | Trocar validação de `markdown_content` para campos estruturados |
-| `src/lib/businessPlanPdfExport.ts` | Reescrever para gerar PDF a partir de campos AI narratives |
+| `src/pages/PmsDashboard.tsx` | Validação estruturada no `handleExportPDF` |
+| `src/components/planningmysaas/dashboard/sections/BusinessPlanTab.tsx` | Remover fallback markdown |
+| `src/components/planningmysaas/public/SharedReportContent.tsx` | Remover fallback markdown |
 
 ---
 
 ## Resultado Esperado
 
-| Funcionalidade | Status |
-|----------------|--------|
-| Link compartilhável | Carrega e mostra Executive Summary, Strategic Verdict, Next Steps |
-| Download PDF | Gera documento com todas as seções estruturadas |
-| Viability Score | Exibido no header do link e na capa do PDF |
+| Funcionalidade | Antes | Depois |
+|----------------|-------|--------|
+| Export PDF no Dashboard | Popup "Not Available" | Gera PDF com narrativas AI |
+| Link Compartilhável | "Report Not Found" | Mostra Executive Summary, Verdict, Next Steps |
 
 ---
 
-## Notas Técnicas
+## Teste End-to-End
 
-- O `SharedReportContent.tsx` já está preparado para o formato estruturado (linhas 64-71)
-- O PDF será mais simples e focado (~3-4 páginas vs documentos longos)
-- O export mantém compatibilidade com jsPDF existente
+1. **Dashboard PDF:**
+   - Abrir `/planningmysaas/dashboard/c7c6223a-596c-4e38-911b-d1df048e5976`
+   - Clicar em Share → Export to PDF
+   - Verificar download de arquivo `BusinessPlan_*.pdf`
+
+2. **Link Compartilhável:**
+   - Abrir `/planningmysaas/shared/a7ea613da8898c4f43de943742240aa9` no Preview
+   - Verificar que mostra o conteúdo estruturado (não "Report Not Found")
