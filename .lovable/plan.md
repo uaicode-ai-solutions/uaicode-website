@@ -1,97 +1,48 @@
 
 
-# Plano: Corrigir Step 4 e Gerar Nova Imagem Step 5
+# Plano: Regenerar Imagem Step 5 com Cores Padronizadas
 
-## Problemas Identificados
+## Análise do Padrão Visual
 
-1. **Step 4** - O título não foi alterado. Ainda está "Download Your Brand Kit", deveria ser "Download Your Launch Plan"
-2. **Step 5** - A imagem `pms-step-launch.webp` não segue o mesmo padrão visual das outras imagens (pms-step-idea, pms-step-analysis, pms-step-report, pms-step-brand)
+As imagens dos Steps 1-4 seguem um estilo visual consistente:
 
----
+| Característica | Padrão Existente |
+|----------------|------------------|
+| **Perspectiva** | 3D isométrica (inclinado) |
+| **Fundo** | Preto/cinza muito escuro (#0A0A0A) |
+| **Cores de destaque** | Apenas amber/gold (#F59E0B, #FCD34D) |
+| **Estilo UI** | Dashboard flat/2D em mockup |
+| **Elementos** | Sem objetos 3D realistas (sem foguetes, etc) |
 
-## Alterações
+## Problema da Imagem Atual (Step 5)
 
-### 1. Corrigir Título e Descrição do Step 4
+A imagem `pms-step-launch.webp` atual tem:
+- ❌ Visualização frontal (não isométrica)
+- ❌ Foguete 3D realista
+- ❌ Cores laranja e variações além do amber
+- ❌ Fundo cinza mais claro
 
-**Arquivo:** `src/components/planningmysaas/PmsHowItWorks.tsx`
+## Solução
 
-**De:**
-```typescript
-{
-  icon: Palette,
-  step: 4,
-  title: "Download Your Brand Kit",
-  description: "Get your logo, colors, mockups, and landing page suggestion — ready to use.",
-  image: stepBrand,
-},
-```
+Regenerar a imagem usando um prompt específico para seguir exatamente o padrão visual.
 
-**Para:**
-```typescript
-{
-  icon: FileText, // Trocar ícone para FileText (documento/plano)
-  step: 4,
-  title: "Download Your Launch Plan",
-  description: "Get your complete business plan, financial projections, and go-to-market strategy.",
-  image: stepBrand, // Manter imagem existente ou gerar nova
-},
-```
+**Prompt otimizado:**
+> "3D isometric dark theme SaaS dashboard mockup floating on pure black background, angled perspective like a tablet tilted in 3D space, showing MVP launch timeline with progress bars and milestones, ONLY amber and gold accent colors (#F59E0B), no realistic 3D objects, flat UI design, clean minimalist interface, matching the style of a dark analytics dashboard with golden highlights, subtle amber glow effects, no rocket icons, no gradients to orange, pure amber/gold only"
 
----
+## Alteração
 
-### 2. Gerar Nova Imagem para Step 5
+**Arquivo:** `src/assets/pms-step-launch.webp`
 
-A imagem atual do Step 5 não segue o padrão das outras. As imagens existentes (pms-step-idea, analysis, report, brand) seguem um estilo consistente de:
-- Screenshots de dashboard/interface
-- Tema escuro com acentos amber/gold
-- Mockups de UI profissionais
-
-**Prompt para nova imagem Step 5:**
-> "Dark theme SaaS dashboard screenshot showing MVP development progress tracker, similar style to the other step images, with amber/gold accent colors, showing timeline with milestones, rocket icon, progress bars at 85%, professional UI mockup, clean modern interface design matching pms-step-analysis and pms-step-report style"
-
----
-
-### 3. Atualizar Imports (se trocar ícone)
-
-**De:**
-```typescript
-import { Lightbulb, BarChart3, FileText, Palette, Rocket } from "lucide-react";
-```
-
-Manter, pois `FileText` já está importado.
-
----
-
-## Resumo das Alterações
-
-| Step | Título Atual | Título Novo | Ícone |
-|------|-------------|-------------|-------|
-| 4 | Download Your Brand Kit | **Download Your Launch Plan** | FileText |
-| 5 | Launch Your MVP | Launch Your MVP (manter) | Rocket |
-
-| Imagem | Ação |
-|--------|------|
-| Step 5 (`pms-step-launch.webp`) | **Regenerar** seguindo o padrão visual das outras imagens |
-
----
-
-## Código Final do Step 4
-
-```typescript
-{
-  icon: FileText,
-  step: 4,
-  title: "Download Your Launch Plan",
-  description: "Get your complete business plan, financial projections, and go-to-market strategy.",
-  image: stepBrand,
-},
-```
-
----
+**Ação:** Regenerar imagem com:
+1. Perspectiva 3D isométrica (device inclinado)
+2. Fundo preto puro
+3. Apenas cores amber/gold (#F59E0B, #FCD34D)
+4. UI flat/dashboard sem elementos 3D realistas
+5. Tema de "launch/progress" com barras de progresso e timeline
 
 ## Impacto
 
-- **Linhas alteradas:** ~5 linhas
-- **Imagem regenerada:** 1 (Step 5)
-- **Ícones:** Trocar Palette → FileText no Step 4
+- **Arquivos alterados:** 1 (imagem)
+- **Visual:** Consistência completa entre os 5 steps
+- **Funcionalidade:** Nenhuma alteração de código
 
