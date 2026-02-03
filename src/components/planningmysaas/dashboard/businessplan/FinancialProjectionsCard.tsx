@@ -29,12 +29,42 @@ const FinancialProjectionsCard: React.FC<FinancialProjectionsCardProps> = ({
   const investmentCents = investment?.investment_one_payment_cents as number | undefined;
   const mvpInvestment = investmentCents ? investmentCents / 100 : null;
 
-  // Build scenarios for J-Curve
-  const scenarios = financialMetrics.financialScenarios.length > 0
-    ? financialMetrics.financialScenarios.map(s => ({
-        name: s.name as 'Conservative' | 'Realistic' | 'Optimistic',
-        mrrMonth12: s.mrrMonth12,
-        breakEvenMonths: s.breakEven,
+  // Build scenarios for J-Curve - NORMALIZE "Base" to "Realistic"
+  const dbScenarios = financialMetrics.financialScenarios || [];
+  const conservativeDb = dbScenarios.find(s => s.name === 'Conservative');
+  const baseDb = dbScenarios.find(s => s.name === 'Base');
+  const optimisticDb = dbScenarios.find(s => s.name === 'Optimistic');
+
+  // Build chart scenarios with normalized names
+  const rawScenarios = [
+    {
+      name: "Conservative" as const,
+      mrrMonth12: conservativeDb?.mrrMonth12 ?? null,
+      breakEvenMonths: conservativeDb?.breakEven ?? null,
+      probability: conservativeDb?.probability ?? "25%",
+    },
+    {
+      name: "Realistic" as const, // UI name for "Base" from DB
+      mrrMonth12: baseDb?.mrrMonth12 ?? null,
+      breakEvenMonths: baseDb?.breakEven ?? null,
+      probability: baseDb?.probability ?? "50%",
+    },
+    {
+      name: "Optimistic" as const,
+      mrrMonth12: optimisticDb?.mrrMonth12 ?? null,
+      breakEvenMonths: optimisticDb?.breakEven ?? null,
+      probability: optimisticDb?.probability ?? "25%",
+    },
+  ];
+
+  // Filter out scenarios with null values and build final array
+  const scenarios = rawScenarios
+    .filter(s => s.mrrMonth12 !== null && s.breakEvenMonths !== null)
+    .length === 3
+    ? rawScenarios.map(s => ({
+        name: s.name,
+        mrrMonth12: s.mrrMonth12!,
+        breakEvenMonths: s.breakEvenMonths!,
         probability: s.probability,
       }))
     : null;
