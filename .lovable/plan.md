@@ -1,55 +1,60 @@
 
 
-# Plano: Corrigir Imagem Step 5 - Foguete, Tamanho e Fundo Degradê
+# Plano: Ajustar Cores do Step 5 para Padrão UaiCode
 
-## Problemas Identificados
+## Análise das Cores Corretas (Steps 1-4)
 
-A imagem atual do Step 5 (`pms-step-launch.webp`) precisa de ajustes:
-
-| Problema | Correção Necessária |
-|----------|---------------------|
-| **Foguete ausente** | Adicionar ícone de foguete estilizado (flat/2D, não realista) |
-| **Tamanho incorreto** | Ajustar para dimensões consistentes com outras imagens |
-| **Fundo sem degradê** | Aplicar gradiente sutil como nas outras imagens |
+| Elemento | Cor Correta |
+|----------|-------------|
+| **Fundo** | Degradê #1A1A1A → #2D2D2D (cinza escuro) |
+| **Acentos primários** | Amber #F59E0B (botões, highlights) |
+| **Textos dourados** | Gold #FCD34D (títulos, linhas) |
+| **Cards/Interface** | Cinza #1F1F1F a #262626 |
+| **Bordas** | Amber sutil #F59E0B/30 |
 
 ---
 
-## Padrão Visual das Outras Imagens
+## Problema Atual
 
-Baseado nas imagens existentes (Steps 1-4):
-
-- **Fundo**: Degradê sutil do preto (#0A0A0A) para cinza escuro, não fundo sólido
-- **Elementos**: Ícones flat/2D representando o conceito do step
-- **Perspectiva**: 3D isométrica com device inclinado
-- **Dimensões**: Aproximadamente 1200x800px ou similar
+A imagem do Step 5 atual usa:
+- ❌ Tons laranja/bronze mais avermelhados
+- ❌ Dourado com saturação diferente
+- ❌ Não combina com o amber puro das outras imagens
 
 ---
 
 ## Solução
 
-Regenerar a imagem com prompt otimizado:
+Regenerar a imagem forçando explicitamente as cores UaiCode:
 
-**Prompt corrigido:**
-> "3D isometric dark theme SaaS dashboard mockup floating on dark gradient background (black to dark gray), angled perspective like a tablet tilted in 3D space, showing MVP launch timeline with progress bars and milestones, include a stylized flat 2D rocket icon taking off from the dashboard, amber and gold accent colors (#F59E0B, #FCD34D), clean minimalist interface design, subtle amber glow effects, gradient background from #0A0A0A to #1A1A1A, matching the style of a premium dark analytics dashboard"
+**Prompt otimizado com cores forçadas:**
+> "3D isometric dark theme SaaS dashboard mockup floating on dark gradient background from #1A1A1A to #2D2D2D, angled perspective like a tablet tilted in 3D space, showing MVP launch timeline with progress bars and milestones, include a stylized flat 2D rocket icon taking off from the dashboard, USE ONLY THESE EXACT COLORS: amber #F59E0B for buttons and primary accents, gold #FCD34D for text highlights and lines, dark gray #1F1F1F for cards, NO orange, NO bronze, NO red tones, pure amber/gold only matching UaiCode brand colors, clean minimalist interface design, subtle amber #F59E0B glow effects, professional dark analytics dashboard style"
 
 ---
 
-## Alteração
+## Especificações Técnicas
 
 **Arquivo:** `src/assets/pms-step-launch.webp`
 
-**Especificações:**
-1. ✅ Foguete estilizado flat/2D (não realista 3D)
-2. ✅ Fundo com degradê preto → cinza escuro
-3. ✅ Perspectiva 3D isométrica
-4. ✅ Cores amber/gold (#F59E0B, #FCD34D)
-5. ✅ Dimensões consistentes com outras imagens
+**Cores obrigatórias:**
+```
+Primary Accent: #F59E0B (amber-500)
+Secondary: #FCD34D (amber-300)
+Background: #1A1A1A → #2D2D2D gradient
+Cards: #1F1F1F to #262626
+```
+
+**Elementos a manter:**
+- ✅ Foguete estilizado 2D
+- ✅ Perspectiva 3D isométrica
+- ✅ Dashboard com timeline/progress bars
+- ✅ Dimensões 1200x800
 
 ---
 
 ## Impacto
 
 - **Arquivos alterados:** 1 (imagem)
-- **Visual:** Consistência completa entre os 5 steps
+- **Visual:** Cores 100% consistentes com Steps 1-4
 - **Funcionalidade:** Nenhuma alteração de código
 
