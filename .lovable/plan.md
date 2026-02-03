@@ -1,202 +1,245 @@
 
+# Plano: Otimizar Tela "Next Steps" - Menos Ruído, Mais Conversão
 
-# Plano: Reorganizar Tela "Next Steps" (Preservando Kyle + Cálculos)
+## Diagnóstico
 
-## Resumo Executivo
+A tela atual tem **3 problemas críticos**:
 
-Reorganizar a tela "Next Steps" para focar no **calendário como hero**, removendo elementos redundantes e simplificando a hierarquia visual - **sem quebrar nenhuma lógica de cálculos ou o Kyle**.
-
----
-
-## O Que Será PRESERVADO (Intacto)
-
-| Elemento | Arquivo | Razão |
-|----------|---------|-------|
-| `useReportContext` | NextStepsSection.tsx | Fornece dados calculados |
-| `getSectionInvestment()` | sectionInvestmentUtils.ts | Cálculos de pricing |
-| `getDiscountStrategy()` | sectionInvestmentUtils.ts | Estratégias de desconto |
-| `useCountdownTimer()` | NextStepsSection.tsx | Timer funcional |
-| `formatCurrency()` | NextStepsSection.tsx | Formatação monetária |
-| **Pricing Cards completos** | NextStepsSection.tsx | Flash Deal + Bundle (todo o cálculo) |
-| **MeetKyleSection** | MeetKyleSection.tsx | 100% intacto |
-| **Dialogs do Kyle** | KyleConsultantDialog, etc. | 100% intactos |
+1. **Timer desconectado do calendário** - Urgência no lugar errado
+2. **Meet Kyle muito grande** - Interrompe o fluxo de conversão
+3. **Pricing cards muito densos** - Fadiga visual
 
 ---
 
-## O Que Será REMOVIDO (Limpar Ruído)
+## Alterações Propostas
 
-| Elemento | Linhas | Justificativa |
-|----------|--------|---------------|
-| Viability Score Card | 241-258 | Já aparece no ReportHero - redundante |
-| 4 cards "What happens when you choose" | 260-312 | Info secundária que distrai |
-| 3 cards "What to Expect" no ScheduleCallSection | 126-152 | Repete info do pricing |
-| Segundo countdown timer no ScheduleCallSection | 155-180 | Redundante - já tem no NextStepsSection |
-
----
-
-## O Que Será SIMPLIFICADO
-
-| Elemento | Mudança |
-|----------|---------|
-| Header do NextStepsSection | Remover score card, manter apenas "Choose Your Package" |
-| ScheduleCallSection | Mover calendário para cima, remover cards de feature |
-
----
-
-## Nova Ordem da Tela (De Cima para Baixo)
-
-```text
-┌─────────────────────────────────────────────────────────────────────┐
-│  1. SCHEDULE CALL SECTION (promovido para HERO)                     │
-│     - Header simplificado "Book Your Call"                          │
-│     - Timer único e grande                                          │
-│     - Calendário Cal.com (destaque máximo)                          │
-│     - Garantias em linha                                            │
-├─────────────────────────────────────────────────────────────────────┤
-│  2. MEET KYLE SECTION (sem mudanças)                                │
-│     - Mantido exatamente como está                                  │
-│     - Botões Email/Chat/Call funcionando                            │
-├─────────────────────────────────────────────────────────────────────┤
-│  3. PRICING SECTION (movido para o final)                           │
-│     - Header "Choose Your Package"                                  │
-│     - 2 Pricing Cards (Flash Deal + Bundle) - TODOS OS CÁLCULOS     │
-│     - Marketing billing notice                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Alterações Detalhadas
-
-### 1. PmsDashboard.tsx - Reordenar Componentes
-
-**Arquivo:** `src/pages/PmsDashboard.tsx`  
-**Linhas:** 567-573
-
-**De:**
-```typescript
-{activeTab === "nextsteps" && (
-  <div className="space-y-16">
-    <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
-    <MeetKyleSection wizardId={wizardId} />
-    <ScheduleCallSection projectName={projectName} />
-  </div>
-)}
-```
-
-**Para:**
-```typescript
-{activeTab === "nextsteps" && (
-  <div className="space-y-16">
-    <ScheduleCallSection projectName={projectName} />
-    <MeetKyleSection wizardId={wizardId} />
-    <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
-  </div>
-)}
-```
-
-**Justificativa:** Calendário vira o HERO da página (primeira coisa que o usuário vê).
-
----
-
-### 2. ScheduleCallSection.tsx - Simplificar (Remover 3 Cards)
+### 1. ScheduleCallSection - Adicionar Timer + Simplificar
 
 **Arquivo:** `src/components/planningmysaas/dashboard/sections/ScheduleCallSection.tsx`
 
-**Remoções:**
-- Linhas 126-152: Bloco `{/* What to Expect Cards */}` (3 cards de features)
-- Linhas 155-180: Bloco `{/* Countdown Timer */}` (timer redundante)
+**Mudanças:**
+- Adicionar timer countdown **GRANDE** logo acima do calendário
+- Remover código morto (`features` array não utilizado)
+- Melhorar headline para criar mais urgência
 
-O componente ficará apenas com:
-- Header "Book Your Call" + badge + social proof
-- Garantias (Shield icons)
-- Calendário Cal.com (destaque máximo)
-- Link "Having trouble?"
+**De:**
+```
+Header "Book Your Call" + Badge
+Guarantees
+Calendário
+```
 
----
+**Para:**
+```
+Header "Book Your Call" + Badge + Social Proof
+Timer countdown GRANDE (chamando atenção)
+Calendário
+Guarantees (abaixo)
+```
 
-### 3. NextStepsSection.tsx - Remover Elementos Redundantes
+### 2. MeetKyleSection - Versão Compacta
+
+**Arquivo:** `src/components/planningmysaas/dashboard/sections/MeetKyleSection.tsx`
+
+**Mudanças:**
+- Layout horizontal (1 linha) ao invés de 2 colunas
+- Avatar pequeno (64px) ao invés de grande
+- Remover os 2 parágrafos de bio
+- Manter apenas: Avatar + "Questions? Talk to Kyle" + 3 botões
+
+**De (100+ linhas, layout 2 colunas):**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  [Texto longo]                    [Foto grande do Kyle]        │
+│  2 parágrafos                     + badge nome                 │
+│  3 botões grandes                                              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Para (1 linha compacta):**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  [Avatar 64px] Have questions? Talk to Kyle  [📧] [💬] [📞]   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 3. NextStepsSection - Remover Timer Redundante
 
 **Arquivo:** `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx`
 
-**Remoções:**
-- Linhas 241-258: Viability Score Card
-- Linhas 260-312: 4 cards "What happens when you choose"
-
-**O que PERMANECE (linhas 315-720):**
-- Header "Choose Your Package"
-- Timer countdown (o único da página)
-- Pricing Card 1: MVP Flash Deal (25% OFF)
-- Pricing Card 2: Complete Launch Bundle (30% OFF)
-- Marketing Billing Notice
-
-**TODOS os cálculos permanecem intactos:**
-- `getSectionInvestment(reportData)`
-- `getDiscountStrategy(sectionInvestment, mvpPriceCents)`
-- `getDiscountSavings()`
-- `formatCurrency()`
-- `useCountdownTimer()`
+**Mudanças:**
+- Remover timer dos pricing cards (agora está no ScheduleCallSection)
+- Manter pricing cards com todos os cálculos intactos
+- Remover header "Next Steps" redundante (já tem "Choose Your Package")
 
 ---
 
-## Comparação Visual: Antes vs Depois
+## Nova Estrutura da Tela
 
 ```text
-ANTES (12+ elementos)                    DEPOIS (6 elementos)
-─────────────────────                    ──────────────────────
-1. Header "Next Steps"                   1. Header "Book Your Call"
-2. Viability Score Card                  2. Garantias inline
-3. 4 cards "What happens"                3. Calendário Cal.com (HERO)
-4. Header "Choose Your Package"          4. Meet Kyle Section
-5. Timer                                 5. Header "Choose Your Package"
-6. 2 Pricing Cards                       6. Timer + 2 Pricing Cards
-7. Marketing Notice                      
-8. Meet Kyle Section (grande)            
-9. Header "Book Your Call"               
-10. 3 cards "What to Expect"             
-11. Timer (duplicado)                    
-12. Garantias                            
-13. Calendário Cal.com (afogado)         
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│  SCHEDULE CALL SECTION (HERO)                                                           │
+│  ┌───────────────────────────────────────────────────────────────────────────────────┐  │
+│  │  Header: "Book Your Call" + Badge "Limited Time" + "47 founders booked"           │  │
+│  │                                                                                   │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │  🕐 Offer expires in:  [ 13 HOURS ] : [ 45 MINS ] : [ 22 SECS ]             │  │  │
+│  │  │     Lock in your 25% discount before time runs out!                         │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                                   │  │
+│  │  [                    CALENDÁRIO CAL.COM (DESTAQUE)                    ]          │  │
+│  │                                                                                   │  │
+│  │  ✓ No payment required    ✓ Cancel anytime    ✓ Discount guaranteed              │  │
+│  └───────────────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                         │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│  MEET KYLE (COMPACTO - 1 LINHA)                                                         │
+│  ┌───────────────────────────────────────────────────────────────────────────────────┐  │
+│  │  [Avatar 64px]   Have questions? Talk to Kyle   [📧 Email] [💬 Chat] [📞 Call]   │  │
+│  └───────────────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                         │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│  PRICING SECTION                                                                        │
+│  ┌───────────────────────────────────────────────────────────────────────────────────┐  │
+│  │  Header: "Choose Your Package" - Limited-time discounts                           │  │
+│  │                                                                                   │  │
+│  │  ┌─────────────────────────┐    ┌─────────────────────────┐                       │  │
+│  │  │  MVP Flash Deal         │    │  Complete Bundle        │                       │  │
+│  │  │  25% OFF - $X,XXX       │    │  30% OFF - $X,XXX       │                       │  │
+│  │  │  (Sem timer - agora     │    │  (Sem timer - agora     │                       │  │
+│  │  │   está acima)           │    │   está acima)           │                       │  │
+│  │  └─────────────────────────┘    └─────────────────────────┘                       │  │
+│  │                                                                                   │  │
+│  │  Marketing billing notice                                                         │  │
+│  └───────────────────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Detalhes Técnicos
+
+### Alteração 1: ScheduleCallSection.tsx
+
+**Adicionar timer countdown entre header e calendário:**
+
+```typescript
+{/* Countdown Timer - NOVO */}
+<div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20">
+  <div className="flex flex-col items-center gap-3">
+    <div className="flex items-center gap-2 text-foreground">
+      <Clock className="h-5 w-5 text-amber-400 animate-pulse" />
+      <span className="text-base font-semibold">Offer expires in:</span>
+    </div>
+    <div className="flex items-center gap-3">
+      <div className="bg-background/80 border border-amber-500/30 px-4 py-2 rounded-lg text-center">
+        <span className="text-3xl font-bold text-gradient-gold">{formatTime(timeLeft.hours)}</span>
+        <span className="text-xs text-muted-foreground block">HOURS</span>
+      </div>
+      <span className="text-2xl font-bold text-amber-400">:</span>
+      <div className="bg-background/80 border border-amber-500/30 px-4 py-2 rounded-lg text-center">
+        <span className="text-3xl font-bold text-gradient-gold">{formatTime(timeLeft.minutes)}</span>
+        <span className="text-xs text-muted-foreground block">MINS</span>
+      </div>
+      <span className="text-2xl font-bold text-amber-400">:</span>
+      <div className="bg-background/80 border border-amber-500/30 px-4 py-2 rounded-lg text-center">
+        <span className="text-3xl font-bold text-gradient-gold">{formatTime(timeLeft.seconds)}</span>
+        <span className="text-xs text-muted-foreground block">SECS</span>
+      </div>
+    </div>
+    <p className="text-sm text-amber-400 font-medium">Lock in your 25% discount before time runs out!</p>
+  </div>
+</div>
+```
+
+**Remover código morto (array `features` não utilizado).**
+
+---
+
+### Alteração 2: MeetKyleSection.tsx - Layout Compacto
+
+**Substituir layout 2 colunas por 1 linha horizontal:**
+
+```typescript
+const MeetKyleSection = ({ wizardId }: MeetKyleSectionProps) => {
+  // ... states mantidos
+
+  return (
+    <section className="py-6">
+      <Card className="glass-card border-amber-500/20 p-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          {/* Avatar Pequeno */}
+          <img
+            src={kyleAvatar}
+            alt="Kyle"
+            className="w-16 h-16 rounded-full border-2 border-amber-500/30"
+          />
+          
+          {/* Texto */}
+          <div className="flex-1 text-center sm:text-left">
+            <p className="text-base font-medium text-foreground">
+              Have questions? <span className="text-gradient-gold">Talk to Kyle</span>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Your AI sales consultant, available 24/7
+            </p>
+          </div>
+          
+          {/* Botões Compactos */}
+          <div className="flex gap-2">
+            <Button onClick={() => setEmailDialogOpen(true)} variant="outline" size="sm">
+              <Mail className="h-4 w-4" />
+            </Button>
+            <Button onClick={() => setKyleChatDialogOpen(true)} variant="outline" size="sm">
+              <MessageSquare className="h-4 w-4" />
+            </Button>
+            <Button onClick={() => setKyleDialogOpen(true)} size="sm" className="bg-amber-500 text-black">
+              <Phone className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Dialogs mantidos iguais */}
+    </section>
+  );
+};
+```
+
+---
+
+### Alteração 3: NextStepsSection.tsx - Remover Timer
+
+**Remover o bloco de timer (linhas 398-420) dos pricing cards:**
+
+O timer agora está no ScheduleCallSection, então removemos a duplicação.
+
+**Remover também o header "Next Steps" redundante (linhas 224-239)** já que temos "Choose Your Package" logo abaixo.
 
 ---
 
 ## Arquivos Tocados
 
-| Arquivo | Ação | Linhas Afetadas |
-|---------|------|-----------------|
-| `src/pages/PmsDashboard.tsx` | Reordenar componentes | ~3 linhas |
-| `src/components/planningmysaas/dashboard/sections/ScheduleCallSection.tsx` | Remover 3 cards + timer | ~55 linhas removidas |
-| `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx` | Remover score + 4 cards | ~75 linhas removidas |
+| Arquivo | Ação | Impacto |
+|---------|------|---------|
+| `ScheduleCallSection.tsx` | Adicionar timer, remover código morto | +25 linhas |
+| `MeetKyleSection.tsx` | Refatorar para layout compacto | -60 linhas |
+| `NextStepsSection.tsx` | Remover timer e header redundante | -35 linhas |
+
+**Net: ~70 linhas removidas**
 
 ---
 
-## Segurança dos Cálculos
+## Segurança
 
 ```text
 ✅ useReportContext()           → NÃO TOCADO
 ✅ getSectionInvestment()       → NÃO TOCADO
 ✅ getDiscountStrategy()        → NÃO TOCADO
-✅ getDiscountSavings()         → NÃO TOCADO
-✅ useCountdownTimer()          → MANTIDO (1 único)
 ✅ formatCurrency()             → NÃO TOCADO
-✅ discountStrategy.flash_24h   → NÃO TOCADO
-✅ discountStrategy.bundle      → NÃO TOCADO
-✅ mvpPriceCents                → NÃO TOCADO
-✅ marketingAnnualUaicode       → NÃO TOCADO
-```
-
----
-
-## Segurança do Kyle
-
-```text
-✅ MeetKyleSection.tsx          → 100% INTACTO
-✅ KyleConsultantDialog         → NÃO TOCADO
-✅ KyleChatDialog               → NÃO TOCADO
-✅ EmailKyleDialog              → NÃO TOCADO
-✅ useKyleElevenLabs            → NÃO TOCADO
-✅ useKyleChatElevenLabs        → NÃO TOCADO
+✅ Pricing cards (cálculos)     → INTACTOS
+✅ Kyle dialogs                 → MANTIDOS
+✅ useCountdownTimer            → Movido para ScheduleCallSection
 ```
 
 ---
@@ -205,10 +248,8 @@ ANTES (12+ elementos)                    DEPOIS (6 elementos)
 
 | Métrica | Antes | Depois |
 |---------|-------|--------|
-| Elementos visuais | 12+ | 6 |
-| Scroll necessário | 4-5 telas | 2 telas |
-| Timers duplicados | 2 | 1 |
-| Tempo para ver calendário | ~30s scroll | Imediato |
-| Cálculos funcionando | ✅ | ✅ |
-| Kyle funcionando | ✅ | ✅ |
-
+| Altura da seção Kyle | ~400px | ~80px |
+| Timer no lugar certo | ❌ (nos cards) | ✅ (acima do calendário) |
+| Fluxo visual claro | ❌ | ✅ (Timer → Calendário → Kyle → Pricing) |
+| Linhas de código | ~870 | ~800 |
+| Elementos competindo atenção | Muitos | Poucos |
