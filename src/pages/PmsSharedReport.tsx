@@ -46,8 +46,16 @@ const PmsSharedReport = () => {
       
       <main className="pt-24 pb-16">
         <div className="max-w-4xl mx-auto px-4 lg:px-6 space-y-8">
-          {/* Business Plan Content */}
-          <SharedReportContent businessPlan={data.business_plan_section} />
+          {/* Business Plan Content - All 9 sections like Dashboard */}
+          <SharedReportContent 
+            businessPlan={data.business_plan_section}
+            opportunity={data.opportunity_section}
+            competitive={data.competitive_analysis_section}
+            icp={data.icp_intelligence_section}
+            pricing={data.price_intelligence_section}
+            growth={data.growth_intelligence_section}
+            investment={data.section_investment}
+          />
           
           {/* Footer with CTAs */}
           <SharedReportFooter 
