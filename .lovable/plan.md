@@ -1,61 +1,106 @@
 
-# Correção: CAGR 0.2% vs 17.7% - ExecutiveSnapshotCard
+# Melhorias na Página Pública de Compartilhamento
 
-## Problema Identificado
+## Problema 1: Footer "Grudado"
 
-O campo `market_growth_rate_numeric` é armazenado em **formato decimal** (0.177 = 17.7%), mas a função `formatPercentage()` não converte corretamente:
+O `SharedReportFooter` está renderizado imediatamente após o `BusinessPlanTab` sem espaçamento vertical adequado.
 
-| Campo | Valor no DB | Exibição Atual | Correto |
-|-------|-------------|----------------|---------|
-| `market_growth_rate_numeric` | `0.177` | `0.2%` | `17.7%` |
-| `market_growth_rate` | `"17.7% CAGR"` | - | `17.7%` |
+**Solução**: Adicionar margin-top ao footer para criar separação visual.
 
-## Escopo
+## Problema 2: Falta de Contexto para o Destinatário
 
-Como ambas as páginas (Dashboard e Shared Report) usam o mesmo componente `BusinessPlanTab` → `ExecutiveSnapshotCard`, a correção será aplicada **uma única vez** e refletirá em ambos os locais.
+Quem recebe o link compartilhado não sabe imediatamente qual relatório está visualizando. Falta um "hero" com o nome do projeto e o score de viabilidade.
 
-## Solução
+**Solução**: Criar um hero simplificado específico para a página pública, reutilizando a lógica do `ReportHero` existente mas de forma mais compacta.
 
-Atualizar a função `formatPercentage()` para detectar valores decimais (< 1) e multiplicar por 100 antes de formatar.
+---
 
-## Arquivo a Modificar
+## Arquivos a Modificar/Criar
 
-**`src/components/planningmysaas/dashboard/businessplan/ExecutiveSnapshotCard.tsx`**
+### 1. Novo Componente: `SharedReportHero.tsx`
 
-### Função formatPercentage (linhas 37-41)
+Criar um hero compacto para a página pública com:
+- Badge "Shared Business Plan"
+- Nome do projeto (extraído do `wizard_snapshot.saas_name`)
+- Score de viabilidade em formato visual (anel circular)
+- Tagline/veredicto curto
 
-**Antes:**
-```typescript
-const formatPercentage = (value: string | number | null | undefined): string => {
-  if (!value) return "...";
-  if (typeof value === "number") return `${value.toFixed(1)}%`;
-  return value;
-};
+**Localização**: `src/components/planningmysaas/public/SharedReportHero.tsx`
+
+```tsx
+// Estrutura proposta:
+<div className="text-center py-12 space-y-6">
+  <Badge>Shared Business Plan</Badge>
+  <h1>Nome do Projeto</h1>
+  
+  {/* Score Ring (versão compacta do ReportHero) */}
+  <div className="w-24 h-24">
+    <ScoreRing score={68} />
+  </div>
+  
+  <p className="text-accent">Tagline do veredicto</p>
+</div>
 ```
 
-**Depois:**
-```typescript
-const formatPercentage = (value: string | number | null | undefined): string => {
-  if (!value) return "...";
-  if (typeof value === "number") {
-    // Se o valor for decimal (< 1), multiplica por 100 para converter para porcentagem
-    // Ex: 0.177 → 17.7%
-    const percentage = value < 1 ? value * 100 : value;
-    return `${percentage.toFixed(1)}%`;
-  }
-  // Remove sufixos como " CAGR" do string para manter consistência visual
-  return value.replace(/\s*CAGR\s*/i, '');
-};
+### 2. Modificar: `PmsSharedReport.tsx`
+
+- Importar e adicionar o novo `SharedReportHero` após o header
+- Adicionar classe `mt-12` antes do `SharedReportFooter` para espaçamento
+
+```tsx
+// Estrutura atualizada:
+<main className="pt-24 pb-16">
+  <div className="max-w-5xl mx-auto px-4 lg:px-6">
+    <SharedReportHero />    {/* NOVO: Hero com nome e score */}
+    <BusinessPlanTab />
+    <div className="mt-12">  {/* NOVO: Espaçamento */}
+      <SharedReportFooter />
+    </div>
+  </div>
+</main>
 ```
 
-## Resultado Esperado
+---
 
-| Página | Antes | Depois |
-|--------|-------|--------|
-| Dashboard - Executive Snapshot | 0.2% | 17.7% |
-| Shared Report - Executive Snapshot | 0.2% | 17.7% |
-| Dashboard - Market Analysis | 17.7% CAGR | 17.7% CAGR (sem mudança) |
+## Detalhes Técnicos
 
-## Observação Técnica
+### Dados para o SharedReportHero
 
-A lógica `value < 1` é segura porque taxas de crescimento de mercado realistas raramente excedem 100% ao ano. Se o valor já vier como número inteiro (ex: 17.7), será formatado diretamente.
+O `SharedReportContext` já fornece:
+- `report.saas_name` - nome do projeto (via `wizard_snapshot`)
+- `reportData.hero_score_section.score` - score de viabilidade
+- `reportData.hero_score_section.tagline` - tagline do veredicto
+
+### Estilo do Score Ring
+
+Reutilizar o SVG do `ReportHero` existente, mas em tamanho menor (w-24 h-24) para um visual mais compacto adequado à página pública.
+
+---
+
+## Resultado Visual Esperado
+
+```text
+┌─────────────────────────────────────────┐
+│  [Header com logo e badge]              │
+├─────────────────────────────────────────┤
+│                                         │
+│        🏷️ Shared Business Plan          │
+│                                         │
+│        **Nome do Projeto**              │
+│                                         │
+│            ┌─────┐                      │
+│            │  68 │  <- Score Ring       │
+│            └─────┘                      │
+│                                         │
+│   "Tagline de viabilidade do projeto"   │
+│                                         │
+├─────────────────────────────────────────┤
+│  [BusinessPlanTab - conteúdo atual]     │
+│           ...                           │
+│           ...                           │
+├─────────────────────────────────────────┤
+│                                         │  <- NOVO: mt-12 gap
+│  [SharedReportFooter - CTA + credits]   │
+│                                         │
+└─────────────────────────────────────────┘
+```
