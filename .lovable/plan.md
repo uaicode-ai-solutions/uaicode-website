@@ -1,79 +1,93 @@
 
-# Plano: Fazer o Link Compartilhável Mostrar Todas as Seções
+# Plano: Corrigir Erro de Tela Preta no Link Compartilhável
 
-## O Problema (Simples)
+## Problema Identificado
 
-O Dashboard busca dados de **7 colunas** do banco.
-O Link Compartilhável busca dados de **1 coluna** apenas.
+O `SharedReportContent.tsx` cria um objeto `reportData` manualmente para passar ao hook `useFinancialMetrics`, mas está **faltando o campo `benchmark_section`**, que é obrigatório na interface `ReportData`.
 
-Por isso faltam 6 seções no link compartilhável.
+**Arquivo:** `src/components/planningmysaas/public/SharedReportContent.tsx`
+**Linhas:** 50-74
+
+```typescript
+// PROBLEMA - Falta benchmark_section
+const reportData = {
+  id: "",
+  wizard_id: "",
+  // ... outros campos
+  // benchmark_section: null, ← FALTA ESTE CAMPO
+} as const;
+
+const financialMetrics = useFinancialMetrics(reportData as Parameters<typeof useFinancialMetrics>[0]);
+```
+
+A interface `ReportData` (linha 796 de types/report.ts) exige:
+```typescript
+benchmark_section: unknown | null;
+```
+
+Quando o campo está ausente, o TypeScript pode compilar, mas em runtime o hook pode lançar um erro ao acessar propriedades do `reportData`, causando o crash (tela preta).
 
 ---
 
-## A Solução (Simples)
+## Solução
 
-### Passo 1: Expandir a query do hook
+Adicionar o campo `benchmark_section: null` ao objeto `reportData` criado no `SharedReportContent.tsx`.
 
-**Arquivo:** `src/hooks/useSharedReport.ts`
-
-Mudar linha 19 de:
-```typescript
-.select("business_plan_section, wizard_id")
-```
-
-Para:
-```typescript
-.select(`
-  business_plan_section,
-  opportunity_section,
-  competitive_analysis_section,
-  icp_intelligence_section,
-  price_intelligence_section,
-  growth_intelligence_section,
-  section_investment,
-  wizard_id
-`)
-```
-
-E expandir a interface `SharedReportData` para incluir todas as seções.
-
----
-
-### Passo 2: Atualizar o componente para usar os mesmos cards do Dashboard
+### Mudança no Código
 
 **Arquivo:** `src/components/planningmysaas/public/SharedReportContent.tsx`
 
-Importar e usar os mesmos componentes que o Dashboard usa:
-- `ExecutiveSnapshotCard`
-- `ExecutiveNarrativeCard`
-- `MarketAnalysisCard`
-- `CompetitiveLandscapeCard`
-- `TargetCustomerCard`
-- `BusinessModelCard`
-- `FinancialProjectionsCard`
-- `InvestmentAskCard`
-- `StrategicVerdictCard`
+Adicionar na linha 59 (entre `business_plan_section` e `icp_avatar_url`):
 
----
+```typescript
+const reportData = {
+  id: "",
+  wizard_id: "",
+  status: "completed",
+  created_at: "",
+  updated_at: "",
+  hero_score_section: null,
+  summary_section: null,
+  benchmark_section: null,  // ← ADICIONAR ESTA LINHA
+  business_plan_section: null,
+  icp_avatar_url: null,
+  paid_media_intelligence_section: null,
+  share_enabled: true,
+  share_token: null,
+  share_url: null,
+  share_created_at: null,
+  opportunity_section: opportunity,
+  growth_intelligence_section: growth,
+  section_investment: investment,
+  price_intelligence_section: pricing,
+  icp_intelligence_section: icp,
+  competitive_analysis_section: competitive,
+};
+```
 
-### Passo 3: Passar os dados da página para o componente
+Também remover o `as const` que pode causar conflitos de tipo:
 
-**Arquivo:** `src/pages/PmsSharedReport.tsx`
+```typescript
+// Antes
+} as const;
+const financialMetrics = useFinancialMetrics(reportData as Parameters<typeof useFinancialMetrics>[0]);
 
-Passar todas as seções como props para `SharedReportContent`.
+// Depois (mais simples e seguro)
+} as ReportData;
+const financialMetrics = useFinancialMetrics(reportData);
+```
 
 ---
 
 ## Arquivos a Modificar
 
-| Arquivo | O que fazer |
-|---------|-------------|
-| `useSharedReport.ts` | Adicionar mais colunas na query |
-| `SharedReportContent.tsx` | Usar os mesmos componentes do Dashboard |
-| `PmsSharedReport.tsx` | Passar as novas props |
+| Arquivo | Mudança |
+|---------|---------|
+| `src/components/planningmysaas/public/SharedReportContent.tsx` | Adicionar `benchmark_section: null` e simplificar o cast de tipo |
 
 ---
 
-## Resultado
+## Resultado Esperado
 
-O link compartilhável vai mostrar **exatamente as mesmas 9 seções** do Dashboard.
+- A tela não vai mais piscar/ficar preta
+- O link compartilhável vai mostrar todas as 9 seções do Business Plan
