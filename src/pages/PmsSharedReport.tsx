@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { SharedReportProvider } from "@/contexts/SharedReportContext";
 import { useReportContext } from "@/contexts/ReportContext";
 import SharedReportHeader from "@/components/planningmysaas/public/SharedReportHeader";
+import SharedReportHero from "@/components/planningmysaas/public/SharedReportHero";
 import SharedReportFooter from "@/components/planningmysaas/public/SharedReportFooter";
 import SharedReportSkeleton from "@/components/planningmysaas/public/SharedReportSkeleton";
 import SharedReportError from "@/components/planningmysaas/public/SharedReportError";
@@ -23,17 +24,17 @@ const SharedReportContent = () => {
     return <SharedReportError />;
   }
 
-  // Extract project name from wizard snapshot
-  const projectName = report?.saas_name || "Business Plan";
-
   return (
     <div className="min-h-screen bg-background">
       <SharedReportHeader />
       
       <main className="pt-24 pb-16">
         <div className="max-w-5xl mx-auto px-4 lg:px-6">
+          <SharedReportHero />
           <BusinessPlanTab />
-          <SharedReportFooter />
+          <div className="mt-12">
+            <SharedReportFooter />
+          </div>
         </div>
       </main>
     </div>
