@@ -25,6 +25,7 @@ const MIN_ADDITIONAL_SERVICES = 1;
 interface MarketingServiceSelectorProps {
   onSelectionChange?: (selectedIds: string[], totals: MarketingTotals) => void;
   defaultSelectRecommended?: boolean;
+  readOnly?: boolean;
 }
 
 const formatCurrency = (cents: number) => {
@@ -49,11 +50,13 @@ const ServiceCard = ({
   isSelected,
   isLocked,
   onToggle,
+  readOnly = false,
 }: {
   service: MarketingService;
   isSelected: boolean;
   isLocked: boolean;
   onToggle: () => void;
+  readOnly?: boolean;
 }) => {
   const IconComponent = iconMap[service.service_icon] || Briefcase;
   
@@ -61,59 +64,66 @@ const ServiceCard = ({
   const uaicodeWidth = (service.uaicode_price_cents / service.traditional_max_cents) * 100;
   const traditionalMinWidth = (service.traditional_min_cents / service.traditional_max_cents) * 100;
   
+  // When readOnly, show neutral non-interactive style
+  const isInteractive = !readOnly && !isLocked;
+  
   return (
     <Card
       className={cn(
         "group relative transition-all duration-300",
-    isLocked 
-      ? "cursor-not-allowed bg-accent/10 border-accent shadow-lg shadow-accent/20"
-          : "cursor-pointer hover:scale-[1.02]",
-        isSelected && !isLocked
+        readOnly
+          ? "cursor-default bg-muted/30 border-border/50"
+          : isLocked 
+            ? "cursor-not-allowed bg-accent/10 border-accent shadow-lg shadow-accent/20"
+            : "cursor-pointer hover:scale-[1.02]",
+        !readOnly && isSelected && !isLocked
           ? "bg-accent/10 border-accent shadow-lg shadow-accent/20"
-          : !isLocked && "bg-muted/30 border-border/50 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10"
+          : isInteractive && "bg-muted/30 border-border/50 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10"
       )}
-      onClick={isLocked ? undefined : onToggle}
+      onClick={isInteractive ? onToggle : undefined}
     >
       <CardContent className="p-4">
-        {/* Checkbox + Title Row */}
+        {/* Icon + Title Row */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
-            {/* Custom Checkbox or Lock Icon */}
-            {isLocked ? (
-              <div className="w-4 h-4 rounded-md bg-accent/20 border border-accent flex items-center justify-center">
-                <Lock className="h-2.5 w-2.5 text-accent" />
-              </div>
-            ) : (
-              <div
-                className={cn(
-                  "w-4 h-4 rounded-md border flex items-center justify-center transition-colors duration-300",
-                  isSelected
-                    ? "bg-accent/20 border-accent"
-                    : "border-border/50 bg-transparent group-hover:border-accent/50"
-                )}
-              >
-                {isSelected && <Check className="h-2.5 w-2.5 text-accent" />}
-              </div>
+            {/* Custom Checkbox or Lock Icon - hidden in readOnly mode */}
+            {!readOnly && (
+              isLocked ? (
+                <div className="w-4 h-4 rounded-md bg-accent/20 border border-accent flex items-center justify-center">
+                  <Lock className="h-2.5 w-2.5 text-accent" />
+                </div>
+              ) : (
+                <div
+                  className={cn(
+                    "w-4 h-4 rounded-md border flex items-center justify-center transition-colors duration-300",
+                    isSelected
+                      ? "bg-accent/20 border-accent"
+                      : "border-border/50 bg-transparent group-hover:border-accent/50"
+                  )}
+                >
+                  {isSelected && <Check className="h-2.5 w-2.5 text-accent" />}
+                </div>
+              )
             )}
             
             <div className={cn(
               "p-1.5 rounded-lg transition-colors duration-300",
-              isSelected || isLocked ? "bg-accent/20" : "bg-muted/50 group-hover:bg-accent/10"
+              readOnly ? "bg-muted/50" : (isSelected || isLocked ? "bg-accent/20" : "bg-muted/50 group-hover:bg-accent/10")
             )}>
               <IconComponent className={cn(
                 "h-3.5 w-3.5 transition-colors duration-300",
-                isSelected || isLocked ? "text-accent" : "text-muted-foreground group-hover:text-accent"
+                readOnly ? "text-muted-foreground" : (isSelected || isLocked ? "text-accent" : "text-muted-foreground group-hover:text-accent")
               )} />
             </div>
             <span className={cn(
               "font-medium text-sm transition-colors duration-300",
-              isSelected || isLocked ? "text-foreground" : "text-foreground/90 group-hover:text-foreground"
+              readOnly ? "text-foreground/90" : (isSelected || isLocked ? "text-foreground" : "text-foreground/90 group-hover:text-foreground")
             )}>
               {service.service_name}
             </span>
           </div>
           
-          {isLocked ? (
+          {!readOnly && isLocked ? (
             <InfoTooltip size="sm" side="top">
               <div className="text-xs">
                 <p className="font-medium mb-1">Required Service</p>
@@ -124,11 +134,11 @@ const ServiceCard = ({
             </InfoTooltip>
           ) : null}
           
-          {isLocked ? (
+          {!readOnly && isLocked ? (
             <Badge className="text-[9px] bg-accent/20 text-accent border-accent/40 px-1.5 py-0.5 font-semibold">
               REQUIRED
             </Badge>
-          ) : service.is_recommended ? (
+          ) : !readOnly && service.is_recommended ? (
             <Badge className="text-[9px] bg-accent/10 text-accent border-accent/30 px-1.5 py-0.5">
               RECOMMENDED
             </Badge>
@@ -183,7 +193,10 @@ const ServiceCard = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-accent/10 border border-accent/20">
             <Sparkles className="h-3 w-3 text-accent" />
-            <span className="text-[10px] font-medium text-accent">
+            <span className={cn(
+              "text-[10px] font-medium",
+              readOnly ? "text-muted-foreground" : "text-accent"
+            )}>
               Save {service.savings_percent_min}-{service.savings_percent_max}%
             </span>
           </div>
@@ -203,8 +216,8 @@ const ServiceCard = ({
           )}
         </div>
 
-        {/* Selected indicator */}
-        {(isSelected || isLocked) && (
+        {/* Selected indicator - hidden in readOnly mode */}
+        {!readOnly && (isSelected || isLocked) && (
           <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-accent animate-pulse" />
         )}
       </CardContent>
@@ -215,17 +228,21 @@ const ServiceCard = ({
 const MarketingServiceSelector = ({
   onSelectionChange,
   defaultSelectRecommended = true,
+  readOnly = false,
 }: MarketingServiceSelectorProps) => {
   const { services, isLoading } = useMarketingTiers();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [initialized, setInitialized] = useState(false);
 
-  // Initialize selection with required service + recommended services
+  // Initialize selection with required service + recommended services (or all for readOnly)
   useEffect(() => {
     if (services.length > 0 && !initialized) {
       let initialIds: string[];
       
-      if (defaultSelectRecommended) {
+      // When readOnly, always select ALL services
+      if (readOnly) {
+        initialIds = services.map((s) => s.service_id);
+      } else if (defaultSelectRecommended) {
         // Select all recommended services
         initialIds = services
           .filter((s) => s.is_recommended)
@@ -255,7 +272,7 @@ const MarketingServiceSelector = ({
       setSelectedIds(initialIds);
       setInitialized(true);
     }
-  }, [services, initialized, defaultSelectRecommended]);
+  }, [services, initialized, defaultSelectRecommended, readOnly]);
 
   // Track last notified state to prevent duplicate calls
   const lastNotifiedRef = useRef<string>('');
@@ -276,6 +293,9 @@ const MarketingServiceSelector = ({
   }, [selectedIds, services, onSelectionChange]);
 
   const toggleService = (serviceId: string) => {
+    // In readOnly mode, don't allow toggling
+    if (readOnly) return;
+    
     // Project Manager cannot be deselected
     if (serviceId === REQUIRED_SERVICE_ID) {
       toast.info("Project Manager is required", {
@@ -318,13 +338,15 @@ const MarketingServiceSelector = ({
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-muted-foreground">
-          Select the services you need ({selectedIds.length}/{services.length} selected)
-          <span className="text-accent/70 ml-1">• Min: 2 required</span>
-        </span>
-      </div>
+      {/* Header - different text for readOnly mode */}
+      {!readOnly && (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            Select the services you need ({selectedIds.length}/{services.length} selected)
+            <span className="text-accent/70 ml-1">• Min: 2 required</span>
+          </span>
+        </div>
+      )}
 
       {/* Service Cards Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -333,8 +355,9 @@ const MarketingServiceSelector = ({
             key={service.service_id}
             service={service}
             isSelected={selectedIds.includes(service.service_id)}
-            isLocked={service.service_id === REQUIRED_SERVICE_ID}
+            isLocked={!readOnly && service.service_id === REQUIRED_SERVICE_ID}
             onToggle={() => toggleService(service.service_id)}
+            readOnly={readOnly}
           />
         ))}
       </div>

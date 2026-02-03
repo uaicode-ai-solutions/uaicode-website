@@ -405,18 +405,16 @@ const InvestmentSection = () => {
       {/* Marketing Investment - Subtitle */}
       <div className="flex items-center gap-2 mt-8">
         <h3 className="font-semibold text-foreground text-sm">Marketing Investment</h3>
-        <Badge className="text-[10px] bg-accent/10 text-accent border-accent/30">
-          INTERACTIVE
-        </Badge>
         <InfoTooltip side="right" size="sm">
-          Select the marketing services you need. Pricing updates automatically.
+          Marketing services included in the Complete Launch Bundle.
         </InfoTooltip>
       </div>
 
-      {/* Marketing Service Selector */}
+      {/* Marketing Service Selector - Now readOnly with all services displayed */}
       <MarketingServiceSelector 
         onSelectionChange={handleMarketingSelectionChange}
         defaultSelectRecommended={true}
+        readOnly={true}
       />
 
       <div className="grid lg:grid-cols-2 gap-4 mt-4">

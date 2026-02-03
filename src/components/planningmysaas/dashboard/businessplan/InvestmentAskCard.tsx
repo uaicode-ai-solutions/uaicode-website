@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { DiscountStrategyMap } from "@/lib/sectionInvestmentUtils";
+import { useReportContext } from "@/contexts/ReportContext";
 
 interface InvestmentAskCardProps {
   investment: Record<string, unknown> | null | undefined;
@@ -30,6 +31,9 @@ const formatCurrency = (cents: number | undefined): string => {
 };
 
 const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => {
+  // Access marketing totals from context (all services selected)
+  const { marketingTotals } = useReportContext();
+  
   if (!investment) {
     return (
       <Card className="glass-card border-accent/20">
@@ -49,23 +53,25 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
   }
 
   const totalCents = investment.investment_one_payment_cents as number | undefined;
-  const frontendCents = investment.investment_front_cents as number | undefined;
-  const backendCents = investment.investment_back_cents as number | undefined;
-  const integrationsCents = investment.investment_integrations_cents as number | undefined;
-  const infraCents = investment.investment_infra_cents as number | undefined;
-  const testingCents = investment.investment_testing_cents as number | undefined;
-  const savingsPercent = investment.savings_percentage as number | undefined;
   const traditionalMinCents = investment.traditional_min_cents as number | undefined;
   const traditionalMaxCents = investment.traditional_max_cents as number | undefined;
 
-  // Extract bundle from discount_strategy
-  const discountStrategy = investment.discount_strategy as DiscountStrategyMap | undefined;
-  const bundle = discountStrategy?.bundle;
-  const bundlePriceCents = bundle?.price_cents;
-  const bundlePercent = bundle?.percent;
-  const bundleBonusDays = bundle?.bonus_support_days;
-  const bundleSavingsCents = totalCents && bundlePriceCents 
-    ? totalCents - bundlePriceCents 
+  // Calculate marketing annual (all services - from context)
+  const marketingAnnualCents = marketingTotals.uaicodeTotal * 12;
+  const marketingTraditionalAnnualMaxCents = marketingTotals.traditionalMaxTotal * 12;
+
+  // MVP + Marketing Bundle = MVP full price + Marketing annual
+  const bundleTotalCents = (totalCents || 0) + marketingAnnualCents;
+  
+  // Calculate savings vs Traditional (MVP + Marketing traditional max)
+  const traditionalTotalCents = (traditionalMaxCents || 0) + marketingTraditionalAnnualMaxCents;
+  const savingsVsTraditionalPercent = traditionalTotalCents > 0 
+    ? Math.round(((traditionalTotalCents - bundleTotalCents) / traditionalTotalCents) * 100)
+    : 0;
+  
+  // MVP Only savings vs traditional
+  const mvpSavingsPercent = traditionalMaxCents && totalCents
+    ? Math.round(((traditionalMaxCents - totalCents) / traditionalMaxCents) * 100)
     : 0;
 
   // All marketing services from tb_pms_mkt_tier
@@ -76,14 +82,14 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
     { name: "Social Media", icon: Share2 },
     { name: "CRM Pipeline", icon: Users },
   ];
-
-  const breakdownItems = [
-    { label: "Frontend Development", icon: Code, value: frontendCents },
-    { label: "Backend Development", icon: Server, value: backendCents },
-    { label: "Integrations", icon: Shield, value: integrationsCents },
-    { label: "Infrastructure", icon: Server, value: infraCents },
-    { label: "Testing & QA", icon: CheckCircle2, value: testingCents },
-  ].filter(item => item.value && item.value > 0);
+  
+  // What's Included items (now displayed as badges in MVP Only card)
+  const includedItems = [
+    "Full source code",
+    "Responsive design",
+    "API integrations",
+    "30-day support",
+  ];
 
   return (
     <Card className="glass-card border-accent/20">
@@ -106,11 +112,11 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
             {formatCurrency(totalCents)}
           </p>
           
-          {savingsPercent && (
+          {mvpSavingsPercent > 0 && (
             <div className="flex items-center gap-2 mt-2">
               <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                 <BadgePercent className="h-3.5 w-3.5 mr-1" />
-                Save {savingsPercent}% vs Traditional
+                Save {mvpSavingsPercent}% vs Traditional
               </Badge>
             </div>
           )}
@@ -120,10 +126,24 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
               Traditional agencies: {formatCurrency(traditionalMinCents)} - {formatCurrency(traditionalMaxCents)}
             </p>
           )}
+          
+          {/* What's Included as Badges */}
+          <div className="flex flex-wrap gap-2 mt-4">
+            {includedItems.map((item, idx) => (
+              <Badge
+                key={idx}
+                variant="outline"
+                className="text-xs bg-muted/20 text-foreground/80 border-border/40 px-2 py-1"
+              >
+                <CheckCircle2 className="h-3 w-3 mr-1 text-green-400" />
+                {item}
+              </Badge>
+            ))}
+          </div>
         </div>
 
         {/* MVP + Marketing Bundle */}
-        {bundlePriceCents && bundlePriceCents > 0 && (
+        {bundleTotalCents > 0 && (
           <div className="p-5 rounded-lg bg-gradient-to-br from-accent/15 to-green-500/10 border-2 border-accent/40 relative overflow-hidden">
             {/* Best Value Badge */}
             <div className="absolute top-0 right-0">
@@ -138,20 +158,20 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
             </div>
             
             <p className="text-3xl font-bold text-gradient-gold">
-              {formatCurrency(bundlePriceCents)}
+              {formatCurrency(bundleTotalCents)}
+            </p>
+            
+            {/* Price breakdown */}
+            <p className="text-xs text-muted-foreground mt-1">
+              MVP: {formatCurrency(totalCents)} + Marketing: {formatCurrency(marketingAnnualCents)}/year
             </p>
 
             <div className="flex flex-wrap items-center gap-2 mt-3">
-              {bundlePercent && (
+              {savingsVsTraditionalPercent > 0 && (
                 <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                   <BadgePercent className="h-3.5 w-3.5 mr-1" />
-                  Save {bundlePercent}%
+                  Save {savingsVsTraditionalPercent}% vs Traditional
                 </Badge>
-              )}
-              {bundleSavingsCents > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  (Save {formatCurrency(bundleSavingsCents)})
-                </span>
               )}
             </div>
 
@@ -172,55 +192,6 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
             </div>
           </div>
         )}
-
-        {/* Breakdown */}
-        {breakdownItems.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-foreground">Investment Breakdown</h4>
-            <div className="space-y-2">
-              {breakdownItems.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/10 border border-border/20"
-                >
-                  <div className="flex items-center gap-2">
-                    <item.icon className="h-4 w-4 text-accent" />
-                    <span className="text-sm text-foreground">{item.label}</span>
-                  </div>
-                  <span className="font-medium text-foreground">
-                    {formatCurrency(item.value)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* What's Included */}
-        <div className="p-4 rounded-lg bg-muted/10 border border-border/20">
-          <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-1.5">
-            <CheckCircle2 className="h-4 w-4 text-green-400" />
-            What's Included
-          </h4>
-          <ul className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-            <li className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3 w-3 text-green-400" />
-              Full source code
-            </li>
-            <li className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3 w-3 text-green-400" />
-              Responsive design
-            </li>
-            <li className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3 w-3 text-green-400" />
-              API integrations
-            </li>
-            <li className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3 w-3 text-green-400" />
-              30-day support
-            </li>
-          </ul>
-        </div>
       </CardContent>
     </Card>
   );
