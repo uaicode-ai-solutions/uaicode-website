@@ -46,7 +46,6 @@ const SharedReportContent = ({
   investment,
 }: SharedReportContentProps) => {
   // Build a minimal reportData object for useFinancialMetrics
-  // Cast to ReportData with required fields filled with defaults
   const reportData = {
     id: "",
     wizard_id: "",
@@ -69,9 +68,9 @@ const SharedReportContent = ({
     price_intelligence_section: pricing,
     icp_intelligence_section: icp,
     competitive_analysis_section: competitive,
-  } as const;
+  } as Parameters<typeof useFinancialMetrics>[0];
   
-  const financialMetrics = useFinancialMetrics(reportData as Parameters<typeof useFinancialMetrics>[0]);
+  const financialMetrics = useFinancialMetrics(reportData);
 
   // Extract AI insights from business plan section
   const aiInsights = businessPlan?.ai_section_insights;
