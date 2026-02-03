@@ -1,44 +1,68 @@
 
 
-# Plano: Remover Banner "127 founders chose this bundle"
+# Plano: Substituir Ícone por Avatares no Banner "47 founders booked"
 
 ## Alteração
 
-**Arquivo:** `src/components/planningmysaas/dashboard/sections/NextStepsSection.tsx`
+**Arquivo:** `src/components/planningmysaas/dashboard/sections/ScheduleCallSection.tsx`
 
-**Ação:** Remover o bloco de Social Proof (linhas 499-521) do card "Complete Launch Bundle"
+**Ação:** Substituir o ícone `Users` por fotos de avatares empilhados, como estava no banner de social proof removido.
 
-## Código a Remover
+---
+
+## Código Atual (Linhas 100-104)
 
 ```typescript
 {/* Social Proof */}
-<div className="mb-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-  <div className="flex flex-col items-center gap-3">
-    <div className="flex -space-x-3">
-      {[sarahJohnsonImg, marcusChenImg, emmaThompsonImg, johnSmithImg, mariaSantosImg].map((img, i) => (
-        <img 
-          key={i} 
-          src={img} 
-          alt="Founder" 
-          className="w-8 h-8 rounded-full border-2 border-card object-cover"
-        />
-      ))}
-    </div>
-    <div className="text-center">
-      <p className="text-sm font-semibold text-foreground">
-        <span className="text-yellow-400">127 founders</span> chose this bundle
-      </p>
-      <p className="text-[10px] text-muted-foreground mt-1">
-        Last month • Average rating: ⭐ 4.9/5
-      </p>
-    </div>
-  </div>
+<div className="flex items-center gap-2 text-sm glass-card px-4 py-2 rounded-full border border-amber-500/20">
+  <Users className="h-4 w-4 text-amber-400" />
+  <span className="text-foreground/80"><strong className="text-foreground">47</strong> founders booked this month</span>
 </div>
 ```
 
+---
+
+## Novo Código
+
+```typescript
+{/* Social Proof */}
+<div className="flex items-center gap-2 text-sm glass-card px-4 py-2 rounded-full border border-amber-500/20">
+  <div className="flex -space-x-2">
+    {[sarahJohnsonImg, marcusChenImg, emmaThompsonImg, johnSmithImg, mariaSantosImg].map((img, i) => (
+      <img 
+        key={i} 
+        src={img} 
+        alt="Founder" 
+        className="w-6 h-6 rounded-full border-2 border-card object-cover"
+      />
+    ))}
+  </div>
+  <span className="text-foreground/80"><strong className="text-foreground">47</strong> founders booked this month</span>
+</div>
+```
+
+---
+
+## Imports Necessários
+
+Adicionar no topo do arquivo:
+
+```typescript
+// Avatar imports
+import sarahJohnsonImg from "@/assets/testimonial-sarah-johnson.webp";
+import emmaThompsonImg from "@/assets/testimonial-emma-thompson.webp";
+import johnSmithImg from "@/assets/testimonial-john-smith.webp";
+import mariaSantosImg from "@/assets/testimonial-maria-santos.webp";
+import marcusChenImg from "@/assets/author-marcus.webp";
+```
+
+E remover `Users` dos imports do lucide-react (não será mais utilizado).
+
+---
+
 ## Impacto
 
-- **Linhas removidas:** ~22 linhas
-- **Cálculos:** Nenhum impacto (o bloco é puramente visual)
-- **Layout:** O botão CTA ficará mais próximo da lista de bonuses
+- **Linhas alteradas:** ~10 linhas
+- **Visual:** Avatares empilhados no lugar do ícone genérico
+- **Funcionalidade:** Nenhuma alteração
 
