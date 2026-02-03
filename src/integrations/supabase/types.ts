@@ -226,6 +226,7 @@ export type Database = {
           icp_avatar_url: string | null
           icp_intelligence_section: Json | null
           id: string
+          marketing_snapshot: Json | null
           opportunity_section: Json | null
           paid_media_intelligence_section: Json | null
           price_intelligence_section: Json | null
@@ -239,6 +240,7 @@ export type Database = {
           summary_section: Json | null
           updated_at: string
           wizard_id: string
+          wizard_snapshot: Json | null
         }
         Insert: {
           benchmark_section?: Json | null
@@ -250,6 +252,7 @@ export type Database = {
           icp_avatar_url?: string | null
           icp_intelligence_section?: Json | null
           id?: string
+          marketing_snapshot?: Json | null
           opportunity_section?: Json | null
           paid_media_intelligence_section?: Json | null
           price_intelligence_section?: Json | null
@@ -263,6 +266,7 @@ export type Database = {
           summary_section?: Json | null
           updated_at?: string
           wizard_id: string
+          wizard_snapshot?: Json | null
         }
         Update: {
           benchmark_section?: Json | null
@@ -274,6 +278,7 @@ export type Database = {
           icp_avatar_url?: string | null
           icp_intelligence_section?: Json | null
           id?: string
+          marketing_snapshot?: Json | null
           opportunity_section?: Json | null
           paid_media_intelligence_section?: Json | null
           price_intelligence_section?: Json | null
@@ -287,6 +292,7 @@ export type Database = {
           summary_section?: Json | null
           updated_at?: string
           wizard_id?: string
+          wizard_snapshot?: Json | null
         }
         Relationships: []
       }

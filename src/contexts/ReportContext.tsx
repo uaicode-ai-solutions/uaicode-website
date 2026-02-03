@@ -1,9 +1,9 @@
-import React, { createContext, useContext, ReactNode, useState, useCallback } from "react";
+import React, { createContext, useContext, ReactNode, useState } from "react";
 import { useReport } from "@/hooks/useReport";
 import { useReportData } from "@/hooks/useReportData";
 import { ReportRow, ReportData } from "@/types/report";
 import { MarketingTotals } from "@/hooks/useMarketingTiers";
-import { useQueryClient } from "@tanstack/react-query";
+import { SharedReportContext } from "@/contexts/SharedReportContext";
 
 /**
  * NOMENCLATURA PADRÃO:
@@ -28,6 +28,8 @@ interface ReportContextType {
   setSelectedMarketingIds: (ids: string[]) => void;
   marketingTotals: MarketingTotals;
   setMarketingTotals: (totals: MarketingTotals) => void;
+  /** True when rendering in public shared view (read-only) */
+  isSharedView?: boolean;
 }
 
 const ReportContext = createContext<ReportContextType | undefined>(undefined);
@@ -38,7 +40,6 @@ interface ReportProviderProps {
 }
 
 export const ReportProvider = ({ wizardId, children }: ReportProviderProps) => {
-  const queryClient = useQueryClient();
   const { data: report, isLoading: isLoadingWizard, error: wizardError } = useReport(wizardId);
   const { data: reportData, isLoading: isLoadingReport, error: reportError } = useReportData(wizardId);
 
@@ -72,6 +73,7 @@ export const ReportProvider = ({ wizardId, children }: ReportProviderProps) => {
         setSelectedMarketingIds,
         marketingTotals,
         setMarketingTotals,
+        isSharedView: false,
       }}
     >
       {children}
@@ -79,15 +81,27 @@ export const ReportProvider = ({ wizardId, children }: ReportProviderProps) => {
   );
 };
 
+/**
+ * Hook to access report context.
+ * Works with both ReportProvider (authenticated dashboard) and SharedReportProvider (public shared page).
+ */
 export const useReportContext = (): ReportContextType => {
-  const context = useContext(ReportContext);
-  if (context === undefined) {
-    // More descriptive error with debugging info
-    console.error("[ReportContext] Context is undefined. This component must be rendered inside <ReportProvider>.");
-    console.error("[ReportContext] Current URL:", typeof window !== 'undefined' ? window.location.href : 'SSR');
-    throw new Error("useReportContext must be used within a ReportProvider. Check that PmsDashboard wraps PmsDashboardContent with ReportProvider.");
+  const reportContext = useContext(ReportContext);
+  const sharedContext = useContext(SharedReportContext);
+
+  // Prefer authenticated context, fallback to shared context
+  if (reportContext !== undefined) {
+    return reportContext;
   }
-  return context;
+
+  if (sharedContext !== undefined) {
+    return sharedContext;
+  }
+
+  // Neither context available
+  console.error("[ReportContext] Context is undefined. This component must be rendered inside <ReportProvider> or <SharedReportProvider>.");
+  console.error("[ReportContext] Current URL:", typeof window !== 'undefined' ? window.location.href : 'SSR');
+  throw new Error("useReportContext must be used within a ReportProvider or SharedReportProvider.");
 };
 
 export default ReportContext;
