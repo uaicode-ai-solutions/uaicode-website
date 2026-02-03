@@ -264,16 +264,6 @@ const SharedReportContent = ({ businessPlan }: SharedReportContentProps) => {
         </Card>
       )}
 
-      {/* Legacy Markdown Support */}
-      {!hasStructuredContent && businessPlan.markdown_content && (
-        <Card className="glass-card border-accent/20">
-          <CardContent className="p-6 md:p-8 prose prose-invert max-w-none">
-            <p className="text-muted-foreground whitespace-pre-wrap">
-              {businessPlan.markdown_content}
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

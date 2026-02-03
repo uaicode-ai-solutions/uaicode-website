@@ -129,20 +129,6 @@ const BusinessPlanTab = () => {
         viabilityLabel={viabilityLabel}
       />
 
-      {/* Legacy: Show markdown content if new AI fields not available */}
-      {businessPlan?.markdown_content && !businessPlan?.ai_executive_narrative && (
-        <Card className="glass-card border-accent/20">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-              <FileText className="h-4 w-4" />
-              <span className="text-sm">Legacy content (will be replaced)</span>
-            </div>
-            <div className="prose prose-invert max-w-none text-sm text-muted-foreground line-clamp-6">
-              {businessPlan.markdown_content.slice(0, 500)}...
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
