@@ -566,9 +566,9 @@ const PmsDashboardContent = () => {
 
             {activeTab === "nextsteps" && (
               <div className="space-y-16">
-                <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
-                <MeetKyleSection wizardId={wizardId} />
                 <ScheduleCallSection projectName={projectName} />
+                <MeetKyleSection wizardId={wizardId} />
+                <NextStepsSection onScheduleCall={handleScheduleCall} onNewReport={handleNewReport} />
               </div>
             )}
 
