@@ -1,10 +1,20 @@
-import { Lightbulb, BarChart3, FileText, Palette } from "lucide-react";
+import { Lightbulb, BarChart3, FileText, Palette, Rocket } from "lucide-react";
 import stepIdea from "@/assets/pms-step-idea.webp";
 import stepAnalysis from "@/assets/pms-step-analysis.webp";
 import stepReport from "@/assets/pms-step-report.webp";
 import stepBrand from "@/assets/pms-step-brand.webp";
+import stepLaunch from "@/assets/pms-step-launch.webp";
 
-const steps = [
+interface Step {
+  icon: React.ComponentType<{ className?: string }>;
+  step: number;
+  title: string;
+  description: string;
+  image: string;
+  isUrgent?: boolean;
+}
+
+const steps: Step[] = [
   {
     icon: Lightbulb,
     step: 1,
@@ -33,6 +43,14 @@ const steps = [
     description: "Get your logo, colors, mockups, and landing page suggestion — ready to use.",
     image: stepBrand,
   },
+  {
+    icon: Rocket,
+    step: 5,
+    title: "Launch Your MVP",
+    description: "Your validated idea is ready. Start building with our partner network — spots are limited!",
+    image: stepLaunch,
+    isUrgent: true,
+  },
 ];
 
 const PmsHowItWorks = () => {
@@ -52,7 +70,7 @@ const PmsHowItWorks = () => {
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             From Idea to Launch-Ready
             <br />
-            <span className="text-gradient-gold">in 4 Simple Steps</span>
+            <span className="text-gradient-gold">in 5 Simple Steps</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Our AI-powered platform guides you through the entire validation process,
@@ -74,17 +92,25 @@ const PmsHowItWorks = () => {
                 } items-center gap-8 lg:gap-12`}
               >
                 {/* Timeline Node (Desktop) */}
-                <div className="absolute left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-accent/30 hidden lg:flex z-20 pulse-glow">
+                <div className={`absolute left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hidden lg:flex z-20 ${
+                  step.isUrgent 
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 shadow-amber-500/40 pulse-glow' 
+                    : 'bg-accent shadow-accent/30 pulse-glow'
+                }`}>
                   <span className="text-lg font-bold text-background">{step.step}</span>
                 </div>
                 
                 {/* Image Side */}
                 <div className={`flex-1 relative group ${index % 2 === 0 ? 'lg:pr-16' : 'lg:pl-16'}`}>
                   {/* Glow */}
-                  <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-full scale-75 opacity-50 group-hover:opacity-80 transition-opacity duration-500" />
+                  <div className={`absolute inset-0 blur-3xl rounded-full scale-75 opacity-50 group-hover:opacity-80 transition-opacity duration-500 ${
+                    step.isUrgent ? 'bg-amber-500/30' : 'bg-accent/20'
+                  }`} />
                   
                   {/* Image Container */}
-                  <div className="relative glass-premium rounded-2xl p-3 border border-white/10 animate-fade-in-up">
+                  <div className={`relative glass-premium rounded-2xl p-3 border animate-fade-in-up ${
+                    step.isUrgent ? 'border-amber-500/30' : 'border-white/10'
+                  }`}>
                     <img 
                       src={step.image} 
                       alt={step.title}
@@ -92,7 +118,11 @@ const PmsHowItWorks = () => {
                     />
                     
                     {/* Step Number Badge (Mobile) */}
-                    <div className="lg:hidden absolute -top-4 -left-4 w-12 h-12 rounded-xl bg-accent flex items-center justify-center shadow-lg">
+                    <div className={`lg:hidden absolute -top-4 -left-4 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
+                      step.isUrgent 
+                        ? 'bg-gradient-to-r from-amber-500 to-yellow-500' 
+                        : 'bg-accent'
+                    }`}>
                       <span className="text-xl font-bold text-background">{step.step}</span>
                     </div>
                   </div>
@@ -102,12 +132,22 @@ const PmsHowItWorks = () => {
                 <div className={`flex-1 text-center lg:text-left ${index % 2 === 0 ? 'lg:pl-16' : 'lg:pr-16'}`}>
                   {/* Step Indicator */}
                   <div className="flex items-center gap-4 justify-center lg:justify-start mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/30 flex items-center justify-center shadow-lg">
-                      <step.icon className="w-8 h-8 text-accent" />
+                    <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center shadow-lg ${
+                      step.isUrgent 
+                        ? 'bg-amber-500/20 border-amber-500/40' 
+                        : 'bg-accent/10 border-accent/30'
+                    }`}>
+                      <step.icon className={`w-8 h-8 ${step.isUrgent ? 'text-amber-400' : 'text-accent'}`} />
                     </div>
                     <div className="hidden sm:block">
-                      <div className="text-sm text-accent uppercase tracking-wider font-semibold">Step {step.step}</div>
-                      <div className="w-24 h-1 bg-gradient-to-r from-accent to-transparent rounded-full mt-1" />
+                      <div className={`text-sm uppercase tracking-wider font-semibold ${
+                        step.isUrgent ? 'text-amber-400' : 'text-accent'
+                      }`}>Step {step.step}</div>
+                      <div className={`w-24 h-1 rounded-full mt-1 ${
+                        step.isUrgent 
+                          ? 'bg-gradient-to-r from-amber-500 to-transparent' 
+                          : 'bg-gradient-to-r from-accent to-transparent'
+                      }`} />
                     </div>
                   </div>
 
@@ -117,6 +157,22 @@ const PmsHowItWorks = () => {
                   <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0">
                     {step.description}
                   </p>
+
+                  {/* Urgency Banner for Step 5 */}
+                  {step.isUrgent && (
+                    <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/30 max-w-md mx-auto lg:mx-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                        </span>
+                        <span className="text-sm font-semibold text-amber-400">Limited spots this month</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        First 10 founders get 25% off MVP development →
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
