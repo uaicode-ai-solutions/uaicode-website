@@ -1,170 +1,143 @@
 
-# Plano: Sincronizar Newsletter Form do PmsFooter com Footer da Home
+# Plano: Corrigir Loading Screen - Erro no Step 12 e Tela de Erro
 
-## Objetivo
+## Diagnóstico
 
-Ajustar o formulário de newsletter no `PmsFooter.tsx` para ter as mesmas funcionalidades de segurança e UX do `Footer.tsx` da home.
+### Problema 1: Tela de erro não aparece após falha
 
----
+**Cenário identificado**: Quando o usuário navega para a página de loading com um report que já está em status `"Step 12 Business Plan - Fail"`, a tela de erro não é exibida.
 
-## Diferenças Identificadas
+**Causa raiz**: A lógica de decisão no `useEffect` da linha 94-137 em `PmsLoading.tsx` tem um fluxo correto, MAS há um bug sutil:
 
-| Feature | Footer.tsx (Home) | PmsFooter.tsx (Atual) | Ação |
-|---------|-------------------|----------------------|------|
-| **Rate limiting** | ✅ 3s cooldown | ❌ Não tem | Adicionar |
-| **Sanitização** | ✅ `sanitizeInput()` | ❌ Manual | Corrigir |
-| **Contador de caracteres** | ✅ `{n}/255` | ❌ Não tem | Adicionar |
-
----
-
-## Alterações Técnicas
-
-### Arquivo: `src/components/planningmysaas/PmsFooter.tsx`
-
-**1. Adicionar Import**
-```typescript
-import { sanitizeInput } from "@/lib/inputSanitization";
-```
-
-**2. Adicionar State para Rate Limiting (linha ~29)**
-```typescript
-const [lastSubmitTime, setLastSubmitTime] = useState(0);
-```
-
-**3. Adicionar watch para contador de caracteres (após useForm)**
-```typescript
-const emailValue = watch("email");
-const emailCharCount = emailValue?.length || 0;
-```
-
-Também adicionar `watch` no destructuring do useForm.
-
-**4. Atualizar função onNewsletterSubmit**
-- Adicionar verificação de rate limiting no início
-- Usar `sanitizeInput()` em vez de `trim().toLowerCase()`
-- Atualizar `lastSubmitTime` após sucesso
-
-**5. Adicionar contador de caracteres no form**
 ```tsx
-<p className="text-xs text-muted-foreground mt-1 text-left">{emailCharCount}/255 characters</p>
+// Linha 95: Esta condição impede re-avaliação após retry
+if (hasCheckedInitialStatus.current || hasDecided) return;
 ```
+
+Quando o usuário clica em "Retry":
+1. `handleRetryFailedStep` atualiza o status para `"preparing"`
+2. Mas `hasCheckedInitialStatus.current` permanece `true`
+3. Se o fetch falhar novamente e o status voltar para `"Fail"`, o useEffect não roda porque a condição na linha 95 bloqueia
+
+**Além disso**: Se o usuário navegar diretamente para a URL (reload ou link direto) quando o status já é `Fail`:
+- O `hasCheckedInitialStatus.current` é setado como `true`
+- `setHasDecided(true)` é chamado
+- A condição `hasDecided && isFailed` na linha 238 deveria renderizar a tela de erro
+
+O problema real pode estar no **primeiro cenário**: quando o usuário vem da página de Reports ou Dashboard com cache do React Query.
+
+### Problema 2: Step 12 (Business Plan) falhando
+
+O orchestrator está corretamente marcando o Step 12 como `"Fail"`, indicando que:
+- O webhook n8n retornou erro HTTP
+- OU o timeout de 150s foi excedido
+- OU houve erro de parsing no pipeline n8n
+
+Isso requer investigação nos logs do n8n (externo ao Lovable).
 
 ---
 
-## Código Final da Função onNewsletterSubmit
+## Correções Propostas
 
-```typescript
-const onNewsletterSubmit = async (data: NewsletterFormData) => {
-  // Prevent double submissions (3 second cooldown)
-  const now = Date.now();
-  if (now - lastSubmitTime < 3000) {
-    console.log("Please wait before submitting again");
-    return;
+### Correção 1: Garantir que a tela de erro apareça
+
+**Arquivo:** `src/pages/PmsLoading.tsx`
+
+O problema é que a lógica atual não re-avalia o estado quando o status muda para `Fail` após um retry. A solução é:
+
+1. Separar a lógica de "decisão inicial" da lógica de "watch for failure"
+2. Adicionar um `useEffect` dedicado para detectar falhas a qualquer momento
+
+**Mudança:**
+
+```tsx
+// NOVO useEffect: Watch for failure at any time (not just initial)
+useEffect(() => {
+  // If we're retrying and status changes to fail, show error UI
+  if (isFailed && !isRetrying) {
+    console.log("[PmsLoading] Failure detected, showing error UI");
+    setHasDecided(true);
   }
+}, [isFailed, isRetrying]);
+```
+
+Também preciso garantir que o retry reseta corretamente os refs:
+
+```tsx
+const handleRetryFailedStep = useCallback(async () => {
+  if (!wizardId) return;
   
-  try {
-    // Sanitize email input
-    const sanitizedEmail = sanitizeInput(data.email).toLowerCase();
+  setIsRetrying(true);
+  
+  // NOVO: Reset the initial check flag to allow re-evaluation
+  hasCheckedInitialStatus.current = false;
+  setHasDecided(false);
+  
+  // ... resto do código
+}, [wizardId, refetch, triggerOrchestrator]);
+```
 
-    // Insert into Supabase
-    const { error: dbError } = await supabase
-      .from('tb_web_newsletter')
-      .insert({ 
-        email: sanitizedEmail, 
-        source: 'pms_footer'
-      });
+### Correção 2: Invalidar cache do React Query antes de navegar
 
-    // Handle duplicate email
-    if (dbError?.code === '23505') {
-      console.log("Email already subscribed");
-      return;
-    }
+**Arquivo:** `src/components/planningmysaas/reports/ReportCard.tsx`
 
-    if (dbError) throw dbError;
-    
-    // Send welcome email (best-effort)
-    supabase.functions.invoke('send-newsletter-welcome', {
-      body: { email: sanitizedEmail, source: 'pms_footer' }
-    }).catch(err => console.error('Welcome email error:', err));
+Quando o usuário clica em um report com status `Fail`, invalidar o cache para garantir dados frescos:
 
-    // Call webhook
-    fetch(
-      "https://uaicode-n8n.ax5vln.easypanel.host/webhook/a95bfd22-a4e0-48b2-b88d-bec4bfe84be4",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: sanitizedEmail,
-          timestamp: new Date().toISOString(),
-          source: "pms_footer",
-        }),
-      }
-    ).catch(err => console.error('Webhook error:', err));
-
-    // Show success dialog
-    reset();
-    setLastSubmitTime(now);
-    setShowSuccessDialog(true);
-  } catch (error) {
-    console.error("Newsletter subscription error:", error);
+```tsx
+const handleView = () => {
+  // Invalidate cache to ensure fresh data on loading page
+  queryClient.invalidateQueries({ queryKey: ["pms-report-data", report.id] });
+  
+  if (isCompleted) {
+    navigate(`/planningmysaas/dashboard/${report.id}`);
+  } else {
+    navigate(`/planningmysaas/loading/${report.id}`);
   }
 };
 ```
 
 ---
 
-## Código Final do Form
+## Arquivos a Modificar
 
-```tsx
-<form onSubmit={handleSubmit(onNewsletterSubmit)} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-  <div className="flex-1">
-    <Input
-      type="email"
-      {...register("email")}
-      placeholder="your.email@company.com"
-      className="w-full bg-background/50 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-accent/50"
-      disabled={isSubmitting}
-      maxLength={255}
-    />
-    <p className="text-xs text-muted-foreground mt-1 text-left">{emailCharCount}/255 characters</p>
-    {errors.email && (
-      <p className="text-red-500 text-xs mt-1 text-left">{errors.email.message}</p>
-    )}
-  </div>
-  <Button 
-    type="submit"
-    disabled={isSubmitting}
-    className="bg-gradient-to-r from-[hsl(45,100%,55%)] to-[hsl(38,100%,50%)] hover:from-[hsl(45,100%,50%)] hover:to-[hsl(38,100%,45%)] text-background font-bold px-6 whitespace-nowrap"
-  >
-    {isSubmitting ? (
-      <Loader2 className="w-4 h-4 animate-spin" />
-    ) : (
-      "Subscribe"
-    )}
-  </Button>
-</form>
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/pages/PmsLoading.tsx` | Adicionar useEffect para detectar falhas + resetar refs no retry |
+| `src/components/planningmysaas/reports/ReportCard.tsx` | Invalidar cache antes de navegar |
+
+---
+
+## Fluxo Corrigido
+
+```text
+Usuário navega para /loading/:wizardId
+        ↓
+   useReportData faz fetch
+        ↓
+   Status = "Step 12 ... - Fail"
+        ↓
+   useEffect detecta isFailed
+        ↓
+   setHasDecided(true)
+        ↓
+   Render: hasDecided && isFailed → Tela de Erro ✓
+        ↓
+   Usuário clica "Retry"
+        ↓
+   hasCheckedInitialStatus.current = false (RESET)
+   setHasDecided(false) (RESET)
+   Status → "preparing"
+        ↓
+   Orchestrator roda
+        ↓
+   Se falhar novamente:
+   useEffect detecta isFailed → Tela de Erro ✓
 ```
 
 ---
 
 ## Resumo das Alterações
 
-| Linha | Alteração |
-|-------|-----------|
-| 9 | Adicionar import `sanitizeInput` |
-| 29 | Adicionar state `lastSubmitTime` |
-| 37 | Adicionar `watch` no destructuring |
-| 40-41 | Adicionar `emailValue` e `emailCharCount` |
-| 42-86 | Atualizar `onNewsletterSubmit` com rate limiting e sanitização |
-| 119-122 | Adicionar contador de caracteres após Input |
-
----
-
-## Impacto
-
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| **Rate Limiting** | ❌ Vulnerável a spam | ✅ 3s cooldown |
-| **Sanitização** | ⚠️ Básica | ✅ Completa com `sanitizeInput()` |
-| **UX** | ❌ Sem feedback de limite | ✅ Contador visível |
-| **Consistência** | ❌ Diferente da home | ✅ Idêntico à home |
+1. **Adicionar useEffect separado** para detectar falhas independente do fluxo inicial
+2. **Resetar refs/state no retry** para permitir re-avaliação completa
+3. **Invalidar cache do React Query** na navegação para loading page
