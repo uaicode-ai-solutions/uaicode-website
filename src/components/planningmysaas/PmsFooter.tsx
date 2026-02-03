@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import NewsletterSuccessDialog from "@/components/newsletter/NewsletterSuccessDialog";
+import { sanitizeInput } from "@/lib/inputSanitization";
 
 
 const newsletterSchema = z.object({
@@ -27,21 +28,33 @@ type NewsletterFormData = z.infer<typeof newsletterSchema>;
 
 const PmsFooter = () => {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = useForm<NewsletterFormData>({
     resolver: zodResolver(newsletterSchema),
     defaultValues: { email: "" },
   });
 
+  const emailValue = watch("email");
+  const emailCharCount = emailValue?.length || 0;
+
   const onNewsletterSubmit = async (data: NewsletterFormData) => {
+    // Prevent double submissions (3 second cooldown)
+    const now = Date.now();
+    if (now - lastSubmitTime < 3000) {
+      console.log("Please wait before submitting again");
+      return;
+    }
+
     try {
-      const sanitizedEmail = data.email.trim().toLowerCase();
+      // Sanitize email input
+      const sanitizedEmail = sanitizeInput(data.email).toLowerCase();
 
       // Insert into Supabase
       const { error: dbError } = await supabase
@@ -80,6 +93,7 @@ const PmsFooter = () => {
 
       // Show success dialog
       reset();
+      setLastSubmitTime(now);
       setShowSuccessDialog(true);
     } catch (error) {
       console.error("Newsletter subscription error:", error);
@@ -117,6 +131,7 @@ const PmsFooter = () => {
                   disabled={isSubmitting}
                   maxLength={255}
                 />
+                <p className="text-xs text-muted-foreground mt-1 text-left">{emailCharCount}/255 characters</p>
                 {errors.email && (
                   <p className="text-red-500 text-xs mt-1 text-left">{errors.email.message}</p>
                 )}
