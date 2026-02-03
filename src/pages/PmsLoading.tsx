@@ -144,6 +144,14 @@ const PmsLoading = () => {
     }
   }, [hasDecided, isCompleted, wizardId, navigate]);
   
+  // Watch for failure at any time (independent of initial check)
+  useEffect(() => {
+    if (isFailed && !isRetrying) {
+      console.log("[PmsLoading] Failure detected, showing error UI");
+      setHasDecided(true);
+    }
+  }, [isFailed, isRetrying]);
+  
   // Handle resume choice
   const handleResume = useCallback(() => {
     setShowResumeDialog(false);
@@ -165,6 +173,10 @@ const PmsLoading = () => {
     if (!wizardId) return;
     
     setIsRetrying(true);
+    
+    // Reset initial check flag to allow re-evaluation after retry
+    hasCheckedInitialStatus.current = false;
+    setHasDecided(false);
     
     // Update status to "preparing"
     const { error } = await supabase

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { MoreVertical, Trash2, Eye, Calendar, ArrowRight, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ interface ReportCardProps {
 
 const ReportCard = ({ report, onDelete }: ReportCardProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   // Extract nested report data (first item from JOIN)
   const reportData = report.tb_pms_reports?.[0];
@@ -48,6 +50,9 @@ const ReportCard = ({ report, onDelete }: ReportCardProps) => {
   
   // Navigate: if completed → dashboard, else → loading page
   const handleView = () => {
+    // Invalidate cache to ensure fresh data on loading page (prevents stale status issues)
+    queryClient.invalidateQueries({ queryKey: ["pms-report-data", report.id] });
+    
     if (isCompleted) {
       navigate(`/planningmysaas/dashboard/${report.id}`);
     } else {

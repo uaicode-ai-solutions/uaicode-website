@@ -512,25 +512,31 @@ export type Database = {
       }
       tb_web_leads: {
         Row: {
-          created_at: string
+          created_at: string | null
           email: string | null
-          full_name: string | null
           id: number
+          interest: string
+          name: string | null
           phone: string | null
+          source: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           email?: string | null
-          full_name?: string | null
           id?: number
+          interest: string
+          name?: string | null
           phone?: string | null
+          source?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           email?: string | null
-          full_name?: string | null
           id?: number
+          interest?: string
+          name?: string | null
           phone?: string | null
+          source?: string | null
         }
         Relationships: []
       }
