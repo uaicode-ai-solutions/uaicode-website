@@ -9,8 +9,14 @@ import {
   Shield,
   CheckCircle2,
   BadgePercent,
+  Rocket,
+  Users,
+  TrendingUp,
+  BarChart3,
+  Gift,
 } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { DiscountStrategyMap } from "@/lib/sectionInvestmentUtils";
 
 interface InvestmentAskCardProps {
   investment: Record<string, unknown> | null | undefined;
@@ -19,7 +25,7 @@ interface InvestmentAskCardProps {
 const formatCurrency = (cents: number | undefined): string => {
   if (!cents) return "...";
   const value = cents / 100;
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+  if (value >= 1000) return `$${(value / 1000).toFixed(1).replace(/\.0$/, '')}K`;
   return `$${value.toFixed(0)}`;
 };
 
@@ -52,6 +58,23 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
   const traditionalMinCents = investment.traditional_min_cents as number | undefined;
   const traditionalMaxCents = investment.traditional_max_cents as number | undefined;
 
+  // Extract bundle from discount_strategy
+  const discountStrategy = investment.discount_strategy as DiscountStrategyMap | undefined;
+  const bundle = discountStrategy?.bundle;
+  const bundlePriceCents = bundle?.price_cents;
+  const bundlePercent = bundle?.percent;
+  const bundleBonusDays = bundle?.bonus_support_days;
+  const bundleSavingsCents = totalCents && bundlePriceCents 
+    ? totalCents - bundlePriceCents 
+    : 0;
+
+  // Recommended marketing services (from tb_pms_mkt_tier where is_recommended = true)
+  const recommendedServices = [
+    { name: "Project Manager", icon: Users },
+    { name: "Paid Media", icon: TrendingUp },
+    { name: "Digital Media", icon: BarChart3 },
+  ];
+
   const breakdownItems = [
     { label: "Frontend Development", icon: Code, value: frontendCents },
     { label: "Backend Development", icon: Server, value: backendCents },
@@ -72,15 +95,17 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Total Investment */}
-        <div className="p-6 rounded-lg bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 text-center">
-          <p className="text-sm text-muted-foreground mb-2">Total Investment</p>
-          <p className="text-4xl font-bold text-gradient-gold">
+        {/* MVP Only Investment */}
+        <div className="p-5 rounded-lg bg-gradient-to-br from-muted/30 to-muted/10 border border-border/30">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-medium text-muted-foreground">MVP Only</p>
+          </div>
+          <p className="text-3xl font-bold text-foreground">
             {formatCurrency(totalCents)}
           </p>
           
           {savingsPercent && (
-            <div className="flex items-center justify-center gap-2 mt-3">
+            <div className="flex items-center gap-2 mt-2">
               <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                 <BadgePercent className="h-3.5 w-3.5 mr-1" />
                 Save {savingsPercent}% vs Traditional
@@ -94,6 +119,66 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
             </p>
           )}
         </div>
+
+        {/* MVP + Marketing Bundle */}
+        {bundlePriceCents && bundlePriceCents > 0 && (
+          <div className="p-5 rounded-lg bg-gradient-to-br from-accent/15 to-green-500/10 border-2 border-accent/40 relative overflow-hidden">
+            {/* Best Value Badge */}
+            <div className="absolute top-0 right-0">
+              <Badge className="rounded-none rounded-bl-lg bg-accent text-accent-foreground font-semibold text-xs px-3 py-1">
+                BEST VALUE
+              </Badge>
+            </div>
+
+            <div className="flex items-center gap-2 mb-3">
+              <Rocket className="h-5 w-5 text-accent" />
+              <p className="text-sm font-semibold text-foreground">MVP + Marketing Bundle</p>
+            </div>
+            
+            <p className="text-3xl font-bold text-gradient-gold">
+              {formatCurrency(bundlePriceCents)}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              {bundlePercent && (
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                  <BadgePercent className="h-3.5 w-3.5 mr-1" />
+                  Save {bundlePercent}%
+                </Badge>
+              )}
+              {bundleSavingsCents > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  (Save {formatCurrency(bundleSavingsCents)})
+                </span>
+              )}
+            </div>
+
+            {bundleBonusDays && bundleBonusDays > 0 && (
+              <div className="flex items-center gap-1.5 mt-3">
+                <Gift className="h-4 w-4 text-accent" />
+                <span className="text-sm text-foreground font-medium">
+                  +{bundleBonusDays} bonus support days
+                </span>
+              </div>
+            )}
+
+            {/* Included Marketing Services */}
+            <div className="mt-4 pt-3 border-t border-accent/20">
+              <p className="text-xs text-muted-foreground mb-2">Includes monthly marketing:</p>
+              <div className="flex flex-wrap gap-2">
+                {recommendedServices.map((service, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-1.5 text-xs text-foreground bg-background/50 rounded-full px-2.5 py-1 border border-border/30"
+                  >
+                    <service.icon className="h-3 w-3 text-accent" />
+                    {service.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Breakdown */}
         {breakdownItems.length > 0 && (
