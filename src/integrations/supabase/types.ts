@@ -232,6 +232,7 @@ export type Database = {
           section_investment: Json | null
           share_created_at: string | null
           share_enabled: boolean | null
+          share_html: string | null
           share_token: string | null
           share_url: string | null
           status: string
@@ -255,6 +256,7 @@ export type Database = {
           section_investment?: Json | null
           share_created_at?: string | null
           share_enabled?: boolean | null
+          share_html?: string | null
           share_token?: string | null
           share_url?: string | null
           status?: string
@@ -278,6 +280,7 @@ export type Database = {
           section_investment?: Json | null
           share_created_at?: string | null
           share_enabled?: boolean | null
+          share_html?: string | null
           share_token?: string | null
           share_url?: string | null
           status?: string
