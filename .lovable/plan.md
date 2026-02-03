@@ -1,44 +1,51 @@
 
 
-# Plano: Regenerar Imagem Step 5 com Cores Padronizadas
+# Plano: Corrigir Imagem Step 5 - Foguete, Tamanho e Fundo Degradê
 
-## Análise do Padrão Visual
+## Problemas Identificados
 
-As imagens dos Steps 1-4 seguem um estilo visual consistente:
+A imagem atual do Step 5 (`pms-step-launch.webp`) precisa de ajustes:
 
-| Característica | Padrão Existente |
-|----------------|------------------|
-| **Perspectiva** | 3D isométrica (inclinado) |
-| **Fundo** | Preto/cinza muito escuro (#0A0A0A) |
-| **Cores de destaque** | Apenas amber/gold (#F59E0B, #FCD34D) |
-| **Estilo UI** | Dashboard flat/2D em mockup |
-| **Elementos** | Sem objetos 3D realistas (sem foguetes, etc) |
+| Problema | Correção Necessária |
+|----------|---------------------|
+| **Foguete ausente** | Adicionar ícone de foguete estilizado (flat/2D, não realista) |
+| **Tamanho incorreto** | Ajustar para dimensões consistentes com outras imagens |
+| **Fundo sem degradê** | Aplicar gradiente sutil como nas outras imagens |
 
-## Problema da Imagem Atual (Step 5)
+---
 
-A imagem `pms-step-launch.webp` atual tem:
-- ❌ Visualização frontal (não isométrica)
-- ❌ Foguete 3D realista
-- ❌ Cores laranja e variações além do amber
-- ❌ Fundo cinza mais claro
+## Padrão Visual das Outras Imagens
+
+Baseado nas imagens existentes (Steps 1-4):
+
+- **Fundo**: Degradê sutil do preto (#0A0A0A) para cinza escuro, não fundo sólido
+- **Elementos**: Ícones flat/2D representando o conceito do step
+- **Perspectiva**: 3D isométrica com device inclinado
+- **Dimensões**: Aproximadamente 1200x800px ou similar
+
+---
 
 ## Solução
 
-Regenerar a imagem usando um prompt específico para seguir exatamente o padrão visual.
+Regenerar a imagem com prompt otimizado:
 
-**Prompt otimizado:**
-> "3D isometric dark theme SaaS dashboard mockup floating on pure black background, angled perspective like a tablet tilted in 3D space, showing MVP launch timeline with progress bars and milestones, ONLY amber and gold accent colors (#F59E0B), no realistic 3D objects, flat UI design, clean minimalist interface, matching the style of a dark analytics dashboard with golden highlights, subtle amber glow effects, no rocket icons, no gradients to orange, pure amber/gold only"
+**Prompt corrigido:**
+> "3D isometric dark theme SaaS dashboard mockup floating on dark gradient background (black to dark gray), angled perspective like a tablet tilted in 3D space, showing MVP launch timeline with progress bars and milestones, include a stylized flat 2D rocket icon taking off from the dashboard, amber and gold accent colors (#F59E0B, #FCD34D), clean minimalist interface design, subtle amber glow effects, gradient background from #0A0A0A to #1A1A1A, matching the style of a premium dark analytics dashboard"
+
+---
 
 ## Alteração
 
 **Arquivo:** `src/assets/pms-step-launch.webp`
 
-**Ação:** Regenerar imagem com:
-1. Perspectiva 3D isométrica (device inclinado)
-2. Fundo preto puro
-3. Apenas cores amber/gold (#F59E0B, #FCD34D)
-4. UI flat/dashboard sem elementos 3D realistas
-5. Tema de "launch/progress" com barras de progresso e timeline
+**Especificações:**
+1. ✅ Foguete estilizado flat/2D (não realista 3D)
+2. ✅ Fundo com degradê preto → cinza escuro
+3. ✅ Perspectiva 3D isométrica
+4. ✅ Cores amber/gold (#F59E0B, #FCD34D)
+5. ✅ Dimensões consistentes com outras imagens
+
+---
 
 ## Impacto
 
