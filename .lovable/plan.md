@@ -1,75 +1,82 @@
 
-# Plano: Corrigir Cards "Your Marketing Investment" e "Marketing Cost Comparison"
+# Plano: Corrigir Link Compartilhável e PDF para Formato Estruturado
 
-## Problema Identificado
+## Resumo do Problema
 
-Os componentes `MarketingInvestmentSummary` e `MarketingComparisonSlider` ainda mostram valores baseados em 3 serviços ($4,800/mês) ao invés de 5 serviços ($6,000/mês):
+O sistema de Business Plan foi migrado para um formato **estruturado** (sem `markdown_content`), mas dois componentes ainda dependem do formato antigo:
 
-| Card | Esperado | Atual |
-|------|----------|-------|
-| Your Marketing Investment | $21,000/mês (5 serviços) | $19,800/mês (3 serviços) |
-| Marketing Cost Comparison | Baseado em todos os serviços | Baseado em 3 serviços |
-
-## Causa Raiz
-
-O `MarketingServiceSelector` inicializa corretamente com todos os serviços quando `readOnly={true}`, mas há uma condição de corrida:
-
-1. O `InvestmentSection` renderiza
-2. O `MarketingServiceSelector` recebe `readOnly={true}` e inicia a carga de serviços
-3. Enquanto carrega, `marketingTotals` no contexto ainda tem valores zerados/default
-4. Os componentes `MarketingInvestmentSummary` e `MarketingComparisonSlider` renderizam com valores errados
-5. Depois que o `useEffect` do selector notifica o parent, os valores são atualizados - mas pode não estar funcionando corretamente
+| Componente | Problema |
+|------------|----------|
+| `useSharedReport.ts` | Retorna `null` se `markdown_content` não existir |
+| `businessPlanPdfExport.ts` | Gera PDF parseando `markdown_content` |
 
 ## Solução
 
-### Opção A: Inicialização direta no InvestmentSection (Recomendada)
+### 1. Corrigir `useSharedReport.ts`
 
-Ao invés de depender do callback do `MarketingServiceSelector`, o `InvestmentSection` deve **inicializar diretamente** os totais com todos os serviços quando estiver em modo readOnly:
+Trocar a validação de `markdown_content` para aceitar o formato estruturado:
 
+**Antes:**
 ```typescript
-// InvestmentSection.tsx - Adicionar useEffect para inicializar com todos os serviços
-useEffect(() => {
-  if (!marketingLoading && services.length > 0) {
-    // Em modo readOnly, sempre usar todos os serviços
-    const allServiceIds = services.map(s => s.service_id);
-    setSelectedMarketingIds(allServiceIds);
-    
-    const totals = calculateMarketingTotals(allServiceIds, services);
-    setMarketingTotals(totals);
-  }
-}, [services, marketingLoading]);
+if (!bp || !bp.markdown_content) return null;
 ```
 
-### Arquivos a Modificar
+**Depois:**
+```typescript
+// Validate: must have AI narratives (structured format)
+const hasContent = 
+  bp?.ai_executive_narrative || 
+  bp?.ai_strategic_verdict || 
+  (bp?.ai_key_recommendations && bp.ai_key_recommendations.length > 0);
+
+if (!bp || !hasContent) return null;
+```
+
+---
+
+### 2. Reescrever `businessPlanPdfExport.ts` para Formato Estruturado
+
+O PDF atual parseia markdown linha por linha. O novo formato não tem markdown, então precisamos gerar o PDF diretamente a partir dos campos estruturados.
+
+**Estrutura do novo PDF:**
+
+| Página | Conteúdo |
+|--------|----------|
+| **Capa** | Título, Viability Score, Data |
+| **Executive Summary** | `ai_executive_narrative` + insights |
+| **Strategic Verdict** | `ai_strategic_verdict` |
+| **Next Steps** | Lista numerada de `ai_key_recommendations` |
+| **Footer** | "uaicode.ai \| PlanningMySaaS" |
+
+**Mudanças principais:**
+- Remover toda a lógica de parsing de markdown (`parseMarkdownLine`, `preprocessMarkdown`)
+- Remover lógica de chart placeholders (`[CHART:...]`)
+- Criar funções específicas para cada seção estruturada
+- Manter a estética visual (cores, fontes, layout A4)
+
+---
+
+## Arquivos a Modificar
 
 | Arquivo | Mudança |
 |---------|---------|
-| `InvestmentSection.tsx` | Adicionar useEffect para inicializar totais com todos os serviços |
+| `src/hooks/useSharedReport.ts` | Trocar validação de `markdown_content` para campos estruturados |
+| `src/lib/businessPlanPdfExport.ts` | Reescrever para gerar PDF a partir de campos AI narratives |
 
-### Detalhes da Implementação
+---
 
-1. Importar `calculateMarketingTotals` do hook `useMarketingTiers`
-2. Adicionar useEffect que:
-   - Aguarda serviços carregarem (`!marketingLoading && services.length > 0`)
-   - Calcula IDs de todos os serviços
-   - Chama `setSelectedMarketingIds` e `setMarketingTotals` diretamente
-3. Garantir que isso aconteça antes do primeiro render dos componentes filhos
+## Resultado Esperado
 
-### Resultado Esperado
+| Funcionalidade | Status |
+|----------------|--------|
+| Link compartilhável | Carrega e mostra Executive Summary, Strategic Verdict, Next Steps |
+| Download PDF | Gera documento com todas as seções estruturadas |
+| Viability Score | Exibido no header do link e na capa do PDF |
 
-| Card | Valor |
-|------|-------|
-| Your Marketing Investment | $21,000/mês |
-| Uaicode Subscription | $6,000/mês |
-| Paid Media Budget | $15,000/mês |
-| Marketing Cost Comparison - Uaicode | $6,000/mês |
-| Marketing Cost Comparison - Uaicode + ADS | $21,000/mês |
+---
 
-## Checklist
+## Notas Técnicas
 
-- [ ] Importar `calculateMarketingTotals` em InvestmentSection
-- [ ] Adicionar useEffect para inicializar com todos os serviços
-- [ ] Remover dependência do callback `handleMarketingSelectionChange` para inicialização
-- [ ] Testar que os valores aparecem corretamente em "Your Marketing Investment"
-- [ ] Testar que os valores aparecem corretamente em "Marketing Cost Comparison"
-- [ ] Verificar que os valores são consistentes com Business Plan e Next Steps
+- O `SharedReportContent.tsx` já está preparado para o formato estruturado (linhas 64-71)
+- O PDF será mais simples e focado (~3-4 páginas vs documentos longos)
+- O export mantém compatibilidade com jsPDF existente
