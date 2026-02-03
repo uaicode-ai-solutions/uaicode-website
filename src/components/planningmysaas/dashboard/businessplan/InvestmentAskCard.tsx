@@ -11,9 +11,9 @@ import {
   BadgePercent,
   Rocket,
   Users,
-  TrendingUp,
-  BarChart3,
-  Gift,
+  Briefcase,
+  Palette,
+  Share2,
 } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { DiscountStrategyMap } from "@/lib/sectionInvestmentUtils";
@@ -68,11 +68,13 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
     ? totalCents - bundlePriceCents 
     : 0;
 
-  // Recommended marketing services (from tb_pms_mkt_tier where is_recommended = true)
-  const recommendedServices = [
-    { name: "Project Manager", icon: Users },
-    { name: "Paid Media", icon: TrendingUp },
-    { name: "Digital Media", icon: BarChart3 },
+  // All marketing services from tb_pms_mkt_tier
+  const allMarketingServices = [
+    { name: "Project Manager", icon: Briefcase },
+    { name: "Paid Media", icon: Megaphone },
+    { name: "Digital Media", icon: Palette },
+    { name: "Social Media", icon: Share2 },
+    { name: "CRM Pipeline", icon: Users },
   ];
 
   const breakdownItems = [
@@ -153,20 +155,11 @@ const InvestmentAskCard: React.FC<InvestmentAskCardProps> = ({ investment }) => 
               )}
             </div>
 
-            {bundleBonusDays && bundleBonusDays > 0 && (
-              <div className="flex items-center gap-1.5 mt-3">
-                <Gift className="h-4 w-4 text-accent" />
-                <span className="text-sm text-foreground font-medium">
-                  +{bundleBonusDays} bonus support days
-                </span>
-              </div>
-            )}
-
             {/* Included Marketing Services */}
             <div className="mt-4 pt-3 border-t border-accent/20">
               <p className="text-xs text-muted-foreground mb-2">Includes monthly marketing:</p>
               <div className="flex flex-wrap gap-2">
-                {recommendedServices.map((service, idx) => (
+                {allMarketingServices.map((service, idx) => (
                   <div
                     key={idx}
                     className="flex items-center gap-1.5 text-xs text-foreground bg-background/50 rounded-full px-2.5 py-1 border border-border/30"
