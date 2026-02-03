@@ -1,143 +1,323 @@
 
-# Plano: Corrigir Loading Screen - Erro no Step 12 e Tela de Erro
 
-## Diagnóstico
+# Plano: Adicionar Chart Roadmap Timeline (Sem Quebrar Funcionalidades)
 
-### Problema 1: Tela de erro não aparece após falha
+## Arquivos Impactados
 
-**Cenário identificado**: Quando o usuário navega para a página de loading com um report que já está em status `"Step 12 Business Plan - Fail"`, a tela de erro não é exibida.
+| Arquivo | Tipo de Alteração | Risco |
+|---------|-------------------|-------|
+| `src/types/report.ts` | Adicionar campo opcional | Baixo |
+| `src/components/planningmysaas/public/SharedReportCharts.tsx` | Adicionar novo case + componente | Baixo |
+| `src/components/planningmysaas/dashboard/sections/BusinessPlanTab.tsx` | Adicionar novo case + componente | Baixo |
+| `src/lib/businessPlanPdfExport.ts` | Adicionar novo case | Baixo |
 
-**Causa raiz**: A lógica de decisão no `useEffect` da linha 94-137 em `PmsLoading.tsx` tem um fluxo correto, MAS há um bug sutil:
+## Garantias de Compatibilidade
 
-```tsx
-// Linha 95: Esta condição impede re-avaliação após retry
-if (hasCheckedInitialStatus.current || hasDecided) return;
+1. **Campo opcional**: O novo `roadmap_timeline?` e opcional, entao reports antigos sem esse campo continuam funcionando
+2. **Graceful degradation**: Se dados nao existirem, o componente retorna `null` (nao renderiza nada)
+3. **Fallback existente**: O `default` case no switch ja existe e funciona para tipos desconhecidos
+4. **Sem breaking changes**: Nenhum campo existente e modificado ou removido
+
+## Alteracoes Detalhadas
+
+### 1. Types (src/types/report.ts)
+
+Adicionar ao `BusinessPlanChartsData` interface (linha ~1700):
+
+```typescript
+export interface BusinessPlanChartsData {
+  market_sizing?: { /* ... existente ... */ };
+  financial_projections?: { /* ... existente ... */ };
+  competitor_pricing?: Array<{ /* ... existente ... */ }>;
+  investment_breakdown?: Array<{ /* ... existente ... */ }>;
+  
+  // NOVO: Roadmap Timeline
+  roadmap_timeline?: Array<{
+    phase: string;      // "Phase 1: MVP"
+    focus: string;      // "Core platform functionality..."
+    timeline: string;   // "13-23 weeks"
+    outcomes: string[]; // ["Launch secure platform", ...]
+  }>;
+}
 ```
 
-Quando o usuário clica em "Retry":
-1. `handleRetryFailedStep` atualiza o status para `"preparing"`
-2. Mas `hasCheckedInitialStatus.current` permanece `true`
-3. Se o fetch falhar novamente e o status voltar para `"Fail"`, o useEffect não roda porque a condição na linha 95 bloqueia
+### 2. SharedReportCharts.tsx (Pagina Publica)
 
-**Além disso**: Se o usuário navegar diretamente para a URL (reload ou link direto) quando o status já é `Fail`:
-- O `hasCheckedInitialStatus.current` é setado como `true`
-- `setHasDecided(true)` é chamado
-- A condição `hasDecided && isFailed` na linha 238 deveria renderizar a tela de erro
+Adicionar novo case no switch e componente:
 
-O problema real pode estar no **primeiro cenário**: quando o usuário vem da página de Reports ou Dashboard com cache do React Query.
+```typescript
+// No SharedChartRenderer switch (linha ~44):
+case "roadmap_timeline":
+  return <SharedRoadmapTimelineChart data={data.roadmap_timeline} />;
 
-### Problema 2: Step 12 (Business Plan) falhando
-
-O orchestrator está corretamente marcando o Step 12 como `"Fail"`, indicando que:
-- O webhook n8n retornou erro HTTP
-- OU o timeout de 150s foi excedido
-- OU houve erro de parsing no pipeline n8n
-
-Isso requer investigação nos logs do n8n (externo ao Lovable).
-
----
-
-## Correções Propostas
-
-### Correção 1: Garantir que a tela de erro apareça
-
-**Arquivo:** `src/pages/PmsLoading.tsx`
-
-O problema é que a lógica atual não re-avalia o estado quando o status muda para `Fail` após um retry. A solução é:
-
-1. Separar a lógica de "decisão inicial" da lógica de "watch for failure"
-2. Adicionar um `useEffect` dedicado para detectar falhas a qualquer momento
-
-**Mudança:**
-
-```tsx
-// NOVO useEffect: Watch for failure at any time (not just initial)
-useEffect(() => {
-  // If we're retrying and status changes to fail, show error UI
-  if (isFailed && !isRetrying) {
-    console.log("[PmsLoading] Failure detected, showing error UI");
-    setHasDecided(true);
-  }
-}, [isFailed, isRetrying]);
-```
-
-Também preciso garantir que o retry reseta corretamente os refs:
-
-```tsx
-const handleRetryFailedStep = useCallback(async () => {
-  if (!wizardId) return;
-  
-  setIsRetrying(true);
-  
-  // NOVO: Reset the initial check flag to allow re-evaluation
-  hasCheckedInitialStatus.current = false;
-  setHasDecided(false);
-  
-  // ... resto do código
-}, [wizardId, refetch, triggerOrchestrator]);
-```
-
-### Correção 2: Invalidar cache do React Query antes de navegar
-
-**Arquivo:** `src/components/planningmysaas/reports/ReportCard.tsx`
-
-Quando o usuário clica em um report com status `Fail`, invalidar o cache para garantir dados frescos:
-
-```tsx
-const handleView = () => {
-  // Invalidate cache to ensure fresh data on loading page
-  queryClient.invalidateQueries({ queryKey: ["pms-report-data", report.id] });
-  
-  if (isCompleted) {
-    navigate(`/planningmysaas/dashboard/${report.id}`);
-  } else {
-    navigate(`/planningmysaas/loading/${report.id}`);
-  }
+// Novo componente (apos Investment Breakdown):
+const SharedRoadmapTimelineChart = ({ 
+  data 
+}: { 
+  data?: BusinessPlanChartsData["roadmap_timeline"] 
+}) => {
+  if (!data || data.length === 0) return null;
+  // ... implementacao visual
 };
 ```
 
----
+### 3. BusinessPlanTab.tsx (Dashboard)
 
-## Arquivos a Modificar
+Adicionar mesmo chart ao dashboard interno:
 
-| Arquivo | Alteração |
-|---------|-----------|
-| `src/pages/PmsLoading.tsx` | Adicionar useEffect para detectar falhas + resetar refs no retry |
-| `src/components/planningmysaas/reports/ReportCard.tsx` | Invalidar cache antes de navegar |
+```typescript
+// No ChartRenderer switch (linha ~86):
+case "roadmap_timeline":
+  return <RoadmapTimelineChart data={data.roadmap_timeline} />;
 
----
-
-## Fluxo Corrigido
-
-```text
-Usuário navega para /loading/:wizardId
-        ↓
-   useReportData faz fetch
-        ↓
-   Status = "Step 12 ... - Fail"
-        ↓
-   useEffect detecta isFailed
-        ↓
-   setHasDecided(true)
-        ↓
-   Render: hasDecided && isFailed → Tela de Erro ✓
-        ↓
-   Usuário clica "Retry"
-        ↓
-   hasCheckedInitialStatus.current = false (RESET)
-   setHasDecided(false) (RESET)
-   Status → "preparing"
-        ↓
-   Orchestrator roda
-        ↓
-   Se falhar novamente:
-   useEffect detecta isFailed → Tela de Erro ✓
+// Novo componente (apos Investment Breakdown):
+const RoadmapTimelineChart = ({ 
+  data 
+}: { 
+  data?: BusinessPlanChartsData["roadmap_timeline"] 
+}) => {
+  if (!data || data.length === 0) return null;
+  // ... mesma implementacao visual
+};
 ```
 
----
+### 4. businessPlanPdfExport.ts (PDF)
 
-## Resumo das Alterações
+Adicionar case para exportar timeline como tabela:
 
-1. **Adicionar useEffect separado** para detectar falhas independente do fluxo inicial
-2. **Resetar refs/state no retry** para permitir re-avaliação completa
-3. **Invalidar cache do React Query** na navegação para loading page
+```typescript
+// No switch (linha ~278, antes do default):
+case "roadmap_timeline": {
+  const data = chartsData.roadmap_timeline;
+  if (!data || data.length === 0) return yPos;
+
+  pdf.text("Product Roadmap", tableStartX, yPos);
+  yPos += 8;
+
+  data.forEach((phase) => {
+    // Render phase name + timeline
+    pdf.setFont("helvetica", "bold");
+    pdf.text(`${phase.phase} (${phase.timeline})`, tableStartX + 5, yPos);
+    yPos += LINE_HEIGHT;
+    
+    // Render focus
+    pdf.setFont("helvetica", "normal");
+    const focusLines = pdf.splitTextToSize(phase.focus, CONTENT_WIDTH - 10);
+    focusLines.forEach((line: string) => {
+      pdf.text(line, tableStartX + 5, yPos);
+      yPos += LINE_HEIGHT;
+    });
+    
+    // Render outcomes
+    phase.outcomes.forEach((outcome) => {
+      pdf.text(`• ${outcome}`, tableStartX + 10, yPos);
+      yPos += LINE_HEIGHT;
+    });
+    
+    yPos += 5;
+  });
+
+  break;
+}
+```
+
+## Design Visual do Componente
+
+O timeline tera design responsivo:
+
+### Desktop (Horizontal)
+```text
+┌──────────────────────────────────────────────────────────┐
+│  📅 Product Roadmap                                      │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  ●────────────────●────────────────●                     │
+│  │                │                │                     │
+│ Phase 1          Phase 2         Phase 3                │
+│ 13-23 weeks      +3-6 months     +6-12 months           │
+│                                                          │
+│ • Core platform  • Advanced       • Prescription        │
+│ • Discovery      filtering        support               │
+│ • Booking        • Progress       • EHR integrations   │
+│                  tracking                               │
+└──────────────────────────────────────────────────────────┘
+```
+
+### Mobile (Vertical)
+```text
+┌─────────────────────┐
+│ 📅 Product Roadmap  │
+├─────────────────────┤
+│  ●                  │
+│  │ Phase 1: MVP     │
+│  │ 13-23 weeks      │
+│  │ • Core platform  │
+│  │ • Discovery      │
+│  │                  │
+│  ●                  │
+│  │ Phase 2          │
+│  │ +3-6 months      │
+│  │ ...              │
+└─────────────────────┘
+```
+
+## Codigo do Componente Timeline
+
+```typescript
+const RoadmapTimelineChart = ({ 
+  data 
+}: { 
+  data?: BusinessPlanChartsData["roadmap_timeline"] 
+}) => {
+  if (!data || data.length === 0) return null;
+
+  return (
+    <Card className="glass-card border-accent/20 my-6">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-accent" />
+          Product Roadmap
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* Desktop: Horizontal Timeline */}
+        <div className="hidden md:block">
+          <div className="relative">
+            {/* Connecting Line */}
+            <div 
+              className="absolute top-4 h-0.5 bg-accent/30" 
+              style={{ 
+                left: `${100 / (data.length * 2)}%`, 
+                right: `${100 / (data.length * 2)}%` 
+              }} 
+            />
+            
+            {/* Phases Grid */}
+            <div 
+              className="grid gap-4" 
+              style={{ gridTemplateColumns: `repeat(${data.length}, 1fr)` }}
+            >
+              {data.map((phase, index) => (
+                <div key={index} className="relative">
+                  {/* Timeline Dot */}
+                  <div className="w-8 h-8 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center mb-4 mx-auto z-10 relative">
+                    <span className="text-xs font-bold text-accent">
+                      {index + 1}
+                    </span>
+                  </div>
+                  
+                  {/* Phase Content */}
+                  <div className="p-4 rounded-lg bg-muted/10 border border-border/30">
+                    <h4 className="font-semibold text-foreground text-sm mb-1 text-center">
+                      {phase.phase}
+                    </h4>
+                    <p className="text-xs text-accent mb-2 text-center">
+                      {phase.timeline}
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                      {phase.focus}
+                    </p>
+                    <ul className="space-y-1">
+                      {phase.outcomes.slice(0, 3).map((outcome, i) => (
+                        <li 
+                          key={i} 
+                          className="text-xs text-muted-foreground flex items-start gap-1.5"
+                        >
+                          <span className="text-accent shrink-0">•</span>
+                          <span className="line-clamp-1">{outcome}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Mobile: Vertical Timeline */}
+        <div className="md:hidden">
+          <div className="relative pl-6">
+            {/* Vertical Line */}
+            <div className="absolute left-3 top-4 bottom-4 w-0.5 bg-accent/30" />
+            
+            <div className="space-y-6">
+              {data.map((phase, index) => (
+                <div key={index} className="relative">
+                  {/* Timeline Dot */}
+                  <div className="absolute -left-6 w-6 h-6 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center">
+                    <span className="text-xs font-bold text-accent">
+                      {index + 1}
+                    </span>
+                  </div>
+                  
+                  {/* Phase Content */}
+                  <div className="p-3 rounded-lg bg-muted/10 border border-border/30 ml-2">
+                    <h4 className="font-semibold text-foreground text-sm">
+                      {phase.phase}
+                    </h4>
+                    <p className="text-xs text-accent mb-2">{phase.timeline}</p>
+                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                      {phase.focus}
+                    </p>
+                    <ul className="space-y-0.5">
+                      {phase.outcomes.slice(0, 2).map((outcome, i) => (
+                        <li 
+                          key={i} 
+                          className="text-xs text-muted-foreground flex items-start gap-1"
+                        >
+                          <span className="text-accent">•</span>
+                          <span className="line-clamp-1">{outcome}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+```
+
+## Acao Necessaria no n8n
+
+Apos implementar a UI, atualizar o prompt do Document Writer para incluir no `charts_data`:
+
+```json
+"roadmap_timeline": [
+  {
+    "phase": "Phase 1: MVP",
+    "focus": "Core platform functionality for provider discovery, vetting, and booking.",
+    "timeline": "13-23 weeks",
+    "outcomes": ["Launch secure platform", "Connect users with verified professionals"]
+  },
+  {
+    "phase": "Phase 2: Feature Expansion",
+    "focus": "Introduce advanced filtering, progress tracking, and behavioral coaches.",
+    "timeline": "+3-6 months",
+    "outcomes": ["Enhance user engagement", "Expand professional network"]
+  },
+  {
+    "phase": "Phase 3: Scaling",
+    "focus": "Implement prescription support and EHR integrations.",
+    "timeline": "+6-12 months",
+    "outcomes": ["Establish comprehensive ecosystem", "Explore new monetization"]
+  }
+]
+```
+
+## Checklist de Validacao
+
+Antes de deploy, verificar:
+
+- [ ] Reports antigos (sem `roadmap_timeline`) continuam funcionando
+- [ ] Os 4 charts existentes continuam renderizando corretamente
+- [ ] O novo chart aparece apenas quando dados existem
+- [ ] PDF export funciona com e sem dados de roadmap
+- [ ] Layout responsivo (desktop horizontal, mobile vertical)
+- [ ] Cores consistentes com tema gold/amber
+
