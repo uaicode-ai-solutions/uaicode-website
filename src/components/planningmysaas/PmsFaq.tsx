@@ -100,84 +100,51 @@ const PmsFaq = () => {
           ))}
         </Accordion>
 
-        {/* Contact CTA - Support Hub with 3 cards */}
-        <div className="mt-16 glass-premium rounded-2xl border border-accent/20 p-6 md:p-8">
-          <div className="text-center mb-8">
-            <h3 className="text-xl font-bold text-foreground mb-2">
-              Still have questions?
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Our AI assistant and support team are here to help
-            </p>
-          </div>
-
-          {/* 3 Contact Options */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Send Us a Message */}
-            <div className="glass-card border border-border/50 rounded-xl p-5 flex flex-col items-center text-center hover:border-accent/30 transition-all duration-300">
-              <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mb-3">
-                <Mail className="h-5 w-5 text-accent" />
-              </div>
-              <div className="mb-3">
-                <EveAvatar size="md" />
-              </div>
-              <h4 className="font-semibold text-foreground mb-1">Send Us a Message</h4>
-              <p className="text-xs text-muted-foreground mb-4">
-                Get a response within 24h
-              </p>
-              <Button
-                onClick={() => setShowEmailDialog(true)}
-                variant="outline"
-                size="sm"
-                className="w-full border-accent/30 hover:bg-accent/10 hover:border-accent/50"
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Send Message
-              </Button>
+        {/* Contact CTA - Meet Eve */}
+        <div className="mt-16 glass-premium rounded-2xl border border-accent/20 p-6">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            {/* Eve Avatar */}
+            <div className="flex-shrink-0">
+              <EveAvatar size="lg" />
             </div>
-
-            {/* Chat with Eve */}
-            <div className="glass-card border border-border/50 rounded-xl p-5 flex flex-col items-center text-center hover:border-accent/30 transition-all duration-300">
-              <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mb-3">
-                <MessageSquare className="h-5 w-5 text-accent" />
-              </div>
-              <div className="mb-3">
-                <EveAvatar size="md" />
-              </div>
-              <h4 className="font-semibold text-foreground mb-1">Chat with Eve</h4>
-              <p className="text-xs text-muted-foreground mb-4">
-                Instant answers via text chat
+            
+            {/* Text Content */}
+            <div className="flex-1 text-center sm:text-left">
+              <h3 className="text-lg font-semibold text-foreground">
+                Need help? <span className="text-gradient-gold">Talk to Eve</span>
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Your AI assistant, available 24/7
               </p>
-              <Button
-                onClick={() => setShowChatDialog(true)}
-                variant="outline"
-                size="sm"
-                className="w-full border-accent/30 hover:bg-accent/10 hover:border-accent/50"
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Start Chat
-              </Button>
             </div>
-
-            {/* Call Eve */}
-            <div className="glass-card border border-border/50 rounded-xl p-5 flex flex-col items-center text-center hover:border-accent/30 transition-all duration-300">
-              <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mb-3">
-                <Phone className="h-5 w-5 text-accent" />
-              </div>
-              <div className="mb-3">
-                <EveAvatar size="md" />
-              </div>
-              <h4 className="font-semibold text-foreground mb-1">Call Eve</h4>
-              <p className="text-xs text-muted-foreground mb-4">
-                Talk directly with Eve
-              </p>
-              <Button
-                onClick={() => setShowVoiceDialog(true)}
+            
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowEmailDialog(true)} 
+                variant="outline" 
                 size="sm"
-                className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-400 hover:to-yellow-400"
+                className="gap-2 border-accent/30 hover:bg-accent/10 hover:border-accent/50"
               >
-                <Phone className="h-4 w-4 mr-2" />
-                Call Now
+                <Mail className="h-4 w-4" />
+                <span className="hidden sm:inline">Email</span>
+              </Button>
+              <Button 
+                onClick={() => setShowChatDialog(true)} 
+                variant="outline" 
+                size="sm"
+                className="gap-2 border-accent/30 hover:bg-accent/10 hover:border-accent/50"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">Chat</span>
+              </Button>
+              <Button 
+                onClick={() => setShowVoiceDialog(true)} 
+                size="sm"
+                className="gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-400 hover:to-yellow-400"
+              >
+                <Phone className="h-4 w-4" />
+                <span className="hidden sm:inline">Call</span>
               </Button>
             </div>
           </div>
