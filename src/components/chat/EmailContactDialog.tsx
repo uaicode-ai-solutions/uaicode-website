@@ -48,6 +48,7 @@ interface EmailContactDialogProps {
 
 export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, onOpenChange, source = 'website_uaicode' }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const {
     register,
@@ -90,8 +91,14 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
       }
 
       console.log("Message sent successfully");
+      setSubmitSuccess(true);
       reset();
-      onOpenChange(false);
+
+      // Close dialog after showing success
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        onOpenChange(false);
+      }, 2500);
     } catch (error) {
       console.error("Email contact form error:", error);
     } finally {
@@ -101,6 +108,7 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
 
   const handleClose = () => {
     if (!isSubmitting) {
+      setSubmitSuccess(false);
       reset();
       onOpenChange(false);
     }
@@ -131,120 +139,138 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
           </p>
         </DialogHeader>
 
-        {/* Decorative divider */}
-        <div className="flex items-center gap-4 py-2">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Full Name */}
-          <div>
-            <Label htmlFor="contact-name" className="text-sm font-medium mb-1.5 block">
-              Full Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="contact-name"
-              type="text"
-              placeholder="John Doe"
-              {...register("name")}
-              disabled={isSubmitting}
-              className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20"
-              maxLength={100}
-            />
-            {errors.name && (
-              <p className="text-destructive text-xs mt-1">{errors.name.message}</p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div>
-            <Label htmlFor="contact-email" className="text-sm font-medium mb-1.5 block">
-              Email Address <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="contact-email"
-              type="email"
-              placeholder="john@company.com"
-              {...register("email")}
-              disabled={isSubmitting}
-              className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20"
-              maxLength={255}
-            />
-            {errors.email && (
-              <p className="text-destructive text-xs mt-1">{errors.email.message}</p>
-            )}
-          </div>
-
-          {/* Phone */}
-          <div>
-            <Label htmlFor="contact-phone" className="text-sm font-medium mb-1.5 block">
-              Phone <span className="text-destructive">*</span>
-            </Label>
-            <PhoneInput
-              value={watch("phone") || ""}
-              onChange={(phone) => setValue("phone", phone)}
-              disabled={isSubmitting}
-              placeholder="Phone number"
-              defaultCountry="us"
-            />
-            {errors.phone && (
-              <p className="text-destructive text-xs mt-1">{errors.phone.message}</p>
-            )}
-          </div>
-
-          {/* Message */}
-          <div>
-            <Label htmlFor="contact-message" className="text-sm font-medium mb-1.5 block">
-              Your Message <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="contact-message"
-              placeholder="Tell us about your project or how we can help..."
-              {...register("message")}
-              disabled={isSubmitting}
-              className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20 min-h-[100px] max-h-[150px] resize-y"
-              maxLength={1000}
-            />
-            <div className="flex justify-between items-center mt-1">
-              <p className="text-xs text-muted-foreground">{messageCharCount}/1000</p>
-              {messageCharCount > 900 && (
-                <p className={`text-xs ${messageCharCount > 980 ? 'text-destructive' : 'text-yellow-500'}`}>
-                  {messageCharCount > 980 ? 'Limit reached' : 'Approaching limit'}
-                </p>
-              )}
+        {submitSuccess ? (
+          <div className="py-8 text-center space-y-4">
+            <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-amber-500/20 to-yellow-500/20 flex items-center justify-center">
+              <Send className="h-8 w-8 text-amber-400" />
             </div>
-            {errors.message && (
-              <p className="text-destructive text-xs mt-1">{errors.message.message}</p>
-            )}
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">
+                Message <span className="text-gradient-gold">Sent!</span>
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                We'll be in touch soon. Check your inbox for a confirmation.
+              </p>
+            </div>
           </div>
+        ) : (
+          <>
+            {/* Decorative divider */}
+            <div className="flex items-center gap-4 py-2">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+            </div>
 
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-600 hover:to-yellow-600 font-semibold py-5 shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transition-all duration-300"
-          >
-            {isSubmitting ? (
-              <span className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full animate-spin" />
-                Sending...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Send className="w-4 h-4" />
-                Send Message
-              </span>
-            )}
-          </Button>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Full Name */}
+              <div>
+                <Label htmlFor="contact-name" className="text-sm font-medium mb-1.5 block">
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="contact-name"
+                  type="text"
+                  placeholder="John Doe"
+                  {...register("name")}
+                  disabled={isSubmitting}
+                  className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20"
+                  maxLength={100}
+                />
+                {errors.name && (
+                  <p className="text-destructive text-xs mt-1">{errors.name.message}</p>
+                )}
+              </div>
 
-          {/* Privacy note */}
-          <p className="text-xs text-muted-foreground text-center">
-            By submitting, you agree to our{" "}
-            <a href="/privacy" className="text-amber-400 hover:underline">Privacy Policy</a>
-            {" "}and{" "}
-            <a href="/terms" className="text-amber-400 hover:underline">Terms of Service</a>.
-          </p>
-        </form>
+              {/* Email */}
+              <div>
+                <Label htmlFor="contact-email" className="text-sm font-medium mb-1.5 block">
+                  Email Address <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="contact-email"
+                  type="email"
+                  placeholder="john@company.com"
+                  {...register("email")}
+                  disabled={isSubmitting}
+                  className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20"
+                  maxLength={255}
+                />
+                {errors.email && (
+                  <p className="text-destructive text-xs mt-1">{errors.email.message}</p>
+                )}
+              </div>
+
+              {/* Phone */}
+              <div>
+                <Label htmlFor="contact-phone" className="text-sm font-medium mb-1.5 block">
+                  Phone <span className="text-destructive">*</span>
+                </Label>
+                <PhoneInput
+                  value={watch("phone") || ""}
+                  onChange={(phone) => setValue("phone", phone)}
+                  disabled={isSubmitting}
+                  placeholder="Phone number"
+                  defaultCountry="us"
+                />
+                {errors.phone && (
+                  <p className="text-destructive text-xs mt-1">{errors.phone.message}</p>
+                )}
+              </div>
+
+              {/* Message */}
+              <div>
+                <Label htmlFor="contact-message" className="text-sm font-medium mb-1.5 block">
+                  Your Message <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="contact-message"
+                  placeholder="Tell us about your project or how we can help..."
+                  {...register("message")}
+                  disabled={isSubmitting}
+                  className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20 min-h-[100px] max-h-[150px] resize-y"
+                  maxLength={1000}
+                />
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-muted-foreground">{messageCharCount}/1000</p>
+                  {messageCharCount > 900 && (
+                    <p className={`text-xs ${messageCharCount > 980 ? 'text-destructive' : 'text-yellow-500'}`}>
+                      {messageCharCount > 980 ? 'Limit reached' : 'Approaching limit'}
+                    </p>
+                  )}
+                </div>
+                {errors.message && (
+                  <p className="text-destructive text-xs mt-1">{errors.message.message}</p>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-600 hover:to-yellow-600 font-semibold py-5 shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transition-all duration-300"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full animate-spin" />
+                    Sending...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Send className="w-4 h-4" />
+                    Send Message
+                  </span>
+                )}
+              </Button>
+
+              {/* Privacy note */}
+              <p className="text-xs text-muted-foreground text-center">
+                By submitting, you agree to our{" "}
+                <a href="/privacy" className="text-amber-400 hover:underline">Privacy Policy</a>
+                {" "}and{" "}
+                <a href="/terms" className="text-amber-400 hover:underline">Terms of Service</a>.
+              </p>
+            </form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
