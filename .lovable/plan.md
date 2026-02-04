@@ -1,106 +1,106 @@
 
-# Melhorias na Página Pública de Compartilhamento
 
-## Problema 1: Footer "Grudado"
+# Banner Hero Premium para Página Pública Compartilhada
 
-O `SharedReportFooter` está renderizado imediatamente após o `BusinessPlanTab` sem espaçamento vertical adequado.
+## Visão
 
-**Solução**: Adicionar margin-top ao footer para criar separação visual.
+Criar um banner visual impactante que impressione quem receber o link, transmitindo profissionalismo e credibilidade. O design será inspirado no `ReportHero.tsx` do dashboard, com efeitos visuais premium e uma apresentação imersiva.
 
-## Problema 2: Falta de Contexto para o Destinatário
-
-Quem recebe o link compartilhado não sabe imediatamente qual relatório está visualizando. Falta um "hero" com o nome do projeto e o score de viabilidade.
-
-**Solução**: Criar um hero simplificado específico para a página pública, reutilizando a lógica do `ReportHero` existente mas de forma mais compacta.
-
----
-
-## Arquivos a Modificar/Criar
-
-### 1. Novo Componente: `SharedReportHero.tsx`
-
-Criar um hero compacto para a página pública com:
-- Badge "Shared Business Plan"
-- Nome do projeto (extraído do `wizard_snapshot.saas_name`)
-- Score de viabilidade em formato visual (anel circular)
-- Tagline/veredicto curto
-
-**Localização**: `src/components/planningmysaas/public/SharedReportHero.tsx`
-
-```tsx
-// Estrutura proposta:
-<div className="text-center py-12 space-y-6">
-  <Badge>Shared Business Plan</Badge>
-  <h1>Nome do Projeto</h1>
-  
-  {/* Score Ring (versão compacta do ReportHero) */}
-  <div className="w-24 h-24">
-    <ScoreRing score={68} />
-  </div>
-  
-  <p className="text-accent">Tagline do veredicto</p>
-</div>
-```
-
-### 2. Modificar: `PmsSharedReport.tsx`
-
-- Importar e adicionar o novo `SharedReportHero` após o header
-- Adicionar classe `mt-12` antes do `SharedReportFooter` para espaçamento
-
-```tsx
-// Estrutura atualizada:
-<main className="pt-24 pb-16">
-  <div className="max-w-5xl mx-auto px-4 lg:px-6">
-    <SharedReportHero />    {/* NOVO: Hero com nome e score */}
-    <BusinessPlanTab />
-    <div className="mt-12">  {/* NOVO: Espaçamento */}
-      <SharedReportFooter />
-    </div>
-  </div>
-</main>
-```
-
----
-
-## Detalhes Técnicos
-
-### Dados para o SharedReportHero
-
-O `SharedReportContext` já fornece:
-- `report.saas_name` - nome do projeto (via `wizard_snapshot`)
-- `reportData.hero_score_section.score` - score de viabilidade
-- `reportData.hero_score_section.tagline` - tagline do veredicto
-
-### Estilo do Score Ring
-
-Reutilizar o SVG do `ReportHero` existente, mas em tamanho menor (w-24 h-24) para um visual mais compacto adequado à página pública.
-
----
-
-## Resultado Visual Esperado
+## Design Proposto
 
 ```text
-┌─────────────────────────────────────────┐
-│  [Header com logo e badge]              │
-├─────────────────────────────────────────┤
-│                                         │
-│        🏷️ Shared Business Plan          │
-│                                         │
-│        **Nome do Projeto**              │
-│                                         │
-│            ┌─────┐                      │
-│            │  68 │  <- Score Ring       │
-│            └─────┘                      │
-│                                         │
-│   "Tagline de viabilidade do projeto"   │
-│                                         │
-├─────────────────────────────────────────┤
-│  [BusinessPlanTab - conteúdo atual]     │
-│           ...                           │
-│           ...                           │
-├─────────────────────────────────────────┤
-│                                         │  <- NOVO: mt-12 gap
-│  [SharedReportFooter - CTA + credits]   │
-│                                         │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  ░░░░░░░░░░░░░ Aurora Background + Gradient Orbs ░░░░░░░░░░░░░  │
+│                                                                 │
+│              ✨ Shared Business Plan (badge)                    │
+│                                                                 │
+│         ╔═══════════════════════════════════════╗               │
+│         ║                                       ║               │
+│         ║    NOME DO PROJETO (h1 grande)        ║               │
+│         ║                                       ║               │
+│         ╚═══════════════════════════════════════╝               │
+│                                                                 │
+│                    ┌─────────────┐                              │
+│                    │             │                              │
+│                    │     68      │   ← Score Ring c/ Glow       │
+│                    │  Viability  │                              │
+│                    │             │                              │
+│                    └─────────────┘                              │
+│                                                                 │
+│           "Tagline de viabilidade do projeto"                   │
+│                                                                 │
+│    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
+│    │  📈 $713B    │  │  💰 4.2x     │  │  ⏱️ 8 mo     │         │
+│    │  Total Market│  │  LTV/CAC     │  │  Payback     │         │
+│    └──────────────┘  └──────────────┘  └──────────────┘         │
+│                                                                 │
+│                    ▼ (scroll indicator)                         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
+
+## Elementos Visuais Premium
+
+1. **Background Aurora**: Efeito de fundo com gradiente animado sutil
+2. **Gradient Orbs**: Esferas desfocadas de cor accent criando profundidade
+3. **Score Ring com Glow**: Anel de progresso animado com gradiente dourado e brilho
+4. **Glass Cards**: Cards com backdrop-blur e bordas douradas sutis
+5. **Animações**: fade-in suave ao carregar
+
+## Arquivo a Modificar
+
+**`src/components/planningmysaas/public/SharedReportHero.tsx`**
+
+Reescrever completamente com:
+- Background effects (aurora-bg, gradient orbs)
+- Score ring SVG grande (w-32 h-32) com gradiente e glow
+- 3 métricas chave em glass cards (TAM, LTV/CAC, Payback)
+- Scroll indicator animado
+- Layout responsivo (mobile-first)
+
+## Dados a Utilizar
+
+Do `SharedReportContext`:
+- `report.saas_name` - Nome do projeto
+- `reportData.hero_score_section.score` - Score de viabilidade
+- `reportData.hero_score_section.tagline` - Tagline do veredicto
+- `reportData.opportunity_section.tam_value` - TAM
+- Usar `useFinancialMetrics` para LTV/CAC e Payback
+
+## Componentes Técnicos
+
+### Score Ring SVG
+
+```tsx
+<svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="42" strokeWidth="7" className="text-muted/20" />
+  <circle 
+    cx="50" cy="50" r="42" 
+    stroke="url(#scoreGradient)"
+    strokeDasharray={`${(score/100) * 2 * Math.PI * 42} ${2 * Math.PI * 42}`}
+    filter="url(#glow)"
+  />
+</svg>
+```
+
+### Glass Cards para Métricas
+
+```tsx
+<Card className="glass-premium border-accent/20 p-5 hover:border-accent/40 transition-colors">
+  <div className="p-2 rounded-lg bg-accent/10">
+    <Icon className="h-4 w-4 text-accent" />
+  </div>
+  <div className="text-2xl font-bold text-foreground">{value}</div>
+  <div className="text-sm text-muted-foreground">{label}</div>
+</Card>
+```
+
+## Resultado Esperado
+
+Um hero visualmente impressionante que:
+1. Comunica imediatamente qual é o projeto
+2. Mostra o score de viabilidade de forma impactante
+3. Apresenta métricas-chave que validam a análise
+4. Transmite profissionalismo e credibilidade
+5. Incentiva a leitura completa do relatório
+
