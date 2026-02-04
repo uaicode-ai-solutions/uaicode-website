@@ -39,7 +39,7 @@ const steps: Step[] = [
   {
     icon: FileText,
     step: 4,
-    title: "Download Your Launch Plan",
+    title: "Download Your Business Plan",
     description: "Get your complete business plan, financial projections, and go-to-market strategy.",
     image: stepBrand,
   },
