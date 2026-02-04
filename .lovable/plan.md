@@ -1,114 +1,136 @@
 
+# Redesign da Seção "Still have questions?" + Frase de Entrada da Eve
 
-# Adicionar Eve à Seção "Still have questions?" da Landing Page
+## Frase de Entrada Sugerida para Eve (ElevenLabs)
 
-## Visão Geral
+**Inglês - Frase de entrada:**
+> "Hey! I'm Eve, your AI assistant at PlanningMySaaS. I'm here to help you validate your SaaS idea or answer any questions about our platform. What brings you here today?"
 
-Transformar a seção de contato do FAQ em um hub de comunicação completo com 3 opções:
-1. **Send Us a Message** - Form de email existente (mantido)
-2. **Chat with Eve** - Interface de chat texto com a Eve
-3. **Call Eve** - Interface de voz com a Eve
+**Alternativas mais curtas (para voice mode):**
+- "Hi there! I'm Eve from PlanningMySaaS. How can I help you today?"
+- "Hey! Eve here. Ready to help you validate your next big idea. What's on your mind?"
 
-O design seguirá o padrão já estabelecido no `MeetKyleSection`, adaptado para a Eve.
+---
 
-## Arquivos a Criar
+## Problema Visual Atual
 
-### 1. Edge Function: `supabase/functions/eve-conversation-token/index.ts`
-Token para conexão de voz WebRTC/WebSocket com a Eve.
-- Usa `ELEVENLABS_EVE_AGENT_ID` do Supabase secrets
-- Segue o mesmo padrão do `kyle-conversation-token`
+A seção atual tem 3 cards repetitivos com o avatar da Eve em cada um, criando redundância visual. O layout está desconectado do estilo elegante da landing page.
 
-### 2. Edge Function: `supabase/functions/eve-chat-token/index.ts`
-Token para conexão de chat (text-only) com a Eve.
-- Usa `ELEVENLABS_EVE_AGENT_ID_CHAT` do Supabase secrets
-- Segue o mesmo padrão do `kyle-chat-token`
+---
 
-### 3. Hook: `src/hooks/useEveElevenLabs.ts`
-Hook para gerenciar conexão de VOZ com a Eve.
-- Baseado no `useKyleElevenLabs`
-- Não requer `wizardId` (é landing page, não há contexto de projeto)
-- Chama `eve-conversation-token`
+## Solução: Design Inspirado no MeetKyleSection
 
-### 4. Hook: `src/hooks/useEveChatElevenLabs.ts`
-Hook para gerenciar conexão de CHAT com a Eve.
-- Baseado no `useKyleChatElevenLabs`
-- Não requer `wizardId`
-- Chama `eve-chat-token`
-- Modo `textOnly: true`
-
-### 5. Componente: `src/components/chat/EveVoiceDialog.tsx`
-Dialog de voz para falar com a Eve.
-- Baseado no `KyleConsultantDialog`
-- Usa `EveAvatar` já existente
-- Visual consistente com tema amber/gold
-
-### 6. Componente: `src/components/chat/EveChatDialog.tsx`
-Dialog de chat para conversar com a Eve.
-- Baseado no `KyleChatDialog`
-- Usa `EveAvatar` já existente
-- Input de texto + visualização de mensagens
-
-## Arquivos a Modificar
-
-### 7. `src/components/planningmysaas/PmsFaq.tsx`
-
-Atualizar a seção "Contact CTA" (linhas 97-113) para incluir os 3 cards:
+Transformar os 3 cards em um **layout horizontal compacto** com uma única Eve:
 
 ```text
-┌──────────────────────────────────────────────────────────────────┐
-│                    Still have questions?                          │
-│       Our AI assistant and support team are here to help         │
-├────────────────────┬────────────────────┬────────────────────────┤
-│   📧 Send Us a     │   💬 Chat with     │   📞 Call Eve          │
-│     Message        │      Eve           │                        │
-│                    │                    │                        │
-│   [Eve Avatar]     │   [Eve Avatar]     │   [Eve Avatar]         │
-│   Email Support    │   AI Chat          │   Voice AI             │
-│                    │                    │                        │
-│   "Get a response  │   "Instant answers │   "Talk directly       │
-│   within 24h"      │   via text chat"   │   with Eve"            │
-│                    │                    │                        │
-│   [Send Message]   │   [Start Chat]     │   [Call Now]           │
-└────────────────────┴────────────────────┴────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     Still have questions?                                │
+│              Our AI assistant Eve is here to help                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   [Eve Avatar]   "Need help? I'm Eve, your AI     [Email] [Chat] [Call] │
+│                   assistant — available 24/7"                            │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Detalhes Técnicos
+---
 
-### Edge Functions - Secrets Necessários
-Os secrets já existem no Supabase:
-- `ELEVENLABS_API_KEY` (já configurado)
-- `ELEVENLABS_EVE_AGENT_ID` (voz)
-- `ELEVENLABS_EVE_AGENT_ID_CHAT` (chat)
+## Estrutura do Novo Design
 
-### Hooks da Eve vs Kyle
-| Aspecto | Kyle | Eve |
-|---------|------|-----|
-| Contexto | `wizardId` obrigatório | Nenhum contexto obrigatório |
-| Uso | Dashboard (pós-relatório) | Landing Page (pré-conversão) |
-| Dynamic Vars | `wizard_id`, `timezone`, `current_date` | `timezone`, `current_date` apenas |
+### 1. Container Principal
+- Mantém `glass-premium` com borda `border-accent/20`
+- Padding interno confortável
 
-### Componentes Reutilizados
-- `EveAvatar` - Já existe em `src/components/chat/EveAvatar.tsx`
-- `EmailContactDialog` - Mantido como está (form de email)
-- UI Components: `Dialog`, `Button`, `Badge`, `Input`, etc.
+### 2. Layout Horizontal (uma linha)
+- **Avatar da Eve** (tamanho `lg`) - à esquerda
+- **Texto Central**:
+  - Título: "Need help? **Talk to Eve**"
+  - Subtítulo: "Your AI assistant, available 24/7"
+- **Botões à direita** (3 botões inline):
+  - Email (outline)
+  - Chat (outline)  
+  - Call (gradient amber - CTA principal)
 
-## Fluxo de Usuário
+### 3. Responsividade
+- **Desktop**: Layout horizontal em uma linha
+- **Mobile**: Stack vertical centralizado
 
-1. Usuário rola até o FAQ na landing page `/planningmysaas`
-2. Vê 3 cards na seção "Still have questions?"
-3. Pode escolher:
-   - **Email** → Abre `EmailContactDialog` existente
-   - **Chat** → Abre `EveChatDialog` (novo)
-   - **Voice** → Abre `EveVoiceDialog` (novo)
-4. Eve inicia conversa, qualifica o lead, captura informações via tools
+---
 
-## Estrutura Visual dos Cards
+## Arquivo a Modificar
 
-Cada card terá:
-- Header com ícone e título
-- Avatar da Eve centralizado
-- Subtítulo com descrição breve
-- Botão de ação
+**`src/components/planningmysaas/PmsFaq.tsx`**
 
-Cores seguirão o tema amber/gold já usado para os outros elementos de AI.
+### Mudanças:
+1. Remover os 3 cards separados (linhas 114-183)
+2. Implementar layout horizontal compacto inspirado no `MeetKyleSection`
+3. Usar apenas UM avatar da Eve (não repetir)
+4. Botões inline com estilo consistente
+
+---
+
+## Código Visual Proposto
+
+```tsx
+{/* Contact CTA - Meet Eve */}
+<div className="mt-16 glass-premium rounded-2xl border border-accent/20 p-6">
+  <div className="flex flex-col sm:flex-row items-center gap-6">
+    {/* Eve Avatar */}
+    <div className="flex-shrink-0">
+      <EveAvatar size="lg" />
+    </div>
+    
+    {/* Text Content */}
+    <div className="flex-1 text-center sm:text-left">
+      <h3 className="text-lg font-semibold text-foreground">
+        Need help? <span className="text-gradient-gold">Talk to Eve</span>
+      </h3>
+      <p className="text-sm text-muted-foreground">
+        Your AI assistant, available 24/7
+      </p>
+    </div>
+    
+    {/* Action Buttons */}
+    <div className="flex gap-2">
+      <Button onClick={() => setShowEmailDialog(true)} variant="outline" size="sm" 
+        className="gap-2 border-accent/30 hover:bg-accent/10">
+        <Mail className="h-4 w-4" />
+        <span className="hidden sm:inline">Email</span>
+      </Button>
+      <Button onClick={() => setShowChatDialog(true)} variant="outline" size="sm"
+        className="gap-2 border-accent/30 hover:bg-accent/10">
+        <MessageSquare className="h-4 w-4" />
+        <span className="hidden sm:inline">Chat</span>
+      </Button>
+      <Button onClick={() => setShowVoiceDialog(true)} size="sm"
+        className="gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-400 hover:to-yellow-400">
+        <Phone className="h-4 w-4" />
+        <span className="hidden sm:inline">Call</span>
+      </Button>
+    </div>
+  </div>
+</div>
+```
+
+---
+
+## Comparação Visual
+
+| Antes | Depois |
+|-------|--------|
+| 3 cards verticais repetitivos | 1 linha horizontal limpa |
+| Eve aparece 3 vezes | Eve aparece 1 vez (destaque) |
+| Texto redundante em cada card | Mensagem única e direta |
+| Visual pesado e repetitivo | Visual leve e elegante |
+
+---
+
+## Resultado Esperado
+
+- Design consistente com o resto da landing page
+- Eve como personagem central (não repetida)
+- Ações claras e acessíveis (Email, Chat, Call)
+- Layout responsivo que funciona bem em mobile e desktop
+- Segue o padrão visual já estabelecido no MeetKyleSection do dashboard
 
