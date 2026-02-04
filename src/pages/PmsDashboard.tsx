@@ -416,14 +416,18 @@ const PmsDashboardContent = () => {
                     <Mail className="h-4 w-4 mr-2" />
                     Share via Email
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-border/30" />
-                  <DropdownMenuItem 
-                    onClick={handleExportPDF} 
-                    className="cursor-pointer"
-                  >
-                    <FileDown className="h-4 w-4 mr-2" />
-                    Export to PDF
-                  </DropdownMenuItem>
+                  {(isAdmin || isContributor) && (
+                    <>
+                      <DropdownMenuSeparator className="bg-border/30" />
+                      <DropdownMenuItem 
+                        onClick={handleExportPDF} 
+                        className="cursor-pointer"
+                      >
+                        <FileDown className="h-4 w-4 mr-2" />
+                        Export to PDF
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
 
