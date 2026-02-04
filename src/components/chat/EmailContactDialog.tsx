@@ -116,7 +116,7 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg glass-card border-amber-500/20 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg glass-card border-amber-500/20 shadow-2xl max-h-[90vh] overflow-y-auto sm:max-h-none sm:overflow-visible">
         <DialogHeader className="text-center pb-2">
           {/* Icon with glow effect */}
           <div className="flex justify-center mb-4">
