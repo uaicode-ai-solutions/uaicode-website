@@ -1,91 +1,53 @@
 
-
-# Corrigir Altura do Formulário do Kyle
-
-## Problema Identificado
-
-Comparando os dois formulários, encontrei a diferença no campo de mensagem (Textarea):
-
-| Aspecto | Kyle (atual) | Eve (correto) |
-|---------|--------------|---------------|
-| Textarea | `rows={4}` | Sem `rows` |
-| Height classes | Nenhuma | `min-h-[100px] max-h-[150px]` |
-| Resize | `resize-none` | `resize-y` |
-| Max chars | 2000 | 1000 |
-
-O `rows={4}` no Kyle cria uma altura fixa maior que o necessário.
+## Objetivo
+Remover a barra de rolagem interna do modal “Email Kyle” (e manter consistência com o modal da Eve), sem quebrar a usabilidade em telas menores.
 
 ---
 
-## Solução
+## Diagnóstico (por que a barra ainda aparece)
+No `EmailKyleDialog`, o `DialogContent` está com:
+- `max-h-[90vh] overflow-y-auto`
 
-**Arquivo**: `src/components/planningmysaas/dashboard/EmailKyleDialog.tsx`
+Isso força o conteúdo a ficar limitado a 90% da altura da tela. Se o conteúdo ficar **1px–20px maior** (por espaçamentos/line-heights/renderização do PhoneInput/Textarea), o Radix/Tailwind ativa a rolagem interna.
 
-### Mudança no Textarea (linhas 251-258):
-
-**De:**
-```tsx
-<Textarea
-  placeholder="Tell me about your project and what you're looking for..."
-  rows={4}
-  {...field}
-  disabled={isSubmitting}
-  className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20 resize-none"
-  maxLength={2000}
-/>
-```
-
-**Para:**
-```tsx
-<Textarea
-  placeholder="Tell me about your project and what you're looking for..."
-  {...field}
-  disabled={isSubmitting}
-  className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20 min-h-[100px] max-h-[150px] resize-y"
-  maxLength={1000}
-/>
-```
-
-### Atualizar contador de caracteres (linhas 261-266):
-
-**De:**
-```tsx
-<p className="text-xs text-muted-foreground">{messageCharCount}/2000</p>
-{messageCharCount > 1800 && (
-  <p className={`text-xs ${messageCharCount > 1950 ? 'text-destructive' : 'text-yellow-500'}`}>
-    {messageCharCount > 1950 ? 'Limit reached' : 'Approaching limit'}
-  </p>
-)}
-```
-
-**Para:**
-```tsx
-<p className="text-xs text-muted-foreground">{messageCharCount}/1000</p>
-{messageCharCount > 900 && (
-  <p className={`text-xs ${messageCharCount > 980 ? 'text-destructive' : 'text-yellow-500'}`}>
-    {messageCharCount > 980 ? 'Limit reached' : 'Approaching limit'}
-  </p>
-)}
-```
-
-### Atualizar schema de validação (linha 51):
-
-**De:**
-```tsx
-.max(2000, "Message must be less than 2000 characters"),
-```
-
-**Para:**
-```tsx
-.max(1000, "Message must be less than 1000 characters"),
-```
+Observação importante: o modal da Eve também tem esse mesmo par de classes, mas como o conteúdo dela costuma ficar ligeiramente menor, a rolagem não aparece. No Kyle, qualquer diferença pequena pode “passar do limite” e gerar a barra.
 
 ---
 
-## Resultado
+## Solução proposta (remove a barra no desktop, mantém segurança no mobile)
+Em vez de remover a rolagem “para sempre” (o que pode cortar conteúdo em telas baixas), vamos tornar isso **responsivo**:
 
-Após essas mudanças:
-- O textarea terá altura controlada (100px-150px) igual à Eve
-- Não haverá mais barra de rolagem no dialog
-- Os dois formulários terão exatamente a mesma altura
+- **Base (mobile / telas pequenas):** mantém `max-h-[90vh] overflow-y-auto` para garantir que nada fique inacessível.
+- **A partir de `sm` (desktop):** remove a limitação e o overflow para eliminar a barra:
+  - `sm:max-h-none sm:overflow-visible`
 
+Isso garante que:
+- No desktop: não aparece scrollbar (seu caso).
+- No mobile: continua scrollável, evitando modal “estourar” fora da tela.
+
+---
+
+## Arquivos a alterar
+1) `src/components/planningmysaas/dashboard/EmailKyleDialog.tsx`
+- Atualizar a `className` do `DialogContent`:
+  - De: `... max-h-[90vh] overflow-y-auto`
+  - Para: `... max-h-[90vh] overflow-y-auto sm:max-h-none sm:overflow-visible`
+
+2) (Recomendado para consistência visual) `src/components/chat/EmailContactDialog.tsx`
+- Aplicar o mesmo ajuste no `DialogContent` para Kyle/Eve ficarem 100% iguais em comportamento.
+
+---
+
+## Passo a passo de implementação
+1. Editar `EmailKyleDialog.tsx` e ajustar as classes do `DialogContent` com os modificadores `sm:`.
+2. Editar `EmailContactDialog.tsx` e replicar o mesmo padrão (para manter consistência).
+3. Validar visualmente:
+   - No desktop (sua tela atual no dashboard): abrir o modal do Kyle e confirmar **sem barra de rolagem**.
+   - Em viewport menor (simulação mobile): confirmar que, se necessário, o modal ainda consegue rolar.
+
+---
+
+## Critério de pronto (Definition of Done)
+- Modal “Email Kyle” não mostra scrollbar interna no desktop.
+- Modal continua utilizável em telas pequenas (rolagem apenas quando necessário).
+- Kyle e Eve ficam com o mesmo comportamento de modal (consistência).
