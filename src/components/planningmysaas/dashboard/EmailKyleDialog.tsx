@@ -122,7 +122,7 @@ const EmailKyleDialog = ({ open, onOpenChange }: EmailKyleDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg glass-card border-amber-500/20 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg glass-card border-amber-500/20 shadow-2xl max-h-[90vh] overflow-y-auto sm:max-h-none sm:overflow-visible">
         <DialogHeader className="text-center pb-2">
           {/* Kyle Avatar with glow */}
           <div className="flex justify-center mb-4">
