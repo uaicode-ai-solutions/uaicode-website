@@ -48,7 +48,7 @@ const emailKyleSchema = z.object({
   message: z.string()
     .trim()
     .min(10, "Message must be at least 10 characters")
-    .max(2000, "Message must be less than 2000 characters"),
+    .max(1000, "Message must be less than 1000 characters"),
 });
 
 type EmailKyleFormData = z.infer<typeof emailKyleSchema>;
@@ -250,18 +250,17 @@ const EmailKyleDialog = ({ open, onOpenChange }: EmailKyleDialogProps) => {
                       <FormControl>
                         <Textarea
                           placeholder="Tell me about your project and what you're looking for..."
-                          rows={4}
                           {...field}
                           disabled={isSubmitting}
-                          className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20 resize-none"
-                          maxLength={2000}
+                          className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20 min-h-[100px] max-h-[150px] resize-y"
+                          maxLength={1000}
                         />
                       </FormControl>
                       <div className="flex justify-between items-center mt-1">
-                        <p className="text-xs text-muted-foreground">{messageCharCount}/2000</p>
-                        {messageCharCount > 1800 && (
-                          <p className={`text-xs ${messageCharCount > 1950 ? 'text-destructive' : 'text-yellow-500'}`}>
-                            {messageCharCount > 1950 ? 'Limit reached' : 'Approaching limit'}
+                        <p className="text-xs text-muted-foreground">{messageCharCount}/1000</p>
+                        {messageCharCount > 900 && (
+                          <p className={`text-xs ${messageCharCount > 980 ? 'text-destructive' : 'text-yellow-500'}`}>
+                            {messageCharCount > 980 ? 'Limit reached' : 'Approaching limit'}
                           </p>
                         )}
                       </div>
