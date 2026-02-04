@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 const tabs = [
-  { id: "report", label: "Viability Report", icon: FileText },
+  { id: "report", label: "Market Analysis", icon: FileText },
   { id: "businessplan", label: "Business Plan", icon: Briefcase },
   { id: "nextsteps", label: "Next Steps", icon: Rocket },
 ];
