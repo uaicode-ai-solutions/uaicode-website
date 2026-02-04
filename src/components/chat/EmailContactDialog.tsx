@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Sparkles, Send } from "lucide-react";
+import { Sparkles, Send } from "lucide-react";
+import EveAvatar from "@/components/chat/EveAvatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,10 +113,8 @@ export const EmailContactDialog: React.FC<EmailContactDialogProps> = ({ open, on
           {/* Icon with glow effect */}
           <div className="flex justify-center mb-4">
             <div className="relative">
-              <div className="absolute inset-0 bg-amber-500/30 blur-xl rounded-full" />
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border border-amber-500/30 flex items-center justify-center">
-                <Mail className="w-10 h-10 text-amber-400" />
-              </div>
+              <div className="absolute inset-0 bg-amber-500/30 blur-xl rounded-full scale-110" />
+              <EveAvatar size="lg" isActive={true} />
               <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-amber-400 animate-pulse" />
               <Sparkles className="absolute -bottom-1 -left-1 w-4 h-4 text-yellow-400 animate-pulse" style={{ animationDelay: '0.5s' }} />
             </div>
