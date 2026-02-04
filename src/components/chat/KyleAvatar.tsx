@@ -22,9 +22,9 @@ const KyleAvatar = ({ isActive = false, isSpeaking = false, size = "md" }: KyleA
   }, [isSpeaking]);
 
   const sizeClasses = {
-    sm: "w-12 h-12",
-    md: "w-20 h-20",
-    lg: "w-28 h-28"
+    sm: "w-8 h-8",
+    md: "w-12 h-12",
+    lg: "w-16 h-16"
   };
 
   const glowClasses = {
