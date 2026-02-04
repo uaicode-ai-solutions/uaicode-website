@@ -1,52 +1,91 @@
 
-# Corrigir Tamanho do Avatar do Kyle
+
+# Corrigir Altura do Formulário do Kyle
 
 ## Problema Identificado
 
-Os tamanhos dos avatares estão inconsistentes entre Kyle e Eve:
+Comparando os dois formulários, encontrei a diferença no campo de mensagem (Textarea):
 
-| Size | KyleAvatar | EveAvatar | Diferença |
-|------|------------|-----------|-----------|
-| sm   | 48px (w-12 h-12) | 32px (w-8 h-8) | +16px |
-| md   | 80px (w-20 h-20) | 48px (w-12 h-12) | +32px |
-| lg   | **112px** (w-28 h-28) | **64px** (w-16 h-16) | **+48px** |
+| Aspecto | Kyle (atual) | Eve (correto) |
+|---------|--------------|---------------|
+| Textarea | `rows={4}` | Sem `rows` |
+| Height classes | Nenhuma | `min-h-[100px] max-h-[150px]` |
+| Resize | `resize-none` | `resize-y` |
+| Max chars | 2000 | 1000 |
 
-O avatar do Kyle no tamanho `lg` é 75% maior que o da Eve, causando o overflow vertical no dialog.
+O `rows={4}` no Kyle cria uma altura fixa maior que o necessário.
 
 ---
 
 ## Solução
 
-Alinhar os tamanhos do `KyleAvatar` com os do `EveAvatar`:
+**Arquivo**: `src/components/planningmysaas/dashboard/EmailKyleDialog.tsx`
 
-**Arquivo**: `src/components/chat/KyleAvatar.tsx`
-
-### Mudança (linha 24-27):
+### Mudança no Textarea (linhas 251-258):
 
 **De:**
-```typescript
-const sizeClasses = {
-  sm: "w-12 h-12",
-  md: "w-20 h-20",
-  lg: "w-28 h-28"
-};
+```tsx
+<Textarea
+  placeholder="Tell me about your project and what you're looking for..."
+  rows={4}
+  {...field}
+  disabled={isSubmitting}
+  className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20 resize-none"
+  maxLength={2000}
+/>
 ```
 
 **Para:**
-```typescript
-const sizeClasses = {
-  sm: "w-8 h-8",
-  md: "w-12 h-12",
-  lg: "w-16 h-16"
-};
+```tsx
+<Textarea
+  placeholder="Tell me about your project and what you're looking for..."
+  {...field}
+  disabled={isSubmitting}
+  className="bg-background/50 border-border/50 focus:border-amber-500/50 focus:ring-amber-500/20 min-h-[100px] max-h-[150px] resize-y"
+  maxLength={1000}
+/>
+```
+
+### Atualizar contador de caracteres (linhas 261-266):
+
+**De:**
+```tsx
+<p className="text-xs text-muted-foreground">{messageCharCount}/2000</p>
+{messageCharCount > 1800 && (
+  <p className={`text-xs ${messageCharCount > 1950 ? 'text-destructive' : 'text-yellow-500'}`}>
+    {messageCharCount > 1950 ? 'Limit reached' : 'Approaching limit'}
+  </p>
+)}
+```
+
+**Para:**
+```tsx
+<p className="text-xs text-muted-foreground">{messageCharCount}/1000</p>
+{messageCharCount > 900 && (
+  <p className={`text-xs ${messageCharCount > 980 ? 'text-destructive' : 'text-yellow-500'}`}>
+    {messageCharCount > 980 ? 'Limit reached' : 'Approaching limit'}
+  </p>
+)}
+```
+
+### Atualizar schema de validação (linha 51):
+
+**De:**
+```tsx
+.max(2000, "Message must be less than 2000 characters"),
+```
+
+**Para:**
+```tsx
+.max(1000, "Message must be less than 1000 characters"),
 ```
 
 ---
 
 ## Resultado
 
-Após a correção:
-- O `KyleAvatar` terá os mesmos tamanhos que o `EveAvatar`
-- O `EmailKyleDialog` terá a mesma altura que o `EmailContactDialog`
-- Não haverá mais barra de rolagem desnecessária
-- Consistência visual entre todos os dialogs de contato
+Após essas mudanças:
+- O textarea terá altura controlada (100px-150px) igual à Eve
+- Não haverá mais barra de rolagem no dialog
+- Os dois formulários terão exatamente a mesma altura
+
