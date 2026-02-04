@@ -1,54 +1,54 @@
 
+# Ocultar Export PDF para Usuários Comuns
 
-# Alterações de Texto no Dashboard
+## Mudança Solicitada
 
-## Mudanças Solicitadas
+Esconder a opção "Export to PDF" no dropdown de compartilhamento para usuários comuns, mantendo visível apenas para **admin** e **contributor**.
 
-| Local | Atual | Novo |
-|-------|-------|------|
-| Cabeçalho (header) | "Viability Report" | "Viability Analysis" |
-| Aba 1 | "Report" | "Market Analysis" |
-| Aba 2 | "My Plan" | "Business Plan" |
+## Situação Atual
+
+- O componente já importa e usa o hook `useUserRoles` (linha 67, 134)
+- As variáveis `isAdmin` e `isContributor` já estão disponíveis
+- O botão "Export to PDF" está nas linhas 420-426 do dropdown
 
 ## Arquivo a Modificar
 
-**`src/pages/PmsDashboard.tsx`**
+**`src/pages/PmsDashboard.tsx`** - linhas 419-426
 
-### 1. Cabeçalho (linha 357)
-
+### De:
 ```tsx
-// De:
-<p className="text-xs text-muted-foreground">Viability Report</p>
-
-// Para:
-<p className="text-xs text-muted-foreground">Viability Analysis</p>
+<DropdownMenuSeparator className="bg-border/30" />
+<DropdownMenuItem 
+  onClick={handleExportPDF} 
+  className="cursor-pointer"
+>
+  <FileDown className="h-4 w-4 mr-2" />
+  Export to PDF
+</DropdownMenuItem>
 ```
 
-### 2. Tabs (linhas 484-485)
-
+### Para:
 ```tsx
-// De:
-{ id: "report", label: "Report", icon: FileText },
-{ id: "businessplan", label: "My Plan", icon: Briefcase },
-
-// Para:
-{ id: "report", label: "Market Analysis", icon: FileText },
-{ id: "businessplan", label: "Business Plan", icon: Briefcase },
+{(isAdmin || isContributor) && (
+  <>
+    <DropdownMenuSeparator className="bg-border/30" />
+    <DropdownMenuItem 
+      onClick={handleExportPDF} 
+      className="cursor-pointer"
+    >
+      <FileDown className="h-4 w-4 mr-2" />
+      Export to PDF
+    </DropdownMenuItem>
+  </>
+)}
 ```
 
-## Resultado Visual
+## Resultado
 
-**Cabeçalho:**
-```text
-[Logo] Nome do Projeto
-       Viability Analysis  ← atualizado
-```
+| Tipo de Usuário | Vê "Export to PDF"? |
+|-----------------|---------------------|
+| Admin           | ✅ Sim              |
+| Contributor     | ✅ Sim              |
+| User (comum)    | ❌ Não              |
 
-**Tabs:**
-```text
-┌─────────────────┬─────────────────┬─────────────┐
-│ Market Analysis │ Business Plan   │ Next Steps  │
-│    (ativo)      │                 │             │
-└─────────────────┴─────────────────┴─────────────┘
-```
-
+A mesma lógica já é usada para o botão "Regenerate" no dashboard, então mantém consistência.
