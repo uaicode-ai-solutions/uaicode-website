@@ -354,7 +354,7 @@ const PmsDashboardContent = () => {
                 <div className="w-px h-6 bg-border/50" />
                 <div>
                   <p className="text-sm font-medium text-foreground">{projectName}</p>
-                  <p className="text-xs text-muted-foreground">Viability Report</p>
+                  <p className="text-xs text-muted-foreground">Viability Analysis</p>
                 </div>
               </div>
             </div>
@@ -481,8 +481,8 @@ const PmsDashboardContent = () => {
           <div className="max-w-5xl mx-auto">
             <div className="flex justify-center">
               {[
-                { id: "report", label: "Report", icon: FileText },
-                { id: "businessplan", label: "My Plan", icon: Briefcase },
+                { id: "report", label: "Market Analysis", icon: FileText },
+                { id: "businessplan", label: "Business Plan", icon: Briefcase },
                 { id: "nextsteps", label: "Next Steps", icon: Rocket },
                 // { id: "marketing", label: "Marketing", icon: TrendingUp }, // HIDDEN v1.0 - will return in future version
                 // { id: "assets", label: "Branding", icon: Palette }, // HIDDEN v1.0 - will return in future version
