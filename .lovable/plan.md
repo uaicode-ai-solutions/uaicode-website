@@ -1,114 +1,119 @@
 
-# Corrigir Formulário "Start Your Project Today" - Usar Edge Function Correta
 
-## Problema Identificado
+# Criar Popup de Confirmação Específico para Formulário de Contato
 
-O formulário em `ContactUs.tsx` está chamando a edge function **errada**:
+## Problema
 
-| Atual (Quebrado) | Correto (Funciona) |
-|------------------|-------------------|
-| `submit-contact-form` | `send-email-contact` |
-| Chama webhook n8n externo | Usa Resend API diretamente |
-| Campo: `project` | Campo esperado: `message` |
+O `BookingConfirmationDialog` foi projetado para agendamentos de reunião e exibe:
+- "Meeting Scheduled!"
+- "Your consultation has been successfully booked."
+- Detalhes de data/hora do agendamento
 
-## Interface da Edge Function `send-email-contact`
+Mas o formulário de contato precisa apenas:
+- "Message Sent!"
+- "Our team will get back to you soon."
 
-```typescript
-interface ContactFormData {
-  name: string;
-  email: string;
-  phone?: string;
-  message: string;    // <-- O formulário envia "project", precisa mapear
-  source?: string;    // <-- Precisamos adicionar
-}
+## Solução
+
+Criar um componente novo `MessageSentDialog` específico para o formulário de contato.
+
+---
+
+## Novo Componente: MessageSentDialog
+
+### Visual Proposto
+
+```text
++----------------------------------+
+|            [X]                   |
+|                                  |
+|     ✉️ (ícone com glow)          |
+|    ✨           ✨               |
+|                                  |
+|    Message Sent!                 |
+|    Our team will get back to     |
+|    you within 24 hours.          |
+|                                  |
+|   -------------------------      |
+|                                  |
+|   📧 A confirmation was sent to  |
+|      email@example.com           |
+|                                  |
+|   [ Got it! ]                    |
++----------------------------------+
 ```
 
-## Correções Necessárias
+### Conteúdo
 
-### Arquivo: `src/components/ContactUs.tsx`
+| Elemento | Valor |
+|----------|-------|
+| Ícone | `Mail` ou `Send` (ao invés de CalendarCheck) |
+| Título | "Message **Sent!**" |
+| Descrição | "Our team will get back to you within 24 hours." |
+| Info email | "A confirmation was sent to **{email}**" |
+| Botão | "Got it!" |
 
-**1. Mudar a edge function chamada (linha 75):**
+---
 
-```tsx
-// De:
-await supabase.functions.invoke('submit-contact-form', {
-  body: sanitizedData,
-});
-
-// Para:
-await supabase.functions.invoke('send-email-contact', {
-  body: {
-    name: sanitizedData.name,
-    email: sanitizedData.email,
-    phone: sanitizedData.phone || '',
-    message: sanitizedData.project,  // Mapeia "project" para "message"
-    source: 'website_uaicode',       // Identifica a origem
-  },
-});
-```
-
-**2. Adicionar BookingConfirmationDialog (popup de confirmação):**
-
-```tsx
-// Adicionar imports:
-import BookingConfirmationDialog from "@/components/scheduler/BookingConfirmationDialog";
-
-// Adicionar interface e estados:
-interface BookingDetails {
-  date?: string;
-  time?: string;
-  rawDate?: string;
-  rawTime?: string;
-  email?: string;
-}
-
-const [showConfirmation, setShowConfirmation] = useState(false);
-const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
-```
-
-**3. Atualizar lógica de sucesso no onSubmit:**
-
-```tsx
-// De:
-toast.success("Message sent! We'll get back to you within 24 hours.");
-reset();
-
-// Para:
-setBookingDetails({ email: data.email });
-setShowConfirmation(true);
-reset();
-```
-
-**4. Adicionar o componente no JSX:**
-
-```tsx
-<BookingConfirmationDialog
-  open={showConfirmation}
-  onClose={() => setShowConfirmation(false)}
-  bookingDetails={bookingDetails}
-/>
-```
-
-## Resumo das Mudanças
-
-| Item | Antes | Depois |
-|------|-------|--------|
-| Edge Function | `submit-contact-form` | `send-email-contact` |
-| Mapeamento de campos | Direto | `project` → `message` |
-| Source identificado | Não | `website_uaicode` |
-| Popup de confirmação | Toast simples | `BookingConfirmationDialog` + confetti |
-
-## Resultado Esperado
-
-1. Usuário preenche e envia o formulário
-2. Edge function `send-email-contact` é chamada
-3. Resend envia email de confirmação para o usuário
-4. Resend envia notificação para `hello@uaicode.ai`
-5. Popup de confirmação aparece com confetti
-6. Formulário é resetado
-
-## Arquivo Afetado
+## Arquivos Afetados
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/ContactUs.tsx` | **EDITAR** - Trocar edge function + adicionar popup |
+| `src/components/scheduler/MessageSentDialog.tsx` | **CRIAR** - Novo dialog simplificado |
+| `src/components/ContactUs.tsx` | **EDITAR** - Trocar BookingConfirmationDialog por MessageSentDialog |
+
+---
+
+## Detalhes Técnicos
+
+### 1. Criar `MessageSentDialog.tsx`
+
+```tsx
+// Componente simplificado sem detalhes de data/hora
+// Mantém:
+// - Confetti effect
+// - Estilo premium (glow, gradientes)
+// - Ícone Mail com sparkles
+
+interface MessageSentDialogProps {
+  open: boolean;
+  onClose: () => void;
+  email?: string;
+}
+```
+
+### 2. Atualizar `ContactUs.tsx`
+
+```tsx
+// Trocar import:
+// De: import BookingConfirmationDialog from "@/components/scheduler/BookingConfirmationDialog";
+// Para: import MessageSentDialog from "@/components/scheduler/MessageSentDialog";
+
+// Simplificar estado (não precisa mais de BookingDetails):
+const [showConfirmation, setShowConfirmation] = useState(false);
+const [submittedEmail, setSubmittedEmail] = useState<string>("");
+
+// No onSubmit:
+setSubmittedEmail(data.email);
+setShowConfirmation(true);
+
+// No JSX:
+<MessageSentDialog
+  open={showConfirmation}
+  onClose={() => setShowConfirmation(false)}
+  email={submittedEmail}
+/>
+```
+
+---
+
+## Resultado Esperado
+
+Após enviar o formulário, o popup mostrará:
+- Ícone de email com efeito glow
+- "Message Sent!" (com "Message" em dourado)
+- "Our team will get back to you within 24 hours."
+- Email do usuário destacado
+- Confetti celebrando o envio
+- Botão "Got it!" para fechar
+
