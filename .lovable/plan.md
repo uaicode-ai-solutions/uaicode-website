@@ -1,60 +1,39 @@
 
 
-# Atualização de Dados de Contato - Uaicode
+# Atualização do Card "Get in Touch" - Schedule.tsx
 
 ## Resumo
-Atualizar os dados de localização e contato da Uaicode para refletir a nova sede em Austin, Texas.
+Atualizar os dados de telefone e endereço no card "Get in Touch" da seção Schedule para refletir a nova sede em Austin, Texas.
 
 ---
 
 ## Alterações
 
-### 1. About.tsx - Seção "Why Choose Uaicode?"
-
-**Arquivo:** `src/components/About.tsx`  
-**Linha:** 21
-
-| Campo | Valor Atual | Novo Valor |
-|-------|-------------|------------|
-| Localização | "based in Orlando, FL" | "based in Austin, TX" |
-
----
-
-### 2. Footer.tsx - Rodapé
-
-**Arquivo:** `src/components/Footer.tsx`
+**Arquivo:** `src/components/Schedule.tsx`
 
 | Campo | Linha | Valor Atual | Novo Valor |
 |-------|-------|-------------|------------|
-| Endereço | 180 | "6751 Forum Drive, Suite 240, Orlando, FL 32821" | "5900 Balcones Drive, Ste 100, Austin, Texas, 78731" |
-| Telefone | 220 | "+1 (321) 529 1451" | "+1 (737) 225 9254" |
+| Telefone | 247 | `+1 (321) 529 1451` | `+1 (737) 225 9254` |
+| Endereço | 259 | `6751 Fórum Drive, Ste 240, Orlando, Florida` | `5900 Balcones Drive, Ste 100, Austin, Texas` |
 
 ---
 
 ## Detalhes Técnicos
 
-### About.tsx
 ```text
-Linha 21 (antes):
-Uaicode is an AI-powered MVP development partner based in Orlando, FL, serving entrepreneurs globally.
-
-Linha 21 (depois):
-Uaicode is an AI-powered MVP development partner based in Austin, TX, serving entrepreneurs globally.
-```
-
-### Footer.tsx
-```text
-Linha 180 (antes):
-<p>6751 Forum Drive, Suite 240<br />Orlando, FL 32821</p>
-
-Linha 180 (depois):
-<p>5900 Balcones Drive, Ste 100<br />Austin, Texas, 78731</p>
-
-Linha 220 (antes):
+Linha 247 (antes):
 +1 (321) 529 1451
 
-Linha 220 (depois):
+Linha 247 (depois):
 +1 (737) 225 9254
+```
+
+```text
+Linha 259 (antes):
+6751 Fórum Drive, Ste 240, Orlando, Florida
+
+Linha 259 (depois):
+5900 Balcones Drive, Ste 100, Austin, Texas
 ```
 
 ---
@@ -62,5 +41,5 @@ Linha 220 (depois):
 ## Impacto
 - Nenhuma alteração funcional
 - Apenas atualização de texto estático
-- Consistência com os dados já atualizados no PmsFooter.tsx e no prompt da Eve
+- Consistência com Footer.tsx, About.tsx, PmsFooter.tsx e prompt da Eve
 
