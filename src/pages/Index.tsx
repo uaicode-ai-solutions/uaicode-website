@@ -45,16 +45,16 @@ const Index = () => {
       <main>
         <Hero />
         <Challenges />
-        <HowItWorks />
-        <Deliveries />
-        <SuccessCases />
         <PMSShowcase />
+        <HowItWorks />
+        <SuccessCases />
+        <Deliveries />
         <About />
+        <MeetTheFounder />
+        <MeetEve />
         <Tools />
         <PricingTransparency />
         <FAQ />
-        <MeetEve />
-        <MeetTheFounder />
       </main>
       <Footer />
       <BackToTopButton />
