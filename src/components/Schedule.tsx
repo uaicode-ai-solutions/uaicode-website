@@ -179,10 +179,10 @@ const Schedule = () => {
       <div className="container mx-auto max-w-6xl px-4">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Ready to <span className="text-gradient-gold">Build Your Next Big Thing?</span>
+            Validated Your Idea? <span className="text-gradient-gold">Let's Talk Strategy</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Schedule a free consultation to discuss your project. We'll provide honest feedback, estimated timelines, and transparent pricing
+            Book a strategy call to discuss your validation results and get a custom development plan
           </p>
         </div>
 
@@ -295,11 +295,11 @@ const Schedule = () => {
             {/* Form Header - Title & Subtitle */}
             <div className="mb-8 pb-6 border-b border-border">
               <h3 className="text-2xl md:text-3xl font-bold mb-3">
-                Start Your Project <span className="text-gradient-gold">Today</span>
+                Share Your <span className="text-gradient-gold">Validated Idea</span>
               </h3>
               <p className="text-muted-foreground text-base leading-relaxed">
-                Share your vision with us and get a personalized consultation. 
-                We'll help turn your ideas into a scalable SaaS product.
+                Tell us about your Planning My SaaS report or validated idea. 
+                We'll create a personalized development roadmap for you.
               </p>
             </div>
             

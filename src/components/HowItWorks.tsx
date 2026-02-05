@@ -1,7 +1,10 @@
-import { Calculator, TrendingUp, Lightbulb, Code, Rocket } from "lucide-react";
+import { Sparkles, TrendingUp, Lightbulb, Code, Rocket, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 
 const HowItWorks = () => {
+  const navigate = useNavigate();
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: "smooth" });
@@ -10,9 +13,9 @@ const HowItWorks = () => {
   const steps = [
     {
       icon: Lightbulb,
-      title: "Ideate & Validate",
-      subtitle: "We refine your vision into a clear, viable blueprint",
-      description: "Deep-dive consultation, competitive analysis, market validation, feature prioritization, and technical architecture planning.",
+      title: "Validate with AI",
+      subtitle: "Start with our free Planning My SaaS tool",
+      description: "Get instant market analysis, competitor insights, and viability score. Know if your idea has real potential before investing a single dollar in development.",
       isFirst: true
     },
     {
@@ -42,9 +45,9 @@ const HowItWorks = () => {
     <section id="how-it-works" className="py-24 px-4 bg-black">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Your Journey to Launch: <span className="text-gradient-gold">Simple, Fast, Powerful</span></h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Your Journey to Launch: <span className="text-gradient-gold">Validate First, Build Smart</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Our proven 4-step process takes you from idea to market-ready MVP
+            Our proven process starts with free validation—so you only invest in ideas that work
           </p>
         </div>
 
@@ -65,7 +68,12 @@ const HowItWorks = () => {
                   </div>
                 </div>
                 <div className="glass-card p-6 rounded-2xl flex-grow hover-lift border border-accent/20 transition-all duration-300 hover:shadow-[0_0_30px_rgba(234,171,8,0.2)] hover:border-accent/40">
-                  <h3 className="text-2xl font-bold mb-2">{step.title}</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-2xl font-bold">{step.title}</h3>
+                    {step.isFirst && (
+                      <span className="bg-accent/20 text-accent text-xs font-semibold px-2 py-1 rounded-full">FREE</span>
+                    )}
+                  </div>
                   <p className="text-accent font-semibold mb-3">{step.subtitle}</p>
                   <p className="text-muted-foreground leading-relaxed">{step.description}</p>
                 </div>
@@ -78,11 +86,11 @@ const HowItWorks = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Button 
             size="lg"
-            onClick={() => scrollToSection("schedule")}
+            onClick={() => navigate("/planningmysaas")}
             className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6 glow-white"
           >
-            <Calculator className="w-5 h-5 mr-2" />
-            Get MVP Pricing
+            <Sparkles className="w-5 h-5 mr-2" />
+            Start Free Validation
           </Button>
           <Button 
             size="lg"
@@ -90,8 +98,8 @@ const HowItWorks = () => {
             onClick={() => scrollToSection("schedule")}
             className="border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold text-lg px-8 py-6 transition-all duration-300"
           >
-            <Rocket className="w-5 h-5 mr-1.5" />
-            Launch Your MVP
+            <Calendar className="w-5 h-5 mr-1.5" />
+            Book a Strategy Call
           </Button>
         </div>
       </div>

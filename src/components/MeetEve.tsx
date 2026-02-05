@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Mail, MessageSquare, Phone, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import eveImage from "@/assets/eve-avatar.webp";
 import EmailContactDialog from "@/components/chat/EmailContactDialog";
 import EveChatDialog from "@/components/chat/EveChatDialog";
@@ -10,6 +11,7 @@ const MeetEve = () => {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showChatDialog, setShowChatDialog] = useState(false);
   const [showVoiceDialog, setShowVoiceDialog] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <section id="eve" className="bg-black py-20 px-4">
@@ -28,11 +30,11 @@ const MeetEve = () => {
 
             <div className="space-y-6 text-base text-muted-foreground leading-relaxed">
               <p>
-                Eve Morgan is your friendly AI assistant at Uaicode. She's here to answer your questions about our services, help you understand if we're the right fit for your project, and guide you through the process of turning your idea into reality.
+                Eve Morgan is your friendly AI assistant at Uaicode. She's here to answer your questions about idea validation, help you understand if your SaaS concept has market potential, and guide you through our process.
               </p>
 
               <p>
-                Whether you prefer to chat, talk, or send an email, Eve is ready to help you take the next step toward building your MVP.
+                Whether you want to chat about your idea, learn more about Planning My SaaS, or understand what happens after validation—Eve is ready to help you take the next step.
               </p>
             </div>
 
@@ -65,6 +67,20 @@ const MeetEve = () => {
                 Call Eve
               </Button>
             </div>
+
+            {/* Planning My SaaS CTA */}
+            <button 
+              onClick={() => navigate("/planningmysaas")}
+              className="w-full p-4 bg-accent/10 border border-accent/30 rounded-lg text-left hover:bg-accent/20 transition-colors group"
+            >
+              <div className="flex items-center gap-2 text-accent font-medium">
+                <Sparkles className="h-5 w-5" />
+                Try Planning My SaaS
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 group-hover:text-foreground transition-colors">
+                Get a free AI-powered market analysis for your SaaS idea →
+              </p>
+            </button>
 
             {/* Tagline */}
             <div className="flex items-center gap-2 text-accent">

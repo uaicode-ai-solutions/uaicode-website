@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from "react";
-import { Calculator, DollarSign, Users, TrendingUp, Rocket, Clock, Target, FileDown, Loader2 } from "lucide-react";
+import { Sparkles, DollarSign, Users, TrendingUp, Rocket, Clock, Target, FileDown, Loader2, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
@@ -18,6 +19,7 @@ const ROICalculator = () => {
   const [timeToMarket, setTimeToMarket] = useState(45);
   const [isExporting, setIsExporting] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -397,6 +399,19 @@ const ROICalculator = () => {
                    <span>Just an idea (20% adoption)</span>
                     <span>Validated (80% adoption)</span>
                   </div>
+                  {/* Validation callout */}
+                  <button 
+                    onClick={() => navigate("/planningmysaas")}
+                    className="w-full mt-2 p-3 bg-accent/10 border border-accent/30 rounded-lg text-left hover:bg-accent/20 transition-colors group"
+                  >
+                    <div className="flex items-center gap-2 text-accent font-medium text-sm">
+                      <Sparkles className="w-4 h-4" />
+                      Not sure about your validation score?
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 group-hover:text-foreground transition-colors">
+                      Get a free AI-powered market analysis →
+                    </p>
+                  </button>
                 </div>
               </div>
 
@@ -528,11 +543,11 @@ const ROICalculator = () => {
 
               <Button 
                 size="lg"
-                onClick={() => scrollToSection("schedule")}
+                onClick={() => navigate("/planningmysaas")}
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6 glow-white"
               >
-                <Calculator className="w-5 h-5 mr-2" />
-                Get MVP Pricing
+                <Sparkles className="w-5 h-5 mr-2" />
+                Validate My Idea
               </Button>
 
               <Button 
@@ -541,8 +556,8 @@ const ROICalculator = () => {
                 onClick={() => scrollToSection("schedule")}
                 className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold text-lg px-8 py-6 transition-all duration-300"
               >
-                <Rocket className="w-5 h-5 mr-1.5" />
-                Launch Your MVP
+                <Calendar className="w-5 h-5 mr-1.5" />
+                Talk to an Expert
               </Button>
 
               <Button 

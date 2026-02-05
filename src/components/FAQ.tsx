@@ -9,6 +9,7 @@ import {
   Headphones,
   Code2,
   ShieldCheck,
+  Target,
   LucideIcon
 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -20,6 +21,7 @@ import {
   AccordionTrigger,
 } from "./ui/accordion";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface FAQQuestion {
   icon: LucideIcon;
@@ -30,12 +32,18 @@ interface FAQQuestion {
 const FAQ = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [openValue, setOpenValue] = useState<string>("");
+  const navigate = useNavigate();
 
 
   const faqCategories = [
     {
       category: "",
       questions: [
+        {
+          icon: Target,
+          question: "How do I know if my idea is worth building?",
+          answer: "That's exactly what our free Planning My SaaS tool is for! It gives you instant AI-powered market analysis, competitor insights, and a viability score. In just 5 minutes, you'll know if your idea has real potential before investing in development. Most founders who use it avoid costly mistakes and discover valuable market opportunities they hadn't considered.",
+        },
         {
           icon: Lightbulb,
           question: "What is an MVP and why do I need one?",
@@ -44,7 +52,7 @@ const FAQ = () => {
         {
           icon: DollarSign,
           question: "How much does an MVP typically cost?",
-          answer: "Our MVP packages range from $10,000 to $160,000, depending on complexity, features, and timeline. The Starter MVP ($10,000-$25,000) is perfect for basic concepts, the Growth MVP ($25,000-$60,000) includes advanced features and AI automation, and the Enterprise MVP ($60,000-$160,000) offers full-stack solutions with custom AI models. We provide transparent quotes after understanding your specific needs.",
+          answer: "Our MVP packages range from $10,000 to $160,000, depending on complexity, features, and timeline. The Starter MVP ($10,000-$25,000) is perfect for basic concepts, the Growth MVP ($25,000-$60,000) includes advanced features and AI automation, and the Enterprise MVP ($60,000-$160,000) offers full-stack solutions with custom AI models. We recommend starting with our free validation tool to ensure your idea is ready for development.",
         },
         {
           icon: Clock,
@@ -54,7 +62,7 @@ const FAQ = () => {
         {
           icon: GitBranch,
           question: "What is your development process?",
-          answer: "We follow a streamlined 4-step process: 1) Ideate & Validate - where we refine your vision and validate market fit, 2) Design & Develop - rapid MVP creation using AI-driven tools, 3) Launch & Iterate - go-to-market strategy and deployment, and 4) Grow & Optimize - post-launch support and feature expansion. Each step is collaborative and transparent.",
+          answer: "We follow a streamlined 4-step process: 1) Validate with AI - start with our free Planning My SaaS tool for market analysis, 2) Design & Develop - rapid MVP creation using AI-driven tools, 3) Launch & Iterate - go-to-market strategy and deployment, and 4) Grow & Optimize - post-launch support and feature expansion. Each step is collaborative and transparent.",
         },
         {
           icon: Sparkles,
@@ -101,7 +109,7 @@ const FAQ = () => {
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Got Questions? <span className="text-gradient-gold">We Have Answers</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Everything you need to know about our MVP development process
+            Everything you need to know about validation and MVP development
           </p>
 
           {/* Search */}
@@ -182,6 +190,19 @@ const FAQ = () => {
               </Button>
             </div>
           )}
+        </div>
+
+        {/* CTA */}
+        <div className="text-center">
+          <p className="text-lg text-muted-foreground mb-4">Still have questions?</p>
+          <Button
+            size="lg"
+            onClick={() => navigate("/planningmysaas")}
+            className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6 glow-white"
+          >
+            <Sparkles className="w-5 h-5 mr-2" />
+            Validate Your Idea First
+          </Button>
         </div>
       </div>
     </section>
