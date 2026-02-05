@@ -44,7 +44,7 @@ const Hero = () => {
           </div>
 
           {/* Trust Badge */}
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 mt-2 sm:mt-0 mb-10 sm:mb-10 md:mb-12 text-muted-foreground">
+          <div className="glass-card border border-accent/20 px-6 py-4 rounded-2xl inline-flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 mt-2 sm:mt-0 mb-10 sm:mb-10 md:mb-12 text-muted-foreground">
             <div className="flex items-center gap-1.5 sm:gap-2">
               <svg className="w-4 h-4 sm:w-5 sm:h-5 text-accent" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -66,12 +66,15 @@ const Hero = () => {
           </div>
 
           {/* Hero Video */}
-          <div className="max-w-4xl mx-auto">
-            <YouTubeEmbed 
-              videoId="" 
-              title="Uaicode MVP Development Demo - See How We Launch SaaS Products in Weeks"
-              customThumbnail={heroThumbnail}
-            />
+          <div className="max-w-4xl mx-auto relative">
+            <div className="absolute inset-0 bg-accent/10 blur-3xl rounded-3xl -z-10"></div>
+            <div className="border border-accent/20 rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(234,171,8,0.15)]">
+              <YouTubeEmbed 
+                videoId="" 
+                title="Uaicode MVP Development Demo - See How We Launch SaaS Products in Weeks"
+                customThumbnail={heroThumbnail}
+              />
+            </div>
           </div>
         </div>
       </div>

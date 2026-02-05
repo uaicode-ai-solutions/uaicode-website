@@ -29,8 +29,8 @@ const PricingTransparency = () => {
   };
 
   return (
-    <section id="pricing" className="py-20 px-4 relative">
-      <div className="container mx-auto max-w-7xl">
+    <section id="pricing" className="py-24 px-4 bg-black relative">
+      <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             Transparent Solutions for <span className="text-gradient-gold">Every Vision</span>
@@ -43,7 +43,7 @@ const PricingTransparency = () => {
         <Accordion type="single" collapsible className="w-full" onValueChange={handleAccordionChange}>
           <div className="grid md:grid-cols-3 gap-4 md:gap-6 items-start">
           {/* Starter MVP */}
-          <div className="glass-card p-6 md:p-8 rounded-2xl hover-lift flex flex-col h-full transition-all duration-500 ease-in-out">
+          <div className="glass-card p-6 md:p-8 rounded-2xl hover-lift flex flex-col h-full transition-all duration-500 ease-in-out border border-accent/10 hover:border-accent/30 hover:shadow-[0_0_30px_rgba(234,171,8,0.1)]">
             <h3 className="text-2xl font-bold mb-4">Starter MVP</h3>
               <div className="text-2xl md:text-3xl font-bold text-accent mb-2">
                 $10,000 - $25,000
@@ -198,7 +198,7 @@ const PricingTransparency = () => {
           </div>
 
           {/* Enterprise MVP */}
-          <div className="glass-card p-6 md:p-8 rounded-2xl hover-lift flex flex-col h-full transition-all duration-500 ease-in-out">
+          <div className="glass-card p-6 md:p-8 rounded-2xl hover-lift flex flex-col h-full transition-all duration-500 ease-in-out border border-accent/10 hover:border-accent/30 hover:shadow-[0_0_30px_rgba(234,171,8,0.1)]">
             <h3 className="text-2xl font-bold mb-4">Enterprise MVP</h3>
               <div className="text-2xl md:text-3xl font-bold text-accent mb-2">
                 $60,000 - $160,000

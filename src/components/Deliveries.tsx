@@ -39,8 +39,8 @@ const Deliveries = () => {
   const icons = [Target, GitBranch, BarChart, Rocket];
 
   return (
-    <section className="py-20 px-4 bg-card/30">
-      <div className="container mx-auto">
+    <section className="py-24 px-4 bg-card/30">
+      <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             What Makes Us <span className="text-gradient-gold">Different</span>
@@ -56,7 +56,7 @@ const Deliveries = () => {
             return (
               <div
                 key={index}
-                className="glass-card p-8 rounded-2xl hover-lift text-center group"
+                className="glass-card p-8 rounded-2xl hover-lift text-center group border border-accent/20 transition-all duration-300 hover:shadow-[0_0_30px_rgba(234,171,8,0.15)] hover:border-accent/40"
               >
                 <div className="relative mb-6 overflow-hidden rounded-xl">
                   <img

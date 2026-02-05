@@ -160,8 +160,8 @@ const ROICalculator = () => {
   };
 
   return (
-    <section id="investment" className="py-12 md:py-16 lg:py-20 px-4 bg-card/30">
-      <div className="container mx-auto">
+    <section id="investment" className="py-24 px-4 bg-card/30">
+      <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-8 md:mb-12 lg:mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">Calculate Your <span className="text-gradient-gold">MVP Investment Return</span></h2>
           <p className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -170,7 +170,7 @@ const ROICalculator = () => {
         </div>
 
         {/* Revenue Projection Chart */}
-        <div ref={chartRef} className="max-w-6xl mx-auto mb-8 glass-card p-6 rounded-2xl animate-fade-in-up">
+        <div ref={chartRef} className="mb-8 glass-card p-6 rounded-2xl animate-fade-in-up border border-accent/10 hover:shadow-[0_0_20px_rgba(234,171,8,0.1)] transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl md:text-2xl font-bold flex items-center gap-2">
               <TrendingUp className="w-6 h-6 text-accent" />
@@ -295,9 +295,9 @@ const ROICalculator = () => {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {/* Input Section */}
-          <div className="glass-card p-4 sm:p-6 md:p-8 rounded-2xl">
+          <div className="glass-card p-4 sm:p-6 md:p-8 rounded-2xl border border-accent/10 hover:border-accent/20 transition-all duration-300">
             <h3 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Your SaaS Vision</h3>
             
             <div className="space-y-6 md:space-y-8">

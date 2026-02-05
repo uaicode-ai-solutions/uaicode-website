@@ -39,8 +39,8 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-20 px-4">
-      <div className="container mx-auto">
+    <section id="how-it-works" className="py-24 px-4 bg-black">
+      <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Your Journey to Launch: <span className="text-gradient-gold">Simple, Fast, Powerful</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -52,19 +52,19 @@ const HowItWorks = () => {
           {steps.map((step, index) => (
             <div key={index} className="relative">
               {index < steps.length - 1 && (
-                <div className="absolute left-8 top-24 bottom-0 w-0.5 bg-accent/30 hidden md:block"></div>
+                <div className="absolute left-8 top-24 bottom-0 w-0.5 bg-accent/40 hidden md:block"></div>
               )}
               <div className="flex flex-col md:flex-row gap-8 mb-12 animate-fade-in-up" style={{ animationDelay: `${index * 0.2}s` }}>
                 <div className="flex-shrink-0">
                   <div className={`w-16 h-16 rounded-full border-4 flex items-center justify-center ${
                     step.isFirst 
                       ? 'bg-accent border-accent' 
-                      : 'bg-card border-accent/30'
+                      : 'bg-card border-accent/40'
                   }`}>
                     <step.icon className={`w-7 h-7 ${step.isFirst ? 'text-accent-foreground' : 'text-accent'}`} />
                   </div>
                 </div>
-                <div className="glass-card p-6 rounded-2xl flex-grow hover-lift">
+                <div className="glass-card p-6 rounded-2xl flex-grow hover-lift border border-accent/20 transition-all duration-300 hover:shadow-[0_0_30px_rgba(234,171,8,0.2)] hover:border-accent/40">
                   <h3 className="text-2xl font-bold mb-2">{step.title}</h3>
                   <p className="text-accent font-semibold mb-3">{step.subtitle}</p>
                   <p className="text-muted-foreground leading-relaxed">{step.description}</p>

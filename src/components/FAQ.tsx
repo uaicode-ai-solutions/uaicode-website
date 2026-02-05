@@ -96,8 +96,8 @@ const FAQ = () => {
     : faqCategories;
 
   return (
-    <section className="py-20 px-4 bg-card/30">
-      <div className="container mx-auto">
+    <section className="py-24 px-4 bg-card/30">
+      <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Got Questions? <span className="text-gradient-gold">We Have Answers</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
@@ -112,7 +112,7 @@ const FAQ = () => {
               placeholder="Search for questions..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 py-6 text-lg bg-card border-border"
+              className="pl-12 py-6 text-lg bg-card border-accent/20 focus:border-accent transition-colors"
             />
           </div>
         </div>

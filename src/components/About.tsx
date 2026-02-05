@@ -9,13 +9,13 @@ const About = () => {
   };
 
   return (
-    <section id="about" className="py-20 px-4">
-      <div className="container mx-auto">
+    <section id="about" className="py-24 px-4 bg-black">
+      <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Why Choose <span className="text-gradient-gold">Uaicode?</span></h2>
         </div>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
           <div className="order-2 lg:order-1 flex flex-col">
             <p className="text-base text-muted-foreground leading-relaxed mb-6">
               Uaicode is an AI-powered MVP development partner based in Austin, TX, serving entrepreneurs globally. We've helped over 1,247 startups launch their SaaS ideas, achieving an average 300% faster time-to-market with our proven framework.
@@ -52,12 +52,13 @@ const About = () => {
             </div>
           </div>
 
-          <div className="order-1 lg:order-2">
+          <div className="order-1 lg:order-2 relative">
+            <div className="absolute inset-0 bg-accent/10 blur-3xl rounded-3xl -z-10"></div>
             <img 
               src={aboutImage} 
               alt="Uaicode Team" 
               loading="lazy"
-              className="rounded-2xl shadow-2xl hover-lift w-full object-cover"
+              className="rounded-2xl shadow-2xl hover-lift w-full object-cover border border-accent/20"
             />
           </div>
         </div>
