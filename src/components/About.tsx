@@ -41,7 +41,7 @@ const About = () => {
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
               >
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-                Validate Free
+                Validate My Idea
               </Button>
               <Button 
                 size="lg"
