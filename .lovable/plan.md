@@ -1,127 +1,111 @@
 
 
-# Reordenação das Seções + Nova Seção "Contact Us"
+# Unificar Visual da Seção "Meet the Founder" com "Meet Eve"
 
-## Resumo
+## Objetivo
 
-Aplicar duas mudanças:
-1. **Reordenar as seções** conforme a sequência solicitada
-2. **Criar nova seção "ContactUs"** com os cards "Get in Touch" e "Start Your Project Today" que foram removidos do Schedule
+Atualizar o componente `MeetTheFounder.tsx` para ter o mesmo estilo visual premium da seção "Meet Eve", incluindo a foto circular com efeito de glow amber.
 
 ---
 
-## Nova Ordem das Seções
+## Diferenças Identificadas
 
-| # | Seção | Título Display | Background |
-|---|-------|----------------|------------|
-| 1 | Hero | Got a SaaS Idea? | bg-black |
-| 2 | Challenges | The Biggest Mistake? Building Without Validating | bg-card/30 |
-| 3 | HowItWorks | Your Journey to Launch: Validate First, Build Smart | bg-black |
-| 4 | Deliveries | What Makes Us Different | bg-card/30 |
-| 5 | SuccessCases | Validated Ideas, Real Results | bg-black |
-| 6 | PMSShowcase | See What Your Validation Report Reveals | bg-card/30 |
-| 7 | About | Why Choose Uaicode? | bg-black |
-| 8 | Tools | Powered by | bg-card/30 |
-| 9 | PricingTransparency | Transparent Solutions for Every Vision | bg-black |
-| 10 | FAQ | Got Questions? We Have Answers | bg-card/30 |
-| 11 | MeetEve | Meet Eve | bg-black |
-| 12 | **ContactUs (NOVA)** | Get in Touch / Start Your Project Today | **bg-card/30** |
-| 13 | MeetTheFounder | Meet the Founder | bg-black |
+| Elemento | MeetEve (atual) | MeetTheFounder (atual) |
+|----------|-----------------|------------------------|
+| Formato da foto | `rounded-full` (circular) | `rounded-2xl` (retangular) |
+| Glow effect | Sim (`bg-gradient-to-r from-accent/20 to-accent/5 blur-2xl`) | Não |
+| Borda da foto | `border-4 border-accent/20` | Sem borda |
+| Container wrapper | `<div className="relative">` | Direto no flex |
 
 ---
 
-## Nova Seção: ContactUs.tsx
+## Alterações Técnicas
 
-### Conteúdo
+### 1. Copiar nova foto do founder para assets
 
-Extrair do `Schedule.tsx` os dois cards:
+```bash
+lov-copy user-uploads://founder-rafael-luz-00.png src/assets/founder-rafael-luz-circular.webp
+```
 
-**Card 1 - Get in Touch (lado esquerdo):**
-- Título: "Get in Touch"
-- Descrição: "Schedule a free consultation to discuss your project..."
-- Contatos: Email, Phone, Location
-- Lista "What to Expect"
+### 2. Atualizar `src/components/MeetTheFounder.tsx`
 
-**Card 2 - Start Your Project Today (lado direito):**
-- Formulário completo com:
-  - Name, Email, Phone, Project Description
-  - Botão "Get a Free Consultation"
-  - Links para Privacy e Terms
+**Antes (linhas 47-55):**
+```tsx
+{/* Right Column - Photo */}
+<div className="flex justify-center lg:justify-end">
+  <img
+    src={founderImage}
+    alt="Rafael Luz - Founder and CEO of Uaicode.ai"
+    loading="lazy"
+    className="w-full h-auto max-w-md lg:max-w-lg rounded-2xl shadow-2xl hover-lift"
+  />
+</div>
+```
 
-### Layout Visual
+**Depois:**
+```tsx
+{/* Right Column - Photo */}
+<div className="flex justify-center lg:justify-end">
+  <div className="relative">
+    <div className="absolute -inset-4 bg-gradient-to-r from-accent/20 to-accent/5 rounded-full blur-2xl" />
+    <img
+      src={founderImage}
+      alt="Rafael Luz - Founder and CEO of Uaicode.ai"
+      loading="lazy"
+      className="relative w-full h-auto max-w-md lg:max-w-lg rounded-full shadow-2xl hover-lift border-4 border-accent/20"
+    />
+  </div>
+</div>
+```
+
+### 3. Atualizar import da foto
+
+```tsx
+// De:
+import founderImage from "@/assets/founder-rafael-luz-main.webp";
+
+// Para (usando a nova foto):
+import founderImage from "@/assets/founder-rafael-luz-circular.webp";
+```
+
+---
+
+## Visual Final Esperado
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│                      bg-card/30 (alternado)                      │
+│                        Meet the Founder                         │
+│                   The Vision Behind Uaicode.ai                  │
 │                                                                 │
-│  ┌─────────────────────────┐  ┌─────────────────────────────┐  │
-│  │     Get in Touch        │  │   Start Your Project Today   │  │
-│  │                         │  │                             │  │
-│  │  📧 Email Us            │  │  [Name]                     │  │
-│  │  📞 Call Us             │  │  [Email]                    │  │
-│  │  📍 Location            │  │  [Phone]                    │  │
-│  │                         │  │  [Project Description]      │  │
-│  │  What to Expect:        │  │                             │  │
-│  │  • Response 24h         │  │  [Get a Free Consultation]  │  │
-│  │  • Free 45-min          │  │                             │  │
-│  │  • No obligation        │  │                             │  │
-│  └─────────────────────────┘  └─────────────────────────────┘  │
+│  ┌─────────────────────────┐      ┌─────────────────────────┐  │
+│  │                         │      │   ╭─────────────────╮   │  │
+│  │  [Texto do founder]     │      │   │   ░░░░░░░░░░░   │   │  │
+│  │                         │      │   │   ░ FOTO EM ░   │   │  │
+│  │                         │      │   │   ░ CIRCULAR ░  │   │  │
+│  │  [Connect on LinkedIn]  │      │   │   ░  + GLOW  ░  │   │  │
+│  │                         │      │   │   ░░░░░░░░░░░   │   │  │
+│  │                         │      │   ╰─────────────────╯   │  │
+│  └─────────────────────────┘      └─────────────────────────┘  │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Detalhes Técnicos
-
-### 1. Criar: `src/components/ContactUs.tsx`
-
-```tsx
-// Novo componente baseado nos cards do Schedule.tsx
-// - Importa: useForm, zodResolver, PhoneInput, Mail, Phone, MapPin
-// - Mantém a validação Zod existente
-// - Background: bg-card/30 (para alternar corretamente)
-// - Sem o calendário Cal.com (foi removido da homepage)
-// - Mantém PhoneCallDialog e EmailContactDialog para interatividade
-```
-
-### 2. Atualizar: `src/pages/Index.tsx`
-
-```tsx
-import ContactUs from "@/components/ContactUs";
-
-// Nova ordem:
-<Hero />
-<Challenges />
-<HowItWorks />
-<Deliveries />
-<SuccessCases />
-<PMSShowcase />
-<About />
-<Tools />
-<PricingTransparency />
-<FAQ />
-<MeetEve />
-<ContactUs />        // NOVA SEÇÃO
-<MeetTheFounder />
-```
-
----
-
-## Verificação de Alternância de Backgrounds
-
-| Seção | Background | Correto? |
-|-------|------------|----------|
-| MeetEve | bg-black | ✓ |
-| **ContactUs** | **bg-card/30** | ✓ (alterna) |
-| MeetTheFounder | bg-black | ✓ (alterna) |
-
----
-
 ## Arquivos Afetados
 
-| Arquivo | Ação |
+| Arquivo | Acao |
 |---------|------|
-| `src/components/ContactUs.tsx` | **CRIAR** - Nova seção com os 2 cards |
-| `src/pages/Index.tsx` | **EDITAR** - Reordenar seções + adicionar ContactUs |
+| `src/assets/founder-rafael-luz-circular.webp` | **CRIAR** - Copiar nova foto do upload |
+| `src/components/MeetTheFounder.tsx` | **EDITAR** - Adicionar glow effect e foto circular |
+
+---
+
+## Resultado
+
+Ambas as seções (MeetEve e MeetTheFounder) terao o mesmo estilo visual premium:
+- Foto circular com borda amber sutil
+- Efeito de glow gradiente ao redor
+- Animacao hover-lift mantida
+- Consistencia visual entre as duas personas do site
 
