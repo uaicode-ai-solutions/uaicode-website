@@ -14,15 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PhoneCallDialog from "@/components/chat/PhoneCallDialog";
 import EmailContactDialog from "@/components/chat/EmailContactDialog";
-import BookingConfirmationDialog from "@/components/scheduler/BookingConfirmationDialog";
-
-interface BookingDetails {
-  date?: string;
-  time?: string;
-  rawDate?: string;
-  rawTime?: string;
-  email?: string;
-}
+import MessageSentDialog from "@/components/scheduler/MessageSentDialog";
 
 const contactFormSchema = z.object({
   name: z.string()
@@ -56,7 +48,7 @@ const ContactUs = () => {
   const [showPhoneDialog, setShowPhoneDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
+  const [submittedEmail, setSubmittedEmail] = useState("");
 
   const {
     register,
@@ -115,7 +107,7 @@ const ContactUs = () => {
         throw result.error;
       }
       
-      setBookingDetails({ email: data.email });
+      setSubmittedEmail(data.email);
       setShowConfirmation(true);
       reset();
     } catch (error) {
@@ -353,10 +345,10 @@ const ContactUs = () => {
 
       <PhoneCallDialog open={showPhoneDialog} onOpenChange={setShowPhoneDialog} />
       <EmailContactDialog open={showEmailDialog} onOpenChange={setShowEmailDialog} />
-      <BookingConfirmationDialog
+      <MessageSentDialog
         open={showConfirmation}
         onClose={() => setShowConfirmation(false)}
-        bookingDetails={bookingDetails}
+        email={submittedEmail}
       />
     </section>
   );
