@@ -82,11 +82,6 @@ const MeetEve = () => {
               </p>
             </button>
 
-            {/* Tagline */}
-            <div className="flex items-center gap-2 text-accent">
-              <Sparkles className="h-5 w-5" />
-              <span className="text-lg font-medium">Always here to help</span>
-            </div>
           </div>
 
           {/* Right Column - Photo */}

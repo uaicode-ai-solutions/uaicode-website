@@ -1,6 +1,6 @@
 import { useState, useLayoutEffect, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Menu, X, Calculator, Youtube, Instagram, Linkedin, Facebook, Twitter } from "lucide-react";
+import { Menu, X, Sparkles, Youtube, Instagram, Linkedin, Facebook, Twitter } from "lucide-react";
 import { Button } from "./ui/button";
 import logo from "@/assets/uaicode-logo.png";
 
@@ -58,9 +58,7 @@ const Header = () => {
             </button>
           <nav className="hidden lg:flex items-center gap-10">
             <button onClick={() => scrollToSection("how-it-works")} className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Process</button>
-            <button onClick={() => scrollToSection("investment")} className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Investment</button>
-            <button onClick={() => scrollToSection("pricing")} className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Solutions</button>
-            
+            <button onClick={() => scrollToSection("pricing")} className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Investment</button>
             <Link to="/jobs" className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Jobs</Link>
             <Link to="/newsletter" className="text-foreground hover:text-accent transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Insights</Link>
           </nav>
@@ -87,7 +85,7 @@ const Header = () => {
               ))}
             </div>
             <Button onClick={() => scrollToSection("schedule")} className="font-semibold bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-              <Calculator className="w-4 h-4 mr-2" />Get MVP Pricing
+              <Sparkles className="w-4 h-4 mr-2" />Validate My Idea
             </Button>
           </div>
           <button className="lg:hidden text-foreground hover:text-accent transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded p-2" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label={isMenuOpen ? "Close menu" : "Open menu"}>
@@ -101,9 +99,7 @@ const Header = () => {
           <div className="container mx-auto px-6 py-6 flex flex-col gap-4">
             <nav className="flex flex-col gap-3">
               <button onClick={() => scrollToSection("how-it-works")} className="text-left text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Process</button>
-              <button onClick={() => scrollToSection("investment")} className="text-left text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Investment</button>
-              <button onClick={() => scrollToSection("pricing")} className="text-left text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Solutions</button>
-              
+              <button onClick={() => scrollToSection("pricing")} className="text-left text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Investment</button>
               <Link to="/jobs" className="text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Jobs</Link>
               <Link to="/newsletter" className="text-foreground hover:text-accent transition-all duration-300 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">Insights</Link>
             </nav>
@@ -128,7 +124,7 @@ const Header = () => {
                 </Button>
               ))}
             </div>
-            <Button onClick={() => scrollToSection("schedule")} className="w-full font-semibold bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"><Calculator className="w-4 h-4 mr-2" />Get MVP Pricing</Button>
+            <Button onClick={() => scrollToSection("schedule")} className="w-full font-semibold bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"><Sparkles className="w-4 h-4 mr-2" />Validate My Idea</Button>
           </div>
         </div>
       )}
