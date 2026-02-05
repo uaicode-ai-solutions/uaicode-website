@@ -1,6 +1,6 @@
 import { Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import founderImage from "@/assets/founder-rafael-luz-main.webp";
+import founderImage from "@/assets/founder-rafael-luz-circular.webp";
 
 const MeetTheFounder = () => {
   return (
@@ -46,12 +46,15 @@ const MeetTheFounder = () => {
 
           {/* Right Column - Photo */}
           <div className="flex justify-center lg:justify-end">
-            <img
-              src={founderImage}
-              alt="Rafael Luz - Founder and CEO of Uaicode.ai"
-              loading="lazy"
-              className="w-full h-auto max-w-md lg:max-w-lg rounded-2xl shadow-2xl hover-lift"
-            />
+            <div className="relative">
+              <div className="absolute -inset-4 bg-gradient-to-r from-accent/20 to-accent/5 rounded-full blur-2xl" />
+              <img
+                src={founderImage}
+                alt="Rafael Luz - Founder and CEO of Uaicode.ai"
+                loading="lazy"
+                className="relative w-full h-auto max-w-md lg:max-w-lg rounded-full shadow-2xl hover-lift border-4 border-accent/20"
+              />
+            </div>
           </div>
         </div>
       </div>
