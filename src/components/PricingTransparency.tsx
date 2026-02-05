@@ -111,7 +111,7 @@ const PricingTransparency = () => {
             </AccordionItem>
 
             <Button
-              onClick={() => scrollToSection("schedule")}
+              onClick={() => scrollToSection("eve")}
               variant="outline"
               className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
             >
@@ -195,7 +195,7 @@ const PricingTransparency = () => {
             </AccordionItem>
 
             <Button
-              onClick={() => scrollToSection("schedule")}
+              onClick={() => scrollToSection("eve")}
               className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
             >
               Request Detailed Quote
@@ -282,7 +282,7 @@ const PricingTransparency = () => {
             </AccordionItem>
 
             <Button
-              onClick={() => scrollToSection("schedule")}
+              onClick={() => scrollToSection("eve")}
               variant="outline"
               className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
             >
