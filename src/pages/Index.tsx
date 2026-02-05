@@ -13,7 +13,7 @@ import PricingTransparency from "@/components/PricingTransparency";
 import FAQ from "@/components/FAQ";
 import Schedule from "@/components/Schedule";
 import Footer from "@/components/Footer";
-import ChatSection from "@/components/ChatSection";
+import MeetEve from "@/components/MeetEve";
 import MeetTheFounder from "@/components/MeetTheFounder";
 import { BackToTopButton } from "@/components/blog/BackToTopButton";
 
@@ -56,7 +56,7 @@ const Index = () => {
         
         <PricingTransparency />
         <FAQ />
-        <ChatSection />
+        <MeetEve />
         <Schedule />
         <MeetTheFounder />
       </main>
