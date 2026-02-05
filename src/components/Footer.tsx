@@ -177,7 +177,7 @@ const Footer = () => {
               </div>
               <div className="flex items-start gap-2">
                 <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                <p>6751 Forum Drive, Suite 240<br />Orlando, FL 32821</p>
+                <p>5900 Balcones Drive, Ste 100<br />Austin, Texas, 78731</p>
               </div>
             </div>
 
@@ -217,7 +217,7 @@ const Footer = () => {
                   className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-2"
                 >
                   <Phone className="w-5 h-5" />
-                  +1 (321) 529 1451
+                  +1 (737) 225 9254
                 </button>
               </li>
               <li>
