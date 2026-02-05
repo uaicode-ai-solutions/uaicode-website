@@ -14,6 +14,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PhoneCallDialog from "@/components/chat/PhoneCallDialog";
 import EmailContactDialog from "@/components/chat/EmailContactDialog";
+import BookingConfirmationDialog from "@/components/scheduler/BookingConfirmationDialog";
+
+interface BookingDetails {
+  date?: string;
+  time?: string;
+  rawDate?: string;
+  rawTime?: string;
+  email?: string;
+}
 
 const contactFormSchema = z.object({
   name: z.string()
@@ -46,6 +55,8 @@ type ContactFormData = z.infer<typeof contactFormSchema>;
 const ContactUs = () => {
   const [showPhoneDialog, setShowPhoneDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
 
   const {
     register,
@@ -72,8 +83,14 @@ const ContactUs = () => {
     
     const attemptSubmit = async (): Promise<{ data: unknown; error: Error | null }> => {
       try {
-        const { data: responseData, error } = await supabase.functions.invoke('submit-contact-form', {
-          body: sanitizedData,
+        const { data: responseData, error } = await supabase.functions.invoke('send-email-contact', {
+          body: {
+            name: sanitizedData.name,
+            email: sanitizedData.email,
+            phone: sanitizedData.phone || '',
+            message: sanitizedData.project,
+            source: 'website_uaicode',
+          },
         });
         
         if (error) {
@@ -98,7 +115,8 @@ const ContactUs = () => {
         throw result.error;
       }
       
-      toast.success("Message sent! We'll get back to you within 24 hours.");
+      setBookingDetails({ email: data.email });
+      setShowConfirmation(true);
       reset();
     } catch (error) {
       console.error("Form submission error:", error);
@@ -335,6 +353,11 @@ const ContactUs = () => {
 
       <PhoneCallDialog open={showPhoneDialog} onOpenChange={setShowPhoneDialog} />
       <EmailContactDialog open={showEmailDialog} onOpenChange={setShowEmailDialog} />
+      <BookingConfirmationDialog
+        open={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+        bookingDetails={bookingDetails}
+      />
     </section>
   );
 };
