@@ -244,7 +244,7 @@ const Schedule = () => {
                     onClick={() => setShowPhoneDialog(true)}
                     className="text-muted-foreground hover:text-accent transition-colors"
                   >
-                    +1 (321) 529 1451
+                    +1 (737) 225 9254
                   </button>
                 </div>
               </div>
@@ -256,7 +256,7 @@ const Schedule = () => {
                 <div>
                   <h4 className="font-semibold mb-1 text-base">Location</h4>
                   <p className="text-muted-foreground">
-                    6751 Fórum Drive, Ste 240, Orlando, Florida
+                    5900 Balcones Drive, Ste 100, Austin, Texas
                   </p>
                 </div>
               </div>
