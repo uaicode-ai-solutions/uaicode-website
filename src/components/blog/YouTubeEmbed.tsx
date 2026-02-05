@@ -42,8 +42,8 @@ export const YouTubeEmbed = ({ videoId, title = "YouTube video", customThumbnail
   const shouldLoadIframe = isVisible && (isPlaying || !customThumbnail);
 
   return (
-    <div ref={containerRef} className="my-16">
-      <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-accent/30 hover:shadow-accent/20 transition-shadow duration-300" style={{ paddingBottom: '65%' }}>
+    <div ref={containerRef}>
+      <div className="relative w-full rounded-2xl overflow-hidden border border-accent/20 shadow-[0_0_40px_rgba(234,171,8,0.15)] hover:shadow-accent/20 transition-shadow duration-300" style={{ paddingBottom: '56.25%' }}>
         {!isPlaying && customThumbnail ? (
           <button
             onClick={handlePlay}
