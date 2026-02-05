@@ -12,6 +12,7 @@ import html2canvas from "html2canvas";
 import logoImage from '@/assets/uaicode-logo.png';
 
 const ROICalculator = () => {
+  // ROI Calculator component
   const [expectedUsers, setExpectedUsers] = useState(500);
   const [pricePerUser, setPricePerUser] = useState(29);
   const [marketValidation, setMarketValidation] = useState(5);
