@@ -1,53 +1,66 @@
 
-## Objetivo
-Remover a barra de rolagem interna do modal “Email Kyle” (e manter consistência com o modal da Eve), sem quebrar a usabilidade em telas menores.
+
+# Atualização de Dados de Contato - Uaicode
+
+## Resumo
+Atualizar os dados de localização e contato da Uaicode para refletir a nova sede em Austin, Texas.
 
 ---
 
-## Diagnóstico (por que a barra ainda aparece)
-No `EmailKyleDialog`, o `DialogContent` está com:
-- `max-h-[90vh] overflow-y-auto`
+## Alterações
 
-Isso força o conteúdo a ficar limitado a 90% da altura da tela. Se o conteúdo ficar **1px–20px maior** (por espaçamentos/line-heights/renderização do PhoneInput/Textarea), o Radix/Tailwind ativa a rolagem interna.
+### 1. About.tsx - Seção "Why Choose Uaicode?"
 
-Observação importante: o modal da Eve também tem esse mesmo par de classes, mas como o conteúdo dela costuma ficar ligeiramente menor, a rolagem não aparece. No Kyle, qualquer diferença pequena pode “passar do limite” e gerar a barra.
+**Arquivo:** `src/components/About.tsx`  
+**Linha:** 21
 
----
-
-## Solução proposta (remove a barra no desktop, mantém segurança no mobile)
-Em vez de remover a rolagem “para sempre” (o que pode cortar conteúdo em telas baixas), vamos tornar isso **responsivo**:
-
-- **Base (mobile / telas pequenas):** mantém `max-h-[90vh] overflow-y-auto` para garantir que nada fique inacessível.
-- **A partir de `sm` (desktop):** remove a limitação e o overflow para eliminar a barra:
-  - `sm:max-h-none sm:overflow-visible`
-
-Isso garante que:
-- No desktop: não aparece scrollbar (seu caso).
-- No mobile: continua scrollável, evitando modal “estourar” fora da tela.
+| Campo | Valor Atual | Novo Valor |
+|-------|-------------|------------|
+| Localização | "based in Orlando, FL" | "based in Austin, TX" |
 
 ---
 
-## Arquivos a alterar
-1) `src/components/planningmysaas/dashboard/EmailKyleDialog.tsx`
-- Atualizar a `className` do `DialogContent`:
-  - De: `... max-h-[90vh] overflow-y-auto`
-  - Para: `... max-h-[90vh] overflow-y-auto sm:max-h-none sm:overflow-visible`
+### 2. Footer.tsx - Rodapé
 
-2) (Recomendado para consistência visual) `src/components/chat/EmailContactDialog.tsx`
-- Aplicar o mesmo ajuste no `DialogContent` para Kyle/Eve ficarem 100% iguais em comportamento.
+**Arquivo:** `src/components/Footer.tsx`
 
----
-
-## Passo a passo de implementação
-1. Editar `EmailKyleDialog.tsx` e ajustar as classes do `DialogContent` com os modificadores `sm:`.
-2. Editar `EmailContactDialog.tsx` e replicar o mesmo padrão (para manter consistência).
-3. Validar visualmente:
-   - No desktop (sua tela atual no dashboard): abrir o modal do Kyle e confirmar **sem barra de rolagem**.
-   - Em viewport menor (simulação mobile): confirmar que, se necessário, o modal ainda consegue rolar.
+| Campo | Linha | Valor Atual | Novo Valor |
+|-------|-------|-------------|------------|
+| Endereço | 180 | "6751 Forum Drive, Suite 240, Orlando, FL 32821" | "5900 Balcones Drive, Ste 100, Austin, Texas, 78731" |
+| Telefone | 220 | "+1 (321) 529 1451" | "+1 (737) 225 9254" |
 
 ---
 
-## Critério de pronto (Definition of Done)
-- Modal “Email Kyle” não mostra scrollbar interna no desktop.
-- Modal continua utilizável em telas pequenas (rolagem apenas quando necessário).
-- Kyle e Eve ficam com o mesmo comportamento de modal (consistência).
+## Detalhes Técnicos
+
+### About.tsx
+```text
+Linha 21 (antes):
+Uaicode is an AI-powered MVP development partner based in Orlando, FL, serving entrepreneurs globally.
+
+Linha 21 (depois):
+Uaicode is an AI-powered MVP development partner based in Austin, TX, serving entrepreneurs globally.
+```
+
+### Footer.tsx
+```text
+Linha 180 (antes):
+<p>6751 Forum Drive, Suite 240<br />Orlando, FL 32821</p>
+
+Linha 180 (depois):
+<p>5900 Balcones Drive, Ste 100<br />Austin, Texas, 78731</p>
+
+Linha 220 (antes):
++1 (321) 529 1451
+
+Linha 220 (depois):
++1 (737) 225 9254
+```
+
+---
+
+## Impacto
+- Nenhuma alteração funcional
+- Apenas atualização de texto estático
+- Consistência com os dados já atualizados no PmsFooter.tsx e no prompt da Eve
+
