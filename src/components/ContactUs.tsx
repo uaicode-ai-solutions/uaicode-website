@@ -319,14 +319,14 @@ const ContactUs = () => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg py-6 disabled:opacity-50"
+                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg py-4 sm:py-6 disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     "Sending..."
                   ) : (
                     <>
-                      <Sparkles className="w-5 h-5 mr-2" />
-                      Get a Free Consultation
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+                      Send Message
                     </>
                   )}
                 </Button>

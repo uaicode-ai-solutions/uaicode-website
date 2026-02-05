@@ -113,9 +113,9 @@ const PricingTransparency = () => {
             <Button
               onClick={() => scrollToSection("eve")}
               variant="outline"
-              className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+              className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground text-sm sm:text-base py-3 sm:py-4"
             >
-              Request Detailed Quote
+              Get Quote
             </Button>
           </div>
 
@@ -196,9 +196,9 @@ const PricingTransparency = () => {
 
             <Button
               onClick={() => scrollToSection("eve")}
-              className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-sm sm:text-base py-3 sm:py-4"
             >
-              Request Detailed Quote
+              Get Quote
             </Button>
           </div>
 
@@ -284,9 +284,9 @@ const PricingTransparency = () => {
             <Button
               onClick={() => scrollToSection("eve")}
               variant="outline"
-              className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+              className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground text-sm sm:text-base py-3 sm:py-4"
             >
-              Request Detailed Quote
+              Get Quote
             </Button>
           </div>
         </div>

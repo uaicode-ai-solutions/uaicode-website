@@ -30,7 +30,7 @@ const MeetTheFounder = () => {
 
             <Button
               size="lg"
-              className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6 gap-2 transition-all duration-300 hover:scale-105"
+              className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 gap-1.5 sm:gap-2 transition-all duration-300 hover:scale-105"
               asChild
             >
               <a 
@@ -38,8 +38,8 @@ const MeetTheFounder = () => {
                 target="_blank" 
                 rel="noopener noreferrer"
               >
-                <Linkedin className="h-5 w-5" />
-                Connect on LinkedIn
+                <Linkedin className="h-4 w-4 sm:h-5 sm:w-5" />
+                LinkedIn
               </a>
             </Button>
           </div>

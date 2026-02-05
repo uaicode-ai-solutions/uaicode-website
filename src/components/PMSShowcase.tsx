@@ -184,19 +184,19 @@ const PMSShowcase = () => {
               <Button 
                 size="lg" 
                 onClick={() => navigate("/planningmysaas")}
-                className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6 glow-white"
+                className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
               >
-                <Sparkles className="w-5 h-5 mr-2" />
-                Validate My Idea Free
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+                Validate Free
               </Button>
               <Button 
                 size="lg" 
                 variant="outline"
                 onClick={() => navigate("/planningmysaas#sample")}
-                className="border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold text-lg px-8 py-6 transition-all duration-300"
+                className="w-full sm:w-auto border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 transition-all duration-300"
               >
-                See Full Sample Report
-                <ArrowRight className="w-5 h-5 ml-2" />
+                Sample Report
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1.5 sm:ml-2" />
               </Button>
             </div>
           </div>
