@@ -46,11 +46,11 @@ const About = () => {
               <Button 
                 size="lg"
                 variant="outline"
-                onClick={() => scrollToSection("schedule")}
+                onClick={() => scrollToSection("eve")}
                 className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold text-lg px-8 py-6 transition-all duration-300"
               >
               <Calendar className="w-5 h-5 mr-1.5" />
-              Schedule a Call
+              Contact Eve
               </Button>
             </div>
           </div>

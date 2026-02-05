@@ -5,13 +5,11 @@ import Challenges from "@/components/Challenges";
 import Deliveries from "@/components/Deliveries";
 import HowItWorks from "@/components/HowItWorks";
 import SuccessCases from "@/components/SuccessCases";
-import ROICalculator from "@/components/ROICalculator";
+import PMSShowcase from "@/components/PMSShowcase";
 import About from "@/components/About";
 import Tools from "@/components/Tools";
-
 import PricingTransparency from "@/components/PricingTransparency";
 import FAQ from "@/components/FAQ";
-import Schedule from "@/components/Schedule";
 import Footer from "@/components/Footer";
 import MeetEve from "@/components/MeetEve";
 import MeetTheFounder from "@/components/MeetTheFounder";
@@ -50,14 +48,12 @@ const Index = () => {
         <HowItWorks />
         <Deliveries />
         <SuccessCases />
-        <ROICalculator />
+        <PMSShowcase />
         <About />
         <Tools />
-        
         <PricingTransparency />
         <FAQ />
         <MeetEve />
-        <Schedule />
         <MeetTheFounder />
       </main>
       <Footer />
