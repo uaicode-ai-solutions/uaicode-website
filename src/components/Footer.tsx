@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Phone, MapPin, Youtube, Facebook, Instagram, Linkedin, Twitter, MessageCircle, Building2, Calendar } from "lucide-react";
+import { Mail, Phone, MapPin, Youtube, Facebook, Instagram, Linkedin, Twitter, MessageCircle, Building2, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { sanitizeInput } from "@/lib/inputSanitization";
@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import NewsletterSuccessDialog from "./newsletter/NewsletterSuccessDialog";
 import PhoneCallDialog from "./chat/PhoneCallDialog";
 import EmailContactDialog from "./chat/EmailContactDialog";
+import EveChatDialog from "./chat/EveChatDialog";
+import EveVoiceDialog from "./chat/EveVoiceDialog";
 import logo from "@/assets/uaicode-logo.png";
 
 const newsletterSchema = z.object({
@@ -33,6 +35,8 @@ const Footer = () => {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showPhoneDialog, setShowPhoneDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showChatDialog, setShowChatDialog] = useState(false);
+  const [showVoiceDialog, setShowVoiceDialog] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -140,18 +144,10 @@ const Footer = () => {
               </li>
               <li>
                 <button 
-                  onClick={() => scrollToSection("investment")}
-                  className="text-muted-foreground hover:text-accent transition-colors"
-                >
-                  Investment
-                </button>
-              </li>
-              <li>
-                <button 
                   onClick={() => scrollToSection("pricing")}
                   className="text-muted-foreground hover:text-accent transition-colors"
                 >
-                  Solutions
+                  Investment
                 </button>
               </li>
               <li>
@@ -181,17 +177,17 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Get MVP Pricing */}
+            {/* Validate My Idea */}
             <div className="mt-6">
-              <h4 className="text-lg font-semibold mb-4 text-accent">Get MVP Pricing</h4>
+              <h4 className="text-lg font-semibold mb-4 text-accent">Validate My Idea</h4>
               <ul className="space-y-3">
                 <li>
                   <button 
-                    onClick={() => scrollToSection("schedule")}
+                    onClick={() => navigate("/planningmysaas")}
                     className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-2"
                   >
-                    <Calendar className="w-5 h-5" />
-                    Schedule a Free Consultation
+                    <Sparkles className="w-5 h-5" />
+                    Planning My SaaS
                   </button>
                 </li>
               </ul>
@@ -222,11 +218,20 @@ const Footer = () => {
               </li>
               <li>
                 <button 
-                  onClick={() => scrollToSection("chat")}
+                  onClick={() => setShowChatDialog(true)}
                   className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-2"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  Talk to Eve!
+                  Chat with Eve
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => setShowVoiceDialog(true)}
+                  className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-2"
+                >
+                  <Phone className="w-5 h-5" />
+                  Call Eve
                 </button>
               </li>
             </ul>
@@ -349,6 +354,8 @@ const Footer = () => {
     </footer>
     <PhoneCallDialog open={showPhoneDialog} onOpenChange={setShowPhoneDialog} />
     <EmailContactDialog open={showEmailDialog} onOpenChange={setShowEmailDialog} />
+    <EveChatDialog open={showChatDialog} onOpenChange={setShowChatDialog} />
+    <EveVoiceDialog open={showVoiceDialog} onOpenChange={setShowVoiceDialog} />
     </>
   );
 };
