@@ -198,10 +198,10 @@ const FAQ = () => {
           <Button
             size="lg"
             onClick={() => navigate("/planningmysaas")}
-            className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6 glow-white"
+            className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
           >
-            <Sparkles className="w-5 h-5 mr-2" />
-            Validate Your Idea First
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+            Validate Free
           </Button>
         </div>
       </div>

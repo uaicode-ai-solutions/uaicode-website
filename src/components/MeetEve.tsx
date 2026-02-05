@@ -39,32 +39,32 @@ const MeetEve = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3 sm:gap-4">
               <Button
                 onClick={() => setShowEmailDialog(true)}
                 variant="outline"
                 size="lg"
-                className="border-accent/30 hover:border-accent hover:bg-accent/10 transition-all duration-300"
+                className="flex-1 sm:flex-none border-accent/30 hover:border-accent hover:bg-accent/10 transition-all duration-300 text-base sm:text-lg px-4 sm:px-6 py-3 sm:py-4"
               >
-                <Mail className="h-5 w-5" />
-                Email Eve
+                <Mail className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+                Email
               </Button>
               <Button
                 onClick={() => setShowChatDialog(true)}
                 variant="outline"
                 size="lg"
-                className="border-accent/30 hover:border-accent hover:bg-accent/10 transition-all duration-300"
+                className="flex-1 sm:flex-none border-accent/30 hover:border-accent hover:bg-accent/10 transition-all duration-300 text-base sm:text-lg px-4 sm:px-6 py-3 sm:py-4"
               >
-                <MessageSquare className="h-5 w-5" />
-                Chat with Eve
+                <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+                Chat
               </Button>
               <Button
                 onClick={() => setShowVoiceDialog(true)}
                 size="lg"
-                className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold transition-all duration-300 hover:scale-105"
+                className="flex-1 sm:flex-none bg-accent text-accent-foreground hover:bg-accent/90 font-semibold transition-all duration-300 hover:scale-105 text-base sm:text-lg px-4 sm:px-6 py-3 sm:py-4"
               >
-                <Phone className="h-5 w-5" />
-                Call Eve
+                <Phone className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+                Call
               </Button>
             </div>
 
