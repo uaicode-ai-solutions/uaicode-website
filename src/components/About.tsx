@@ -18,7 +18,7 @@ const About = () => {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
           <div className="order-2 lg:order-1 flex flex-col">
             <p className="text-base text-muted-foreground leading-relaxed mb-6">
-              Uaicode is an AI-powered MVP development partner based in Orlando, FL, serving entrepreneurs globally. We've helped over 1,247 startups launch their SaaS ideas, achieving an average 300% faster time-to-market with our proven framework.
+              Uaicode is an AI-powered MVP development partner based in Austin, TX, serving entrepreneurs globally. We've helped over 1,247 startups launch their SaaS ideas, achieving an average 300% faster time-to-market with our proven framework.
             </p>
             <p className="text-base text-muted-foreground leading-relaxed mb-6">
               We build production-ready MVPs that validate your business idea fast—from AI-powered SaaS platforms with intelligent features, to automated workflows that scale from day one, to integrated payment and user management systems. You get a complete technical foundation with dedicated support from our experienced development team throughout your launch journey.
