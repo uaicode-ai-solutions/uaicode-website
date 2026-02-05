@@ -1,86 +1,96 @@
 
 
-# Reordenação do Storytelling da Homepage
+# Reordenação das Seções + Nova Seção "Contact Us"
 
-## Diagnóstico
+## Resumo
 
-A ordem atual quebra o fluxo narrativo ideal em três pontos críticos:
-
-| Problema | Impacto |
-|----------|---------|
-| PMSShowcase aparece na posição 6 | Usuário vê provas sociais antes de entender a solução |
-| Deliveries vem antes de PMSShowcase | Fala de desenvolvimento antes de mostrar a validação |
-| About aparece muito tarde | Perde oportunidade de construir confiança cedo |
+Aplicar duas mudanças:
+1. **Reordenar as seções** conforme a sequência solicitada
+2. **Criar nova seção "ContactUs"** com os cards "Get in Touch" e "Start Your Project Today" que foram removidos do Schedule
 
 ---
 
-## Nova Ordem Proposta
+## Nova Ordem das Seções
+
+| # | Seção | Título Display | Background |
+|---|-------|----------------|------------|
+| 1 | Hero | Got a SaaS Idea? | bg-black |
+| 2 | Challenges | The Biggest Mistake? Building Without Validating | bg-card/30 |
+| 3 | HowItWorks | Your Journey to Launch: Validate First, Build Smart | bg-black |
+| 4 | Deliveries | What Makes Us Different | bg-card/30 |
+| 5 | SuccessCases | Validated Ideas, Real Results | bg-black |
+| 6 | PMSShowcase | See What Your Validation Report Reveals | bg-card/30 |
+| 7 | About | Why Choose Uaicode? | bg-black |
+| 8 | Tools | Powered by | bg-card/30 |
+| 9 | PricingTransparency | Transparent Solutions for Every Vision | bg-black |
+| 10 | FAQ | Got Questions? We Have Answers | bg-card/30 |
+| 11 | MeetEve | Meet Eve | bg-black |
+| 12 | **ContactUs (NOVA)** | Get in Touch / Start Your Project Today | **bg-card/30** |
+| 13 | MeetTheFounder | Meet the Founder | bg-black |
+
+---
+
+## Nova Seção: ContactUs.tsx
+
+### Conteúdo
+
+Extrair do `Schedule.tsx` os dois cards:
+
+**Card 1 - Get in Touch (lado esquerdo):**
+- Título: "Get in Touch"
+- Descrição: "Schedule a free consultation to discuss your project..."
+- Contatos: Email, Phone, Location
+- Lista "What to Expect"
+
+**Card 2 - Start Your Project Today (lado direito):**
+- Formulário completo com:
+  - Name, Email, Phone, Project Description
+  - Botão "Get a Free Consultation"
+  - Links para Privacy e Terms
+
+### Layout Visual
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ 1. Hero         → Captura atenção: "Got a SaaS Idea?"          │
-│ 2. Challenges   → Aprofunda a dor: "Building Without Validating"│
-│ 3. PMSShowcase  → Apresenta solução: "What Your Report Reveals" │
-│ 4. HowItWorks   → Explica processo: "How It Works"              │
-│ 5. SuccessCases → Prova social: Depoimentos                     │
-│ 6. Deliveries   → Diferenciação pós-validação                   │
-│ 7. About        → Construção de confiança                       │
-│ 8. MeetTheFounder→ Autoridade e credibilidade                   │
-│ 9. MeetEve      → Suporte disponível                            │
-│ 10. Tools       → Tecnologias (credibilidade técnica)           │
-│ 11. Pricing     → Transparência de investimento                 │
-│ 12. FAQ         → Eliminação de objeções                        │
+│                      bg-card/30 (alternado)                      │
+│                                                                 │
+│  ┌─────────────────────────┐  ┌─────────────────────────────┐  │
+│  │     Get in Touch        │  │   Start Your Project Today   │  │
+│  │                         │  │                             │  │
+│  │  📧 Email Us            │  │  [Name]                     │  │
+│  │  📞 Call Us             │  │  [Email]                    │  │
+│  │  📍 Location            │  │  [Phone]                    │  │
+│  │                         │  │  [Project Description]      │  │
+│  │  What to Expect:        │  │                             │  │
+│  │  • Response 24h         │  │  [Get a Free Consultation]  │  │
+│  │  • Free 45-min          │  │                             │  │
+│  │  • No obligation        │  │                             │  │
+│  └─────────────────────────┘  └─────────────────────────────┘  │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Framework de Storytelling Aplicado
+## Detalhes Técnicos
 
-### AIDA + PAS (Problem-Agitate-Solution)
+### 1. Criar: `src/components/ContactUs.tsx`
 
-| Etapa | Seção | Objetivo |
-|-------|-------|----------|
-| **Atenção** | Hero | Capturar com headline impactante |
-| **Problema** | Challenges | Agitar a dor de não validar |
-| **Solução** | PMSShowcase | Mostrar a ferramenta que resolve |
-| **Interesse** | HowItWorks | Explicar como funciona |
-| **Prova** | SuccessCases | Validar com resultados reais |
-| **Desejo** | Deliveries | Mostrar o que ganham após validar |
-| **Confiança** | About + Founder | Quem somos e por que confiar |
-| **Suporte** | MeetEve | Ajuda sempre disponível |
-| **Ação** | Pricing + FAQ | Remover objeções e converter |
-
----
-
-## Fluxo Narrativo Visual
-
-```text
-ATENÇÃO ──────► PROBLEMA ──────► SOLUÇÃO ──────► COMO
-   │                │                │              │
-  Hero          Challenges       PMSShowcase   HowItWorks
-                                     │
-                    ┌────────────────┘
-                    ▼
-               PROVA ──────► DIFERENCIAÇÃO ──────► CONFIANÇA
-                 │                  │                  │
-            SuccessCases       Deliveries         About + Founder
-                                                       │
-                    ┌──────────────────────────────────┘
-                    ▼
-               SUPORTE ──────► AUTORIDADE ──────► AÇÃO
-                  │                 │                │
-               MeetEve            Tools         Pricing + FAQ
+```tsx
+// Novo componente baseado nos cards do Schedule.tsx
+// - Importa: useForm, zodResolver, PhoneInput, Mail, Phone, MapPin
+// - Mantém a validação Zod existente
+// - Background: bg-card/30 (para alternar corretamente)
+// - Sem o calendário Cal.com (foi removido da homepage)
+// - Mantém PhoneCallDialog e EmailContactDialog para interatividade
 ```
 
----
+### 2. Atualizar: `src/pages/Index.tsx`
 
-## Alteração Técnica
-
-### Arquivo: `src/pages/Index.tsx`
-
-**De (atual):**
 ```tsx
+import ContactUs from "@/components/ContactUs";
+
+// Nova ordem:
 <Hero />
 <Challenges />
 <HowItWorks />
@@ -92,52 +102,26 @@ ATENÇÃO ──────► PROBLEMA ──────► SOLUÇÃO ──�
 <PricingTransparency />
 <FAQ />
 <MeetEve />
+<ContactUs />        // NOVA SEÇÃO
 <MeetTheFounder />
 ```
 
-**Para (proposto):**
-```tsx
-<Hero />
-<Challenges />
-<PMSShowcase />      {/* Subiu: mostra solução logo após o problema */}
-<HowItWorks />
-<SuccessCases />
-<Deliveries />       {/* Desceu: fala de dev após mostrar validação */}
-<About />
-<MeetTheFounder />   {/* Subiu: autoridade junto com About */}
-<MeetEve />
-<Tools />            {/* Desceu: menos importante que personas */}
-<PricingTransparency />
-<FAQ />
-```
+---
+
+## Verificação de Alternância de Backgrounds
+
+| Seção | Background | Correto? |
+|-------|------------|----------|
+| MeetEve | bg-black | ✓ |
+| **ContactUs** | **bg-card/30** | ✓ (alterna) |
+| MeetTheFounder | bg-black | ✓ (alterna) |
 
 ---
 
-## Impacto no Storytelling
+## Arquivos Afetados
 
-### Antes:
-> "Aqui está o problema... aqui está nosso processo... somos diferentes... veja casos de sucesso... ah, e temos uma ferramenta de validação"
-
-### Depois:
-> "Aqui está o problema... aqui está a solução (validação)... é assim que funciona... veja quem já usou... se validar, somos os melhores para construir... conheça quem está por trás... estamos aqui para ajudar"
-
----
-
-## Resumo das Mudanças
-
-| Seção | Posição Atual | Nova Posição | Direção |
-|-------|---------------|--------------|---------|
-| PMSShowcase | 6 | 3 | Subiu 3 posições |
-| Deliveries | 4 | 6 | Desceu 2 posições |
-| MeetTheFounder | 12 | 8 | Subiu 4 posições |
-| Tools | 8 | 10 | Desceu 2 posições |
-
----
-
-## Benefícios
-
-1. **Solução aparece logo após o problema**: Usuário não fica perdido
-2. **Validação antes de desenvolvimento**: Alinhado com funil PMS
-3. **Autoridade construída antes do preço**: Confiança antes de falar de dinheiro
-4. **Suporte humano antes da conversão**: Reduz ansiedade antes de pricing
+| Arquivo | Ação |
+|---------|------|
+| `src/components/ContactUs.tsx` | **CRIAR** - Nova seção com os 2 cards |
+| `src/pages/Index.tsx` | **EDITAR** - Reordenar seções + adicionar ContactUs |
 
