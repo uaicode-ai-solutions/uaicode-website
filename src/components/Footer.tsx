@@ -209,7 +209,7 @@ const Footer = () => {
               </li>
               <li>
                 <button 
-                  onClick={() => setShowPhoneDialog(true)}
+                  onClick={() => setShowVoiceDialog(true)}
                   className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-2"
                 >
                   <Phone className="w-5 h-5" />
