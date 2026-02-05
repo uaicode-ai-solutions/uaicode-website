@@ -78,8 +78,8 @@ const SuccessCases = () => {
   };
 
   return (
-    <section id="success-cases" className="py-20 px-4">
-      <div className="container mx-auto">
+    <section id="success-cases" className="py-24 px-4 bg-black">
+      <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Real Results, <span className="text-gradient-gold">Real Impact</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -88,7 +88,7 @@ const SuccessCases = () => {
         </div>
 
         <div className="max-w-4xl mx-auto mb-16">
-          <div className="glass-card p-8 md:p-12 rounded-2xl relative">
+          <div className="glass-card p-8 md:p-12 rounded-2xl relative border border-accent/20 shadow-[0_0_40px_rgba(234,171,8,0.1)]">
             <div className="flex justify-between items-start mb-4">
               <Quote className="w-12 h-12 md:w-16 md:h-16 text-accent/30" />
               <Badge className="bg-accent/20 text-accent border-accent/30">
@@ -103,7 +103,7 @@ const SuccessCases = () => {
               
               <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
                 <div className="flex items-center gap-4">
-                  <Avatar className="w-16 h-16 md:w-20 md:h-20 border-2 border-accent/30">
+                  <Avatar className="w-16 h-16 md:w-20 md:h-20 border-2 border-accent/40 shadow-[0_0_20px_rgba(234,171,8,0.2)]">
                     <AvatarImage 
                       src={testimonials[currentIndex].image} 
                       alt={testimonials[currentIndex].name}

@@ -175,8 +175,8 @@ const Schedule = () => {
   };
 
   return (
-    <section id="schedule" className="py-20 px-4 bg-card/30">
-      <div className="container mx-auto px-4">
+    <section id="schedule" className="py-24 px-4 bg-black">
+      <div className="container mx-auto max-w-6xl px-4">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             Ready to <span className="text-gradient-gold">Build Your Next Big Thing?</span>
@@ -186,7 +186,7 @@ const Schedule = () => {
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto glass-card rounded-2xl overflow-hidden">
+        <div className="max-w-5xl mx-auto glass-card rounded-2xl overflow-hidden border border-accent/20 shadow-[0_0_40px_rgba(234,171,8,0.1)]">
           <div className="w-full h-[500px] md:h-[700px] overflow-auto">
             <Cal
               namespace="diagnostic-45min"
@@ -211,7 +211,7 @@ const Schedule = () => {
         {/* Contact Form Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12 max-w-5xl mx-auto">
           {/* Left Column - Contact Info */}
-          <div className="glass-card rounded-2xl p-8 flex flex-col">
+          <div className="glass-card rounded-2xl p-8 flex flex-col border border-accent/10 hover:border-accent/30 transition-all duration-300">
             <h3 className="text-2xl font-bold mb-4">Get in Touch</h3>
             <p className="text-muted-foreground mb-8">
               Schedule a free consultation to discuss your project. We'll provide honest feedback, estimated timelines, and transparent pricing.
@@ -291,7 +291,7 @@ const Schedule = () => {
           </div>
           
           {/* Right Column - Contact Form */}
-          <div className="glass-card rounded-2xl p-8">
+          <div className="glass-card rounded-2xl p-8 border border-accent/10 hover:border-accent/30 transition-all duration-300">
             {/* Form Header - Title & Subtitle */}
             <div className="mb-8 pb-6 border-b border-border">
               <h3 className="text-2xl md:text-3xl font-bold mb-3">

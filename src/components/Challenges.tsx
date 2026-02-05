@@ -29,8 +29,8 @@ const Challenges = () => {
   ];
 
   return (
-    <section className="py-20 px-4 bg-card/30">
-      <div className="container mx-auto">
+    <section className="py-24 px-4 bg-card/30">
+      <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             Got a Brilliant Idea, <span className="text-gradient-gold">But...</span>
@@ -40,17 +40,17 @@ const Challenges = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {challenges.map((challenge, index) => {
             const Icon = challenge.icon;
             return (
               <div
                 key={index}
-                className={`glass-card p-6 rounded-lg hover-lift ${
-                  challenge.highlighted ? 'border-2 border-accent' : ''
+                className={`glass-card p-6 rounded-lg hover-lift border transition-all duration-300 hover:shadow-[0_0_30px_rgba(234,171,8,0.15)] ${
+                  challenge.highlighted ? 'border-2 border-accent' : 'border-accent/20 hover:border-accent/40'
                 }`}
               >
-                <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mb-4 border border-accent/30">
                   <Icon className="w-6 h-6 text-accent" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">{challenge.title}</h3>
