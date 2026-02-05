@@ -1,264 +1,267 @@
 
 
-# Harmonização Visual da Homepage - Estilo "Meet Eve"
+# Revisão Estratégica da Homepage - Funil para Planning My SaaS
 
-## Resumo Executivo
-Revisar todas as seções da homepage para adotar um visual consistente e premium, inspirado no estilo da seção "Meet Eve" e "Meet the Founder". O objetivo é criar uma experiência visual harmônica com:
-- Alternância de fundos escuros (`bg-black`) e semi-transparentes (`bg-card/30`)
-- Uso consistente de `text-gradient-gold` para títulos
-- Cards com efeito glow amber/gold
-- Espaçamento e tipografia uniformes
-- Imagens arredondadas com hover effects
+## Contexto da Nova Estratégia
 
----
-
-## Análise do Estilo "Meet Eve" (Referência)
-
-O estilo que queremos replicar possui:
-- Fundo sólido escuro (`bg-black`)
-- Container limitado a `max-w-6xl`
-- Grid 2 colunas (conteúdo + imagem)
-- Título com `text-gradient-gold`
-- Subtítulo em `text-muted-foreground`
-- Descrição em `text-base text-muted-foreground leading-relaxed`
-- Botões com borda amber (`border-accent/30 hover:border-accent`)
-- Imagem com `rounded-full` ou `rounded-2xl`, `shadow-2xl`, `hover-lift`
-- Frase de efeito com ícone `Sparkles` em cor accent
-
----
-
-## Alterações por Componente
-
-### 1. Hero.tsx
-**Arquivo:** `src/components/Hero.tsx`
-
-**Mudanças:**
-- Manter fundo atual (transparente com gradiente)
-- Adicionar glow effect sutil no container do vídeo
-- Melhorar badges de confiança com estilo glass-card
-- Container principal com `max-w-6xl`
-
-```text
-Linha 13: Adicionar efeito glow no container
-Linha 47-66: Trust badges → glass-card com border-accent/20
-Linha 69: Container do vídeo → adicionar glow effect amber
+**Funil Atual (Problemático):**
+```
+Home → Agendar Consulta → Desenvolvimento
 ```
 
----
-
-### 2. Challenges.tsx
-**Arquivo:** `src/components/Challenges.tsx`
-
-**Mudanças:**
-- Container com `max-w-6xl`
-- Cards com hover glow effect amber
-- Ícones em círculos com border accent
-
-```text
-Linha 32: py-20 → py-24 (mais respiro)
-Linha 33: Adicionar max-w-6xl
-Linha 47-58: Cards com hover:shadow-[0_0_30px_rgba(234,171,8,0.15)]
+**Novo Funil (Desejado):**
+```
+Home → Planning My SaaS → Qualificação → Agendar Consulta → Desenvolvimento
 ```
 
+A homepage atual está direcionando todos os CTAs para "Get MVP Pricing" e "Schedule", o que faz sentido para vendas diretas, mas **NÃO está alinhado** com a nova estratégia de qualificação via Planning My SaaS.
+
 ---
 
-### 3. HowItWorks.tsx
-**Arquivo:** `src/components/HowItWorks.tsx`
+## Diagnóstico por Seção
 
-**Mudanças:**
-- Fundo alterado para `bg-black` (contraste com seções vizinhas)
-- Container com `max-w-6xl`
-- Linha de conexão dos steps com cor accent mais intensa
-- Cards com glow effect no hover
+### 1. Hero.tsx - DESALINHADA
 
-```text
-Linha 42: className="" → className="bg-black"
-Linha 43: Adicionar max-w-6xl
-Linha 67: glass-card → adicionar hover:shadow-[0_0_30px_rgba(234,171,8,0.2)]
+**Problema:**
+- CTA primário: "Get MVP Pricing" → vai direto para Schedule
+- CTA secundário: "Explore our Process" → vai para How It Works
+- Nenhuma menção ao Planning My SaaS
+
+**Solução Proposta:**
+| Elemento | Atual | Proposto |
+|----------|-------|----------|
+| Headline | "From Idea to AI-Powered MVP Launched in Weeks" | "Got a SaaS Idea? Let's Validate It First" |
+| Subheadline | "Your dedicated MicroSaaS Factory..." | "Most startups fail because they skip validation. Get your free AI-powered market analysis in minutes before investing in development." |
+| CTA Primário | "Get MVP Pricing" | "Validate My Idea Free" → `/planningmysaas` |
+| CTA Secundário | "Explore our Process" | "See How It Works" → `#how-it-works` |
+| Trust Badge | "60-Day Money-Back Guarantee" | "2,500+ Ideas Validated" |
+
+---
+
+### 2. Challenges.tsx - PARCIALMENTE ALINHADA
+
+**Problema:**
+- O challenge "Uncertain Market Fit" é PERFEITO para o funil, mas não está destacado
+- Não há CTA direcionando para validação
+
+**Solução Proposta:**
+- Destacar "Uncertain Market Fit" como o primeiro (highlighted)
+- Adicionar texto adicional conectando a solução (validação)
+- Adicionar CTA: "Validate Before You Build"
+
+---
+
+### 3. HowItWorks.tsx - DESALINHADA
+
+**Problema:**
+- Step 1 "Ideate & Validate" não menciona Planning My SaaS
+- CTAs vão direto para Schedule
+
+**Solução Proposta:**
+| Step | Atual | Proposto |
+|------|-------|----------|
+| Step 1 | "Ideate & Validate - We refine your vision..." | "Validate with AI - Start with our free Planning My SaaS tool to analyze your market, competitors, and viability in minutes" |
+| CTA Primário | "Get MVP Pricing" | "Start Free Validation" → `/planningmysaas` |
+| CTA Secundário | "Launch Your MVP" | "Book a Strategy Call" → `#schedule` |
+
+---
+
+### 4. Deliveries.tsx - DESALINHADA
+
+**Problema:**
+- CTAs vão direto para Schedule
+- Conteúdo foca em desenvolvimento, não em validação
+
+**Solução Proposta:**
+- Manter conteúdo (é sobre diferenciação)
+- Alterar CTAs:
+  - Primário: "Validate My Idea First" → `/planningmysaas`
+  - Secundário: "See Our Process" → `#how-it-works`
+
+---
+
+### 5. SuccessCases.tsx - DESALINHADA
+
+**Problema:**
+- CTAs vão direto para Schedule
+- Nenhum testimonial menciona a validação prévia
+
+**Solução Proposta:**
+- Alterar CTAs:
+  - Primário: "Start Your Validation" → `/planningmysaas`
+  - Secundário: "Book a Consultation" → `#schedule`
+- Ajustar texto de um testimonial para mencionar validação
+
+---
+
+### 6. ROICalculator.tsx - PARCIALMENTE ALINHADA
+
+**Problema:**
+- A calculadora é útil mas assume que o usuário já validou a ideia
+- Slider "Market Validation" é perfeito para conectar com PMS
+- CTAs vão para Schedule
+
+**Solução Proposta:**
+- Adicionar banner/callout no slider de "Market Validation" com link para PMS
+- Alterar CTAs:
+  - Primário: "Validate My Idea" → `/planningmysaas`
+  - Secundário: "Talk to an Expert" → `#schedule`
+- Adicionar tooltip: "Not sure about your market validation score? Get a free analysis"
+
+---
+
+### 7. About.tsx - DESALINHADA
+
+**Problema:**
+- CTAs vão para Schedule
+- Texto foca apenas em desenvolvimento
+
+**Solução Proposta:**
+- Adicionar parágrafo sobre validação
+- Alterar CTAs:
+  - Primário: "Validate My Idea Free" → `/planningmysaas`
+  - Secundário: "Schedule a Call" → `#schedule`
+
+---
+
+### 8. Tools.tsx - NEUTRO
+
+**Status:** OK - Não precisa de alteração (apenas mostra tecnologias)
+
+---
+
+### 9. PricingTransparency.tsx - DESALINHADA
+
+**Problema:**
+- CTAs "Request Detailed Quote" vão para Schedule
+- Não menciona que validação é gratuita e vem antes
+
+**Solução Proposta:**
+- Adicionar badge/callout: "Before you invest, validate your idea for free"
+- Manter CTAs para Schedule (faz sentido aqui)
+- Adicionar texto nos cards: "Validated ideas have 3x higher success rate"
+
+---
+
+### 10. FAQ.tsx - PARCIALMENTE ALINHADA
+
+**Problema:**
+- Pergunta sobre MVP, mas não sobre validação
+- Sem CTA
+
+**Solução Proposta:**
+- Adicionar nova FAQ: "How do I know if my idea is worth building?"
+- Resposta menciona Planning My SaaS como primeiro passo
+- Adicionar CTA no final: "Still have questions? Validate your idea first"
+
+---
+
+### 11. MeetEve.tsx - DESALINHADA
+
+**Problema:**
+- Eve menciona "building your MVP" mas deveria direcionar para validação
+- Botões de contato estão OK, mas descrição precisa mudar
+
+**Solução Proposta:**
+- Alterar descrição para focar em ajudar o usuário a validar a ideia
+- Adicionar menção ao Planning My SaaS
+
+---
+
+### 12. Schedule.tsx - PARCIALMENTE ALINHADA
+
+**Problema:**
+- Headline "Ready to Build Your Next Big Thing?" assume que já validaram
+- Form pede "Tell Us About Your Project" sem contexto de validação
+
+**Solução Proposta:**
+| Elemento | Atual | Proposto |
+|----------|-------|----------|
+| Headline | "Ready to Build Your Next Big Thing?" | "Validated Your Idea? Let's Talk Strategy" |
+| Subheadline | "Schedule a free consultation..." | "Book a strategy call to discuss your validation results and get a custom development plan" |
+| Form subtitle | "Share your vision with us..." | "Share your Planning My SaaS report or tell us about your validated idea" |
+
+---
+
+### 13. MeetTheFounder.tsx - NEUTRO
+
+**Status:** OK - Conteúdo institucional não precisa de CTA de validação
+
+---
+
+## Resumo de CTAs Estratégicos
+
+| Seção | CTA Primário | CTA Secundário |
+|-------|--------------|----------------|
+| Hero | Validate My Idea Free → /planningmysaas | See How It Works → #how-it-works |
+| Challenges | Validate Before You Build → /planningmysaas | Learn More → #how-it-works |
+| HowItWorks | Start Free Validation → /planningmysaas | Book Strategy Call → #schedule |
+| Deliveries | Validate My Idea First → /planningmysaas | See Our Process → #how-it-works |
+| SuccessCases | Start Your Validation → /planningmysaas | Book Consultation → #schedule |
+| ROICalculator | Validate My Idea → /planningmysaas | Talk to Expert → #schedule |
+| About | Validate My Idea Free → /planningmysaas | Schedule a Call → #schedule |
+| Pricing | Request Quote → #schedule (manter) | - |
+| MeetEve | (botões existentes) | Adicionar "Try Planning My SaaS" |
+| Schedule | (manter) | - |
+
+---
+
+## Nova Hierarquia de Mensagens
+
+1. **Hook (Hero):** "Tem uma ideia de SaaS? Valide primeiro, gratuitamente"
+2. **Problem (Challenges):** "O maior erro é construir sem validar"
+3. **Solution (HowItWorks):** "Nosso processo começa com validação de mercado"
+4. **Proof (SuccessCases):** "Clientes que validaram tiveram 3x mais sucesso"
+5. **Tool (ROICalculator):** "Veja o potencial - mas primeiro, valide sua nota de mercado"
+6. **Trust (About):** "Por isso criamos o Planning My SaaS"
+7. **Action (Pricing → Schedule):** "Validou? Agora sim, vamos conversar"
+
+---
+
+## Detalhes Técnicos das Alterações
+
+### Hero.tsx (Linhas 18-44)
+```tsx
+// Headline
+<span>Got a SaaS Idea?</span>
+<span className="text-gradient-gold">Validate It First</span>
+
+// Subheadline
+"Most startups fail because they skip validation. Get your free AI-powered market analysis in minutes before investing in development."
+
+// CTA Primário
+<Button onClick={() => navigate("/planningmysaas")}>
+  <Sparkles /> Validate My Idea Free
+</Button>
+
+// CTA Secundário
+<Button onClick={() => scrollToSection("how-it-works")}>
+  See How It Works
+</Button>
 ```
 
----
+### Challenges.tsx (Linhas 4-29)
+Reordenar challenges:
+1. Uncertain Market Fit (highlighted)
+2. Slow Development
+3. High Costs
+4. Technical Hurdles
 
-### 4. Deliveries.tsx
-**Arquivo:** `src/components/Deliveries.tsx`
+Adicionar CTA no final.
 
-**Mudanças:**
-- Manter `bg-card/30` para alternância
-- Container com `max-w-6xl`
-- Cards com glow effect amber no hover
-- Overlay das imagens com gradiente mais suave
+### HowItWorks.tsx (Linhas 10-39, 77-96)
+Alterar Step 1 para destacar Planning My SaaS.
+Alterar CTAs.
 
-```text
-Linha 43: Adicionar max-w-6xl
-Linha 59: glass-card → adicionar hover:shadow-[0_0_30px_rgba(234,171,8,0.15)] hover:border-accent/30
-```
-
----
-
-### 5. SuccessCases.tsx
-**Arquivo:** `src/components/SuccessCases.tsx`
-
-**Mudanças:**
-- Fundo alterado para `bg-black`
-- Container com `max-w-6xl`
-- Card de testimonial com border accent mais visível
-- Avatar com border accent
-
-```text
-Linha 81: className="py-20 px-4" → className="py-24 px-4 bg-black"
-Linha 82: Adicionar max-w-6xl
-Linha 91: glass-card → adicionar border border-accent/20
-Linha 106: Avatar border → border-2 border-accent/40
-```
+### E assim por diante para as demais seções...
 
 ---
 
-### 6. ROICalculator.tsx
-**Arquivo:** `src/components/ROICalculator.tsx`
+## Impacto Esperado
 
-**Mudanças:**
-- Manter `bg-card/30` para alternância
-- Container com `max-w-6xl` (já existe max-w-6xl no chart)
-- Cards com glow effect
-- Sliders com estilo mais premium
-
-```text
-Linha 163: Consistir container max-w-6xl
-Linha 173: glass-card → adicionar hover:shadow-[0_0_20px_rgba(234,171,8,0.1)]
-Linha 300: glass-card → adicionar border border-accent/10
-```
-
----
-
-### 7. About.tsx
-**Arquivo:** `src/components/About.tsx`
-
-**Mudanças:**
-- Fundo alterado para `bg-black` (igual ao Meet Eve/Founder)
-- Container com `max-w-6xl` (já existe)
-- Imagem com glow effect similar ao Meet Eve
-- Texto com espaçamento similar
-
-```text
-Linha 12: className="py-20 px-4" → className="py-24 px-4 bg-black"
-Linha 56-60: Imagem → adicionar wrapper com glow effect
-```
-
----
-
-### 8. Tools.tsx
-**Arquivo:** `src/components/Tools.tsx`
-
-**Mudanças:**
-- Manter `bg-card/30`
-- Cards do scroll com border accent mais visível
-- Glow effect no hover
-
-```text
-Linha 24: glass-card → adicionar border border-accent/20 hover:border-accent/40
-```
-
----
-
-### 9. PricingTransparency.tsx
-**Arquivo:** `src/components/PricingTransparency.tsx`
-
-**Mudanças:**
-- Fundo alterado para `bg-black`
-- Cards com glow effect amber
-- Bordas mais visíveis
-
-```text
-Linha 32: className="py-20 px-4 relative" → className="py-24 px-4 bg-black relative"
-Linha 46: glass-card → adicionar border border-accent/10
-Linha 201: glass-card → adicionar border border-accent/10
-```
-
----
-
-### 10. FAQ.tsx
-**Arquivo:** `src/components/FAQ.tsx`
-
-**Mudanças:**
-- Manter `bg-card/30` para alternância
-- Search input com border accent
-- Accordion items com hover glow mais suave
-
-```text
-Linha 99: className="py-20 px-4 bg-card/30" → className="py-24 px-4 bg-card/30"
-Linha 115: Input → adicionar border-accent/20 focus:border-accent
-```
-
----
-
-### 11. MeetEve.tsx
-**Arquivo:** `src/components/MeetEve.tsx`
-
-**Status:** Já no estilo correto (referência)
-
----
-
-### 12. Schedule.tsx
-**Arquivo:** `src/components/Schedule.tsx`
-
-**Mudanças:**
-- Fundo para `bg-black` (mais consistente)
-- Cards com glow effect
-- Cal.com embed com border accent
-
-```text
-Linha 178: className="py-20 px-4 bg-card/30" → className="py-24 px-4 bg-black"
-Linha 189: glass-card → adicionar border border-accent/20
-Linha 214: glass-card → adicionar border border-accent/10 hover:border-accent/30
-Linha 294: glass-card → adicionar border border-accent/10
-```
-
----
-
-### 13. MeetTheFounder.tsx
-**Arquivo:** `src/components/MeetTheFounder.tsx`
-
-**Status:** Já no estilo correto (junto com Meet Eve)
-
----
-
-## Padrão Visual Final
-
-| Seção | Fundo | Container |
-|-------|-------|-----------|
-| Hero | gradient transparente | max-w-6xl |
-| Challenges | bg-card/30 | max-w-6xl |
-| HowItWorks | **bg-black** | max-w-6xl |
-| Deliveries | bg-card/30 | max-w-6xl |
-| SuccessCases | **bg-black** | max-w-6xl |
-| ROICalculator | bg-card/30 | max-w-6xl |
-| About | **bg-black** | max-w-6xl |
-| Tools | bg-card/30 | max-w-6xl |
-| Pricing | **bg-black** | max-w-6xl |
-| FAQ | bg-card/30 | max-w-6xl |
-| MeetEve | **bg-black** | max-w-6xl |
-| Schedule | **bg-black** | max-w-6xl |
-| MeetTheFounder | **bg-black** | max-w-6xl |
-
----
-
-## Elementos Visuais Consistentes
-
-1. **Títulos**: `text-gradient-gold` para palavras-chave
-2. **Cards**: `glass-card` + `border border-accent/20` + hover glow
-3. **Botões primários**: `bg-accent text-accent-foreground hover:bg-accent/90`
-4. **Botões secundários**: `border-accent/30 hover:border-accent hover:bg-accent/10`
-5. **Imagens**: `rounded-2xl shadow-2xl hover-lift` + glow wrapper opcional
-6. **Ícones em círculos**: `bg-accent/20` com ícone `text-accent`
-7. **Espaçamento**: `py-24 px-4` para seções principais
-
----
-
-## Impacto
-
-- Visual premium e consistente em toda a homepage
-- Alternância harmônica entre seções escuras e semi-transparentes
-- Efeitos de hover unificados com glow amber/gold
-- Melhor hierarquia visual e legibilidade
-- Experiência do usuário mais profissional e coesa
+1. **Conversão para PMS:** Aumentar significativamente o tráfego para `/planningmysaas`
+2. **Qualificação de Leads:** Leads que chegam ao Schedule já passaram pela validação
+3. **Redução de Calls Improdutivas:** Menos reuniões com ideias não validadas
+4. **Alinhamento de Expectativas:** Usuário entende que validação vem primeiro
+5. **Valor Percebido:** PMS gratuito como isca antes do serviço pago
 
