@@ -1,111 +1,114 @@
 
+# Corrigir Formulário "Start Your Project Today" - Usar Edge Function Correta
 
-# Unificar Visual da Seção "Meet the Founder" com "Meet Eve"
+## Problema Identificado
 
-## Objetivo
+O formulário em `ContactUs.tsx` está chamando a edge function **errada**:
 
-Atualizar o componente `MeetTheFounder.tsx` para ter o mesmo estilo visual premium da seção "Meet Eve", incluindo a foto circular com efeito de glow amber.
+| Atual (Quebrado) | Correto (Funciona) |
+|------------------|-------------------|
+| `submit-contact-form` | `send-email-contact` |
+| Chama webhook n8n externo | Usa Resend API diretamente |
+| Campo: `project` | Campo esperado: `message` |
 
----
+## Interface da Edge Function `send-email-contact`
 
-## Diferenças Identificadas
-
-| Elemento | MeetEve (atual) | MeetTheFounder (atual) |
-|----------|-----------------|------------------------|
-| Formato da foto | `rounded-full` (circular) | `rounded-2xl` (retangular) |
-| Glow effect | Sim (`bg-gradient-to-r from-accent/20 to-accent/5 blur-2xl`) | Não |
-| Borda da foto | `border-4 border-accent/20` | Sem borda |
-| Container wrapper | `<div className="relative">` | Direto no flex |
-
----
-
-## Alterações Técnicas
-
-### 1. Copiar nova foto do founder para assets
-
-```bash
-lov-copy user-uploads://founder-rafael-luz-00.png src/assets/founder-rafael-luz-circular.webp
+```typescript
+interface ContactFormData {
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;    // <-- O formulário envia "project", precisa mapear
+  source?: string;    // <-- Precisamos adicionar
+}
 ```
 
-### 2. Atualizar `src/components/MeetTheFounder.tsx`
+## Correções Necessárias
 
-**Antes (linhas 47-55):**
-```tsx
-{/* Right Column - Photo */}
-<div className="flex justify-center lg:justify-end">
-  <img
-    src={founderImage}
-    alt="Rafael Luz - Founder and CEO of Uaicode.ai"
-    loading="lazy"
-    className="w-full h-auto max-w-md lg:max-w-lg rounded-2xl shadow-2xl hover-lift"
-  />
-</div>
-```
+### Arquivo: `src/components/ContactUs.tsx`
 
-**Depois:**
-```tsx
-{/* Right Column - Photo */}
-<div className="flex justify-center lg:justify-end">
-  <div className="relative">
-    <div className="absolute -inset-4 bg-gradient-to-r from-accent/20 to-accent/5 rounded-full blur-2xl" />
-    <img
-      src={founderImage}
-      alt="Rafael Luz - Founder and CEO of Uaicode.ai"
-      loading="lazy"
-      className="relative w-full h-auto max-w-md lg:max-w-lg rounded-full shadow-2xl hover-lift border-4 border-accent/20"
-    />
-  </div>
-</div>
-```
-
-### 3. Atualizar import da foto
+**1. Mudar a edge function chamada (linha 75):**
 
 ```tsx
 // De:
-import founderImage from "@/assets/founder-rafael-luz-main.webp";
+await supabase.functions.invoke('submit-contact-form', {
+  body: sanitizedData,
+});
 
-// Para (usando a nova foto):
-import founderImage from "@/assets/founder-rafael-luz-circular.webp";
+// Para:
+await supabase.functions.invoke('send-email-contact', {
+  body: {
+    name: sanitizedData.name,
+    email: sanitizedData.email,
+    phone: sanitizedData.phone || '',
+    message: sanitizedData.project,  // Mapeia "project" para "message"
+    source: 'website_uaicode',       // Identifica a origem
+  },
+});
 ```
 
----
+**2. Adicionar BookingConfirmationDialog (popup de confirmação):**
 
-## Visual Final Esperado
+```tsx
+// Adicionar imports:
+import BookingConfirmationDialog from "@/components/scheduler/BookingConfirmationDialog";
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                        Meet the Founder                         │
-│                   The Vision Behind Uaicode.ai                  │
-│                                                                 │
-│  ┌─────────────────────────┐      ┌─────────────────────────┐  │
-│  │                         │      │   ╭─────────────────╮   │  │
-│  │  [Texto do founder]     │      │   │   ░░░░░░░░░░░   │   │  │
-│  │                         │      │   │   ░ FOTO EM ░   │   │  │
-│  │                         │      │   │   ░ CIRCULAR ░  │   │  │
-│  │  [Connect on LinkedIn]  │      │   │   ░  + GLOW  ░  │   │  │
-│  │                         │      │   │   ░░░░░░░░░░░   │   │  │
-│  │                         │      │   ╰─────────────────╯   │  │
-│  └─────────────────────────┘      └─────────────────────────┘  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+// Adicionar interface e estados:
+interface BookingDetails {
+  date?: string;
+  time?: string;
+  rawDate?: string;
+  rawTime?: string;
+  email?: string;
+}
+
+const [showConfirmation, setShowConfirmation] = useState(false);
+const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
 ```
 
----
+**3. Atualizar lógica de sucesso no onSubmit:**
 
-## Arquivos Afetados
+```tsx
+// De:
+toast.success("Message sent! We'll get back to you within 24 hours.");
+reset();
 
-| Arquivo | Acao |
+// Para:
+setBookingDetails({ email: data.email });
+setShowConfirmation(true);
+reset();
+```
+
+**4. Adicionar o componente no JSX:**
+
+```tsx
+<BookingConfirmationDialog
+  open={showConfirmation}
+  onClose={() => setShowConfirmation(false)}
+  bookingDetails={bookingDetails}
+/>
+```
+
+## Resumo das Mudanças
+
+| Item | Antes | Depois |
+|------|-------|--------|
+| Edge Function | `submit-contact-form` | `send-email-contact` |
+| Mapeamento de campos | Direto | `project` → `message` |
+| Source identificado | Não | `website_uaicode` |
+| Popup de confirmação | Toast simples | `BookingConfirmationDialog` + confetti |
+
+## Resultado Esperado
+
+1. Usuário preenche e envia o formulário
+2. Edge function `send-email-contact` é chamada
+3. Resend envia email de confirmação para o usuário
+4. Resend envia notificação para `hello@uaicode.ai`
+5. Popup de confirmação aparece com confetti
+6. Formulário é resetado
+
+## Arquivo Afetado
+
+| Arquivo | Ação |
 |---------|------|
-| `src/assets/founder-rafael-luz-circular.webp` | **CRIAR** - Copiar nova foto do upload |
-| `src/components/MeetTheFounder.tsx` | **EDITAR** - Adicionar glow effect e foto circular |
-
----
-
-## Resultado
-
-Ambas as seções (MeetEve e MeetTheFounder) terao o mesmo estilo visual premium:
-- Foto circular com borda amber sutil
-- Efeito de glow gradiente ao redor
-- Animacao hover-lift mantida
-- Consistencia visual entre as duas personas do site
-
+| `src/components/ContactUs.tsx` | **EDITAR** - Trocar edge function + adicionar popup |
