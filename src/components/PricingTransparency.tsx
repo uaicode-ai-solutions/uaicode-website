@@ -35,9 +35,14 @@ const PricingTransparency = () => {
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             Transparent Solutions for <span className="text-gradient-gold">Every Vision</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
             Choose the perfect package to bring your SaaS idea to life
           </p>
+          <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 px-4 py-2 rounded-full text-sm">
+            <span className="text-accent font-medium">💡 Pro tip:</span>
+            <span className="text-muted-foreground">Validated ideas have 3x higher success rate.</span>
+            <a href="/planningmysaas" className="text-accent hover:underline font-medium">Validate free →</a>
+          </div>
         </div>
 
         <Accordion type="single" collapsible className="w-full" onValueChange={handleAccordionChange}>

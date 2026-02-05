@@ -1,11 +1,14 @@
-import { Stethoscope, Calculator, Target, GitBranch, BarChart, Rocket } from "lucide-react";
+import { Sparkles, Compass, Target, GitBranch, BarChart, Rocket } from "lucide-react";
 import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 import deliverySupport from "@/assets/delivery-support.webp?v=2";
 import deliveryTraining from "@/assets/delivery-training.webp?v=2";
 import deliveryTeam from "@/assets/delivery-team.webp?v=2";
 import deliveryMeetings from "@/assets/delivery-meetings.webp?v=2";
 
 const Deliveries = () => {
+  const navigate = useNavigate();
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: "smooth" });
@@ -46,7 +49,7 @@ const Deliveries = () => {
             What Makes Us <span className="text-gradient-gold">Different</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            What sets us apart in the competitive world of MVP development
+            After you validate your idea, here's what you get when you build with us
           </p>
         </div>
 
@@ -83,20 +86,20 @@ const Deliveries = () => {
         <div className="text-center flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Button
             size="lg"
-            onClick={() => scrollToSection("schedule")}
+            onClick={() => navigate("/planningmysaas")}
             className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6 glow-white"
           >
-            <Calculator className="w-5 h-5 mr-2" />
-            Get MVP Pricing
+            <Sparkles className="w-5 h-5 mr-2" />
+            Validate My Idea First
           </Button>
           <Button
             size="lg"
             variant="outline"
-            onClick={() => scrollToSection("schedule")}
+            onClick={() => scrollToSection("how-it-works")}
             className="border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold text-lg px-8 py-6 transition-all duration-300"
           >
-            <Rocket className="w-5 h-5 mr-1.5" />
-            Launch Your MVP
+            <Compass className="w-5 h-5 mr-1.5" />
+            See Our Process
           </Button>
         </div>
       </div>

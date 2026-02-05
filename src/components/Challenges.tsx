@@ -1,12 +1,22 @@
-import { Clock, DollarSign, AlertCircle, Target } from "lucide-react";
+import { Clock, DollarSign, AlertCircle, Target, Sparkles } from "lucide-react";
+import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Challenges = () => {
+  const navigate = useNavigate();
+
   const challenges = [
+    {
+      icon: Target,
+      title: "Uncertain Market Fit",
+      description: "Without validation, you risk building something nobody wants. 9 out of 10 startups fail because they skip this step.",
+      highlighted: true
+    },
     {
       icon: Clock,
       title: "Slow Development",
       description: "Traditional development takes months, delaying your market entry",
-      highlighted: true
+      highlighted: false
     },
     {
       icon: DollarSign,
@@ -19,12 +29,6 @@ const Challenges = () => {
       title: "Technical Hurdles",
       description: "Complex technical decisions slow you down and increase risk",
       highlighted: false
-    },
-    {
-      icon: Target,
-      title: "Uncertain Market Fit",
-      description: "Without rapid testing, you risk building something nobody wants",
-      highlighted: false
     }
   ];
 
@@ -33,21 +37,21 @@ const Challenges = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Got a Brilliant Idea, <span className="text-gradient-gold">But...</span>
+            The Biggest Mistake? <span className="text-gradient-gold">Building Without Validating</span>
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-            Bringing a new software product to life can be complex, time-consuming, and expensive. We remove the roadblocks.
+            Before investing thousands in development, make sure your idea has real market potential
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {challenges.map((challenge, index) => {
             const Icon = challenge.icon;
             return (
               <div
                 key={index}
                 className={`glass-card p-6 rounded-lg hover-lift border transition-all duration-300 hover:shadow-[0_0_30px_rgba(234,171,8,0.15)] ${
-                  challenge.highlighted ? 'border-2 border-accent' : 'border-accent/20 hover:border-accent/40'
+                  challenge.highlighted ? 'border-2 border-accent shadow-[0_0_30px_rgba(234,171,8,0.2)]' : 'border-accent/20 hover:border-accent/40'
                 }`}
               >
                 <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mb-4 border border-accent/30">
@@ -58,6 +62,21 @@ const Challenges = () => {
               </div>
             );
           })}
+        </div>
+
+        {/* CTA */}
+        <div className="text-center">
+          <Button
+            size="lg"
+            onClick={() => navigate("/planningmysaas")}
+            className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6 glow-white"
+          >
+            <Sparkles className="w-5 h-5 mr-2" />
+            Validate Before You Build
+          </Button>
+          <p className="text-sm text-muted-foreground mt-4">
+            Free AI-powered market analysis in minutes
+          </p>
         </div>
       </div>
     </section>

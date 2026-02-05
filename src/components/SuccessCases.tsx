@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Rocket, Calculator, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { Sparkles, Calendar, ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import ReactCountryFlag from "react-country-flag";
+import { useNavigate } from "react-router-dom";
 import sarahJohnsonImg from "@/assets/testimonial-sarah-johnson.webp";
 import marcusChenImg from "@/assets/author-marcus.webp";
 import robertoSilvaImg from "@/assets/testimonial-carlos-oliveira.webp?v=2";
@@ -12,6 +13,7 @@ import jamesWilsonImg from "@/assets/testimonial-john-smith.webp?v=2";
 
 const SuccessCases = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -26,10 +28,10 @@ const SuccessCases = () => {
       country: "USA",
       countryCode: "US",
       image: sarahJohnsonImg,
-      testimonial: "UaiCode.ai transformed our complex idea into a revenue-generating MVP faster than we thought possible. Their AI-driven approach was game-changing!",
-      result: "MVP launched in 6 weeks, Revenue positive in 2 months",
-      industry: "MVP Success",
-      details: "Challenge: Complex idea with tight timeline. Solution: AI-accelerated development process delivering a production-ready MVP with core features and scalable architecture."
+      testimonial: "The validation report gave me confidence to move forward. UaiCode then transformed our idea into a revenue-generating MVP faster than we thought possible!",
+      result: "Validated in 5 min, MVP in 6 weeks",
+      industry: "Validated Success",
+      details: "Started with Planning My SaaS to validate market fit, then moved to development. The validation insights shaped our core features perfectly."
     },
     {
       name: "Robert Taylor",
@@ -38,10 +40,10 @@ const SuccessCases = () => {
       country: "USA",
       countryCode: "US",
       image: marcusChenImg,
-      testimonial: "The speed and quality were exceptional. We launched in 6 weeks and secured our first 100 customers within a month. Incredible ROI!",
-      result: "6-week launch, 100 customers in first month",
+      testimonial: "I almost built the wrong product. The free validation showed me a better market angle I hadn't considered. Game changer!",
+      result: "Pivoted idea, 100 customers in first month",
       industry: "Startup Launch",
-      details: "Challenge: Need to validate market fit quickly. Solution: Rapid MVP development with user-centric design and integrated analytics for real-time feedback."
+      details: "The AI analysis revealed a gap in my original plan. After adjusting based on the report, we launched and hit our first 100 customers fast."
     },
     {
       name: "Emily Rodriguez",
@@ -50,10 +52,10 @@ const SuccessCases = () => {
       country: "USA",
       countryCode: "US",
       image: emmaThompsonImg,
-      testimonial: "Working with UaiCode.ai felt like having an entire tech team at our disposal. They understood our vision and made it reality with precision.",
-      result: "Full-stack MVP, 95% client satisfaction",
+      testimonial: "The validation report convinced my investors to fund the MVP. Having data-backed market analysis made all the difference.",
+      result: "Secured funding, Full-stack MVP launched",
       industry: "Product Launch",
-      details: "Challenge: Limited technical resources and ambitious vision. Solution: Comprehensive MVP with modern tech stack, intuitive UX, and enterprise-grade features."
+      details: "Used the Planning My SaaS report in investor meetings. The competitive analysis and market sizing data were exactly what they wanted to see."
     },
     {
       name: "David Park",
@@ -62,10 +64,10 @@ const SuccessCases = () => {
       country: "USA",
       countryCode: "US",
       image: jamesWilsonImg,
-      testimonial: "From concept to launch in 40 days. The AI integration they built for us has become our competitive advantage in the market.",
-      result: "40-day MVP, Competitive AI features",
+      testimonial: "From concept to launch in 40 days. But more importantly, we validated first so we knew we were building something people actually wanted.",
+      result: "40-day MVP, Strong market validation",
       industry: "Tech Innovation",
-      details: "Challenge: Need AI-powered features to differentiate in crowded market. Solution: Custom AI integration with smart automation, delivering unique value proposition and market edge."
+      details: "The validation process saved us months of building the wrong thing. We knew our target market and differentiators before writing a single line of code."
     },
   ];
 
@@ -81,9 +83,9 @@ const SuccessCases = () => {
     <section id="success-cases" className="py-24 px-4 bg-black">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Real Results, <span className="text-gradient-gold">Real Impact</span></h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Validated Ideas, <span className="text-gradient-gold">Real Results</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Hear from clients who've transformed their ideas into thriving businesses
+            Hear from clients who validated first—and built successful businesses
           </p>
         </div>
 
@@ -187,11 +189,11 @@ const SuccessCases = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Button 
             size="lg"
-            onClick={() => scrollToSection("schedule")}
+            onClick={() => navigate("/planningmysaas")}
             className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6 glow-white"
           >
-            <Calculator className="w-5 h-5 mr-2" />
-            Get MVP Pricing
+            <Sparkles className="w-5 h-5 mr-2" />
+            Start Your Validation
           </Button>
           <Button 
             size="lg"
@@ -199,8 +201,8 @@ const SuccessCases = () => {
             onClick={() => scrollToSection("schedule")}
             className="border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold text-lg px-8 py-6 transition-all duration-300"
           >
-            <Rocket className="w-5 h-5 mr-1.5" />
-            Launch Your MVP
+            <Calendar className="w-5 h-5 mr-1.5" />
+            Book a Consultation
           </Button>
         </div>
       </div>
