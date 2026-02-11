@@ -1,62 +1,65 @@
 
 
-## Deduplicacao de Leads: Apollo + Supabase
+## Limpeza da tabela tb_crm_leads
 
-### Problema
-Cada execucao do workflow Apollo pode trazer leads que ja existem no banco, gerando duplicatas.
+### Objetivo
+Remover colunas nao utilizadas e manter apenas os campos necessarios para o fluxo Apollo.
 
-### Solucao em 2 camadas
+### Colunas a remover (12 colunas)
 
-**Camada 1 — Constraint UNIQUE no banco (rede de seguranca)**
+| Coluna | Motivo |
+|---|---|
+| user_id | Nao usado no fluxo Apollo |
+| wizard_id | Nao usado no fluxo Apollo |
+| score | Nao usado no fluxo Apollo |
+| notes | Nao usado no fluxo Apollo |
+| status | Nao usado no fluxo Apollo |
+| saas_name | Nao usado no fluxo Apollo |
+| budget | Nao usado no fluxo Apollo |
+| timeline | Nao usado no fluxo Apollo |
+| goal | Nao usado no fluxo Apollo |
+| challenge | Nao usado no fluxo Apollo |
+| description | Nao usado no fluxo Apollo |
+| geographic_region | Nao usado no fluxo Apollo |
 
-Adicionar constraint UNIQUE na coluna `email` da `tb_crm_leads`. Isso garante que mesmo que um lead duplicado chegue ao insert, o banco rejeita silenciosamente.
+### Colunas que permanecem (22 colunas)
 
-```text
-ALTER TABLE public.tb_crm_leads
-  ADD CONSTRAINT tb_crm_leads_email_unique UNIQUE (email);
-```
+**Sistema:** id, created_at, updated_at
 
-No Supabase Insert Node do n8n, ativar a opcao **"On Conflict: Do Nothing"** (ou trocar para Upsert com `email` como conflict column).
+**Lead:** full_name, email (UNIQUE), phone, linkedin_profile, twitter_url, facebook_url, github_url, job_title
 
-**Camada 2 — Filtro no n8n (otimizacao)**
+**Empresa:** company_name, company_revenue, company_size, company_website, industry
 
-Adicionar 2 nos entre o Format Lead Data e o Supabase Insert:
+**Localizacao:** city, state, country
 
-1. **Supabase Node (Select):** Buscar todos os emails existentes na `tb_crm_leads`
-   - Operacao: Select
-   - Tabela: `tb_crm_leads`  
-   - Colunas: `email`
-   - Filtro: nenhum (ou filtrar por `source = 'apollo_prospecting'`)
+**Classificacao:** seniority, departments, source
 
-2. **Code Node (Filter Duplicates):**
-```javascript
-const existingEmails = $('Supabase Query').all().map(item => item.json.email);
-const newLeads = $('Format Lead Data').all().filter(item => !existingEmails.includes(item.json.email));
-return newLeads;
-```
+### Aviso importante
 
-### Fluxo atualizado
+Existem 4 registros no banco que possuem dados nos campos que serao removidos (user_id, wizard_id, budget, timeline, goal, challenge, description, geographic_region). Esses dados serao perdidos permanentemente.
 
-```text
-Apollo Search
-  --> Format Lead Data (Code Node)
-  --> Supabase Query (buscar emails existentes)
-  --> Filter Duplicates (Code Node - remover ja existentes)
-  --> Supabase Insert (com ON CONFLICT DO NOTHING)
-```
+### Sobre a ordem das colunas
+
+PostgreSQL nao permite reordenar colunas sem recriar a tabela. Vou dropar as colunas desnecessarias -- a ordem logica pode ser controlada nas queries e na UI do admin.
 
 ### Detalhes tecnicos
 
-- A constraint UNIQUE no `email` e a protecao definitiva contra duplicatas
-- O filtro no n8n evita processamento desnecessario (nao tenta inserir o que ja existe)
-- Leads sem email (campo vazio/null) nao serao afetados pela constraint — considerar se isso e desejavel
-- Se a base crescer muito (+10k leads), considerar paginar a query de emails existentes ou usar uma abordagem com batch lookup
+**Migration SQL:**
+```text
+ALTER TABLE public.tb_crm_leads
+  DROP COLUMN IF EXISTS user_id,
+  DROP COLUMN IF EXISTS wizard_id,
+  DROP COLUMN IF EXISTS score,
+  DROP COLUMN IF EXISTS notes,
+  DROP COLUMN IF EXISTS status,
+  DROP COLUMN IF EXISTS saas_name,
+  DROP COLUMN IF EXISTS budget,
+  DROP COLUMN IF EXISTS timeline,
+  DROP COLUMN IF EXISTS goal,
+  DROP COLUMN IF EXISTS challenge,
+  DROP COLUMN IF EXISTS description,
+  DROP COLUMN IF EXISTS geographic_region;
+```
 
-### Alteracoes necessarias
-
-| Onde | O que |
-|---|---|
-| Supabase (migration) | `ADD CONSTRAINT tb_crm_leads_email_unique UNIQUE (email)` |
-| n8n | Adicionar no Supabase Select + Code Node de filtro |
-| n8n | Configurar ON CONFLICT DO NOTHING no Supabase Insert Node |
+**Apos a migration:** O arquivo `types.ts` sera atualizado automaticamente para refletir o novo schema.
 
