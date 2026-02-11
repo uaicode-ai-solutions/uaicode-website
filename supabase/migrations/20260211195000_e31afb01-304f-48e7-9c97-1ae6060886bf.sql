@@ -1,0 +1,13 @@
+ALTER TABLE public.tb_crm_leads
+  DROP COLUMN IF EXISTS user_id,
+  DROP COLUMN IF EXISTS wizard_id,
+  DROP COLUMN IF EXISTS score,
+  DROP COLUMN IF EXISTS notes,
+  DROP COLUMN IF EXISTS status,
+  DROP COLUMN IF EXISTS saas_name,
+  DROP COLUMN IF EXISTS budget,
+  DROP COLUMN IF EXISTS timeline,
+  DROP COLUMN IF EXISTS goal,
+  DROP COLUMN IF EXISTS challenge,
+  DROP COLUMN IF EXISTS description,
+  DROP COLUMN IF EXISTS geographic_region;

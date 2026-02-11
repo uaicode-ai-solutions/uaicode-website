@@ -16,8 +16,6 @@ export type Database = {
     Tables: {
       tb_crm_leads: {
         Row: {
-          budget: string | null
-          challenge: string | null
           city: string | null
           company_name: string | null
           company_revenue: string | null
@@ -26,34 +24,22 @@ export type Database = {
           country: string | null
           created_at: string
           departments: string | null
-          description: string | null
           email: string | null
           facebook_url: string | null
           full_name: string | null
-          geographic_region: string | null
           github_url: string | null
-          goal: string | null
           id: string
           industry: string | null
           job_title: string | null
           linkedin_profile: string | null
-          notes: string | null
           phone: string | null
-          saas_name: string | null
-          score: number | null
           seniority: string | null
           source: string | null
           state: string | null
-          status: string | null
-          timeline: string | null
           twitter_url: string | null
           updated_at: string
-          user_id: string | null
-          wizard_id: string | null
         }
         Insert: {
-          budget?: string | null
-          challenge?: string | null
           city?: string | null
           company_name?: string | null
           company_revenue?: string | null
@@ -62,34 +48,22 @@ export type Database = {
           country?: string | null
           created_at?: string
           departments?: string | null
-          description?: string | null
           email?: string | null
           facebook_url?: string | null
           full_name?: string | null
-          geographic_region?: string | null
           github_url?: string | null
-          goal?: string | null
           id?: string
           industry?: string | null
           job_title?: string | null
           linkedin_profile?: string | null
-          notes?: string | null
           phone?: string | null
-          saas_name?: string | null
-          score?: number | null
           seniority?: string | null
           source?: string | null
           state?: string | null
-          status?: string | null
-          timeline?: string | null
           twitter_url?: string | null
           updated_at?: string
-          user_id?: string | null
-          wizard_id?: string | null
         }
         Update: {
-          budget?: string | null
-          challenge?: string | null
           city?: string | null
           company_name?: string | null
           company_revenue?: string | null
@@ -98,30 +72,20 @@ export type Database = {
           country?: string | null
           created_at?: string
           departments?: string | null
-          description?: string | null
           email?: string | null
           facebook_url?: string | null
           full_name?: string | null
-          geographic_region?: string | null
           github_url?: string | null
-          goal?: string | null
           id?: string
           industry?: string | null
           job_title?: string | null
           linkedin_profile?: string | null
-          notes?: string | null
           phone?: string | null
-          saas_name?: string | null
-          score?: number | null
           seniority?: string | null
           source?: string | null
           state?: string | null
-          status?: string | null
-          timeline?: string | null
           twitter_url?: string | null
           updated_at?: string
-          user_id?: string | null
-          wizard_id?: string | null
         }
         Relationships: []
       }
