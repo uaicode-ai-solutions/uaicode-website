@@ -1,62 +1,65 @@
 
 
-## Nova Tabela: `tb_crm_leads`
+## Adicionar colunas de enriquecimento Apollo na `tb_crm_leads`
 
-Criar uma tabela dedicada para armazenar os leads gerados pelo workflow n8n, combinando dados do usuario e do wizard.
+### Problema
+Os dados enriquecidos do Apollo (title, company revenue, employees, city/state) estao sendo concatenados em um unico campo `notes`, dificultando filtragem, ordenacao e analise no CRM.
 
-### Estrutura da Tabela
+### Solucao
+Adicionar colunas dedicadas na tabela `tb_crm_leads` para armazenar os dados do Apollo de forma estruturada.
 
-| Coluna | Tipo | Obrigatorio | Default | Origem |
-|---|---|---|---|---|
-| `id` | uuid | Sim | `gen_random_uuid()` | Auto |
-| `created_at` | timestamptz | Sim | `now()` | Auto |
-| `updated_at` | timestamptz | Sim | `now()` | Trigger |
-| `user_id` | uuid | Nao | - | `tb_pms_users.id` |
-| `wizard_id` | uuid | Nao | - | `tb_pms_wizard.id` |
-| `full_name` | text | Nao | - | Usuario |
-| `email` | text | Nao | - | Usuario |
-| `phone` | text | Nao | - | Usuario |
-| `linkedin_profile` | text | Nao | - | Usuario |
-| `saas_name` | text | Nao | - | Wizard |
-| `industry` | text | Nao | - | Wizard |
-| `budget` | text | Nao | - | Wizard |
-| `timeline` | text | Nao | - | Wizard |
-| `goal` | text | Nao | - | Wizard |
-| `challenge` | text | Nao | - | Wizard |
-| `description` | text | Nao | - | Wizard |
-| `geographic_region` | text | Nao | - | Wizard |
-| `source` | text | Nao | `'n8n_workflow'` | Identificacao |
-| `status` | text | Nao | `'new'` | CRM |
-| `notes` | text | Nao | - | CRM |
-| `score` | integer | Nao | - | Scoring futuro |
+### Novas colunas
 
-### Seguranca (RLS)
+| Coluna | Tipo | Descricao |
+|---|---|---|
+| `job_title` | text | Cargo atual (ex: "Chief Marketing Officer") |
+| `company_name` | text | Nome da empresa (separado do `saas_name` que e o SaaS do wizard) |
+| `company_revenue` | text | Receita da empresa (ex: "666.5M") |
+| `company_size` | integer | Numero de funcionarios |
+| `city` | text | Cidade do lead |
+| `state` | text | Estado/regiao do lead |
+| `country` | text | Pais do lead |
 
-- **SELECT**: Apenas admins podem visualizar (`has_role(get_pms_user_id(), 'admin')`)
-- **INSERT**: Apenas via service_role (edge functions / n8n com service key)
-- **UPDATE**: Apenas admins
-- **DELETE**: Apenas admins
-- RLS habilitado para proteger os dados dos leads
+O campo `notes` continua existindo para anotacoes manuais do time comercial.
 
-### Indices
+### Alteracoes
 
-- Indice unico em `(user_id, wizard_id)` para evitar duplicatas no workflow
-- Indice em `email` para buscas rapidas
-- Indice em `status` para filtragem no CRM
+**1. Migration SQL**
+- `ALTER TABLE` para adicionar as 7 novas colunas
+- Sem indices adicionais (nenhum campo necessita de busca frequente neste momento)
 
-### Trigger
+**2. Atualizar `src/integrations/supabase/types.ts`**
+- Adicionar os novos campos nos tipos Row, Insert e Update de `tb_crm_leads`
 
-- Trigger `update_tb_crm_leads_updated_at` para atualizar automaticamente o campo `updated_at`
+**3. Atualizar o Code Node no n8n (Format Lead Data)**
+- Mapear os campos do Apollo para as novas colunas:
+
+```text
+job_title       <- person.title
+company_name    <- org.name
+company_revenue <- org.annual_revenue_printed
+company_size    <- org.estimated_num_employees
+city            <- person.city
+state           <- person.state
+country         <- person.country
+```
+
+- O campo `notes` fica vazio (disponivel para uso manual)
+- O campo `saas_name` tambem fica vazio (reservado para dados do wizard/n8n report)
 
 ### Detalhes Tecnicos
 
-A migration SQL vai:
-1. Criar a tabela `tb_crm_leads`
-2. Habilitar RLS
-3. Criar as policies de acesso (admin-only para SELECT/UPDATE/DELETE, service_role para INSERT)
-4. Criar indices para performance e unicidade
-5. Criar trigger para `updated_at`
-6. Criar a funcao de trigger se necessario (reutilizando o padrao existente no projeto)
+A migration SQL sera:
+```text
+ALTER TABLE public.tb_crm_leads
+  ADD COLUMN job_title text,
+  ADD COLUMN company_name text,
+  ADD COLUMN company_revenue text,
+  ADD COLUMN company_size integer,
+  ADD COLUMN city text,
+  ADD COLUMN state text,
+  ADD COLUMN country text;
+```
 
-Nenhuma alteracao de codigo frontend e necessaria neste momento -- a tabela sera consumida pelo workflow n8n.
+Nenhuma alteracao de RLS ou indices necessaria -- as policies existentes ja cobrem as novas colunas automaticamente.
 
