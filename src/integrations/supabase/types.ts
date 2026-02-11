@@ -22,8 +22,10 @@ export type Database = {
           company_name: string | null
           company_revenue: string | null
           company_size: number | null
+          company_website: string | null
           country: string | null
           created_at: string
+          departments: string | null
           description: string | null
           email: string | null
           facebook_url: string | null
@@ -39,6 +41,7 @@ export type Database = {
           phone: string | null
           saas_name: string | null
           score: number | null
+          seniority: string | null
           source: string | null
           state: string | null
           status: string | null
@@ -55,8 +58,10 @@ export type Database = {
           company_name?: string | null
           company_revenue?: string | null
           company_size?: number | null
+          company_website?: string | null
           country?: string | null
           created_at?: string
+          departments?: string | null
           description?: string | null
           email?: string | null
           facebook_url?: string | null
@@ -72,6 +77,7 @@ export type Database = {
           phone?: string | null
           saas_name?: string | null
           score?: number | null
+          seniority?: string | null
           source?: string | null
           state?: string | null
           status?: string | null
@@ -88,8 +94,10 @@ export type Database = {
           company_name?: string | null
           company_revenue?: string | null
           company_size?: number | null
+          company_website?: string | null
           country?: string | null
           created_at?: string
+          departments?: string | null
           description?: string | null
           email?: string | null
           facebook_url?: string | null
@@ -105,6 +113,7 @@ export type Database = {
           phone?: string | null
           saas_name?: string | null
           score?: number | null
+          seniority?: string | null
           source?: string | null
           state?: string | null
           status?: string | null
