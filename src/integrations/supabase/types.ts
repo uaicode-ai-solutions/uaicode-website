@@ -18,6 +18,11 @@ export type Database = {
         Row: {
           budget: string | null
           challenge: string | null
+          city: string | null
+          company_name: string | null
+          company_revenue: string | null
+          company_size: number | null
+          country: string | null
           created_at: string
           description: string | null
           email: string | null
@@ -26,12 +31,14 @@ export type Database = {
           goal: string | null
           id: string
           industry: string | null
+          job_title: string | null
           linkedin_profile: string | null
           notes: string | null
           phone: string | null
           saas_name: string | null
           score: number | null
           source: string | null
+          state: string | null
           status: string | null
           timeline: string | null
           updated_at: string
@@ -41,6 +48,11 @@ export type Database = {
         Insert: {
           budget?: string | null
           challenge?: string | null
+          city?: string | null
+          company_name?: string | null
+          company_revenue?: string | null
+          company_size?: number | null
+          country?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -49,12 +61,14 @@ export type Database = {
           goal?: string | null
           id?: string
           industry?: string | null
+          job_title?: string | null
           linkedin_profile?: string | null
           notes?: string | null
           phone?: string | null
           saas_name?: string | null
           score?: number | null
           source?: string | null
+          state?: string | null
           status?: string | null
           timeline?: string | null
           updated_at?: string
@@ -64,6 +78,11 @@ export type Database = {
         Update: {
           budget?: string | null
           challenge?: string | null
+          city?: string | null
+          company_name?: string | null
+          company_revenue?: string | null
+          company_size?: number | null
+          country?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -72,12 +91,14 @@ export type Database = {
           goal?: string | null
           id?: string
           industry?: string | null
+          job_title?: string | null
           linkedin_profile?: string | null
           notes?: string | null
           phone?: string | null
           saas_name?: string | null
           score?: number | null
           source?: string | null
+          state?: string | null
           status?: string | null
           timeline?: string | null
           updated_at?: string
