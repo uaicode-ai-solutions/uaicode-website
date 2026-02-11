@@ -1,19 +1,14 @@
 
 
-## Adicionar colunas de redes sociais na `tb_crm_leads`
-
-### Contexto
-O Apollo retorna URLs de redes sociais no objeto `person` (`twitter_url`, `github_url`, `facebook_url`). Atualmente esses dados sao ignorados. Vamos criar colunas dedicadas para armazena-los.
-
-O Apollo **nao** retorna `instagram_url` no enriquecimento de pessoa -- apenas `twitter_url`, `facebook_url`, `github_url` e `linkedin_url` (que ja existe na tabela).
+## Adicionar `seniority`, `departments` e `company_website` na `tb_crm_leads`
 
 ### Novas colunas
 
 | Coluna | Tipo | Origem no Apollo |
 |---|---|---|
-| `twitter_url` | text | `person.twitter_url` |
-| `facebook_url` | text | `person.facebook_url` |
-| `github_url` | text | `person.github_url` |
+| `seniority` | text | `person.seniority` |
+| `departments` | text | `person.departments` (array joined) |
+| `company_website` | text | `org.website_url` |
 
 ### Alteracoes
 
@@ -21,24 +16,50 @@ O Apollo **nao** retorna `instagram_url` no enriquecimento de pessoa -- apenas `
 
 ```text
 ALTER TABLE public.tb_crm_leads
-  ADD COLUMN twitter_url text,
-  ADD COLUMN facebook_url text,
-  ADD COLUMN github_url text;
+  ADD COLUMN seniority text,
+  ADD COLUMN departments text,
+  ADD COLUMN company_website text;
 ```
 
 **2. Atualizar `src/integrations/supabase/types.ts`**
-- Adicionar `twitter_url`, `facebook_url` e `github_url` nos tipos Row, Insert e Update de `tb_crm_leads`
 
-**3. Atualizar o Code Node no n8n (Format Lead Data)**
-- Adicionar ao mapeamento existente:
+Adicionar `seniority`, `departments` e `company_website` nos tipos Row, Insert e Update de `tb_crm_leads`.
 
-```text
-twitter_url   <- person.twitter_url || ''
-facebook_url  <- person.facebook_url || ''
-github_url    <- person.github_url || ''
+**3. Code Node atualizado (Format Lead Data)**
+
+```javascript
+const person = $input.first().json.person;
+const org = person.organization || {};
+
+return [{
+  json: {
+    full_name: person.name || '',
+    email: person.email || '',
+    phone: org.phone || '',
+    linkedin_profile: person.linkedin_url || '',
+    twitter_url: person.twitter_url || '',
+    facebook_url: person.facebook_url || '',
+    github_url: person.github_url || '',
+    job_title: person.title || '',
+    company_name: org.name || '',
+    company_revenue: org.annual_revenue_printed || '',
+    company_size: org.estimated_num_employees || null,
+    city: person.city || '',
+    state: person.state || '',
+    country: person.country || '',
+    industry: org.industry || '',
+    seniority: person.seniority || '',
+    departments: Array.isArray(person.departments) ? person.departments.join(', ') : (person.departments || ''),
+    company_website: org.website_url || '',
+    source: 'apollo_prospecting',
+    status: 'new',
+    notes: ''
+  }
+}];
 ```
 
-### Observacoes
-- Esses campos frequentemente vem `null` do Apollo -- isso e normal, as colunas aceitam null
-- Nenhuma alteracao de RLS necessaria -- as policies existentes cobrem automaticamente
-- O campo `linkedin_profile` ja existe e ja esta sendo mapeado
+**Observacao sobre `departments`:** O Apollo retorna esse campo como array (ex: `["marketing", "sales"]`). O codigo usa `join(', ')` para salvar como texto separado por virgula.
+
+### Supabase Insert Node
+
+Lembre de adicionar as 3 novas colunas no mapeamento do no Supabase: `seniority`, `departments`, `company_website`.
