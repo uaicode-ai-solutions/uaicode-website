@@ -26,8 +26,10 @@ export type Database = {
           created_at: string
           description: string | null
           email: string | null
+          facebook_url: string | null
           full_name: string | null
           geographic_region: string | null
+          github_url: string | null
           goal: string | null
           id: string
           industry: string | null
@@ -41,6 +43,7 @@ export type Database = {
           state: string | null
           status: string | null
           timeline: string | null
+          twitter_url: string | null
           updated_at: string
           user_id: string | null
           wizard_id: string | null
@@ -56,8 +59,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           email?: string | null
+          facebook_url?: string | null
           full_name?: string | null
           geographic_region?: string | null
+          github_url?: string | null
           goal?: string | null
           id?: string
           industry?: string | null
@@ -71,6 +76,7 @@ export type Database = {
           state?: string | null
           status?: string | null
           timeline?: string | null
+          twitter_url?: string | null
           updated_at?: string
           user_id?: string | null
           wizard_id?: string | null
@@ -86,8 +92,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           email?: string | null
+          facebook_url?: string | null
           full_name?: string | null
           geographic_region?: string | null
+          github_url?: string | null
           goal?: string | null
           id?: string
           industry?: string | null
@@ -101,6 +109,7 @@ export type Database = {
           state?: string | null
           status?: string | null
           timeline?: string | null
+          twitter_url?: string | null
           updated_at?: string
           user_id?: string | null
           wizard_id?: string | null
