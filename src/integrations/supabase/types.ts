@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      tb_crm_leads: {
+        Row: {
+          budget: string | null
+          challenge: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          full_name: string | null
+          geographic_region: string | null
+          goal: string | null
+          id: string
+          industry: string | null
+          linkedin_profile: string | null
+          notes: string | null
+          phone: string | null
+          saas_name: string | null
+          score: number | null
+          source: string | null
+          status: string | null
+          timeline: string | null
+          updated_at: string
+          user_id: string | null
+          wizard_id: string | null
+        }
+        Insert: {
+          budget?: string | null
+          challenge?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          full_name?: string | null
+          geographic_region?: string | null
+          goal?: string | null
+          id?: string
+          industry?: string | null
+          linkedin_profile?: string | null
+          notes?: string | null
+          phone?: string | null
+          saas_name?: string | null
+          score?: number | null
+          source?: string | null
+          status?: string | null
+          timeline?: string | null
+          updated_at?: string
+          user_id?: string | null
+          wizard_id?: string | null
+        }
+        Update: {
+          budget?: string | null
+          challenge?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          full_name?: string | null
+          geographic_region?: string | null
+          goal?: string | null
+          id?: string
+          industry?: string | null
+          linkedin_profile?: string | null
+          notes?: string | null
+          phone?: string | null
+          saas_name?: string | null
+          score?: number | null
+          source?: string | null
+          status?: string | null
+          timeline?: string | null
+          updated_at?: string
+          user_id?: string | null
+          wizard_id?: string | null
+        }
+        Relationships: []
+      }
       tb_pms_discount_strategy: {
         Row: {
           bonus_support_days: number | null
