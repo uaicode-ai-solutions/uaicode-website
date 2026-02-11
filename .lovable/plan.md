@@ -1,65 +1,44 @@
 
 
-## Adicionar colunas de enriquecimento Apollo na `tb_crm_leads`
+## Adicionar colunas de redes sociais na `tb_crm_leads`
 
-### Problema
-Os dados enriquecidos do Apollo (title, company revenue, employees, city/state) estao sendo concatenados em um unico campo `notes`, dificultando filtragem, ordenacao e analise no CRM.
+### Contexto
+O Apollo retorna URLs de redes sociais no objeto `person` (`twitter_url`, `github_url`, `facebook_url`). Atualmente esses dados sao ignorados. Vamos criar colunas dedicadas para armazena-los.
 
-### Solucao
-Adicionar colunas dedicadas na tabela `tb_crm_leads` para armazenar os dados do Apollo de forma estruturada.
+O Apollo **nao** retorna `instagram_url` no enriquecimento de pessoa -- apenas `twitter_url`, `facebook_url`, `github_url` e `linkedin_url` (que ja existe na tabela).
 
 ### Novas colunas
 
-| Coluna | Tipo | Descricao |
+| Coluna | Tipo | Origem no Apollo |
 |---|---|---|
-| `job_title` | text | Cargo atual (ex: "Chief Marketing Officer") |
-| `company_name` | text | Nome da empresa (separado do `saas_name` que e o SaaS do wizard) |
-| `company_revenue` | text | Receita da empresa (ex: "666.5M") |
-| `company_size` | integer | Numero de funcionarios |
-| `city` | text | Cidade do lead |
-| `state` | text | Estado/regiao do lead |
-| `country` | text | Pais do lead |
-
-O campo `notes` continua existindo para anotacoes manuais do time comercial.
+| `twitter_url` | text | `person.twitter_url` |
+| `facebook_url` | text | `person.facebook_url` |
+| `github_url` | text | `person.github_url` |
 
 ### Alteracoes
 
 **1. Migration SQL**
-- `ALTER TABLE` para adicionar as 7 novas colunas
-- Sem indices adicionais (nenhum campo necessita de busca frequente neste momento)
 
-**2. Atualizar `src/integrations/supabase/types.ts`**
-- Adicionar os novos campos nos tipos Row, Insert e Update de `tb_crm_leads`
-
-**3. Atualizar o Code Node no n8n (Format Lead Data)**
-- Mapear os campos do Apollo para as novas colunas:
-
-```text
-job_title       <- person.title
-company_name    <- org.name
-company_revenue <- org.annual_revenue_printed
-company_size    <- org.estimated_num_employees
-city            <- person.city
-state           <- person.state
-country         <- person.country
-```
-
-- O campo `notes` fica vazio (disponivel para uso manual)
-- O campo `saas_name` tambem fica vazio (reservado para dados do wizard/n8n report)
-
-### Detalhes Tecnicos
-
-A migration SQL sera:
 ```text
 ALTER TABLE public.tb_crm_leads
-  ADD COLUMN job_title text,
-  ADD COLUMN company_name text,
-  ADD COLUMN company_revenue text,
-  ADD COLUMN company_size integer,
-  ADD COLUMN city text,
-  ADD COLUMN state text,
-  ADD COLUMN country text;
+  ADD COLUMN twitter_url text,
+  ADD COLUMN facebook_url text,
+  ADD COLUMN github_url text;
 ```
 
-Nenhuma alteracao de RLS ou indices necessaria -- as policies existentes ja cobrem as novas colunas automaticamente.
+**2. Atualizar `src/integrations/supabase/types.ts`**
+- Adicionar `twitter_url`, `facebook_url` e `github_url` nos tipos Row, Insert e Update de `tb_crm_leads`
 
+**3. Atualizar o Code Node no n8n (Format Lead Data)**
+- Adicionar ao mapeamento existente:
+
+```text
+twitter_url   <- person.twitter_url || ''
+facebook_url  <- person.facebook_url || ''
+github_url    <- person.github_url || ''
+```
+
+### Observacoes
+- Esses campos frequentemente vem `null` do Apollo -- isso e normal, as colunas aceitam null
+- Nenhuma alteracao de RLS necessaria -- as policies existentes cobrem automaticamente
+- O campo `linkedin_profile` ja existe e ja esta sendo mapeado
