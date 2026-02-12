@@ -42,7 +42,6 @@ const targetAudiences = [
 const marketTypes = [
   { id: "b2b", title: "B2B", description: "Business to Business", icon: Briefcase },
   { id: "b2c", title: "B2C", description: "Business to Consumer", icon: User },
-  { id: "b2b2c", title: "B2B2C", description: "Business to Business to Consumer", icon: Users },
 ];
 
 const geographicRegions = [
@@ -167,7 +166,7 @@ const StepTargetMarket = ({ data, onChange }: StepTargetMarketProps) => {
             Select your business model type
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {marketTypes.map((type) => (
             <SelectableCard
               key={type.id}
