@@ -417,6 +417,10 @@ export type Database = {
         Row: {
           budget: string | null
           challenge: string | null
+          client_email: string | null
+          client_full_name: string | null
+          client_linkedin: string | null
+          client_phone: string | null
           created_at: string
           customer_types: string[] | null
           description: string | null
@@ -444,6 +448,10 @@ export type Database = {
         Insert: {
           budget?: string | null
           challenge?: string | null
+          client_email?: string | null
+          client_full_name?: string | null
+          client_linkedin?: string | null
+          client_phone?: string | null
           created_at?: string
           customer_types?: string[] | null
           description?: string | null
@@ -471,6 +479,10 @@ export type Database = {
         Update: {
           budget?: string | null
           challenge?: string | null
+          client_email?: string | null
+          client_full_name?: string | null
+          client_linkedin?: string | null
+          client_phone?: string | null
           created_at?: string
           customer_types?: string[] | null
           description?: string | null
