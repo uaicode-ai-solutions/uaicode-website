@@ -16,12 +16,24 @@ interface TargetCustomerCardProps {
   icp: ICPIntelligenceSection | null | undefined;
   insight?: string;
   avatarUrl?: string | null;
+  region?: string | null;
 }
+
+const SUPABASE_STORAGE_URL = "https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/icp-avatars";
+
+const getStaticAvatarUrl = (region: string | null | undefined, gender: string | null | undefined): string => {
+  const regionMap: Record<string, string> = { us: "us", brazil: "brazil", europe: "europe", asia: "asia" };
+  const regionKey = regionMap[region?.toLowerCase() || "us"] || "us";
+  const genderMap: Record<string, string> = { male: "male", female: "female", any: "any", both: "any" };
+  const genderKey = genderMap[gender?.toLowerCase() || "any"] || "any";
+  return `${SUPABASE_STORAGE_URL}/${regionKey}-${genderKey}.png`;
+};
 
 const TargetCustomerCard: React.FC<TargetCustomerCardProps> = ({
   icp,
   insight,
   avatarUrl,
+  region,
 }) => {
   if (!icp) {
     return (
@@ -42,6 +54,7 @@ const TargetCustomerCard: React.FC<TargetCustomerCardProps> = ({
   }
 
   const persona = icp.primary_personas?.[0] || null;
+  const resolvedAvatarUrl = avatarUrl || getStaticAvatarUrl(region, persona?.gender || icp?.persona?.gender);
   const legacyPersona = icp.persona;
   const demographics = icp.demographics;
   const painPoints = icp.pain_points || persona?.pain_points_priority || [];
@@ -79,17 +92,19 @@ const TargetCustomerCard: React.FC<TargetCustomerCardProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/10 border border-border/20">
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={personaName}
-              className="h-12 w-12 rounded-full object-cover border border-border/20"
-            />
-          ) : (
-            <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center">
-              <User className="h-6 w-6 text-accent" />
-            </div>
-          )}
+          <img
+            src={resolvedAvatarUrl}
+            alt={personaName}
+            className="h-12 w-12 rounded-full object-cover border border-border/20"
+            onError={(e) => {
+              const target = e.currentTarget;
+              target.style.display = 'none';
+              target.nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+          <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center hidden">
+            <User className="h-6 w-6 text-accent" />
+          </div>
           <div>
             <h4 className="font-semibold text-foreground">{personaName}</h4>
             <p className="text-sm text-muted-foreground">{jobTitle}</p>

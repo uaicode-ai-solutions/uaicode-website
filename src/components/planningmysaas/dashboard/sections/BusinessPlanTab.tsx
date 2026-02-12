@@ -102,6 +102,7 @@ const BusinessPlanTab = () => {
         icp={icp}
         insight={aiInsights?.customer_insight}
         avatarUrl={reportData?.icp_avatar_url}
+        region={report?.geographic_region}
       />
 
       {/* 6. Business Model - Pricing */}
