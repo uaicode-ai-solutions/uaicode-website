@@ -15,11 +15,13 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 interface TargetCustomerCardProps {
   icp: ICPIntelligenceSection | null | undefined;
   insight?: string;
+  avatarUrl?: string | null;
 }
 
 const TargetCustomerCard: React.FC<TargetCustomerCardProps> = ({
   icp,
   insight,
+  avatarUrl,
 }) => {
   if (!icp) {
     return (
@@ -77,9 +79,17 @@ const TargetCustomerCard: React.FC<TargetCustomerCardProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/10 border border-border/20">
-          <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center">
-            <User className="h-6 w-6 text-accent" />
-          </div>
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={personaName}
+              className="h-12 w-12 rounded-full object-cover border border-border/20"
+            />
+          ) : (
+            <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center">
+              <User className="h-6 w-6 text-accent" />
+            </div>
+          )}
           <div>
             <h4 className="font-semibold text-foreground">{personaName}</h4>
             <p className="text-sm text-muted-foreground">{jobTitle}</p>

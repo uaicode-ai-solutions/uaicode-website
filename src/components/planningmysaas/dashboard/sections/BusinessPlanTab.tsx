@@ -101,6 +101,7 @@ const BusinessPlanTab = () => {
       <TargetCustomerCard
         icp={icp}
         insight={aiInsights?.customer_insight}
+        avatarUrl={reportData?.icp_avatar_url}
       />
 
       {/* 6. Business Model - Pricing */}
