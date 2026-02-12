@@ -4,6 +4,8 @@ import { TrendingUp, DollarSign, Clock, Target, Scale } from "lucide-react";
 import { GrowthIntelligenceSection } from "@/types/report";
 import { FinancialMetrics } from "@/hooks/useFinancialMetrics";
 import { JCurveChart } from "../JCurveChart";
+import { useReportContext } from "@/contexts/ReportContext";
+import { calculateSuggestedPaidMedia, calculateTotalMarketingMonthly } from "@/lib/marketingBudgetUtils";
 
 interface FinancialProjectionsCardProps {
   growth: GrowthIntelligenceSection | null | undefined;
@@ -25,9 +27,26 @@ const FinancialProjectionsCard: React.FC<FinancialProjectionsCardProps> = ({
   financialMetrics,
   insight,
 }) => {
+  const { report, marketingTotals } = useReportContext();
+  
   const financialData = growth?.financial_metrics;
   const investmentCents = investment?.investment_one_payment_cents as number | undefined;
   const mvpInvestment = investmentCents ? investmentCents / 100 : null;
+
+  // === Marketing budget logic - IDENTICAL to FinancialReturnSection ===
+  const MINIMUM_MARKETING_BASELINE = 6000;
+  const baselineMarketingBudget = MINIMUM_MARKETING_BASELINE;
+  
+  const userBudget = report?.budget;
+  const suggestedPaidMedia = calculateSuggestedPaidMedia(userBudget, marketingTotals.uaicodeTotal);
+  const totalMarketingMonthly = calculateTotalMarketingMonthly(
+    marketingTotals.uaicodeTotal, 
+    suggestedPaidMedia
+  );
+  
+  const effectiveMarketingBudget = marketingTotals.uaicodeTotal > 0 
+    ? totalMarketingMonthly 
+    : baselineMarketingBudget;
 
   // Build scenarios for J-Curve - NORMALIZE "Base" to "Realistic"
   const dbScenarios = financialMetrics.financialScenarios || [];
@@ -123,7 +142,8 @@ const FinancialProjectionsCard: React.FC<FinancialProjectionsCardProps> = ({
             mvpInvestment={mvpInvestment}
             breakEvenMonths={financialData?.break_even_months || financialMetrics.breakEvenMonthsNum}
             mrrMonth12={financialData?.mrr_month_12 || financialMetrics.mrrMonth12Num}
-            marketingBudget={financialMetrics.marketingBudgetMonthly}
+            marketingBudget={effectiveMarketingBudget}
+            baselineMarketingBudget={baselineMarketingBudget}
             projectionMonths={60}
             scenarios={scenarios}
           />
