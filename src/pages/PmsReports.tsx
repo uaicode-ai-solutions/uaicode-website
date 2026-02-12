@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, User, LogOut, Settings, Sparkles, TrendingUp, Calendar, BarChart3, Loader2, Shield } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -139,7 +140,12 @@ const PmsReports = () => {
                     size="icon" 
                     className="relative hover:bg-accent/10 border border-border/50 rounded-full transition-all duration-300"
                   >
-                    <User className="h-5 w-5" />
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={pmsUser?.avatar_url} alt={pmsUser?.full_name} />
+                      <AvatarFallback className="bg-accent/10">
+                        <User className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 

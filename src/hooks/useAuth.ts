@@ -11,6 +11,7 @@ interface PmsUser {
   email: string;
   username?: string;
   full_name: string;
+  avatar_url?: string;
 }
 
 interface AuthState {
@@ -211,6 +212,40 @@ export const useAuth = () => {
     if (error) throw error;
   };
 
+  const updateAvatar = async (file: File) => {
+    if (!authState.user) throw new Error("Not authenticated");
+
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const filePath = `${authState.user.id}/avatar.${fileExt}`;
+
+    // Upload to storage (upsert to overwrite existing)
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) throw uploadError;
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    // Add cache-busting param
+    const avatarUrl = `${publicUrl}?t=${Date.now()}`;
+
+    // Update in database
+    const { error: dbError } = await supabase
+      .from("tb_pms_users")
+      .update({ avatar_url: avatarUrl } as any)
+      .eq("auth_user_id", authState.user.id);
+
+    if (dbError) throw dbError;
+
+    // Refresh pmsUser data
+    const pmsUser = await fetchPmsUserData(authState.user.id);
+    setAuthState(prev => ({ ...prev, pmsUser }));
+  };
+
   const updateProfile = async (updates: Partial<Pick<PmsUser, "full_name">>) => {
     if (!authState.user) throw new Error("Not authenticated");
 
@@ -334,6 +369,7 @@ export const useAuth = () => {
     signInWithGoogle,
     resetPassword,
     updateProfile,
+    updateAvatar,
     updatePassword,
     updateEmail,
     deleteAccount,
