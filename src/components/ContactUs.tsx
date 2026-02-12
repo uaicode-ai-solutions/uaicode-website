@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { Mail, Phone, MapPin, Send, Sparkles } from "lucide-react";
+import { Mail, Phone, MapPin, Sparkles } from "lucide-react";
 import { sanitizeFormData } from "@/lib/inputSanitization";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -121,10 +121,6 @@ const ContactUs = () => {
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-16 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-accent/30 mb-6">
-            <Send className="w-4 h-4 text-accent" />
-            <span className="text-sm font-medium text-accent">Start Your Journey</span>
-          </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             Ready to <span className="text-gradient-gold">Build Something Great?</span>
           </h2>
