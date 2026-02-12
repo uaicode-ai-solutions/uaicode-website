@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ChevronLeft, 
@@ -12,13 +12,15 @@ import {
   Sparkles,
   Loader2,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Camera
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuthContext } from "@/contexts/AuthContext";
 import {
   AlertDialog,
@@ -35,7 +37,8 @@ import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 const PmsProfile = () => {
   const navigate = useNavigate();
-  const { pmsUser, updateProfile, updatePassword, updateEmail, deleteAccount } = useAuthContext();
+  const { pmsUser, updateProfile, updatePassword, updateEmail, deleteAccount, updateAvatar } = useAuthContext();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form states
   const [name, setName] = useState("");
@@ -55,7 +58,7 @@ const PmsProfile = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   // Load user data
   useEffect(() => {
     if (pmsUser) {
@@ -146,9 +149,12 @@ const PmsProfile = () => {
 
             {/* Page Title */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                <User className="h-4 w-4 text-accent" />
-              </div>
+              <Avatar className="h-9 w-9 border border-border/50">
+                <AvatarImage src={pmsUser?.avatar_url} alt={pmsUser?.full_name} />
+                <AvatarFallback className="bg-accent/10">
+                  <User className="h-4 w-4 text-accent" />
+                </AvatarFallback>
+              </Avatar>
               <span className="text-sm font-medium text-muted-foreground hidden sm:block">Profile Settings</span>
             </div>
           </div>
@@ -186,6 +192,50 @@ const PmsProfile = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
+              {/* Avatar Upload */}
+              <div className="flex justify-center">
+                <div className="relative group">
+                  <Avatar 
+                    className="h-20 w-20 cursor-pointer border-2 border-accent/20 group-hover:border-accent/50 transition-all duration-300"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <AvatarImage src={pmsUser?.avatar_url} alt={pmsUser?.full_name} />
+                    <AvatarFallback className="bg-accent/10 text-accent text-xl font-bold">
+                      {pmsUser?.full_name?.charAt(0)?.toUpperCase() || <User className="h-8 w-8" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div 
+                    className="absolute inset-0 rounded-full bg-background/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-accent" />
+                    ) : (
+                      <Camera className="h-5 w-5 text-accent" />
+                    )}
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setIsUploadingAvatar(true);
+                      try {
+                        await updateAvatar(file);
+                      } catch (error) {
+                        console.error("Avatar upload error:", error);
+                      } finally {
+                        setIsUploadingAvatar(false);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
               {/* Name Field */}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium text-foreground">

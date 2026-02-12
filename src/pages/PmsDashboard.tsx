@@ -22,6 +22,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,6 +37,7 @@ import DashboardSkeleton from "@/components/planningmysaas/skeletons/DashboardSk
 import GeneratingReportSkeleton from "@/components/planningmysaas/skeletons/GeneratingReportSkeleton";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
 import { ReportProvider, useReportContext } from "@/contexts/ReportContext";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { checkDataQuality } from "@/lib/dataQualityUtils";
 import DataQualityBanner from "@/components/planningmysaas/dashboard/ui/DataQualityBanner";
 
@@ -109,6 +111,7 @@ const NextStepsCTABanner = ({ onViewNextSteps }: { onViewNextSteps: () => void }
 const PmsDashboardContent = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { pmsUser } = useAuthContext();
   // URL param is the wizard_id (tb_pms_wizard.id), not tb_pms_reports.id
   const { id: wizardId } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState("report");
@@ -439,7 +442,12 @@ const PmsDashboardContent = () => {
                     size="icon" 
                     className="relative hover:bg-accent/10 border border-border/50 rounded-full transition-all duration-300"
                   >
-                    <User className="h-5 w-5" />
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={pmsUser?.avatar_url} alt={pmsUser?.full_name} />
+                      <AvatarFallback className="bg-accent/10">
+                        <User className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 
