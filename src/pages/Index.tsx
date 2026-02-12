@@ -56,9 +56,9 @@ const Index = () => {
         <PricingTransparency />
         <FAQ />
         <MeetEve />
+        <Schedule />
         <ContactUs />
         <MeetTheFounder />
-        <Schedule />
       </main>
       <Footer />
       <BackToTopButton />
