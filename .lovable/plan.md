@@ -1,77 +1,84 @@
 
 
-## Chamar webhook de leads ao criar novo registro em tb_pms_wizard
+## Corrigir pms-webhook-new-leads para lidar com secret contendo JSON do n8n
 
-### Resumo
-Adicionar um trigger AFTER INSERT na tabela `tb_pms_wizard` que chama uma nova Edge Function `pms-webhook-new-leads`, que envia `wizard_id`, `client_email` e `client_full_name` para o webhook `N8N_PMS_GENERATE_LEADS_WEBHOOK_ID`. Nenhum arquivo existente sera modificado.
+### Problema identificado
 
-### Arquivos criados (nenhum existente sera alterado)
+A secret `N8N_PMS_GENERATE_LEADS_WEBHOOK_ID` contém o JSON completo de exportacao do workflow do n8n (com nodes, connections, pinData, etc.) em vez de apenas a URL ou ID do webhook. O codigo tenta usar esse JSON inteiro como parte da URL, resultando em erro de DNS.
 
-#### 1. `supabase/functions/pms-webhook-new-leads/index.ts` (NOVO)
+Os logs confirmam:
+- A function foi chamada corretamente pelo trigger
+- O `wizard_id` foi recebido e os dados do wizard foram buscados com sucesso
+- O erro ocorre ao montar a URL: `https://n8n.uaicode.dev/webhook/{ "nodes": [...] }`
 
-- Recebe `{ wizard_id }` do trigger via `net.http_post`
-- Busca `client_email` e `client_full_name` na `tb_pms_wizard` usando service role
-- Le a secret `N8N_PMS_GENERATE_LEADS_WEBHOOK_ID`
-- Envia POST ao webhook com payload:
+### Solucao
 
-```text
-{
-  "event": "wizard.created",
-  "wizard_id": "uuid",
-  "client_email": "email@example.com",
-  "client_full_name": "Nome Completo",
-  "timestamp": "2026-02-12T..."
-}
-```
+Tornar a funcao `getWebhookUrl()` mais robusta para detectar e extrair a URL correta mesmo quando a secret contiver um JSON do n8n. A logica sera:
 
-- Tratamento de erro sem impactar nenhum fluxo existente
+1. Se o valor comeca com `http` -> usa direto (comportamento atual)
+2. Se o valor parece ser JSON -> tenta parsear e extrair o campo `webhookUrl` do pinData, ou montar a URL a partir do campo `path` do webhook node
+3. Se for um ID simples -> monta a URL como `https://n8n.uaicode.dev/webhook/{id}` (comportamento atual)
 
-#### 2. Migration SQL (NOVA)
+### Detalhes tecnicos
 
-Cria function + trigger no banco, seguindo o padrao identico de `notify_pms_user_created_webhook`:
+#### Arquivo alterado: `supabase/functions/pms-webhook-new-leads/index.ts`
+
+Apenas a funcao `getWebhookUrl()` sera atualizada (linhas 10-18):
 
 ```text
-CREATE FUNCTION notify_pms_wizard_created_webhook()
-  RETURNS trigger
-  LANGUAGE plpgsql
-  SECURITY DEFINER
-  SET search_path TO 'public', 'extensions'
-AS $$
-BEGIN
-  PERFORM net.http_post(
-    url := 'https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-webhook-new-leads',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer <ANON_KEY>'
-    ),
-    body := jsonb_build_object('wizard_id', NEW.id)
-  );
-  RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
-  RAISE WARNING 'Failed to call edge function: %', SQLERRM;
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER on_pms_wizard_created
-  AFTER INSERT ON tb_pms_wizard
-  FOR EACH ROW
-  EXECUTE FUNCTION notify_pms_wizard_created_webhook();
+const getWebhookUrl = (): string => {
+  const webhookId = Deno.env.get("N8N_PMS_GENERATE_LEADS_WEBHOOK_ID");
+  if (!webhookId) {
+    throw new Error("N8N_PMS_GENERATE_LEADS_WEBHOOK_ID not configured");
+  }
+  
+  // Se ja e uma URL completa, usa direto
+  if (webhookId.startsWith("http")) {
+    return webhookId;
+  }
+  
+  // Se parece ser JSON (workflow exportado do n8n), tenta extrair a URL
+  if (webhookId.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(webhookId);
+      
+      // Tenta extrair webhookUrl do pinData
+      if (parsed.pinData) {
+        for (const nodeData of Object.values(parsed.pinData)) {
+          if (Array.isArray(nodeData) && nodeData[0]?.webhookUrl) {
+            return nodeData[0].webhookUrl;
+          }
+        }
+      }
+      
+      // Tenta extrair path do webhook node
+      if (parsed.nodes) {
+        for (const node of parsed.nodes) {
+          if (node.type === "n8n-nodes-base.webhook" && node.parameters?.path) {
+            return `https://n8n.uaicode.dev/webhook/${node.parameters.path}`;
+          }
+        }
+      }
+      
+      throw new Error("Could not extract webhook URL from JSON");
+    } catch (e) {
+      if (e.message === "Could not extract webhook URL from JSON") throw e;
+      throw new Error("N8N_PMS_GENERATE_LEADS_WEBHOOK_ID contains invalid JSON");
+    }
+  }
+  
+  // Fallback: trata como ID simples
+  return `https://n8n.uaicode.dev/webhook/${webhookId}`;
+};
 ```
 
-#### 3. `supabase/config.toml` (adicionar entrada)
+Baseado no JSON atual da secret, a URL extraida sera:
+`https://uaicode-n8n.ax5vln.easypanel.host/webhook/pms-generate-report`
+(campo `webhookUrl` encontrado em `pinData.Webhook[0].webhookUrl`)
 
-Adicionar somente a nova entrada, sem alterar nenhuma existente:
+### Nenhum outro arquivo sera alterado
 
-```text
-[functions.pms-webhook-new-leads]
-verify_jwt = false
-```
-
-### O que NAO sera alterado
-- `pms-webhook-new-user/index.ts` -- intacto
-- `pms-webhook-new-report/index.ts` -- intacto
-- `pms-orchestrate-report/index.ts` -- intacto
-- `PmsWizard.tsx` -- intacto
-- Nenhum hook, pagina, componente ou edge function existente
+- Trigger do banco: intacto (ja funciona - chamou a function corretamente)
+- `config.toml`: intacto
+- Demais edge functions: intactas
 
