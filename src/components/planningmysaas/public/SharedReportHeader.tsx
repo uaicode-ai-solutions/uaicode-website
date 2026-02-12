@@ -71,7 +71,7 @@ const SharedReportHeader = () => {
 
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20">
                 <span className="text-sm font-medium text-accent">
-                  Shared Business Plan
+                  Ask Kyle
                 </span>
               </div>
             </div>
