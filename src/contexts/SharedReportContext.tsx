@@ -58,6 +58,7 @@ export const SharedReportProvider = ({ shareToken, children }: SharedReportProvi
     industry: String(wizardSnapshot.industry || ""),
     description: String(wizardSnapshot.description || ""),
     budget: wizardSnapshot.budget ? String(wizardSnapshot.budget) : null,
+    geographic_region: wizardSnapshot.geographic_region ? String(wizardSnapshot.geographic_region) : null,
     status: "completed",
     created_at: "",
     updated_at: "",
