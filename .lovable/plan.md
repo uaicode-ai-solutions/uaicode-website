@@ -1,84 +1,68 @@
 
 
-## Corrigir pms-webhook-new-leads para lidar com secret contendo JSON do n8n
+# Ajuste nas Regras de Geração de Nome do SaaS
 
-### Problema identificado
+## Problema
+A IA está gerando acrônimos feios que não remetem ao foco do SaaS. Os nomes gerados não comunicam claramente o propósito da ferramenta.
 
-A secret `N8N_PMS_GENERATE_LEADS_WEBHOOK_ID` contém o JSON completo de exportacao do workflow do n8n (com nodes, connections, pinData, etc.) em vez de apenas a URL ou ID do webhook. O codigo tenta usar esse JSON inteiro como parte da URL, resultando em erro de DNS.
+## Novas Regras de Palavras
+- **Ideal**: 2 palavras (ex: DoctorHub, TaskFlow, CodeShip)
+- **Aceitável**: 3 palavras (ex: PlanningMySaaS, MyDoctorHub)
+- **Máximo permitido**: 1 palavra, somente se for altamente descritiva e memorável
 
-Os logs confirmam:
-- A function foi chamada corretamente pelo trigger
-- O `wizard_id` foi recebido e os dados do wizard foram buscados com sucesso
-- O erro ocorre ao montar a URL: `https://n8n.uaicode.dev/webhook/{ "nodes": [...] }`
+## Estratégia de Naming
+O nome deve ser construído a partir da descrição do SaaS (`description`), extraindo:
+1. O **domínio/nicho** (saúde, finanças, educação, etc.)
+2. A **ação principal** que a ferramenta executa (planejar, automatizar, conectar, gerenciar)
+3. O **público-alvo** quando relevante
 
-### Solucao
+A IA será instruída a combinar esses elementos em nomes compostos descritivos, evitando acrônimos e siglas abstratas.
 
-Tornar a funcao `getWebhookUrl()` mais robusta para detectar e extrair a URL correta mesmo quando a secret contiver um JSON do n8n. A logica sera:
+---
 
-1. Se o valor comeca com `http` -> usa direto (comportamento atual)
-2. Se o valor parece ser JSON -> tenta parsear e extrair o campo `webhookUrl` do pinData, ou montar a URL a partir do campo `path` do webhook node
-3. Se for um ID simples -> monta a URL como `https://n8n.uaicode.dev/webhook/{id}` (comportamento atual)
+## Detalhes Técnicos
 
-### Detalhes tecnicos
+### Arquivo alterado
+`supabase/functions/pms-suggest-name/index.ts`
 
-#### Arquivo alterado: `supabase/functions/pms-webhook-new-leads/index.ts`
+### Mudanças no SYSTEM_PROMPT
 
-Apenas a funcao `getWebhookUrl()` sera atualizada (linhas 10-18):
-
-```text
-const getWebhookUrl = (): string => {
-  const webhookId = Deno.env.get("N8N_PMS_GENERATE_LEADS_WEBHOOK_ID");
-  if (!webhookId) {
-    throw new Error("N8N_PMS_GENERATE_LEADS_WEBHOOK_ID not configured");
-  }
-  
-  // Se ja e uma URL completa, usa direto
-  if (webhookId.startsWith("http")) {
-    return webhookId;
-  }
-  
-  // Se parece ser JSON (workflow exportado do n8n), tenta extrair a URL
-  if (webhookId.trim().startsWith("{")) {
-    try {
-      const parsed = JSON.parse(webhookId);
-      
-      // Tenta extrair webhookUrl do pinData
-      if (parsed.pinData) {
-        for (const nodeData of Object.values(parsed.pinData)) {
-          if (Array.isArray(nodeData) && nodeData[0]?.webhookUrl) {
-            return nodeData[0].webhookUrl;
-          }
-        }
-      }
-      
-      // Tenta extrair path do webhook node
-      if (parsed.nodes) {
-        for (const node of parsed.nodes) {
-          if (node.type === "n8n-nodes-base.webhook" && node.parameters?.path) {
-            return `https://n8n.uaicode.dev/webhook/${node.parameters.path}`;
-          }
-        }
-      }
-      
-      throw new Error("Could not extract webhook URL from JSON");
-    } catch (e) {
-      if (e.message === "Could not extract webhook URL from JSON") throw e;
-      throw new Error("N8N_PMS_GENERATE_LEADS_WEBHOOK_ID contains invalid JSON");
-    }
-  }
-  
-  // Fallback: trata como ID simples
-  return `https://n8n.uaicode.dev/webhook/${webhookId}`;
-};
+**Seção NAMING RULES** - inverter a prioridade:
+```
+1. IDEAL: 2 words combining domain + action/benefit (e.g., DoctorHub, TaskFlow, CodeShip, SalesRadar)
+2. ACCEPTABLE: 3 words for clarity (e.g., PlanningMySaaS, MyDoctorHub, SmartLeadGen)
+3. LAST RESORT: 1 word ONLY if it clearly evokes the product's purpose (e.g., Calendly, Grammarly)
+4. NEVER use abstract acronyms or abbreviations that don't communicate the product's focus
 ```
 
-Baseado no JSON atual da secret, a URL extraida sera:
-`https://uaicode-n8n.ax5vln.easypanel.host/webhook/pms-generate-report`
-(campo `webhookUrl` encontrado em `pinData.Webhook[0].webhookUrl`)
+**Nova seção NAME CONSTRUCTION STRATEGY** a ser adicionada:
+```
+NAME CONSTRUCTION STRATEGY:
+- Extract the CORE DOMAIN from the description (healthcare, finance, education, sales, etc.)
+- Identify the PRIMARY ACTION the tool performs (plan, track, manage, automate, connect, etc.)
+- Combine domain + action/benefit into a compound name that instantly communicates purpose
+- Patterns that work well:
+  * [Domain][Action]: SalesRadar, CodeFlow, LeadPilot
+  * [Action][Domain]: TrackHealth, PlanMyTrip
+  * [My/Smart/Easy][Domain][Tool]: MyDoctorHub, SmartBudget
+- The name MUST make someone guess what the product does within 3 seconds
+- NEVER generate acronyms or initialisms (no "SFM", "APT", "GHR")
+- NEVER use random invented words that don't relate to the description
+```
 
-### Nenhum outro arquivo sera alterado
+**Seção AVOID** - adicionar:
+```
+- Acronyms or initialisms of any kind
+- Abstract invented words with no semantic connection to the product
+- Single generic tech words (Hub, Pro, App) used alone
+```
 
-- Trigger do banco: intacto (ja funciona - chamou a function corretamente)
-- `config.toml`: intacto
-- Demais edge functions: intactas
+### Mudança no userPrompt
+Reforçar a instrução para que o nome reflita a descrição:
+
+```
+Generate ONE perfect name that clearly reflects what the product does based on the description above.
+The name MUST communicate the product's purpose at first glance. Prefer 2 words.
+DO NOT use acronyms. Combine meaningful words from the product's domain and core function.
+```
 
