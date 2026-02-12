@@ -378,11 +378,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          linkedin_profile: string | null
-          phone: string | null
           updated_at: string
-          user_role: string | null
-          user_role_other: string | null
           username: string | null
         }
         Insert: {
@@ -391,11 +387,7 @@ export type Database = {
           email: string
           full_name: string
           id?: string
-          linkedin_profile?: string | null
-          phone?: string | null
           updated_at?: string
-          user_role?: string | null
-          user_role_other?: string | null
           username?: string | null
         }
         Update: {
@@ -404,11 +396,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
-          linkedin_profile?: string | null
-          phone?: string | null
           updated_at?: string
-          user_role?: string | null
-          user_role_other?: string | null
           username?: string | null
         }
         Relationships: []
@@ -421,6 +409,8 @@ export type Database = {
           client_full_name: string | null
           client_linkedin: string | null
           client_phone: string | null
+          client_role: string | null
+          client_role_other: string | null
           created_at: string
           customer_types: string[] | null
           description: string | null
@@ -452,6 +442,8 @@ export type Database = {
           client_full_name?: string | null
           client_linkedin?: string | null
           client_phone?: string | null
+          client_role?: string | null
+          client_role_other?: string | null
           created_at?: string
           customer_types?: string[] | null
           description?: string | null
@@ -483,6 +475,8 @@ export type Database = {
           client_full_name?: string | null
           client_linkedin?: string | null
           client_phone?: string | null
+          client_role?: string | null
+          client_role_other?: string | null
           created_at?: string
           customer_types?: string[] | null
           description?: string | null

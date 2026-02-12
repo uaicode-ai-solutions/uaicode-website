@@ -8,8 +8,6 @@ interface PmsUser {
   email: string;
   username: string | null;
   full_name: string;
-  phone: string | null;
-  linkedin_profile: string | null;
   created_at: string;
   updated_at: string;
 }

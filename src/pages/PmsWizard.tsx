@@ -123,10 +123,6 @@ const PmsWizard = () => {
           ...prev,
           email: pmsUser.email || "",
           fullName: pmsUser.full_name || "",
-          phone: pmsUser.phone || "",
-          linkedinProfile: pmsUser.linkedin_profile || "",
-          userRole: pmsUser.user_role || "",
-          userRoleOther: pmsUser.user_role_other || "",
           isAuthenticated: true,
         }));
       } else {
@@ -256,6 +252,8 @@ const PmsWizard = () => {
           geographic_region: data.geographicRegion,
           selected_features: data.selectedFeatures,
           selected_tier: correctTier,
+          client_role: data.userRole,
+          client_role_other: data.userRole === 'other' ? data.userRoleOther : null,
           goal: data.goal,
           goal_other: data.goal === 'other' ? data.goalOther : null,
           challenge: data.challenge,
