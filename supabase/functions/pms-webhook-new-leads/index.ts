@@ -12,9 +12,39 @@ const getWebhookUrl = (): string => {
   if (!webhookId) {
     throw new Error("N8N_PMS_GENERATE_LEADS_WEBHOOK_ID not configured");
   }
-  return webhookId.startsWith("http")
-    ? webhookId
-    : `https://n8n.uaicode.dev/webhook/${webhookId}`;
+
+  if (webhookId.startsWith("http")) {
+    return webhookId;
+  }
+
+  if (webhookId.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(webhookId);
+
+      if (parsed.pinData) {
+        for (const nodeData of Object.values(parsed.pinData)) {
+          if (Array.isArray(nodeData) && (nodeData as any[])[0]?.webhookUrl) {
+            return (nodeData as any[])[0].webhookUrl;
+          }
+        }
+      }
+
+      if (parsed.nodes) {
+        for (const node of parsed.nodes) {
+          if (node.type === "n8n-nodes-base.webhook" && node.parameters?.path) {
+            return `https://n8n.uaicode.dev/webhook/${node.parameters.path}`;
+          }
+        }
+      }
+
+      throw new Error("Could not extract webhook URL from JSON");
+    } catch (e) {
+      if (e.message === "Could not extract webhook URL from JSON") throw e;
+      throw new Error("N8N_PMS_GENERATE_LEADS_WEBHOOK_ID contains invalid JSON");
+    }
+  }
+
+  return `https://n8n.uaicode.dev/webhook/${webhookId}`;
 };
 
 interface RequestPayload {
