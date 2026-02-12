@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 interface MarketAnalysisCardProps {
   opportunity: OpportunitySection | null | undefined;
@@ -40,11 +41,9 @@ const MarketAnalysisCard: React.FC<MarketAnalysisCardProps> = ({
     );
   }
 
-  // Parse numeric values for chart
   const parseValue = (val: string | undefined): number => {
     if (!val) return 0;
     const num = parseFloat(val.replace(/[^0-9.]/g, ""));
-    // Handle billions/millions
     if (val.toLowerCase().includes("b")) return num * 1000;
     if (val.toLowerCase().includes("m")) return num;
     if (val.toLowerCase().includes("k")) return num / 1000;
@@ -65,17 +64,23 @@ const MarketAnalysisCard: React.FC<MarketAnalysisCardProps> = ({
         <CardTitle className="text-lg flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-accent" />
           Market Analysis
+          <InfoTooltip term="Market Analysis">
+            A breakdown of your market opportunity using the TAM → SAM → SOM framework, plus growth trends that affect your business.
+          </InfoTooltip>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Market Size Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Market Size Cards */}
           <div className="space-y-3">
             <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/10 border border-border/20">
               <Globe className="h-5 w-5 text-accent shrink-0" />
-              <div>
-                <p className="text-xs text-muted-foreground">Total Addressable Market (TAM)</p>
+              <div className="flex-1">
+                <div className="flex items-center gap-1">
+                  <p className="text-xs text-muted-foreground">Total Addressable Market (TAM)</p>
+                  <InfoTooltip term="TAM" size="sm">
+                    The total revenue opportunity if every potential customer in the world used your product. Think of it as the ceiling.
+                  </InfoTooltip>
+                </div>
                 <p className="text-xl font-bold text-foreground">{opportunity.tam_value || "..."}</p>
                 {opportunity.tam_description && (
                   <p className="text-xs text-muted-foreground mt-1">{opportunity.tam_description}</p>
@@ -85,8 +90,13 @@ const MarketAnalysisCard: React.FC<MarketAnalysisCardProps> = ({
             
             <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/10 border border-border/20">
               <Target className="h-5 w-5 text-accent shrink-0" />
-              <div>
-                <p className="text-xs text-muted-foreground">Serviceable Addressable Market (SAM)</p>
+              <div className="flex-1">
+                <div className="flex items-center gap-1">
+                  <p className="text-xs text-muted-foreground">Serviceable Addressable Market (SAM)</p>
+                  <InfoTooltip term="SAM" size="sm">
+                    The portion of TAM that your product can actually serve, based on your features, language, and geographic focus.
+                  </InfoTooltip>
+                </div>
                 <p className="text-xl font-bold text-foreground">{opportunity.sam_value || "..."}</p>
                 {opportunity.sam_description && (
                   <p className="text-xs text-muted-foreground mt-1">{opportunity.sam_description}</p>
@@ -96,8 +106,13 @@ const MarketAnalysisCard: React.FC<MarketAnalysisCardProps> = ({
             
             <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/10 border border-border/20">
               <Crosshair className="h-5 w-5 text-accent shrink-0" />
-              <div>
-                <p className="text-xs text-muted-foreground">Serviceable Obtainable Market (SOM)</p>
+              <div className="flex-1">
+                <div className="flex items-center gap-1">
+                  <p className="text-xs text-muted-foreground">Serviceable Obtainable Market (SOM)</p>
+                  <InfoTooltip term="SOM" size="sm">
+                    The realistic slice of the market you can capture in Year 1, considering your budget, team, and competition.
+                  </InfoTooltip>
+                </div>
                 <p className="text-xl font-bold text-foreground">{opportunity.som_value || "..."}</p>
                 {opportunity.som_description && (
                   <p className="text-xs text-muted-foreground mt-1">{opportunity.som_description}</p>
@@ -106,7 +121,6 @@ const MarketAnalysisCard: React.FC<MarketAnalysisCardProps> = ({
             </div>
           </div>
 
-          {/* Chart */}
           {chartData.length > 0 && (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -139,21 +153,27 @@ const MarketAnalysisCard: React.FC<MarketAnalysisCardProps> = ({
           )}
         </div>
 
-        {/* Market Growth Rate */}
         {opportunity.market_growth_rate && (
           <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
             <div className="flex items-center gap-2">
               <ArrowUpRight className="h-4 w-4 text-accent" />
               <span className="text-sm text-muted-foreground">Market Growth Rate (CAGR):</span>
               <span className="font-bold text-accent">{opportunity.market_growth_rate}</span>
+              <InfoTooltip term="CAGR" size="sm">
+                Compound Annual Growth Rate — how fast this market is expanding each year. Higher CAGR means more opportunity for new entrants.
+              </InfoTooltip>
             </div>
           </div>
         )}
 
-        {/* Macro Trends */}
         {macroTrends.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-foreground">Key Market Trends</h4>
+            <div className="flex items-center gap-1">
+              <h4 className="text-sm font-medium text-foreground">Key Market Trends</h4>
+              <InfoTooltip term="Market Trends" size="sm">
+                Major industry shifts and technological changes that create tailwinds (or headwinds) for your product.
+              </InfoTooltip>
+            </div>
             <div className="grid gap-2">
               {macroTrends.map((trend, index) => (
                 <div
@@ -173,7 +193,6 @@ const MarketAnalysisCard: React.FC<MarketAnalysisCardProps> = ({
           </div>
         )}
 
-        {/* AI Insight */}
         {insight && (
           <div className="p-4 rounded-lg bg-accent/10 border-l-4 border-accent">
             <p className="text-sm text-foreground italic">"{insight}"</p>

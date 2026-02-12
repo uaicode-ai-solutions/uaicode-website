@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Sparkles } from "lucide-react";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 interface ExecutiveNarrativeCardProps {
   narrative: string | null | undefined;
@@ -36,17 +37,24 @@ const ExecutiveNarrativeCard: React.FC<ExecutiveNarrativeCardProps> = ({
         <CardTitle className="text-lg flex items-center gap-2">
           <FileText className="h-5 w-5 text-accent" />
           Executive Summary
+          <InfoTooltip term="Executive Summary">
+            An AI-generated narrative that summarizes your business opportunity, target market, and strategic positioning in plain language.
+          </InfoTooltip>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Main narrative */}
         <p className="text-muted-foreground leading-relaxed">
           {narrative}
         </p>
         
-        {/* Optional market insight */}
         {marketInsight && (
           <div className="p-4 rounded-lg bg-accent/10 border-l-4 border-accent">
+            <div className="flex items-center gap-1 mb-1">
+              <span className="text-xs font-medium text-accent">Market Insight</span>
+              <InfoTooltip term="Market Insight" size="sm">
+                A key finding from market research that highlights a relevant trend or opportunity for your product.
+              </InfoTooltip>
+            </div>
             <p className="text-sm text-foreground italic">
               "{marketInsight}"
             </p>

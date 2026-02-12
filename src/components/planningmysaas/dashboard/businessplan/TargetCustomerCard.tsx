@@ -10,6 +10,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { ICPIntelligenceSection } from "@/types/report";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 interface TargetCustomerCardProps {
   icp: ICPIntelligenceSection | null | undefined;
@@ -38,7 +39,6 @@ const TargetCustomerCard: React.FC<TargetCustomerCardProps> = ({
     );
   }
 
-  // Extract persona data (try primary_personas first, then legacy persona field)
   const persona = icp.primary_personas?.[0] || null;
   const legacyPersona = icp.persona;
   const demographics = icp.demographics;
@@ -70,10 +70,12 @@ const TargetCustomerCard: React.FC<TargetCustomerCardProps> = ({
         <CardTitle className="text-lg flex items-center gap-2">
           <User className="h-5 w-5 text-accent" />
           Target Customer
+          <InfoTooltip term="Ideal Customer Profile (ICP)">
+            A data-driven profile of the person most likely to buy and love your product — their role, company, budget, and biggest pain points.
+          </InfoTooltip>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Persona Header */}
         <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/10 border border-border/20">
           <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center">
             <User className="h-6 w-6 text-accent" />
@@ -84,47 +86,60 @@ const TargetCustomerCard: React.FC<TargetCustomerCardProps> = ({
           </div>
         </div>
 
-        {/* Demographics Grid */}
         <div className="grid grid-cols-2 gap-3">
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/10">
             <Building2 className="h-4 w-4 text-accent shrink-0" />
-            <div>
-              <p className="text-xs text-muted-foreground">Company Size</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-1">
+                <p className="text-xs text-muted-foreground">Company Size</p>
+                <InfoTooltip size="sm">The typical number of employees at companies that need your solution.</InfoTooltip>
+              </div>
               <p className="text-sm font-medium text-foreground">{companySize}</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/10">
             <Briefcase className="h-4 w-4 text-accent shrink-0" />
-            <div>
-              <p className="text-xs text-muted-foreground">Industry</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-1">
+                <p className="text-xs text-muted-foreground">Industry</p>
+                <InfoTooltip size="sm">The primary industry or vertical where your ideal customers operate.</InfoTooltip>
+              </div>
               <p className="text-sm font-medium text-foreground">{industry}</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/10">
             <DollarSign className="h-4 w-4 text-accent shrink-0" />
-            <div>
-              <p className="text-xs text-muted-foreground">Budget</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-1">
+                <p className="text-xs text-muted-foreground">Budget</p>
+                <InfoTooltip size="sm">How much your target customer typically spends on solutions like yours per month or year.</InfoTooltip>
+              </div>
               <p className="text-sm font-medium text-foreground">{budgetRange}</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/10">
             <Clock className="h-4 w-4 text-accent shrink-0" />
-            <div>
-              <p className="text-xs text-muted-foreground">Decision Time</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-1">
+                <p className="text-xs text-muted-foreground">Decision Time</p>
+                <InfoTooltip size="sm">How long it typically takes from first contact to purchase decision. Shorter = faster revenue.</InfoTooltip>
+              </div>
               <p className="text-sm font-medium text-foreground">{decisionTimeframe}</p>
             </div>
           </div>
         </div>
 
-        {/* Top Pain Points */}
         {painPoints.length > 0 && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
               <AlertTriangle className="h-4 w-4 text-accent" />
               Top Pain Points
+              <InfoTooltip term="Pain Points" size="sm">
+                The biggest problems your target customer faces that your product solves. Higher urgency = stronger buying motivation.
+              </InfoTooltip>
             </h4>
             <div className="space-y-2">
               {painPoints.slice(0, 3).map((pain, index) => (
@@ -146,18 +161,24 @@ const TargetCustomerCard: React.FC<TargetCustomerCardProps> = ({
           </div>
         )}
 
-        {/* Buying Triggers */}
         {buyingTriggers.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {buyingTriggers.slice(0, 4).map((trigger, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {trigger}
-              </Badge>
-            ))}
+          <div>
+            <div className="flex items-center gap-1 mb-2">
+              <span className="text-xs font-medium text-muted-foreground">Buying Triggers</span>
+              <InfoTooltip term="Buying Triggers" size="sm">
+                Events or situations that push a potential customer to actively look for a solution like yours.
+              </InfoTooltip>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {buyingTriggers.slice(0, 4).map((trigger, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {trigger}
+                </Badge>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* AI Insight */}
         {insight && (
           <div className="p-4 rounded-lg bg-accent/10 border-l-4 border-accent">
             <p className="text-sm text-foreground italic">"{insight}"</p>
