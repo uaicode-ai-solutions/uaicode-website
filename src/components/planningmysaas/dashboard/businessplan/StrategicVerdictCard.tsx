@@ -8,6 +8,7 @@ import {
   Lightbulb,
   Rocket,
 } from "lucide-react";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 interface StrategicVerdictCardProps {
   verdict: string | null | undefined;
@@ -58,29 +59,38 @@ const StrategicVerdictCard: React.FC<StrategicVerdictCardProps> = ({
           <CardTitle className="text-lg flex items-center gap-2">
             <Target className={`h-5 w-5 ${verdictStyle.icon}`} />
             Strategic Verdict
+            <InfoTooltip term="Strategic Verdict">
+              The AI's final assessment of your business idea, combining market analysis, financial viability, and competitive positioning into a clear go/no-go recommendation.
+            </InfoTooltip>
           </CardTitle>
           {viabilityLabel && (
-            <Badge className={`${verdictStyle.bg} ${verdictStyle.border}`}>
-              <Rocket className={`h-3.5 w-3.5 mr-1 ${verdictStyle.icon}`} />
-              <span className={verdictStyle.icon}>{viabilityLabel}</span>
-            </Badge>
+            <div className="flex items-center gap-1">
+              <Badge className={`${verdictStyle.bg} ${verdictStyle.border}`}>
+                <Rocket className={`h-3.5 w-3.5 mr-1 ${verdictStyle.icon}`} />
+                <span className={verdictStyle.icon}>{viabilityLabel}</span>
+              </Badge>
+              <InfoTooltip term="Viability Label" size="sm">
+                A qualitative rating based on the viability score: Strong (80+), Promising (60-79), or Needs Work (below 60).
+              </InfoTooltip>
+            </div>
           )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Main Verdict */}
         {verdict && (
           <div className={`p-5 rounded-lg ${verdictStyle.bg} border ${verdictStyle.border}`}>
             <p className="text-foreground leading-relaxed">{verdict}</p>
           </div>
         )}
 
-        {/* Key Recommendations */}
         {hasRecommendations && (
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
               <ArrowRight className="h-4 w-4 text-accent" />
               Next Steps
+              <InfoTooltip term="Next Steps" size="sm">
+                Prioritized actions recommended by the AI to move your project forward, based on the analysis findings.
+              </InfoTooltip>
             </h4>
             <div className="space-y-2">
               {recommendations.map((rec, index) => (
@@ -98,7 +108,6 @@ const StrategicVerdictCard: React.FC<StrategicVerdictCardProps> = ({
           </div>
         )}
 
-        {/* CTA */}
         <div className="p-4 rounded-lg bg-accent/10 border border-accent/20 text-center">
           <p className="text-sm text-muted-foreground mb-2">
             Ready to move forward?
