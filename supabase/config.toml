@@ -110,3 +110,6 @@ verify_jwt = false
 
 [functions.kyle-qa-quick-test]
 verify_jwt = false
+
+[functions.pms-webhook-new-leads]
+verify_jwt = false
