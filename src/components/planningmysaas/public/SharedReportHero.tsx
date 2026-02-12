@@ -31,7 +31,7 @@ const SharedReportHero = () => {
         className="absolute top-4 right-4 border-accent/30 text-accent gap-1.5 px-3 py-1"
       >
         <Sparkles className="h-3 w-3" />
-        Shared Report
+        Shared Business Plan
       </Badge>
 
       {/* Content - horizontal layout */}
