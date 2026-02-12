@@ -99,26 +99,35 @@ const generateLogoDesignTool = {
   }
 };
 
-function buildAnalysisPrompt(description: string, saasType?: string, industry?: string, isImprove: boolean = false): string {
+function buildAnalysisPrompt(description: string, name?: string, saasType?: string, industry?: string, isImprove: boolean = false): string {
   const saasTypeDisplay = saasType === "other" ? "custom SaaS" : saasType || "SaaS product";
   const industryDisplay = industry === "other" ? "various industries" : industry || "technology";
+  const nameDisplay = name || "unnamed SaaS";
   
   let prompt = `Analyze this SaaS product and create a logo design:
 
-PRODUCT DESCRIPTION:
-${description}
-
+SAAS NAME: ${nameDisplay}
+PRODUCT DESCRIPTION: ${description}
 PRODUCT TYPE: ${saasTypeDisplay}
 TARGET INDUSTRY: ${industryDisplay}
 
-Based on this information, research the ideal colors, shapes, and visual elements for this type of product. Consider current market trends in the ${industryDisplay} industry and ${saasTypeDisplay} space.
+DESIGN PRIORITY (follow this order):
+1. The logo icon MUST visually represent the SAAS NAME semantics.
+   - Break the name into its component words (e.g., "DoctorHub" = Doctor + Hub, "SalesRadar" = Sales + Radar)
+   - The icon should symbolize the core concept from the name
+   - Examples: "SalesRadar" -> radar/target icon, "DoctorHub" -> medical cross/connection icon, "TaskFlow" -> flowing/connected task elements
+2. Reinforce the concept using current market trends and visual conventions from the ${industryDisplay} industry and ${saasTypeDisplay} space
+3. Use the product description for additional context on colors and mood
+
+The name "${nameDisplay}" is the PRIMARY driver of the visual concept. The description and industry inform style, colors, and trends.
 
 Generate a detailed image prompt that will create a professional, memorable 2D flat logo icon.
 
 CRITICAL REMINDERS:
 - The image prompt MUST explicitly state: "NO text, NO letters, NO typography, NO words"
 - The image prompt MUST explicitly state: "2D flat design, solid colors only, no gradients, no shadows, no 3D effects"
-- The image prompt MUST describe a pure iconographic symbol only`;
+- The image prompt MUST describe a pure iconographic symbol only
+- The icon MUST visually represent the meaning of the name "${nameDisplay}"`;
 
   if (isImprove) {
     prompt += `\n\n${IMPROVE_LOGO_ADDITION}`;
@@ -133,7 +142,7 @@ serve(async (req) => {
   }
 
   try {
-    const { description, saasType, industry, existingLogo, mode } = await req.json();
+    const { description, name, saasType, industry, existingLogo, mode } = await req.json();
 
     // Validation
     if (!description || description.trim().length < 20) {
@@ -169,7 +178,7 @@ serve(async (req) => {
     console.log(`Processing ${mode} request for: ${description.substring(0, 50)}...`);
 
     // STEP 1: Brand Analysis with Gemini Flash
-    const analysisPrompt = buildAnalysisPrompt(description, saasType, industry, mode === "improve");
+    const analysisPrompt = buildAnalysisPrompt(description, name, saasType, industry, mode === "improve");
     
     const userContent = mode === "improve" && existingLogo
       ? [

@@ -149,6 +149,7 @@ const StepYourIdea = ({ data, onChange }: StepYourIdeaProps) => {
           },
           body: JSON.stringify({
             description: data.description,
+            name: data.saasName,
             saasType: data.saasType,
             industry: data.industry,
             existingLogo: data.saasLogo || undefined,
