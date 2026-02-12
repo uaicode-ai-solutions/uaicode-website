@@ -13,6 +13,7 @@ import FAQ from "@/components/FAQ";
 import MeetEve from "@/components/MeetEve";
 import ContactUs from "@/components/ContactUs";
 import MeetTheFounder from "@/components/MeetTheFounder";
+import Schedule from "@/components/Schedule";
 import Footer from "@/components/Footer";
 import { BackToTopButton } from "@/components/blog/BackToTopButton";
 
@@ -57,6 +58,7 @@ const Index = () => {
         <MeetEve />
         <ContactUs />
         <MeetTheFounder />
+        <Schedule />
       </main>
       <Footer />
       <BackToTopButton />
