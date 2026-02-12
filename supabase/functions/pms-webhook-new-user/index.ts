@@ -71,11 +71,6 @@ const handler = async (req: Request): Promise<Response> => {
         auth_user_id: pmsUser.auth_user_id,
         email: pmsUser.email,
         full_name: pmsUser.full_name,
-        username: pmsUser.username,
-        phone: pmsUser.phone,
-        linkedin_profile: pmsUser.linkedin_profile,
-        user_role: pmsUser.user_role,
-        user_role_other: pmsUser.user_role_other,
         created_at: pmsUser.created_at,
         updated_at: pmsUser.updated_at
       }

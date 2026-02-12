@@ -172,10 +172,6 @@ const handler = async (req: Request): Promise<Response> => {
           id: userData.id,
           email: userData.email,
           full_name: userData.full_name,
-          phone: userData.phone,
-          linkedin_profile: userData.linkedin_profile,
-          user_role: userData.user_role,
-          user_role_other: userData.user_role_other,
         } : null,
       },
     };

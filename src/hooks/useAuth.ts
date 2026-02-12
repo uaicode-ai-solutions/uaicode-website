@@ -11,10 +11,6 @@ interface PmsUser {
   email: string;
   username?: string;
   full_name: string;
-  phone?: string;
-  linkedin_profile?: string;
-  user_role?: string;
-  user_role_other?: string;
 }
 
 interface AuthState {
@@ -215,7 +211,7 @@ export const useAuth = () => {
     if (error) throw error;
   };
 
-  const updateProfile = async (updates: Partial<Pick<PmsUser, "full_name" | "phone" | "linkedin_profile">>) => {
+  const updateProfile = async (updates: Partial<Pick<PmsUser, "full_name">>) => {
     if (!authState.user) throw new Error("Not authenticated");
 
     const { error } = await supabase
