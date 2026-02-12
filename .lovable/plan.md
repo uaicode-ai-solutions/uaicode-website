@@ -1,37 +1,78 @@
 
 
-# Auditoria Completa: SharedReportContext vs Dashboard
+# Adicionar InfoTooltips em Todos os Elementos do Business Plan
 
-## Resultado da Auditoria
+## Situacao Atual
 
-Analisei todos os componentes renderizados na tela compartilhavel (`PmsSharedReport` -> `BusinessPlanTab` + `SharedReportHero` + `SharedReportHeader`).
+Apenas 2 dos 9 componentes do Business Plan usam `InfoTooltip`:
+- **InvestmentAskCard**: 1 tooltip no titulo
+- **JCurveChart**: 1 tooltip no titulo
 
-### Campos `report?.X` usados na tela compartilhavel
+O **ExecutiveSnapshotCard** usa `title=` (tooltip nativo do browser, estilo diferente e inconsistente).
 
-| Campo | Mapeado no SharedReportContext? | Usado por |
-|-------|-------------------------------|-----------|
-| `saas_name` | Sim | SharedReportHero, ReportHero |
-| `market_type` | Sim | BusinessPlanTab (useFinancialMetrics) |
-| `industry` | Sim | - |
-| `description` | Sim | - |
-| `budget` | **NAO** | FinancialProjectionsCard (J-Curve) |
+Os outros 6 componentes nao tem nenhum tooltip.
 
-### Conclusao
+## Plano de Implementacao
 
-Existe **apenas 1 campo faltante**: `budget`. Os demais dados do Business Plan vem do `reportData` (JSONB sections como `opportunity_section`, `growth_intelligence_section`, etc.), que ja estao todos corretamente mapeados no `SharedReportContext`.
+### 1. ExecutiveSnapshotCard
+- Substituir `title={metric.tooltip}` por `InfoTooltip` em cada metrica (TAM, SAM, SOM, CAGR, Y1 ARR, LTV/CAC, Payback, Break-even, Investment, Savings, ROI Y1, ROI Y2)
+- Adicionar InfoTooltip no titulo "Executive Snapshot"
+- Adicionar InfoTooltip no badge de Viability Score
+- Textos explicativos em linguagem acessivel para cada metrica
 
-Os outros campos do wizard (`selected_features`, `next_steps`, `execution_timeline`, `geographic_region`, etc.) sao usados apenas nas abas Report, Marketing e Next Steps -- que **nao** sao renderizadas na tela compartilhavel (que exibe somente o `BusinessPlanTab`).
+### 2. ExecutiveNarrativeCard
+- Adicionar InfoTooltip no titulo "Executive Summary" explicando que e um resumo gerado por IA
+- Adicionar InfoTooltip no bloco de "market insight"
 
-## Correcao
+### 3. MarketAnalysisCard
+- InfoTooltip no titulo "Market Analysis"
+- InfoTooltip nos cards TAM, SAM, SOM com explicacoes claras
+- InfoTooltip no CAGR
+- InfoTooltip em "Key Market Trends"
 
-### Arquivo: `src/contexts/SharedReportContext.tsx` (linha 59)
+### 4. CompetitiveLandscapeCard
+- InfoTooltip no titulo "Competitive Landscape"
+- InfoTooltip no badge "market share"
+- InfoTooltip no badge "threat level"
+- InfoTooltip no "Score" de cada competidor
 
-Adicionar o campo `budget` ao mapeamento do `wizard_snapshot`:
+### 5. TargetCustomerCard
+- InfoTooltip no titulo "Target Customer"
+- InfoTooltip em "Company Size", "Industry", "Budget", "Decision Time"
+- InfoTooltip em "Top Pain Points"
+- InfoTooltip nos badges de urgencia (High/Medium/Low)
 
-```
-budget: wizardSnapshot.budget ? String(wizardSnapshot.budget) : null,
-```
+### 6. BusinessModelCard
+- InfoTooltip no titulo "Business Model"
+- InfoTooltip em "Recommended ARPU"
+- InfoTooltip em "Pricing Model"
+- InfoTooltip em "Market Position"
+- InfoTooltip em "Market Average"
 
-Isso garante que o calculo de `suggestedPaidMedia` no `FinancialProjectionsCard` use o orcamento real do usuario em vez do fallback generico, produzindo um J-Curve identico ao do dashboard autenticado.
+### 7. FinancialProjectionsCard
+- InfoTooltip no titulo "Financial Projections"
+- InfoTooltip em "Year 1 ARR", "Year 2 ARR", "Break-even", "LTV/CAC"
+- InfoTooltip em "ROI Year 1" e "ROI Year 2"
 
-Uma unica linha adicionada, sem mudanca estrutural.
+### 8. StrategicVerdictCard
+- InfoTooltip no titulo "Strategic Verdict"
+- InfoTooltip no badge de viability label
+- InfoTooltip em "Next Steps"
+
+## Detalhes Tecnicos
+
+Todos os tooltips usarao o componente `InfoTooltip` existente (`src/components/ui/info-tooltip.tsx`) que ja segue o padrao visual UaiCode (amber/gold). Cada tooltip tera texto explicativo curto e acessivel, sem jargao tecnico.
+
+### Arquivos Editados
+- `src/components/planningmysaas/dashboard/businessplan/ExecutiveSnapshotCard.tsx`
+- `src/components/planningmysaas/dashboard/businessplan/ExecutiveNarrativeCard.tsx`
+- `src/components/planningmysaas/dashboard/businessplan/MarketAnalysisCard.tsx`
+- `src/components/planningmysaas/dashboard/businessplan/CompetitiveLandscapeCard.tsx`
+- `src/components/planningmysaas/dashboard/businessplan/TargetCustomerCard.tsx`
+- `src/components/planningmysaas/dashboard/businessplan/BusinessModelCard.tsx`
+- `src/components/planningmysaas/dashboard/businessplan/FinancialProjectionsCard.tsx`
+- `src/components/planningmysaas/dashboard/businessplan/StrategicVerdictCard.tsx`
+
+### Impacto na Tela Compartilhavel
+Como a tela compartilhavel reutiliza o `BusinessPlanTab` (que renderiza todos esses componentes), os tooltips aparecerao automaticamente na versao publica tambem.
+
