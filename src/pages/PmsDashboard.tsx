@@ -13,6 +13,8 @@ import {
   Share2,
   Link,
   Mail,
+  MessageSquare,
+  Phone,
   RefreshCw,
   Shield,
   Briefcase,
@@ -21,6 +23,10 @@ import {
   Rocket,
   ArrowRight
 } from "lucide-react";
+import kyleAvatar from "@/assets/kyle-avatar.webp";
+import KyleConsultantDialog from "@/components/planningmysaas/dashboard/KyleConsultantDialog";
+import KyleChatDialog from "@/components/planningmysaas/dashboard/KyleChatDialog";
+import EmailKyleDialog from "@/components/planningmysaas/dashboard/EmailKyleDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -116,6 +122,9 @@ const PmsDashboardContent = () => {
   const { id: wizardId } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState("report");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [kyleDialogOpen, setKyleDialogOpen] = useState(false);
+  const [kyleChatDialogOpen, setKyleChatDialogOpen] = useState(false);
+  const [emailKyleDialogOpen, setEmailKyleDialogOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   
@@ -434,6 +443,30 @@ const PmsDashboardContent = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
+              {/* Kyle Avatar Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="relative hover:bg-amber-500/10 border border-amber-500/30 rounded-full h-10 w-10 transition-all duration-300"
+                  >
+                    <img src={kyleAvatar} alt="Kyle" className="h-9 w-9 rounded-full object-cover" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 bg-popover border-amber-500/20">
+                  <DropdownMenuItem onClick={() => setEmailKyleDialogOpen(true)} className="cursor-pointer">
+                    <Mail className="h-4 w-4 mr-2" /> Email Kyle
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setKyleChatDialogOpen(true)} className="cursor-pointer">
+                    <MessageSquare className="h-4 w-4 mr-2" /> Chat with Kyle
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setKyleDialogOpen(true)} className="cursor-pointer">
+                    <Phone className="h-4 w-4 mr-2" /> Call Kyle
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               {/* User Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -647,6 +680,22 @@ const PmsDashboardContent = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Kyle Dialogs */}
+      <KyleConsultantDialog 
+        open={kyleDialogOpen} 
+        onOpenChange={setKyleDialogOpen}
+        wizardId={wizardId}
+      />
+      <KyleChatDialog 
+        open={kyleChatDialogOpen} 
+        onOpenChange={setKyleChatDialogOpen}
+        wizardId={wizardId}
+      />
+      <EmailKyleDialog 
+        open={emailKyleDialogOpen} 
+        onOpenChange={setEmailKyleDialogOpen}
+      />
     </div>
   );
 };
