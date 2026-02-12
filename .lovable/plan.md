@@ -1,78 +1,52 @@
 
+# Exibir Avatar do ICP no Target Customer Card
 
-# Adicionar InfoTooltips em Todos os Elementos do Business Plan
+## Problema
+O `TargetCustomerCard` sempre mostra um icone generico (`<User>`) em vez da foto do avatar gerada por IA. O campo `icp_avatar_url` existe no `reportData` mas nunca e passado ao componente.
 
-## Situacao Atual
+## Correcao
 
-Apenas 2 dos 9 componentes do Business Plan usam `InfoTooltip`:
-- **InvestmentAskCard**: 1 tooltip no titulo
-- **JCurveChart**: 1 tooltip no titulo
+### Arquivo 1: `src/components/planningmysaas/dashboard/sections/BusinessPlanTab.tsx`
+- Passar `reportData?.icp_avatar_url` como nova prop `avatarUrl` ao `TargetCustomerCard`
 
-O **ExecutiveSnapshotCard** usa `title=` (tooltip nativo do browser, estilo diferente e inconsistente).
+```tsx
+<TargetCustomerCard
+  icp={icp}
+  insight={aiInsights?.customer_insight}
+  avatarUrl={reportData?.icp_avatar_url}
+/>
+```
 
-Os outros 6 componentes nao tem nenhum tooltip.
+### Arquivo 2: `src/components/planningmysaas/dashboard/businessplan/TargetCustomerCard.tsx`
+- Adicionar prop `avatarUrl?: string | null` na interface
+- Substituir o bloco do icone estatico (linhas 79-82) por um Avatar com fallback:
+  - Se `avatarUrl` existir: exibir `<img>` com a foto do avatar
+  - Se nao: manter o icone `<User>` como fallback
 
-## Plano de Implementacao
+```tsx
+// Antes (linhas 79-82):
+<div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center">
+  <User className="h-6 w-6 text-accent" />
+</div>
 
-### 1. ExecutiveSnapshotCard
-- Substituir `title={metric.tooltip}` por `InfoTooltip` em cada metrica (TAM, SAM, SOM, CAGR, Y1 ARR, LTV/CAC, Payback, Break-even, Investment, Savings, ROI Y1, ROI Y2)
-- Adicionar InfoTooltip no titulo "Executive Snapshot"
-- Adicionar InfoTooltip no badge de Viability Score
-- Textos explicativos em linguagem acessivel para cada metrica
-
-### 2. ExecutiveNarrativeCard
-- Adicionar InfoTooltip no titulo "Executive Summary" explicando que e um resumo gerado por IA
-- Adicionar InfoTooltip no bloco de "market insight"
-
-### 3. MarketAnalysisCard
-- InfoTooltip no titulo "Market Analysis"
-- InfoTooltip nos cards TAM, SAM, SOM com explicacoes claras
-- InfoTooltip no CAGR
-- InfoTooltip em "Key Market Trends"
-
-### 4. CompetitiveLandscapeCard
-- InfoTooltip no titulo "Competitive Landscape"
-- InfoTooltip no badge "market share"
-- InfoTooltip no badge "threat level"
-- InfoTooltip no "Score" de cada competidor
-
-### 5. TargetCustomerCard
-- InfoTooltip no titulo "Target Customer"
-- InfoTooltip em "Company Size", "Industry", "Budget", "Decision Time"
-- InfoTooltip em "Top Pain Points"
-- InfoTooltip nos badges de urgencia (High/Medium/Low)
-
-### 6. BusinessModelCard
-- InfoTooltip no titulo "Business Model"
-- InfoTooltip em "Recommended ARPU"
-- InfoTooltip em "Pricing Model"
-- InfoTooltip em "Market Position"
-- InfoTooltip em "Market Average"
-
-### 7. FinancialProjectionsCard
-- InfoTooltip no titulo "Financial Projections"
-- InfoTooltip em "Year 1 ARR", "Year 2 ARR", "Break-even", "LTV/CAC"
-- InfoTooltip em "ROI Year 1" e "ROI Year 2"
-
-### 8. StrategicVerdictCard
-- InfoTooltip no titulo "Strategic Verdict"
-- InfoTooltip no badge de viability label
-- InfoTooltip em "Next Steps"
-
-## Detalhes Tecnicos
-
-Todos os tooltips usarao o componente `InfoTooltip` existente (`src/components/ui/info-tooltip.tsx`) que ja segue o padrao visual UaiCode (amber/gold). Cada tooltip tera texto explicativo curto e acessivel, sem jargao tecnico.
-
-### Arquivos Editados
-- `src/components/planningmysaas/dashboard/businessplan/ExecutiveSnapshotCard.tsx`
-- `src/components/planningmysaas/dashboard/businessplan/ExecutiveNarrativeCard.tsx`
-- `src/components/planningmysaas/dashboard/businessplan/MarketAnalysisCard.tsx`
-- `src/components/planningmysaas/dashboard/businessplan/CompetitiveLandscapeCard.tsx`
-- `src/components/planningmysaas/dashboard/businessplan/TargetCustomerCard.tsx`
-- `src/components/planningmysaas/dashboard/businessplan/BusinessModelCard.tsx`
-- `src/components/planningmysaas/dashboard/businessplan/FinancialProjectionsCard.tsx`
-- `src/components/planningmysaas/dashboard/businessplan/StrategicVerdictCard.tsx`
+// Depois:
+{avatarUrl ? (
+  <img
+    src={avatarUrl}
+    alt={personaName}
+    className="h-12 w-12 rounded-full object-cover border border-border/20"
+  />
+) : (
+  <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center">
+    <User className="h-6 w-6 text-accent" />
+  </div>
+)}
+```
 
 ### Impacto na Tela Compartilhavel
-Como a tela compartilhavel reutiliza o `BusinessPlanTab` (que renderiza todos esses componentes), os tooltips aparecerao automaticamente na versao publica tambem.
+O `SharedReportContext` ja mapeia `icp_avatar_url` corretamente no `reportData` (linha 80 do SharedReportContext.tsx). Como o `BusinessPlanTab` e reutilizado na tela publica, o avatar aparecera automaticamente em ambas as views.
 
+### Resumo
+- 2 arquivos editados
+- 0 dependencias novas
+- Avatar aparece no dashboard e na tela compartilhavel
