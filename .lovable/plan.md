@@ -1,100 +1,77 @@
 
 
-## Limpeza da tb_pms_users e organizacao das roles
+## Chamar webhook de leads ao criar novo registro em tb_pms_wizard
 
 ### Resumo
-Remover 3 colunas desnecessarias da `tb_pms_users` (`phone`, `linkedin_profile`, `user_role_other`) e mover os dados de "role do wizard" (founder, cto, etc.) para `tb_pms_wizard`. O campo `user_role` sera removido tambem, pois o sistema de roles ja funciona corretamente pela tabela `user_roles`.
+Adicionar um trigger AFTER INSERT na tabela `tb_pms_wizard` que chama uma nova Edge Function `pms-webhook-new-leads`, que envia `wizard_id`, `client_email` e `client_full_name` para o webhook `N8N_PMS_GENERATE_LEADS_WEBHOOK_ID`. Nenhum arquivo existente sera modificado.
 
-### Ponto importante sobre seguranca
+### Arquivos criados (nenhum existente sera alterado)
 
-O sistema atual ja possui um mecanismo robusto de RBAC:
-- Tabela `user_roles` armazena as roles (user, admin, contributor)
-- Funcao `has_role()` e usada nas RLS policies para controle de acesso no banco
-- Hook `useUserRoles` no frontend fornece `isAdmin` e `isContributor`
-- O trigger `handle_new_user()` ja atribui a role "user" automaticamente ao criar um novo usuario
-- O Admin Panel ja gerencia roles via `user_roles` com toggles
+#### 1. `supabase/functions/pms-webhook-new-leads/index.ts` (NOVO)
 
-Armazenar roles na tabela `tb_pms_users` seria uma duplicacao que pode causar inconsistencias e riscos de seguranca (um usuario poderia manipular o campo do perfil para escalar privilegios). Por isso, o campo `user_role` da `tb_pms_users` tambem sera removido - as roles do sistema continuam gerenciadas exclusivamente pela tabela `user_roles`.
+- Recebe `{ wizard_id }` do trigger via `net.http_post`
+- Busca `client_email` e `client_full_name` na `tb_pms_wizard` usando service role
+- Le a secret `N8N_PMS_GENERATE_LEADS_WEBHOOK_ID`
+- Envia POST ao webhook com payload:
 
-### Plano
-
-#### 1. Migration: Adicionar client_role e client_role_other na tb_pms_wizard
-
-Os campos "What's your role?" do Step 1 do wizard (founder, cto, solo, etc.) precisam ser salvos na `tb_pms_wizard`, pois pertencem ao contexto do report.
-
-```sql
-ALTER TABLE public.tb_pms_wizard
-  ADD COLUMN client_role text,
-  ADD COLUMN client_role_other text;
+```text
+{
+  "event": "wizard.created",
+  "wizard_id": "uuid",
+  "client_email": "email@example.com",
+  "client_full_name": "Nome Completo",
+  "timestamp": "2026-02-12T..."
+}
 ```
 
-#### 2. Migration: Remover colunas de tb_pms_users
+- Tratamento de erro sem impactar nenhum fluxo existente
 
-```sql
-ALTER TABLE public.tb_pms_users
-  DROP COLUMN IF EXISTS phone,
-  DROP COLUMN IF EXISTS linkedin_profile,
-  DROP COLUMN IF EXISTS user_role,
-  DROP COLUMN IF EXISTS user_role_other;
+#### 2. Migration SQL (NOVA)
+
+Cria function + trigger no banco, seguindo o padrao identico de `notify_pms_user_created_webhook`:
+
+```text
+CREATE FUNCTION notify_pms_wizard_created_webhook()
+  RETURNS trigger
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO 'public', 'extensions'
+AS $$
+BEGIN
+  PERFORM net.http_post(
+    url := 'https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-webhook-new-leads',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer <ANON_KEY>'
+    ),
+    body := jsonb_build_object('wizard_id', NEW.id)
+  );
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  RAISE WARNING 'Failed to call edge function: %', SQLERRM;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_pms_wizard_created
+  AFTER INSERT ON tb_pms_wizard
+  FOR EACH ROW
+  EXECUTE FUNCTION notify_pms_wizard_created_webhook();
 ```
 
-#### 3. Atualizar trigger handle_new_user()
+#### 3. `supabase/config.toml` (adicionar entrada)
 
-Remover `username` do INSERT (era gerado via `split_part`) - manter apenas `auth_user_id`, `email`, `full_name`.
+Adicionar somente a nova entrada, sem alterar nenhuma existente:
 
-Atualizado: a funcao nao precisa mais referenciar colunas removidas.
-
-#### 4. Salvar client_role no insert do wizard (PmsWizard.tsx)
-
-Adicionar ao insert de `tb_pms_wizard`:
-```
-client_role: data.userRole,
-client_role_other: data.userRole === 'other' ? data.userRoleOther : null,
+```text
+[functions.pms-webhook-new-leads]
+verify_jwt = false
 ```
 
-Remover pre-fill de `phone`, `linkedinProfile`, `userRole`, `userRoleOther` a partir de `pmsUser`.
+### O que NAO sera alterado
+- `pms-webhook-new-user/index.ts` -- intacto
+- `pms-webhook-new-report/index.ts` -- intacto
+- `pms-orchestrate-report/index.ts` -- intacto
+- `PmsWizard.tsx` -- intacto
+- Nenhum hook, pagina, componente ou edge function existente
 
-#### 5. Atualizar useAuth.ts
-
-Remover `phone`, `linkedin_profile`, `user_role`, `user_role_other` da interface `PmsUser`.
-Remover `updateProfile` dos campos `phone` e `linkedin_profile`.
-
-#### 6. Atualizar useAdminUsers.ts
-
-Remover `phone`, `linkedin_profile`, `username` da interface `PmsUser`.
-
-#### 7. Atualizar edge functions
-
-**pms-webhook-new-user**: Remover `phone`, `linkedin_profile`, `user_role`, `user_role_other` do payload.
-
-**pms-webhook-new-report**: Remover `phone`, `linkedin_profile`, `user_role`, `user_role_other` do payload do usuario.
-
-#### 8. types.ts
-
-Sera atualizado automaticamente pelo sync com o banco apos as migrations.
-
-### Como o sistema de roles funciona (sem mudancas)
-
-- Novo usuario: trigger `handle_new_user()` cria registro em `tb_pms_users` e insere role "user" na tabela `user_roles`
-- Admin Panel: toggle de roles insere/remove registros na `user_roles`
-- Verificacao de acesso: `useUserRoles` hook retorna `isAdmin`/`isContributor` consultando `user_roles`
-- RLS: policies usam `has_role(get_pms_user_id(), 'admin')` - consulta `user_roles` diretamente
-
-### Arquivos alterados
-- `supabase/migrations/` - 2 migrations
-- `src/hooks/useAuth.ts` - simplificar interface
-- `src/hooks/useAdminUsers.ts` - simplificar interface
-- `src/pages/PmsWizard.tsx` - salvar client_role + remover pre-fill
-- `supabase/functions/pms-webhook-new-user/index.ts` - remover campos
-- `supabase/functions/pms-webhook-new-report/index.ts` - remover campos
-- Trigger `handle_new_user()` - simplificar
-
-### Aviso para producao
-Antes de publicar, rodar no Live via Cloud View > Run SQL:
-```sql
-ALTER TABLE public.tb_pms_users
-  DROP COLUMN IF EXISTS phone,
-  DROP COLUMN IF EXISTS linkedin_profile,
-  DROP COLUMN IF EXISTS user_role,
-  DROP COLUMN IF EXISTS user_role_other;
-```
