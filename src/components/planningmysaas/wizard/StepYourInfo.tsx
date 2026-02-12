@@ -134,16 +134,20 @@ const StepYourInfo = ({ data, onChange }: StepYourInfoProps) => {
 
       {/* Form Card */}
       <div className="bg-muted/30 border border-border/30 rounded-xl p-6 space-y-5">
-        {/* Email - Read-only from login */}
+        {/* Email */}
         <div className="space-y-1.5">
-          <Label className="text-sm text-muted-foreground flex items-center gap-2">
+          <Label htmlFor="email" className="text-sm text-muted-foreground flex items-center gap-2">
             <Mail className="w-3.5 h-3.5" />
-            Email Address
+            Email Address <span className="text-accent">*</span>
           </Label>
-          <div className="bg-muted/50 border border-border/30 rounded-md px-3 py-2.5 text-foreground flex items-center gap-2">
-            <span className="text-sm">{data.email || "From login"}</span>
-            <span className="text-xs text-muted-foreground ml-auto">✓ Verified</span>
-          </div>
+          <Input
+            id="email"
+            type="email"
+            placeholder="john@example.com"
+            value={data.email}
+            onChange={(e) => onChange("email", e.target.value)}
+            className="bg-background border-border/50 focus:border-accent"
+          />
         </div>
 
         {/* Full Name */}

@@ -160,8 +160,10 @@ const PmsWizard = () => {
       case 1: // Your Info
         const userRoleValid = (data.userRole || "") !== "" && 
           (data.userRole !== "other" || (data.userRoleOther || "").trim().length >= 2);
+        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((data.email || "").trim());
         return (
           userRoleValid &&
+          emailValid &&
           (data.fullName || "").trim().length >= 2 &&
           (data.phone || "").length >= 8
         );
@@ -229,26 +231,7 @@ const PmsWizard = () => {
     const complexityScore = Math.floor(Math.random() * 30) + 50; // 50-80 mock score
 
     try {
-      // 1. Update user data with Step 1 information (so webhook gets fresh data)
-      const { error: userUpdateError } = await supabase
-        .from('tb_pms_users')
-        .update({
-          full_name: data.fullName,
-          phone: data.phone || null,
-          linkedin_profile: data.linkedinProfile || null,
-          user_role: data.userRole || null,
-          user_role_other: data.userRole === 'other' ? data.userRoleOther : null,
-        })
-        .eq('id', pmsUser.id);
-
-      if (userUpdateError) {
-        console.error("Error updating user data:", userUpdateError);
-        // Continue anyway - user data update is not critical for report creation
-      } else {
-        console.log("User data updated successfully for user:", pmsUser.id);
-      }
-
-      // 2. Save wizard data to Supabase database
+      // 1. Save wizard data to Supabase database
       // Calculate the correct tier based on selected features
       const correctTier = determineMvpTier(data.selectedFeatures);
       
@@ -278,7 +261,11 @@ const PmsWizard = () => {
           challenge: data.challenge,
           budget: data.budget,
           timeline: data.timeline,
-        });
+          client_email: data.email,
+          client_full_name: data.fullName,
+          client_phone: data.phone || null,
+          client_linkedin: data.linkedinProfile || null,
+        } as any);
 
       if (insertError) {
         console.error("Error saving report to database:", insertError);
