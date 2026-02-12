@@ -1,68 +1,59 @@
 
-
-# Ajuste nas Regras de Geração de Nome do SaaS
+# Logo Generation: Priorizar Nome do SaaS + Market Trends
 
 ## Problema
-A IA está gerando acrônimos feios que não remetem ao foco do SaaS. Os nomes gerados não comunicam claramente o propósito da ferramenta.
+A geração de logo atualmente recebe apenas `description`, `saasType` e `industry`. O **nome do SaaS** (que agora segue regras descritivas como "DoctorHub", "SalesRadar") não é enviado, então a IA não consegue criar um ícone que reflita visualmente o nome.
 
-## Novas Regras de Palavras
-- **Ideal**: 2 palavras (ex: DoctorHub, TaskFlow, CodeShip)
-- **Aceitável**: 3 palavras (ex: PlanningMySaaS, MyDoctorHub)
-- **Máximo permitido**: 1 palavra, somente se for altamente descritiva e memorável
+## Mudanças
 
-## Estratégia de Naming
-O nome deve ser construído a partir da descrição do SaaS (`description`), extraindo:
-1. O **domínio/nicho** (saúde, finanças, educação, etc.)
-2. A **ação principal** que a ferramenta executa (planejar, automatizar, conectar, gerenciar)
-3. O **público-alvo** quando relevante
+### 1. Frontend - Enviar o nome do SaaS
+**Arquivo**: `src/components/planningmysaas/wizard/StepYourIdea.tsx`
 
-A IA será instruída a combinar esses elementos em nomes compostos descritivos, evitando acrônimos e siglas abstratas.
+Adicionar `name: data.name` no body da requisição para `pms-generate-logo`, junto com os campos já existentes.
 
----
+### 2. Backend - Reestruturar o prompt para priorizar o nome
+**Arquivo**: `supabase/functions/pms-generate-logo/index.ts`
 
-## Detalhes Técnicos
+Alteracoes na funcao `buildAnalysisPrompt`:
+- Adicionar parametro `name` na funcao
+- Reestruturar o prompt para incluir uma secao `SAAS NAME` em destaque
+- Adicionar instrucoes claras de que o icone deve representar visualmente o significado semantico do nome
 
-### Arquivo alterado
-`supabase/functions/pms-suggest-name/index.ts`
+Alteracoes no handler principal:
+- Extrair `name` do request body
+- Passar `name` para `buildAnalysisPrompt`
 
-### Mudanças no SYSTEM_PROMPT
+### Detalhes Tecnicos
 
-**Seção NAMING RULES** - inverter a prioridade:
-```
-1. IDEAL: 2 words combining domain + action/benefit (e.g., DoctorHub, TaskFlow, CodeShip, SalesRadar)
-2. ACCEPTABLE: 3 words for clarity (e.g., PlanningMySaaS, MyDoctorHub, SmartLeadGen)
-3. LAST RESORT: 1 word ONLY if it clearly evokes the product's purpose (e.g., Calendly, Grammarly)
-4. NEVER use abstract acronyms or abbreviations that don't communicate the product's focus
-```
-
-**Nova seção NAME CONSTRUCTION STRATEGY** a ser adicionada:
-```
-NAME CONSTRUCTION STRATEGY:
-- Extract the CORE DOMAIN from the description (healthcare, finance, education, sales, etc.)
-- Identify the PRIMARY ACTION the tool performs (plan, track, manage, automate, connect, etc.)
-- Combine domain + action/benefit into a compound name that instantly communicates purpose
-- Patterns that work well:
-  * [Domain][Action]: SalesRadar, CodeFlow, LeadPilot
-  * [Action][Domain]: TrackHealth, PlanMyTrip
-  * [My/Smart/Easy][Domain][Tool]: MyDoctorHub, SmartBudget
-- The name MUST make someone guess what the product does within 3 seconds
-- NEVER generate acronyms or initialisms (no "SFM", "APT", "GHR")
-- NEVER use random invented words that don't relate to the description
-```
-
-**Seção AVOID** - adicionar:
-```
-- Acronyms or initialisms of any kind
-- Abstract invented words with no semantic connection to the product
-- Single generic tech words (Hub, Pro, App) used alone
-```
-
-### Mudança no userPrompt
-Reforçar a instrução para que o nome reflita a descrição:
+**`buildAnalysisPrompt`** - novo formato do prompt:
 
 ```
-Generate ONE perfect name that clearly reflects what the product does based on the description above.
-The name MUST communicate the product's purpose at first glance. Prefer 2 words.
-DO NOT use acronyms. Combine meaningful words from the product's domain and core function.
+SAAS NAME: {name}
+PRODUCT DESCRIPTION: {description}
+PRODUCT TYPE: {saasType}
+TARGET INDUSTRY: {industry}
+
+DESIGN PRIORITY (follow this order):
+1. The logo icon MUST visually represent the SAAS NAME semantics.
+   - Break the name into its component words (e.g., "DoctorHub" = Doctor + Hub)
+   - The icon should symbolize the core concept from the name
+   - Examples: "SalesRadar" -> radar/target icon, "DoctorHub" -> medical cross/connection icon
+2. Reinforce the concept using market trends and visual conventions from the {industry} industry
+3. Use the product description for additional context on colors and mood
+
+The name is the PRIMARY driver of the visual concept. The description and industry inform style, colors, and trends.
 ```
 
+**Frontend payload** - adicionar campo:
+```typescript
+body: JSON.stringify({
+  description: data.description,
+  name: data.name,        // <-- novo
+  saasType: data.saasType,
+  industry: data.industry,
+  existingLogo: data.saasLogo || undefined,
+  mode: data.saasLogo ? "improve" : "create"
+})
+```
+
+A edge function sera redeployada apos as alteracoes.
