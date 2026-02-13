@@ -993,7 +993,7 @@ const Newsletter = () => {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [postsPerPage, setPostsPerPage] = useState(6);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const { data: dbPosts = [], isLoading: isLoadingPosts } = useNewsletterPosts();
 
