@@ -1,70 +1,54 @@
 
 
-# Edge Function: `pms-send-newsletter-broadcast`
+# Default Author Avatar - Foto do Founder
 
-## Objetivo
+O upload foi confirmado no bucket `blog-images`. Agora vamos configurar tudo para que essa imagem seja o avatar padrao do autor em todos os posts.
 
-Criar uma edge function que o n8n chamara apos gravar um artigo no banco. A funcao busca o post recem-publicado e envia um email de newsletter para todos os assinantes da tabela `tb_web_newsletter`.
+URL publica: `https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/founder-rafael-luz-00.png`
 
-## Como funciona
+---
 
-```text
-n8n grava post no tb_web_newsletter_posts
-          |
-          v
-n8n chama POST /pms-send-newsletter-broadcast
-  Body: { "post_id": "uuid-do-post" }
-          |
-          v
-Edge Function:
-  1. Busca o post pelo ID (service role, bypassa RLS)
-  2. Busca todos os emails de tb_web_newsletter (service role)
-  3. Envia email via Resend em batches de 50
-  4. Retorna quantidade de emails enviados
-```
+## Passo 1: Migration - Default na coluna
 
-## O que sera criado
+Alterar a coluna `author_avatar_url` da tabela `tb_web_newsletter_posts` para ter o valor default apontando para a imagem do founder.
 
-### 1. `supabase/functions/pms-send-newsletter-broadcast/index.ts`
+## Passo 2: Atualizar registros existentes
 
-- Recebe `{ post_id }` no body (POST)
-- Usa `SUPABASE_SERVICE_ROLE_KEY` + `SUPABASE_URL` para criar client admin e buscar dados
-- Busca o post completo de `tb_web_newsletter_posts` pelo ID
-- Busca todos os emails de `tb_web_newsletter`
-- Gera um email HTML no estilo visual UaiCode (dark + gold) contendo:
-  - Titulo do artigo
-  - Imagem de capa
-  - Excerpt/resumo
-  - Botao "Read Full Article" linkando para `https://uaicodewebsite.lovable.app/blog/{slug}`
-  - Footer com links UaiCode
-- Envia via Resend API em batches (Resend aceita array de ate 50 destinatarios por chamada)
-- Retorna `{ success: true, total_subscribers, emails_sent }`
+Todos os posts que atualmente tem `author_avatar_url = NULL` serao atualizados com a URL da foto do founder.
 
-### 2. `supabase/config.toml`
+## Passo 3: Fallback na edge function
 
-- Adicionar entrada `[functions.pms-send-newsletter-broadcast]` com `verify_jwt = false`
+Atualizar `pms-send-newsletter-broadcast/index.ts` para usar essa URL como fallback caso `author_avatar_url` venha null do banco (mesma logica que ja existe para `author_name`).
 
-## Configuracao no n8n
+## Passo 4: Fallback no frontend (BlogPost e BlogCard)
 
-Apos o node que insere no Supabase, adicionar um node **HTTP Request**:
+Garantir que os componentes que exibem o avatar do autor usem essa URL como fallback quando nenhuma imagem for fornecida.
 
-| Campo | Valor |
-|-------|-------|
-| Method | POST |
-| URL | `https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-send-newsletter-broadcast` |
-| Headers | `Authorization: Bearer {anon_key}`, `Content-Type: application/json` |
-| Body | `{ "post_id": "{{ $json.id }}" }` |
-
-## Secrets necessarias
-
-Todas ja existem no projeto:
-- `RESEND_API_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` (ou `SUPABASE_URL`)
+---
 
 ## Detalhes tecnicos
 
-- Segue o mesmo padrao das edge functions existentes (imports, cors headers, error handling)
-- Template HTML segue a identidade visual UaiCode (background #0A0A0A, gold #FACC15) igual ao `pms-send-report-ready`
-- Batch de 50 emails por chamada Resend para evitar rate limits
-- Logs detalhados para debug no Supabase dashboard
+### Migration SQL
+```sql
+ALTER TABLE tb_web_newsletter_posts
+ALTER COLUMN author_avatar_url
+SET DEFAULT 'https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/founder-rafael-luz-00.png';
+```
+
+### Update dos registros existentes
+```sql
+UPDATE tb_web_newsletter_posts
+SET author_avatar_url = 'https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/founder-rafael-luz-00.png'
+WHERE author_avatar_url IS NULL;
+```
+
+### Edge function (pms-send-newsletter-broadcast)
+Adicionar fallback na funcao `generateNewsletterEmail`:
+```typescript
+const authorAvatar = post.author_avatar_url || 'https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/founder-rafael-luz-00.png';
+```
+E incluir a imagem do autor no template HTML do email, ao lado do nome.
+
+### Frontend
+Nos componentes `BlogPost.tsx` e `BlogCard.tsx`, usar a mesma URL como fallback para o avatar do autor quando os dados vierem do banco.
 
