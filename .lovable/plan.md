@@ -1,34 +1,43 @@
 
 
-## Corrigir preview do LinkedIn mostrando imagem/titulo generico
+## Remover og-blog-meta e recursos relacionados
 
-### Problema
-O LinkedIn lê o `og:url` da edge function, que aponta para o SPA (`uaicodewebsite.lovable.app/blog/...`). O LinkedIn então re-faz scrape nessa URL e encontra o `index.html` generico com titulo e imagem do site principal, ignorando as meta tags do artigo.
+### O que sera removido
 
-### Solucao
+1. **Edge Function `og-blog-meta`** -- deletar o arquivo `supabase/functions/og-blog-meta/index.ts` e remover a funcao deployada do Supabase
 
-**Arquivo:** `supabase/functions/og-blog-meta/index.ts`
+2. **Config.toml** -- remover a entrada `[functions.og-blog-meta]` do arquivo `supabase/config.toml`
 
-1. Mudar o `og:url` para apontar para a propria edge function no custom domain em vez do SPA:
-   - De: `https://uaicodewebsite.lovable.app/blog/${slug}`
-   - Para: `https://api.uaicode.ai/functions/v1/og-blog-meta?slug=${slug}`
+3. **Bucket `og-meta` no Storage** -- precisa ser deletado manualmente no dashboard do Supabase (Lovable nao consegue deletar buckets via codigo)
 
-2. Manter o redirect (`meta refresh` e `window.location`) apontando para o SPA normalmente — isso so afeta usuarios reais (browsers), nao crawlers.
+4. **Custom Domain / DNS** -- precisa ser removido manualmente:
+   - No **dashboard do Supabase**: Settings > Edge Functions > remover custom domain (se configurado la)
+   - No **provedor de DNS** (Cloudflare, etc): remover o registro CNAME/A que aponta `api.uaicode.ai` para o Supabase (se esse dominio era usado apenas para o og-blog-meta)
 
-### Por que funciona
+### O que NAO sera removido (por seguranca)
 
-- Crawlers (LinkedIn, Twitter) leem o HTML raw e nao executam JavaScript nem seguem `meta refresh`
-- Mas o LinkedIn re-faz scrape na URL definida em `og:url` — se essa URL aponta para o SPA, ele pega os meta tags genericos
-- Apontando `og:url` para a propria edge function, o LinkedIn sempre encontra as meta tags corretas do artigo
+- Se `api.uaicode.ai` e usado por outras edge functions alem do og-blog-meta, o DNS e custom domain devem permanecer
 
-### Detalhes tecnicos
+### Acoes automaticas (Lovable faz)
 
-Mudanca na funcao `buildHtml`:
-- O parametro `canonicalUrl` passa a ser a URL da edge function (para `og:url`)
-- Um novo parametro `redirectUrl` e adicionado para o redirect de usuarios reais
+- Deletar `supabase/functions/og-blog-meta/index.ts`
+- Remover entrada do `supabase/config.toml`
+- Remover a funcao deployada do Supabase
+
+### Acoes manuais (voce faz)
+
+- Deletar bucket `og-meta` no Supabase Storage: https://supabase.com/dashboard/project/ccjnxselfgdoeyyuziwt/storage/buckets
+- Atualizar/remover DNS e custom domain conforme necessario
+- Remover o no do n8n que chamava o POST do og-blog-meta
+
+### Detalhe tecnico
+
+No `supabase/config.toml`, sera removido:
 
 ```text
-og:url     -> https://api.uaicode.ai/functions/v1/og-blog-meta?slug=SLUG  (crawlers ficam aqui)
-meta refresh -> https://uaicodewebsite.lovable.app/blog/SLUG               (usuarios sao redirecionados)
+[functions.og-blog-meta]
+verify_jwt = false
 ```
+
+O plano tambem inclui remover o arquivo `.lovable/plan.md` que continha o plano anterior relacionado ao og-blog-meta (ou limpar seu conteudo).
 
