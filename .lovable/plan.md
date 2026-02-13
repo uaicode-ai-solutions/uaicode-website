@@ -1,125 +1,83 @@
 
 
-## Node 9: Upload Image to Supabase Storage
+# Criar tabela `tb_web_newsletter_posts`
 
-### Pre-requisito: Criar bucket `blog-images`
+## O que sera feito
 
-Antes de configurar o no no n8n, precisamos criar um bucket publico no Supabase para armazenar as imagens do blog. Isso sera feito via migration SQL:
+Criar a tabela no Supabase para armazenar os blog posts, com RLS policies e trigger de updated_at.
+
+## Detalhes tecnicos
+
+### Migration SQL
 
 ```sql
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('blog-images', 'blog-images', true);
+CREATE TABLE public.tb_web_newsletter_posts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  meta_title text,
+  meta_description text,
+  excerpt text NOT NULL,
+  content text NOT NULL,
+  cover_image_url text NOT NULL,
+  category text NOT NULL DEFAULT 'Technical Guide',
+  read_time text DEFAULT '5 min read',
+  author_name text DEFAULT 'Rafael Luz',
+  author_avatar_url text,
+  youtube_video_id text,
+  highlights jsonb DEFAULT '[]',
+  subtitles jsonb DEFAULT '[]',
+  is_published boolean DEFAULT true,
+  published_at timestamptz DEFAULT now(),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
 
--- Permitir upload anonimo (pelo service_role do n8n)
-CREATE POLICY "Allow public read blog-images"
-ON storage.objects FOR SELECT
-USING (bucket_id = 'blog-images');
+ALTER TABLE public.tb_web_newsletter_posts ENABLE ROW LEVEL SECURITY;
+
+-- Leitura publica de posts publicados
+CREATE POLICY "Anyone can read published posts"
+ON public.tb_web_newsletter_posts FOR SELECT
+USING (is_published = true);
+
+-- Apenas admins podem inserir, atualizar e deletar
+CREATE POLICY "Admins can insert posts"
+ON public.tb_web_newsletter_posts FOR INSERT
+WITH CHECK (has_role(get_pms_user_id(), 'admin'::app_role));
+
+CREATE POLICY "Admins can update posts"
+ON public.tb_web_newsletter_posts FOR UPDATE
+USING (has_role(get_pms_user_id(), 'admin'::app_role));
+
+CREATE POLICY "Admins can delete posts"
+ON public.tb_web_newsletter_posts FOR DELETE
+USING (has_role(get_pms_user_id(), 'admin'::app_role));
+
+-- Trigger para atualizar updated_at automaticamente
+CREATE OR REPLACE FUNCTION public.update_tb_web_newsletter_posts_updated_at()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'public' AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER set_updated_at
+BEFORE UPDATE ON public.tb_web_newsletter_posts
+FOR EACH ROW EXECUTE FUNCTION update_tb_web_newsletter_posts_updated_at();
 ```
 
----
+### Resumo das policies
 
-### Node 9a: Code Node — "Prepare Image Upload"
+| Operacao | Quem pode | Observacao |
+|----------|-----------|------------|
+| SELECT | Qualquer pessoa | Apenas posts com `is_published = true` |
+| INSERT | Admins | n8n usa Service Role Key (bypassa RLS) |
+| UPDATE | Admins | Via dashboard ou API com role admin |
+| DELETE | Admins | Via dashboard ou API com role admin |
 
-Esse no converte o base64 em binario e prepara os dados para o upload.
+### Proximo passo
 
-**Tipo:** Code (JavaScript)
-
-```javascript
-const imageBase64 = $input.first().json.image_url;
-
-// Remove o prefixo data:image/...;base64, se existir
-const base64Clean = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-
-// Gera filename unico usando o slug do artigo
-const articleData = $('Article Parser').first().json;
-const slug = articleData.slug || 'blog-' + Date.now();
-const filename = `${slug}-${Date.now()}.png`;
-
-// Converte base64 para Buffer binario
-const binaryData = Buffer.from(base64Clean, 'base64');
-
-return {
-  json: {
-    filename: filename,
-    slug: slug,
-    contentType: 'image/png'
-  },
-  binary: {
-    image: {
-      data: base64Clean,
-      mimeType: 'image/png',
-      fileName: filename
-    }
-  }
-};
-```
-
----
-
-### Node 9b: HTTP Request — "Upload to Supabase Storage"
-
-**Configuracao do no:**
-
-| Campo | Valor |
-|-------|-------|
-| Method | `POST` |
-| URL | `https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/blog-images/{{ $json.filename }}` |
-| Authentication | None (usaremos headers manuais) |
-| Send Headers | Sim |
-| Content-Type | `image/png` |
-| Authorization | `Bearer SERVICE_ROLE_KEY` |
-| Send Body | Binary Data |
-| Input Data Field Name | `image` |
-
-**Headers especificos:**
-
-- `Authorization`: `Bearer` + sua **Service Role Key** do Supabase (usar credencial do n8n ou expressao referenciando variavel de ambiente)
-- `Content-Type`: `image/png`
-- `x-upsert`: `true`
-
----
-
-### Node 9c: Code Node — "Build Public URL"
-
-Monta a URL publica da imagem apos o upload.
-
-```javascript
-const filename = $('Prepare Image Upload').first().json.filename;
-const publicUrl = `https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/${filename}`;
-
-// Traz todos os dados do artigo junto
-const articleData = $('Article Parser').first().json;
-
-return {
-  json: {
-    ...articleData,
-    cover_image_url: publicUrl
-  }
-};
-```
-
----
-
-### Resumo do fluxo
-
-```text
-Image Parser (base64)
-       |
-       v
-Prepare Image Upload (Code) --> converte base64 em binario
-       |
-       v
-Upload to Supabase Storage (HTTP Request) --> POST no bucket
-       |
-       v
-Build Public URL (Code) --> monta URL publica + merge com dados do artigo
-```
-
-### Resultado esperado
-
-O output do ultimo no tera todos os campos do artigo (`title`, `slug`, `content`, `category`, etc.) mais o campo `cover_image_url` com a URL publica da imagem, pronto para o proximo no de insercao no banco.
-
-### Detalhe tecnico
-
-A **Service Role Key** do Supabase deve ser configurada como credencial no n8n (Environment Variable ou Credential), nunca hardcoded no workflow. Isso garante permissao de upload sem precisar de autenticacao de usuario.
+Apos a tabela criada, resolveremos a questao da imagem do founder e depois criaremos o hook `useBlogPosts` + adaptacao do frontend.
 
