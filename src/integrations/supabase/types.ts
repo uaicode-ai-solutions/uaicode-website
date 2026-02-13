@@ -654,6 +654,72 @@ export type Database = {
         }
         Relationships: []
       }
+      tb_web_newsletter_posts: {
+        Row: {
+          author_avatar_url: string | null
+          author_name: string | null
+          category: string
+          content: string
+          cover_image_url: string
+          created_at: string | null
+          excerpt: string
+          highlights: Json | null
+          id: string
+          is_published: boolean | null
+          meta_description: string | null
+          meta_title: string | null
+          published_at: string | null
+          read_time: string | null
+          slug: string
+          subtitles: Json | null
+          title: string
+          updated_at: string | null
+          youtube_video_id: string | null
+        }
+        Insert: {
+          author_avatar_url?: string | null
+          author_name?: string | null
+          category?: string
+          content: string
+          cover_image_url: string
+          created_at?: string | null
+          excerpt: string
+          highlights?: Json | null
+          id?: string
+          is_published?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          read_time?: string | null
+          slug: string
+          subtitles?: Json | null
+          title: string
+          updated_at?: string | null
+          youtube_video_id?: string | null
+        }
+        Update: {
+          author_avatar_url?: string | null
+          author_name?: string | null
+          category?: string
+          content?: string
+          cover_image_url?: string
+          created_at?: string | null
+          excerpt?: string
+          highlights?: Json | null
+          id?: string
+          is_published?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          read_time?: string | null
+          slug?: string
+          subtitles?: Json | null
+          title?: string
+          updated_at?: string | null
+          youtube_video_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
