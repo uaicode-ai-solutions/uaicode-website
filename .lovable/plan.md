@@ -1,46 +1,28 @@
 
 
-## Corrigir og-blog-meta para funcionar com LinkedIn Post Inspector
+## Corrigir 500 intermitente no og-blog-meta para LinkedIn
 
-### Problema
-O LinkedIn Post Inspector retorna 500 ao tentar acessar arquivos HTML no Supabase Storage. O crawler nao consegue ler do Storage.
+### Diagnostico
+A funcao funciona quando testada diretamente (retorna HTML com meta tags OG corretamente), mas o LinkedIn Post Inspector recebe 500 intermitentemente. A causa provavel e a instabilidade do import via `esm.sh` durante cold starts da Edge Function.
 
 ### Solucao
-Adicionar um handler GET na Edge Function `og-blog-meta` que serve o HTML diretamente, sem depender do Storage.
+Trocar o import de `esm.sh` para `npm:` specifier (mais estavel no Deno) e adicionar logging para capturar erros silenciosos.
 
-### Como vai funcionar
-
-```text
-LinkedIn Crawler (GET ?slug=xxx) --> Edge Function --> Query banco --> Retorna HTML direto
-n8n (POST com JSON)              --> Edge Function --> Upload Storage --> Retorna URL
-```
-
-### URL para o LinkedIn
-```text
-https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/og-blog-meta?slug=SEU-SLUG
-```
-
-### Mudanca tecnica
+### Mudancas
 
 **Arquivo:** `supabase/functions/og-blog-meta/index.ts`
 
-- Manter o handler POST existente (para n8n fazer upload no Storage)
-- Adicionar handler GET que:
-  1. Le o `slug` da query string
-  2. Busca o post na tabela `tb_web_newsletter_posts` (campos: title, excerpt, cover_image_url, meta_title, meta_description)
-  3. Filtra por `slug` e `is_published = true`
-  4. Gera o HTML com meta tags OG
-  5. Retorna com `Content-Type: text/html; charset=utf-8` e cache de 1 hora
-  6. Usa `SUPABASE_URL` + `SUPABASE_ANON_KEY` para leitura publica
+1. Trocar `import { createClient } from "https://esm.sh/@supabase/supabase-js@2"` por `import { createClient } from "npm:@supabase/supabase-js@2"`
+2. Adicionar `console.log` no inicio do GET handler para rastrear requests do LinkedIn
+3. Adicionar log do erro real no catch do GET handler (incluir stack trace)
+4. Redesenhar o edge function para evitar re-deploy desnecessario do client a cada request
 
-### Nenhuma outra mudanca necessaria
-- `config.toml` ja tem `verify_jwt = false`
-- Secrets `SUPABASE_URL` e `SUPABASE_ANON_KEY` ja existem
-- Funcao `escapeAttr` ja existe e sera reutilizada
+### Detalhes tecnicos
 
-### Depois de implementar
-No n8n, a URL do post no LinkedIn deve ser:
 ```text
-https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/og-blog-meta?slug={{ $json.slug }}
+ANTES:  import from "https://esm.sh/@supabase/supabase-js@2"  (CDN externo, pode falhar)
+DEPOIS: import from "npm:@supabase/supabase-js@2"             (resolvido pelo Deno nativamente)
 ```
+
+Apos implementar, redesenhar e testar novamente no LinkedIn Post Inspector.
 
