@@ -1,130 +1,74 @@
 
 
-# Gerar OG HTML no n8n e Publicar no Supabase Storage
+# Converter Edge Function `og-blog-meta` para Upload no Storage
 
 ## Resumo
 
-Em vez de usar a Edge Function, o proprio n8n gera o arquivo HTML com as meta tags OG e faz upload para um bucket publico do Supabase Storage. O LinkedIn acessa o arquivo estatico diretamente, sem passar pelo Cloudflare Bot Management.
+Vamos reaproveitar a Edge Function `og-blog-meta` que ja existe mas nao esta sendo usada. Em vez de retornar HTML diretamente (que era bloqueado pelo Cloudflare), ela vai receber os dados do post via JSON (POST do n8n), gerar o HTML internamente e fazer upload para o bucket `og-meta` no Supabase Storage.
 
-## O que precisa ser feito no Lovable
+## Como vai funcionar
 
-Apenas uma coisa: **criar o bucket publico `og-meta` no Supabase Storage**.
-
-Isso sera feito via migracao SQL:
+O n8n envia um POST simples com JSON para a Edge Function. A funcao gera o HTML com as meta tags OG e faz upload direto para o Storage usando a `service_role_key`. Sem escaping, sem problemas de encoding.
 
 ```text
-INSERT INTO storage.buckets (id, name, public) VALUES ('og-meta', 'og-meta', true);
-
-CREATE POLICY "Allow public read og-meta"
-ON storage.objects FOR SELECT
-USING (bucket_id = 'og-meta');
+n8n (POST JSON) --> og-blog-meta (gera HTML + upload Storage) --> retorna URL publica
 ```
 
-## O que voce faz no n8n (manual)
+## O que muda no n8n
 
-### Novo no: Code Node para gerar o HTML
+No lugar dos 3 nos atuais (Code Node + Convert to File + Upload HTTP Request), voce usa apenas **1 no HTTP Request**:
 
-Antes do no que posta no LinkedIn, adicionar um Code Node que:
-
-1. Monta o HTML com as meta tags OG (titulo, descricao, imagem, URL canonica)
-2. Faz upload via API REST do Supabase Storage
-3. Retorna a URL publica do arquivo
-
-Exemplo do codigo para o Code Node:
+- **Method:** POST
+- **URL:** `https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/og-blog-meta`
+- **Body (JSON):**
 
 ```text
-const article = $('Insert Post on Supabase').first().json;
-
-const ogTitle = article.meta_title || article.title;
-const ogDesc = article.meta_description || article.excerpt;
-const ogImage = article.cover_image_url;
-const canonicalUrl = `https://uaicodewebsite.lovable.app/blog/${article.slug}`;
-
-const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>${ogTitle}</title>
-  <meta property="og:type" content="article" />
-  <meta property="og:title" content="${ogTitle}" />
-  <meta property="og:description" content="${ogDesc}" />
-  <meta property="og:image" content="${ogImage}" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:url" content="${canonicalUrl}" />
-  <meta property="og:site_name" content="UaiCode" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${ogTitle}" />
-  <meta name="twitter:description" content="${ogDesc}" />
-  <meta name="twitter:image" content="${ogImage}" />
-  <meta http-equiv="refresh" content="0;url=${canonicalUrl}" />
-</head>
-<body>
-  <p>Redirecting...</p>
-  <script>window.location.href="${canonicalUrl}";</script>
-</body>
-</html>`;
-
-// Upload para Supabase Storage
-const supabaseUrl = 'https://ccjnxselfgdoeyyuziwt.supabase.co';
-const serviceKey = 'SUA_SERVICE_ROLE_KEY'; // usar credencial do n8n
-
-const response = await fetch(
-  `${supabaseUrl}/storage/v1/object/og-meta/${article.slug}.html`,
-  {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${serviceKey}`,
-      'Content-Type': 'text/html',
-      'x-upsert': 'true',
-    },
-    body: html,
-  }
-);
-
-return [{
-  json: {
-    ogUrl: `${supabaseUrl}/storage/v1/object/public/og-meta/${article.slug}.html`,
-    uploadStatus: response.status,
-  }
-}];
+{
+  "slug": "{{ slug }}",
+  "title": "{{ title }}",
+  "description": "{{ description }}",
+  "image_url": "{{ cover_image_url }}",
+  "meta_title": "{{ meta_title }}",
+  "meta_description": "{{ meta_description }}"
+}
 ```
 
-### Atualizar o Code Node do LinkedIn Post
-
-Trocar o `originalUrl` para usar a URL do Storage:
-
-```text
-const ogUrl = $('Upload OG HTML').first().json.ogUrl;
-// usar ogUrl como originalUrl no payload do LinkedIn
-```
-
-## Fluxo Final
-
-```text
-Artigo publicado
-      |
-  n8n gera HTML com meta tags OG
-      |
-  n8n faz upload para Storage (og-meta/slug.html)
-      |
-  n8n posta no LinkedIn com originalUrl = URL do Storage
-      |
-  LinkedIn crawler le arquivo estatico (sem bot protection)
-      |
-  Card grande com imagem aparece
-```
-
-## Vantagens
-
-- Sem dependencia de Edge Function
-- Sem Cloudflare Bot Management bloqueando crawlers
-- Content-Type `text/html` automatico para arquivos `.html`
-- Tudo controlado dentro do n8n
+- **Resposta:** JSON com `{ "url": "https://...supabase.co/storage/v1/object/public/og-meta/slug.html" }`
 
 ## Detalhes Tecnicos
 
-- O bucket precisa ser publico para o crawler do LinkedIn acessar
-- O `x-upsert: true` no header permite sobrescrever se o arquivo ja existir
-- A `service_role_key` do Supabase e necessaria no n8n para fazer upload (a anon key nao tem permissao de escrita no Storage)
+### Alteracao na Edge Function `og-blog-meta`
+
+A funcao sera reescrita para:
+
+1. Aceitar **POST** com JSON contendo `slug`, `title`, `description`, `image_url` (e opcionais `meta_title`, `meta_description`)
+2. Gerar o HTML com as meta tags OG internamente (sem escaping nos atributos de tags HTML -- apenas nos valores de texto)
+3. Usar `SUPABASE_SERVICE_ROLE_KEY` para fazer upload do HTML como arquivo no bucket `og-meta`
+4. Retornar a URL publica do arquivo
+
+### Campos do JSON de entrada
+
+| Campo | Obrigatorio | Descricao |
+|-------|-------------|-----------|
+| `slug` | Sim | Slug do post (usado como nome do arquivo) |
+| `title` | Sim | Titulo do post |
+| `description` | Nao | Descricao/excerpt |
+| `image_url` | Nao | URL da imagem de capa |
+| `meta_title` | Nao | Titulo SEO (fallback para title) |
+| `meta_description` | Nao | Descricao SEO (fallback para description) |
+
+### Logica interna
+
+- Monta o HTML com as meta tags OG usando string template (sem escaping de `<` e `>`)
+- Usa `escapeAttr()` apenas nos **valores** dentro dos atributos `content="..."` para seguranca
+- Faz upload via Supabase client (`supabase.storage.from('og-meta').upload(...)`) com upsert
+- Retorna JSON com a URL publica
+
+### Config
+
+O `verify_jwt = false` ja esta configurado no `config.toml` para esta funcao, entao nao precisa mudar nada.
+
+### Secret necessaria
+
+A funcao vai usar `SUPABASE_SERVICE_ROLE_KEY` que ja existe nos secrets do projeto.
 
