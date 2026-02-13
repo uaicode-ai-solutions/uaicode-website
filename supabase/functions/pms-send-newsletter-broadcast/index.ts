@@ -15,18 +15,22 @@ const corsHeaders = {
 const BATCH_SIZE = 50;
 const SITE_URL = "https://uaicodewebsite.lovable.app";
 
+const DEFAULT_AUTHOR_AVATAR = "https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/founder-rafael-luz-00.png";
+
 const generateNewsletterEmail = (post: {
   title: string;
   excerpt: string;
   cover_image_url: string;
   slug: string;
   author_name: string | null;
+  author_avatar_url: string | null;
   category: string;
   read_time: string | null;
 }) => {
   const articleUrl = `${SITE_URL}/blog/${post.slug}`;
   const readTime = post.read_time || "5 min read";
   const authorName = post.author_name || "UaiCode Team";
+  const authorAvatar = post.author_avatar_url || DEFAULT_AUTHOR_AVATAR;
 
   return `
 <!DOCTYPE html>
@@ -63,7 +67,10 @@ const generateNewsletterEmail = (post: {
     <p style="color: #A1A1AA; font-size: 16px; line-height: 1.7; margin: 0 0 24px 0;">${post.excerpt}</p>
 
     <!-- Author -->
-    <p style="color: #71717A; font-size: 13px; margin: 0 0 28px 0;">By <span style="color: #E4E4E7;">${authorName}</span></p>
+    <div style="margin: 0 0 28px 0; display: flex; align-items: center;">
+      <img src="${authorAvatar}" alt="${authorName}" style="width: 36px; height: 36px; border-radius: 50%; margin-right: 10px; object-fit: cover;" />
+      <p style="color: #71717A; font-size: 13px; margin: 0;">By <span style="color: #E4E4E7;">${authorName}</span></p>
+    </div>
 
     <!-- CTA Button -->
     <div style="text-align: center; margin-bottom: 40px;">
@@ -140,7 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
     // 1. Fetch the post
     const { data: post, error: postError } = await supabaseAdmin
       .from("tb_web_newsletter_posts")
-      .select("title, excerpt, cover_image_url, slug, author_name, category, read_time")
+      .select("title, excerpt, cover_image_url, slug, author_name, author_avatar_url, category, read_time")
       .eq("id", post_id)
       .single();
 
