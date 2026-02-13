@@ -157,10 +157,13 @@ const BlogPost = () => {
                       return <h2 {...props}>{children}</h2>;
                     },
                     a: ({ children, href, ...props }) => {
+                      const isBooking = href?.includes('/booking');
                       return (
                         <a 
                           href={href}
                           {...props}
+                          target={isBooking ? "_blank" : undefined}
+                          rel={isBooking ? "noopener noreferrer" : undefined}
                           className="text-accent underline decoration-accent/50 underline-offset-4 hover:decoration-accent hover:text-accent/90 transition-colors duration-200"
                         >
                           {children}
