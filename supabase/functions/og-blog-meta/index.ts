@@ -42,30 +42,30 @@ Deno.serve(async (req) => {
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>${escapeHtml(ogTitle)}</title>
+  <title>${escapeAttr(ogTitle)}</title>
 
   <!-- Open Graph -->
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="${escapeHtml(ogTitle)}" />
-  <meta property="og:description" content="${escapeHtml(ogDescription)}" />
-  <meta property="og:image" content="${escapeHtml(ogImage)}" />
+  <meta property="og:title" content="${escapeAttr(ogTitle)}" />
+  <meta property="og:description" content="${escapeAttr(ogDescription)}" />
+  <meta property="og:image" content="${ogImage}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
+  <meta property="og:url" content="${canonicalUrl}" />
   <meta property="og:site_name" content="UaiCode" />
 
   <!-- Twitter / LinkedIn -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${escapeHtml(ogTitle)}" />
-  <meta name="twitter:description" content="${escapeHtml(ogDescription)}" />
-  <meta name="twitter:image" content="${escapeHtml(ogImage)}" />
+  <meta name="twitter:title" content="${escapeAttr(ogTitle)}" />
+  <meta name="twitter:description" content="${escapeAttr(ogDescription)}" />
+  <meta name="twitter:image" content="${ogImage}" />
 
   <!-- Redirect real users -->
-  <meta http-equiv="refresh" content="0;url=${escapeHtml(canonicalUrl)}" />
+  <meta http-equiv="refresh" content="0;url=${canonicalUrl}" />
 </head>
 <body>
-  <p>Redirecting to <a href="${escapeHtml(canonicalUrl)}">${escapeHtml(ogTitle)}</a>...</p>
-  <script>window.location.href="${canonicalUrl.replace(/"/g, '\\"')}";</script>
+  <p>Redirecting to <a href="${canonicalUrl}">${escapeAttr(ogTitle)}</a>...</p>
+  <script>window.location.href="${canonicalUrl}";</script>
 </body>
 </html>`;
 
@@ -78,11 +78,10 @@ Deno.serve(async (req) => {
   });
 });
 
-function escapeHtml(str: string): string {
+function escapeAttr(str: string): string {
   return str
     .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
