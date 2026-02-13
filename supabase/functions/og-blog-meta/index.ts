@@ -1,53 +1,31 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+// Initialize Supabase clients once at module level
+const supabaseAnon = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_ANON_KEY")!
+);
 
-  // GET handler: serve HTML directly for crawlers
-  if (req.method === "GET") {
-    try {
-      const url = new URL(req.url);
-      const slug = url.searchParams.get("slug");
+const supabaseService = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+);
 
-      if (!slug) {
-        return new Response("Missing slug parameter", {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "text/plain" },
-        });
-      }
+function escapeAttr(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
-      const supabase = createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_ANON_KEY")!
-      );
-
-      const { data: post, error } = await supabase
-        .from("tb_web_newsletter_posts")
-        .select("title, excerpt, cover_image_url, meta_title, meta_description, slug")
-        .eq("slug", slug)
-        .eq("is_published", true)
-        .maybeSingle();
-
-      if (error || !post) {
-        return new Response("Post not found", {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "text/plain" },
-        });
-      }
-
-      const ogTitle = post.meta_title || post.title;
-      const ogDescription = post.meta_description || post.excerpt || "";
-      const ogImage = post.cover_image_url || "";
-      const canonicalUrl = `https://uaicodewebsite.lovable.app/blog/${post.slug}`;
-
-      const html = `<!DOCTYPE html>
+function buildHtml(ogTitle: string, ogDescription: string, ogImage: string, canonicalUrl: string, slug: string): string {
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -77,6 +55,60 @@ Deno.serve(async (req) => {
   <script>window.location.href="${canonicalUrl}";</script>
 </body>
 </html>`;
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  // GET handler: serve HTML directly for crawlers
+  if (req.method === "GET") {
+    try {
+      const url = new URL(req.url);
+      const slug = url.searchParams.get("slug");
+      const userAgent = req.headers.get("user-agent") || "unknown";
+
+      console.log(`[og-blog-meta] GET slug="${slug}" UA="${userAgent}"`);
+
+      if (!slug) {
+        return new Response("Missing slug parameter", {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "text/plain" },
+        });
+      }
+
+      const { data: post, error } = await supabaseAnon
+        .from("tb_web_newsletter_posts")
+        .select("title, excerpt, cover_image_url, meta_title, meta_description, slug")
+        .eq("slug", slug)
+        .eq("is_published", true)
+        .maybeSingle();
+
+      if (error) {
+        console.error(`[og-blog-meta] DB error for slug="${slug}":`, error);
+        return new Response("Post not found", {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "text/plain" },
+        });
+      }
+
+      if (!post) {
+        console.log(`[og-blog-meta] No post found for slug="${slug}"`);
+        return new Response("Post not found", {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "text/plain" },
+        });
+      }
+
+      const ogTitle = post.meta_title || post.title;
+      const ogDescription = post.meta_description || post.excerpt || "";
+      const ogImage = post.cover_image_url || "";
+      const canonicalUrl = `https://uaicodewebsite.lovable.app/blog/${post.slug}`;
+
+      const html = buildHtml(ogTitle, ogDescription, ogImage, canonicalUrl, post.slug);
+
+      console.log(`[og-blog-meta] OK slug="${slug}" title="${ogTitle}"`);
 
       return new Response(html, {
         headers: {
@@ -86,7 +118,7 @@ Deno.serve(async (req) => {
         },
       });
     } catch (err) {
-      console.error("GET error:", err);
+      console.error("[og-blog-meta] GET error:", err?.message || err, err?.stack || "");
       return new Response("Internal error", {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "text/plain" },
@@ -117,46 +149,12 @@ Deno.serve(async (req) => {
     const ogImage = image_url || "";
     const canonicalUrl = `https://uaicodewebsite.lovable.app/blog/${slug}`;
 
-    const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>${escapeAttr(ogTitle)}</title>
-
-  <!-- Open Graph -->
-  <meta property="og:type" content="article" />
-  <meta property="og:title" content="${escapeAttr(ogTitle)}" />
-  <meta property="og:description" content="${escapeAttr(ogDescription)}" />
-  <meta property="og:image" content="${ogImage}" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:url" content="${canonicalUrl}" />
-  <meta property="og:site_name" content="UaiCode" />
-
-  <!-- Twitter / LinkedIn -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${escapeAttr(ogTitle)}" />
-  <meta name="twitter:description" content="${escapeAttr(ogDescription)}" />
-  <meta name="twitter:image" content="${ogImage}" />
-
-  <!-- Redirect real users -->
-  <meta http-equiv="refresh" content="0;url=${canonicalUrl}" />
-</head>
-<body>
-  <p>Redirecting to <a href="${canonicalUrl}">${escapeAttr(ogTitle)}</a>...</p>
-  <script>window.location.href="${canonicalUrl}";</script>
-</body>
-</html>`;
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const html = buildHtml(ogTitle, ogDescription, ogImage, canonicalUrl, slug);
 
     const fileName = `${slug}.html`;
     const fileBody = new Blob([html], { type: "text/html" });
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseService.storage
       .from("og-meta")
       .upload(fileName, fileBody, {
         contentType: "text/html",
@@ -171,7 +169,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: publicUrlData } = supabase.storage
+    const { data: publicUrlData } = supabaseService.storage
       .from("og-meta")
       .getPublicUrl(fileName);
 
@@ -186,11 +184,3 @@ Deno.serve(async (req) => {
     });
   }
 });
-
-function escapeAttr(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
