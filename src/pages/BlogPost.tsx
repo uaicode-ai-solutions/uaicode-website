@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useLayoutEffect, useState } from "react";
+import { useEffect, useRef, useLayoutEffect, useState, useMemo } from "react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Header from "@/components/Header";
@@ -13,8 +13,7 @@ import { BackToTopButton } from "@/components/blog/BackToTopButton";
 import { ReadingProgressBar } from "@/components/blog/ReadingProgressBar";
 import { CourseBanners } from "@/components/blog/CourseBanners";
 import { Calendar, Clock, User } from "lucide-react";
-
-// Import blog post data (will be shared with Newsletter page)
+import { useNewsletterPosts } from "@/hooks/useNewsletterPosts";
 import { mockPosts } from "./Newsletter";
 
 const BlogPost = () => {
@@ -22,8 +21,15 @@ const BlogPost = () => {
   const navigate = useNavigate();
   const metaRef = useRef<HTMLDivElement>(null);
   const [metaHeight, setMetaHeight] = useState(0);
+  const { data: dbPosts = [], isLoading } = useNewsletterPosts();
 
-  const post = mockPosts.find(p => p.slug === slug);
+  const allPosts = useMemo(() => {
+    const slugSet = new Set(dbPosts.map(p => p.slug));
+    const uniqueMock = mockPosts.filter(p => !slugSet.has(p.slug));
+    return [...dbPosts, ...uniqueMock];
+  }, [dbPosts]);
+
+  const post = allPosts.find(p => p.slug === slug);
 
   useLayoutEffect(() => {
     const measure = () => setMetaHeight(metaRef.current?.offsetHeight ?? 0);
@@ -33,17 +39,21 @@ const BlogPost = () => {
   }, []);
 
   useEffect(() => {
-    if (!post) {
+    if (!post && !isLoading) {
       navigate('/newsletter');
     }
-  }, [post, navigate]);
+  }, [post, isLoading, navigate]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [slug]);
 
   if (!post) {
-    return null;
+    return isLoading ? (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    ) : null;
   }
 
   const formatDate = (dateString: string) => {
@@ -203,7 +213,7 @@ const BlogPost = () => {
               <RelatedPosts 
                 currentPostId={post.id}
                 category={post.category}
-                posts={mockPosts}
+                posts={allPosts}
               />
             </div>
           </div>
