@@ -45,7 +45,10 @@ const generateNewsletterEmail = (post: {
 
     <!-- Header -->
     <div style="text-align: center; margin-bottom: 32px;">
-      <div style="font-size: 24px; font-weight: 700; color: #FACC15; letter-spacing: -0.5px;">✨ UaiCode</div>
+      <div style="display: inline-flex; align-items: center; gap: 8px;">
+        <img src="https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/uaicode-logo.png" alt="Uaicode" style="width: 28px; height: 28px; border-radius: 6px;" />
+        <span style="font-size: 24px; font-weight: 700; color: #FACC15; letter-spacing: -0.5px;">Uaicode Insights</span>
+      </div>
       <p style="color: #71717A; font-size: 13px; margin-top: 4px;">New Article Published</p>
     </div>
 
@@ -83,7 +86,7 @@ const generateNewsletterEmail = (post: {
     <!-- Footer -->
     <div style="text-align: center;">
       <p style="color: #52525B; font-size: 12px; margin: 0 0 8px 0;">
-        You're receiving this because you subscribed to the UaiCode newsletter.
+        You're receiving this because you subscribed to the Uaicode Insights.
       </p>
       <p style="color: #52525B; font-size: 12px; margin: 0;">
         <a href="https://uaicode.ai" style="color: #71717A; text-decoration: none;">uaicode.ai</a>
@@ -187,7 +190,7 @@ const handler = async (req: Request): Promise<Response> => {
     // 3. Generate email HTML
     const html = generateNewsletterEmail(post);
     const subject = `📰 ${post.title}`;
-    const from = "UaiCode Newsletter <noreply@uaicode.ai>";
+    const from = "Uaicode Insights <noreply@uaicode.ai>";
 
     // 4. Send in batches of 50
     let emailsSent = 0;
