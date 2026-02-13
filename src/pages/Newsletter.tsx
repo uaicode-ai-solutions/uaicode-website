@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useNewsletterPosts } from "@/hooks/useNewsletterPosts";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -994,6 +995,15 @@ const Newsletter = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
+  const { data: dbPosts = [], isLoading: isLoadingPosts } = useNewsletterPosts();
+
+  // Combine DB posts (first) with mock posts as fallback, dedup by slug
+  const allPosts = useMemo(() => {
+    const slugSet = new Set(dbPosts.map(p => p.slug));
+    const uniqueMockPosts = mockPosts.filter(p => !slugSet.has(p.slug));
+    return [...dbPosts, ...uniqueMockPosts];
+  }, [dbPosts]);
+
   const {
     register,
     handleSubmit,
@@ -1015,10 +1025,10 @@ const Newsletter = () => {
   }, []);
 
   // Extract unique categories
-  const allCategories = ["All Categories", ...Array.from(new Set(mockPosts.map(post => post.category)))];
+  const allCategories = ["All Categories", ...Array.from(new Set(allPosts.map(post => post.category)))];
 
   // Filter posts based on search and category, then sort chronologically
-  const filteredPosts = mockPosts
+  const filteredPosts = allPosts
     .filter(post => {
       const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === "All Categories" || post.category === selectedCategory;

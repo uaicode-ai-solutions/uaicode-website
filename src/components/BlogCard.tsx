@@ -73,6 +73,9 @@ const BlogCard = ({ post, onClick }: BlogCardProps) => {
               alt={post.author.name}
               loading="lazy"
               className="w-10 h-10 rounded-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/founder-rafael-luz-00.png";
+              }}
             />
             <div className="flex flex-col">
               <span className="text-sm font-medium">{post.author.name}</span>
