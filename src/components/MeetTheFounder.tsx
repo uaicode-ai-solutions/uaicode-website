@@ -20,11 +20,11 @@ const MeetTheFounder = () => {
 
             <div className="space-y-6 text-base text-muted-foreground leading-relaxed">
               <p>
-                Rafael Luz is the founder and CEO of Uaicode.ai, bringing over a decade of experience in AI-powered software development and startup consulting. After witnessing countless promising ideas fail due to slow, expensive development cycles, he created Uaicode.ai to democratize access to rapid MVP development.
+                Rafael Luz is the founder and CEO of Uaicode.ai and a former Microsoft AI Solutions Architect. During his time at Microsoft, he designed and deployed enterprise-grade AI systems for some of the world's largest companies. Now, he has channeled that deep expertise into Uaicode.ai — making world-class AI architecture accessible to startups and businesses of every size.
               </p>
 
               <p>
-                Under Rafael's leadership, Uaicode.ai has launched over 1,200 MVPs across diverse industries. His hands-on approach combines cutting-edge AI capabilities with proven methodologies, enabling startups to validate their ideas in weeks instead of months—with transparent pricing and honest feedback every step of the way.
+                Under Rafael's leadership, Uaicode.ai has become the go-to partner for Problem-Market Fit Validation and AI-accelerated MVP Development. His hands-on approach combines cutting-edge AI capabilities with proven methodologies, enabling founders to validate their ideas in weeks instead of months — with transparent pricing and honest feedback every step of the way.
               </p>
             </div>
 

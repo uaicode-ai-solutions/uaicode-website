@@ -15,11 +15,9 @@ export const FounderCard = () => {
         />
         <div className="flex-1">
           <h4 className="text-2xl font-bold text-foreground mb-3">Rafael Luz</h4>
-          <p className="text-lg text-accent font-bold mb-6">Founder & CEO at Uaicode.ai</p>
+          <p className="text-lg text-accent font-bold mb-6">Founder & CEO at Uaicode.ai | Ex-Microsoft AI Solutions Architect</p>
           <p className="text-muted-foreground leading-relaxed mb-6 text-base">
-            Rafael is a visionary entrepreneur dedicated to empowering businesses through AI-powered solutions. 
-            With years of experience in automation and digital transformation, he helps companies scale efficiently 
-            and maximize their ROI through intelligent technology.
+            Rafael is a former Microsoft AI Solutions Architect who spent years helping enterprise giants design and deploy intelligent systems at scale. Now, through Uaicode.ai, he has democratized that expertise — partnering with startups and businesses of all sizes to accelerate Problem-Market Fit Validation and AI-powered MVP development. His mission: turn bold ideas into validated products in weeks, not months.
           </p>
           <Button 
             variant="outline" 
