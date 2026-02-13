@@ -46,7 +46,7 @@ const generateNewsletterEmail = (post: {
     <!-- Header -->
     <div style="text-align: center; margin-bottom: 32px;">
       <div style="display: inline-flex; align-items: center; gap: 8px;">
-        <img src="https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/uaicode-logo.png" alt="Uaicode" style="width: 28px; height: 28px; border-radius: 6px;" />
+        <img src="https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/logo-uaicode-fundo-preto.png" alt="Uaicode" style="width: 28px; height: 28px; border-radius: 6px;" />
         <span style="font-size: 24px; font-weight: 700; color: #FACC15; letter-spacing: -0.5px;">Uaicode Insights</span>
       </div>
       <p style="color: #71717A; font-size: 13px; margin-top: 4px;">New Article Published</p>
