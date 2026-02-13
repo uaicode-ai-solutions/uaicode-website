@@ -1,23 +1,27 @@
 
 
-## Separar titulo e subtitulo no FounderCard
+## Remover mock posts da Newsletter
 
-Quebrar a linha unica em dois elementos para um visual mais elegante.
+Remover todos os posts hardcoded (mockPosts) e usar apenas dados do banco de dados.
 
-### Alteracao
+### Alteracoes
 
-**Arquivo:** `src/components/blog/FounderCard.tsx` (linha 18)
+**1. `src/pages/Newsletter.tsx`**
 
-- De:
-  ```html
-  <p class="text-lg text-accent font-bold mb-6">Founder & CEO at Uaicode.ai | Ex-Microsoft AI Solutions Architect</p>
+- Deletar o array `export const mockPosts: BlogPost[]` inteiro (linhas 68 ate ~993 aproximadamente)
+- Simplificar o `allPosts` memo para usar apenas `dbPosts`:
+  ```ts
+  const allPosts = useMemo(() => dbPosts, [dbPosts]);
+  ```
+  (ou usar `dbPosts` diretamente onde `allPosts` e referenciado)
+
+**2. `src/pages/BlogPost.tsx`**
+
+- Remover o import `import { mockPosts } from "./Newsletter";`
+- Simplificar o `allPosts` memo para usar apenas `dbPosts`:
+  ```ts
+  const allPosts = useMemo(() => dbPosts, [dbPosts]);
   ```
 
-- Para:
-  ```html
-  <p class="text-lg text-accent font-bold mb-1">Founder & CEO at Uaicode.ai</p>
-  <p class="text-sm text-muted-foreground mb-6">Ex-Microsoft AI Solutions Architect</p>
-  ```
-
-O titulo principal fica em destaque com a cor accent e o subtitulo aparece menor e mais discreto logo abaixo.
+Nenhuma alteracao visual -- a pagina continuara funcionando normalmente, agora 100% orientada por dados do banco.
 
