@@ -1,74 +1,46 @@
 
 
-# Converter Edge Function `og-blog-meta` para Upload no Storage
+## Corrigir og-blog-meta para funcionar com LinkedIn Post Inspector
 
-## Resumo
+### Problema
+O LinkedIn Post Inspector retorna 500 ao tentar acessar arquivos HTML no Supabase Storage. O crawler nao consegue ler do Storage.
 
-Vamos reaproveitar a Edge Function `og-blog-meta` que ja existe mas nao esta sendo usada. Em vez de retornar HTML diretamente (que era bloqueado pelo Cloudflare), ela vai receber os dados do post via JSON (POST do n8n), gerar o HTML internamente e fazer upload para o bucket `og-meta` no Supabase Storage.
+### Solucao
+Adicionar um handler GET na Edge Function `og-blog-meta` que serve o HTML diretamente, sem depender do Storage.
 
-## Como vai funcionar
-
-O n8n envia um POST simples com JSON para a Edge Function. A funcao gera o HTML com as meta tags OG e faz upload direto para o Storage usando a `service_role_key`. Sem escaping, sem problemas de encoding.
-
-```text
-n8n (POST JSON) --> og-blog-meta (gera HTML + upload Storage) --> retorna URL publica
-```
-
-## O que muda no n8n
-
-No lugar dos 3 nos atuais (Code Node + Convert to File + Upload HTTP Request), voce usa apenas **1 no HTTP Request**:
-
-- **Method:** POST
-- **URL:** `https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/og-blog-meta`
-- **Body (JSON):**
+### Como vai funcionar
 
 ```text
-{
-  "slug": "{{ slug }}",
-  "title": "{{ title }}",
-  "description": "{{ description }}",
-  "image_url": "{{ cover_image_url }}",
-  "meta_title": "{{ meta_title }}",
-  "meta_description": "{{ meta_description }}"
-}
+LinkedIn Crawler (GET ?slug=xxx) --> Edge Function --> Query banco --> Retorna HTML direto
+n8n (POST com JSON)              --> Edge Function --> Upload Storage --> Retorna URL
 ```
 
-- **Resposta:** JSON com `{ "url": "https://...supabase.co/storage/v1/object/public/og-meta/slug.html" }`
+### URL para o LinkedIn
+```text
+https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/og-blog-meta?slug=SEU-SLUG
+```
 
-## Detalhes Tecnicos
+### Mudanca tecnica
 
-### Alteracao na Edge Function `og-blog-meta`
+**Arquivo:** `supabase/functions/og-blog-meta/index.ts`
 
-A funcao sera reescrita para:
+- Manter o handler POST existente (para n8n fazer upload no Storage)
+- Adicionar handler GET que:
+  1. Le o `slug` da query string
+  2. Busca o post na tabela `tb_web_newsletter_posts` (campos: title, excerpt, cover_image_url, meta_title, meta_description)
+  3. Filtra por `slug` e `is_published = true`
+  4. Gera o HTML com meta tags OG
+  5. Retorna com `Content-Type: text/html; charset=utf-8` e cache de 1 hora
+  6. Usa `SUPABASE_URL` + `SUPABASE_ANON_KEY` para leitura publica
 
-1. Aceitar **POST** com JSON contendo `slug`, `title`, `description`, `image_url` (e opcionais `meta_title`, `meta_description`)
-2. Gerar o HTML com as meta tags OG internamente (sem escaping nos atributos de tags HTML -- apenas nos valores de texto)
-3. Usar `SUPABASE_SERVICE_ROLE_KEY` para fazer upload do HTML como arquivo no bucket `og-meta`
-4. Retornar a URL publica do arquivo
+### Nenhuma outra mudanca necessaria
+- `config.toml` ja tem `verify_jwt = false`
+- Secrets `SUPABASE_URL` e `SUPABASE_ANON_KEY` ja existem
+- Funcao `escapeAttr` ja existe e sera reutilizada
 
-### Campos do JSON de entrada
-
-| Campo | Obrigatorio | Descricao |
-|-------|-------------|-----------|
-| `slug` | Sim | Slug do post (usado como nome do arquivo) |
-| `title` | Sim | Titulo do post |
-| `description` | Nao | Descricao/excerpt |
-| `image_url` | Nao | URL da imagem de capa |
-| `meta_title` | Nao | Titulo SEO (fallback para title) |
-| `meta_description` | Nao | Descricao SEO (fallback para description) |
-
-### Logica interna
-
-- Monta o HTML com as meta tags OG usando string template (sem escaping de `<` e `>`)
-- Usa `escapeAttr()` apenas nos **valores** dentro dos atributos `content="..."` para seguranca
-- Faz upload via Supabase client (`supabase.storage.from('og-meta').upload(...)`) com upsert
-- Retorna JSON com a URL publica
-
-### Config
-
-O `verify_jwt = false` ja esta configurado no `config.toml` para esta funcao, entao nao precisa mudar nada.
-
-### Secret necessaria
-
-A funcao vai usar `SUPABASE_SERVICE_ROLE_KEY` que ja existe nos secrets do projeto.
+### Depois de implementar
+No n8n, a URL do post no LinkedIn deve ser:
+```text
+https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/og-blog-meta?slug={{ $json.slug }}
+```
 
