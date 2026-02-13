@@ -1,91 +1,72 @@
 
+# Corrigir 3 problemas: imagem no card, post nao abre, email
 
-# Migrar Newsletter para Dados Dinamicos do Supabase
+## Problemas identificados
 
-## Problema
-A pagina `/newsletter` exibe posts hardcoded no codigo (`mockPosts`). Posts criados no banco `tb_web_newsletter_posts` nao aparecem na interface.
+### 1. Post nao abre para leitura
+**Causa raiz:** `BlogPost.tsx` (linha 26) busca o post apenas nos `mockPosts` hardcoded:
+```typescript
+const post = mockPosts.find(p => p.slug === slug);
+```
+Posts vindos do banco nao existem nesse array, entao o componente redireciona para `/newsletter`.
 
-## Solucao
-Buscar posts dinamicamente da tabela `tb_web_newsletter_posts` usando React Query, mantendo os `mockPosts` como fallback caso a query falhe.
+**Solucao:** Usar o hook `useNewsletterPosts` no `BlogPost.tsx` e combinar com `mockPosts`, assim como foi feito no `Newsletter.tsx`.
+
+### 2. Imagem nao aparece no card
+**Causa provavel:** A tabela `tb_web_newsletter_posts` tem RLS habilitada mas pode nao ter uma policy de SELECT para usuarios anonimos. Isso impediria a query do hook de retornar dados. Precisamos verificar e, se necessario, criar uma policy publica de leitura para posts publicados.
+
+Tambem pode ser que a imagem em si esteja acessivel (esta no bucket publico `blog-images`), mas a query do Supabase nao retorna os dados por falta de policy.
+
+### 3. Email sem imagem
+O template do email na edge function ja inclui a `cover_image_url`. Se a URL da imagem estiver correta no banco (e esta - verificamos que aponta para o bucket publico), a imagem deveria aparecer. Este problema pode ser resolvido automaticamente ao corrigir os outros dois.
 
 ---
 
-## Passo 1: Criar hook `useNewsletterPosts`
+## Plano de implementacao
 
-Criar um hook dedicado em `src/hooks/useNewsletterPosts.ts` que:
-- Busca posts publicados da tabela `tb_web_newsletter_posts` ordenados por data
-- Mapeia os campos do banco para a interface `BlogPost` existente
-- Usa o avatar default do founder como fallback para `author_avatar_url`
-- Usa "UaiCode Team" como fallback para `author_name`
+### Passo 1: Verificar/criar RLS policy para leitura publica
+Verificar se existe uma policy de SELECT na tabela `tb_web_newsletter_posts`. Se nao houver, criar uma que permita leitura publica dos posts publicados:
+```sql
+CREATE POLICY "Allow public read of published posts"
+ON public.tb_web_newsletter_posts
+FOR SELECT USING (is_published = true);
+```
 
-## Passo 2: Atualizar `Newsletter.tsx`
+### Passo 2: Atualizar BlogPost.tsx para buscar posts do banco
+- Importar `useNewsletterPosts`
+- Combinar posts do banco com `mockPosts` (mesma logica do Newsletter.tsx)
+- Buscar o post pelo slug nesse array combinado
+- Passar `allPosts` para o componente `RelatedPosts` tambem
+- Adicionar fallback de loading enquanto os dados carregam
 
-- Importar e usar o hook `useNewsletterPosts`
-- Combinar posts do banco com os `mockPosts` existentes (banco primeiro, mock depois)
-- Ou substituir completamente os mock posts pelos dados do banco (dependendo se queremos manter os posts hardcoded)
-- Adicionar estado de loading enquanto os dados carregam
-- Manter toda a logica existente de filtros, paginacao e busca
-
-## Passo 3: Garantir fallback do avatar no `BlogCard.tsx`
-
-- Adicionar fallback para o avatar do autor caso venha vazio do banco
-- Usar a URL `https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/founder-rafael-luz-00.png`
+### Passo 3: Verificar imagem no email
+- Confirmar que a URL `cover_image_url` no banco aponta para um recurso publico acessivel
+- A URL atual (`supabase.co/storage/v1/object/public/blog-images/...`) deveria funcionar diretamente em clientes de email
 
 ---
 
 ## Detalhes tecnicos
 
-### Hook `useNewsletterPosts.ts`
+### BlogPost.tsx (mudancas)
 ```typescript
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useNewsletterPosts } from "@/hooks/useNewsletterPosts";
+import { mockPosts } from "./Newsletter";
 
-const DEFAULT_AVATAR = "https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/founder-rafael-luz-00.png";
+const BlogPost = () => {
+  const { slug } = useParams();
+  const { data: dbPosts = [] } = useNewsletterPosts();
 
-export const useNewsletterPosts = () => {
-  return useQuery({
-    queryKey: ["newsletter-posts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tb_web_newsletter_posts")
-        .select("*")
-        .eq("status", "published")
-        .order("published_at", { ascending: false });
+  const allPosts = useMemo(() => {
+    const slugSet = new Set(dbPosts.map(p => p.slug));
+    const uniqueMock = mockPosts.filter(p => !slugSet.has(p.slug));
+    return [...dbPosts, ...uniqueMock];
+  }, [dbPosts]);
 
-      if (error) throw error;
-
-      return (data || []).map((post) => ({
-        id: post.id,
-        title: post.title,
-        slug: post.slug,
-        excerpt: post.excerpt || "",
-        content: post.content || "",
-        imageUrl: post.cover_image_url || "",
-        author: {
-          name: post.author_name || "UaiCode Team",
-          avatar: post.author_avatar_url || DEFAULT_AVATAR,
-        },
-        category: post.category || "General",
-        publishedAt: post.published_at || post.created_at,
-        readTime: post.read_time || "5 min read",
-      }));
-    },
-  });
+  const post = allPosts.find(p => p.slug === slug);
+  // ... rest stays the same, but RelatedPosts uses allPosts
 };
 ```
 
-### Newsletter.tsx (mudancas principais)
-- Importar `useNewsletterPosts`
-- Combinar dados do banco com `mockPosts` como fallback
-- Mostrar skeleton/loading enquanto carrega
-- Posts do banco aparecem primeiro, seguidos dos mock posts
-
-### BlogCard.tsx
-- Adicionar fallback no `<img>` do avatar com `onError` handler
-
-### Consideracoes
-- Os mock posts existentes continuam funcionando como fallback
-- Posts do banco tem prioridade e aparecem primeiro
-- A paginacao e filtros existentes continuam funcionando normalmente
-- RLS: verificar se a tabela permite leitura publica dos posts publicados
-
+### Resumo das mudancas
+- 1 migration SQL (RLS policy se necessario)
+- 1 arquivo editado: `src/pages/BlogPost.tsx`
