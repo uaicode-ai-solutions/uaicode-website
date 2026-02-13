@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useLayoutEffect, useState, useMemo } from "react";
+import { useEffect, useRef, useLayoutEffect, useState } from "react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Header from "@/components/Header";
@@ -14,7 +14,6 @@ import { ReadingProgressBar } from "@/components/blog/ReadingProgressBar";
 import { CourseBanners } from "@/components/blog/CourseBanners";
 import { Calendar, Clock, User } from "lucide-react";
 import { useNewsletterPosts } from "@/hooks/useNewsletterPosts";
-import { mockPosts } from "./Newsletter";
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -23,11 +22,7 @@ const BlogPost = () => {
   const [metaHeight, setMetaHeight] = useState(0);
   const { data: dbPosts = [], isLoading } = useNewsletterPosts();
 
-  const allPosts = useMemo(() => {
-    const slugSet = new Set(dbPosts.map(p => p.slug));
-    const uniqueMock = mockPosts.filter(p => !slugSet.has(p.slug));
-    return [...dbPosts, ...uniqueMock];
-  }, [dbPosts]);
+  const allPosts = dbPosts;
 
   const post = allPosts.find(p => p.slug === slug);
 
