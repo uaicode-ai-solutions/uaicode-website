@@ -10,35 +10,29 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const url = new URL(req.url);
-  const slug = url.searchParams.get("slug");
-
-  if (!slug) {
-    return new Response("Missing slug", { status: 400 });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!
-  );
+  try {
+    const { slug, title, description, image_url, meta_title, meta_description } = await req.json();
 
-  const { data: post, error } = await supabase
-    .from("tb_web_newsletter_posts")
-    .select("title, excerpt, cover_image_url, meta_title, meta_description, slug")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .maybeSingle();
+    if (!slug || !title) {
+      return new Response(JSON.stringify({ error: "slug and title are required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-  if (error || !post) {
-    return new Response("Post not found", { status: 404 });
-  }
+    const ogTitle = meta_title || title;
+    const ogDescription = meta_description || description || "";
+    const ogImage = image_url || "";
+    const canonicalUrl = `https://uaicodewebsite.lovable.app/blog/${slug}`;
 
-  const ogTitle = post.meta_title || post.title;
-  const ogDescription = post.meta_description || post.excerpt;
-  const ogImage = post.cover_image_url;
-  const canonicalUrl = `https://uaicodewebsite.lovable.app/blog/${post.slug}`;
-
-  const html = `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -69,13 +63,44 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
-  return new Response(html, {
-    headers: {
-      ...corsHeaders,
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "public, max-age=3600",
-    },
-  });
+    // Upload to storage using service role key
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const fileName = `${slug}.html`;
+    const fileBody = new Blob([html], { type: "text/html" });
+
+    const { error: uploadError } = await supabase.storage
+      .from("og-meta")
+      .upload(fileName, fileBody, {
+        contentType: "text/html",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      return new Response(JSON.stringify({ error: "Upload failed", details: uploadError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("og-meta")
+      .getPublicUrl(fileName);
+
+    return new Response(JSON.stringify({ url: publicUrlData.publicUrl }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    return new Response(JSON.stringify({ error: "Internal error", details: String(err) }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 });
 
 function escapeAttr(str: string): string {
