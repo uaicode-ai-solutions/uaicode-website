@@ -1,83 +1,70 @@
 
 
-# Criar tabela `tb_web_newsletter_posts`
+# Edge Function: `pms-send-newsletter-broadcast`
 
-## O que sera feito
+## Objetivo
 
-Criar a tabela no Supabase para armazenar os blog posts, com RLS policies e trigger de updated_at.
+Criar uma edge function que o n8n chamara apos gravar um artigo no banco. A funcao busca o post recem-publicado e envia um email de newsletter para todos os assinantes da tabela `tb_web_newsletter`.
+
+## Como funciona
+
+```text
+n8n grava post no tb_web_newsletter_posts
+          |
+          v
+n8n chama POST /pms-send-newsletter-broadcast
+  Body: { "post_id": "uuid-do-post" }
+          |
+          v
+Edge Function:
+  1. Busca o post pelo ID (service role, bypassa RLS)
+  2. Busca todos os emails de tb_web_newsletter (service role)
+  3. Envia email via Resend em batches de 50
+  4. Retorna quantidade de emails enviados
+```
+
+## O que sera criado
+
+### 1. `supabase/functions/pms-send-newsletter-broadcast/index.ts`
+
+- Recebe `{ post_id }` no body (POST)
+- Usa `SUPABASE_SERVICE_ROLE_KEY` + `SUPABASE_URL` para criar client admin e buscar dados
+- Busca o post completo de `tb_web_newsletter_posts` pelo ID
+- Busca todos os emails de `tb_web_newsletter`
+- Gera um email HTML no estilo visual UaiCode (dark + gold) contendo:
+  - Titulo do artigo
+  - Imagem de capa
+  - Excerpt/resumo
+  - Botao "Read Full Article" linkando para `https://uaicodewebsite.lovable.app/blog/{slug}`
+  - Footer com links UaiCode
+- Envia via Resend API em batches (Resend aceita array de ate 50 destinatarios por chamada)
+- Retorna `{ success: true, total_subscribers, emails_sent }`
+
+### 2. `supabase/config.toml`
+
+- Adicionar entrada `[functions.pms-send-newsletter-broadcast]` com `verify_jwt = false`
+
+## Configuracao no n8n
+
+Apos o node que insere no Supabase, adicionar um node **HTTP Request**:
+
+| Campo | Valor |
+|-------|-------|
+| Method | POST |
+| URL | `https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-send-newsletter-broadcast` |
+| Headers | `Authorization: Bearer {anon_key}`, `Content-Type: application/json` |
+| Body | `{ "post_id": "{{ $json.id }}" }` |
+
+## Secrets necessarias
+
+Todas ja existem no projeto:
+- `RESEND_API_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (ou `SUPABASE_URL`)
 
 ## Detalhes tecnicos
 
-### Migration SQL
-
-```sql
-CREATE TABLE public.tb_web_newsletter_posts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  title text NOT NULL,
-  slug text NOT NULL UNIQUE,
-  meta_title text,
-  meta_description text,
-  excerpt text NOT NULL,
-  content text NOT NULL,
-  cover_image_url text NOT NULL,
-  category text NOT NULL DEFAULT 'Technical Guide',
-  read_time text DEFAULT '5 min read',
-  author_name text DEFAULT 'Rafael Luz',
-  author_avatar_url text,
-  youtube_video_id text,
-  highlights jsonb DEFAULT '[]',
-  subtitles jsonb DEFAULT '[]',
-  is_published boolean DEFAULT true,
-  published_at timestamptz DEFAULT now(),
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-
-ALTER TABLE public.tb_web_newsletter_posts ENABLE ROW LEVEL SECURITY;
-
--- Leitura publica de posts publicados
-CREATE POLICY "Anyone can read published posts"
-ON public.tb_web_newsletter_posts FOR SELECT
-USING (is_published = true);
-
--- Apenas admins podem inserir, atualizar e deletar
-CREATE POLICY "Admins can insert posts"
-ON public.tb_web_newsletter_posts FOR INSERT
-WITH CHECK (has_role(get_pms_user_id(), 'admin'::app_role));
-
-CREATE POLICY "Admins can update posts"
-ON public.tb_web_newsletter_posts FOR UPDATE
-USING (has_role(get_pms_user_id(), 'admin'::app_role));
-
-CREATE POLICY "Admins can delete posts"
-ON public.tb_web_newsletter_posts FOR DELETE
-USING (has_role(get_pms_user_id(), 'admin'::app_role));
-
--- Trigger para atualizar updated_at automaticamente
-CREATE OR REPLACE FUNCTION public.update_tb_web_newsletter_posts_updated_at()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
-SET search_path TO 'public' AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER set_updated_at
-BEFORE UPDATE ON public.tb_web_newsletter_posts
-FOR EACH ROW EXECUTE FUNCTION update_tb_web_newsletter_posts_updated_at();
-```
-
-### Resumo das policies
-
-| Operacao | Quem pode | Observacao |
-|----------|-----------|------------|
-| SELECT | Qualquer pessoa | Apenas posts com `is_published = true` |
-| INSERT | Admins | n8n usa Service Role Key (bypassa RLS) |
-| UPDATE | Admins | Via dashboard ou API com role admin |
-| DELETE | Admins | Via dashboard ou API com role admin |
-
-### Proximo passo
-
-Apos a tabela criada, resolveremos a questao da imagem do founder e depois criaremos o hook `useBlogPosts` + adaptacao do frontend.
+- Segue o mesmo padrao das edge functions existentes (imports, cors headers, error handling)
+- Template HTML segue a identidade visual UaiCode (background #0A0A0A, gold #FACC15) igual ao `pms-send-report-ready`
+- Batch de 50 emails por chamada Resend para evitar rate limits
+- Logs detalhados para debug no Supabase dashboard
 
