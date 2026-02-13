@@ -24,7 +24,7 @@ function escapeAttr(str: string): string {
     .replace(/>/g, "&gt;");
 }
 
-function buildHtml(ogTitle: string, ogDescription: string, ogImage: string, canonicalUrl: string, slug: string): string {
+function buildHtml(ogTitle: string, ogDescription: string, ogImage: string, ogUrl: string, redirectUrl: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,7 +38,7 @@ function buildHtml(ogTitle: string, ogDescription: string, ogImage: string, cano
   <meta property="og:image" content="${ogImage}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:url" content="${canonicalUrl}" />
+  <meta property="og:url" content="${ogUrl}" />
   <meta property="og:site_name" content="UaiCode" />
 
   <!-- Twitter / LinkedIn -->
@@ -48,11 +48,11 @@ function buildHtml(ogTitle: string, ogDescription: string, ogImage: string, cano
   <meta name="twitter:image" content="${ogImage}" />
 
   <!-- Redirect real users -->
-  <meta http-equiv="refresh" content="0;url=${canonicalUrl}" />
+  <meta http-equiv="refresh" content="0;url=${redirectUrl}" />
 </head>
 <body>
-  <p>Redirecting to <a href="${canonicalUrl}">${escapeAttr(ogTitle)}</a>...</p>
-  <script>window.location.href="${canonicalUrl}";</script>
+  <p>Redirecting to <a href="${redirectUrl}">${escapeAttr(ogTitle)}</a>...</p>
+  <script>window.location.href="${redirectUrl}";</script>
 </body>
 </html>`;
 }
@@ -104,9 +104,10 @@ Deno.serve(async (req) => {
       const ogTitle = post.meta_title || post.title;
       const ogDescription = post.meta_description || post.excerpt || "";
       const ogImage = post.cover_image_url || "";
-      const canonicalUrl = `https://uaicodewebsite.lovable.app/blog/${post.slug}`;
+      const ogUrl = `https://api.uaicode.ai/functions/v1/og-blog-meta?slug=${post.slug}`;
+      const redirectUrl = `https://uaicodewebsite.lovable.app/blog/${post.slug}`;
 
-      const html = buildHtml(ogTitle, ogDescription, ogImage, canonicalUrl, post.slug);
+      const html = buildHtml(ogTitle, ogDescription, ogImage, ogUrl, redirectUrl);
 
       console.log(`[og-blog-meta] OK slug="${slug}" title="${ogTitle}"`);
 
@@ -147,9 +148,10 @@ Deno.serve(async (req) => {
     const ogTitle = meta_title || title;
     const ogDescription = meta_description || description || "";
     const ogImage = image_url || "";
-    const canonicalUrl = `https://uaicodewebsite.lovable.app/blog/${slug}`;
+    const ogUrl = `https://api.uaicode.ai/functions/v1/og-blog-meta?slug=${slug}`;
+    const redirectUrl = `https://uaicodewebsite.lovable.app/blog/${slug}`;
 
-    const html = buildHtml(ogTitle, ogDescription, ogImage, canonicalUrl, slug);
+    const html = buildHtml(ogTitle, ogDescription, ogImage, ogUrl, redirectUrl);
 
     const fileName = `${slug}.html`;
     const fileBody = new Blob([html], { type: "text/html" });
