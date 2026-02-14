@@ -189,7 +189,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 3. Generate email HTML
     const html = generateNewsletterEmail(post);
-    const subject = `📰 ${post.title}`;
+    const subject = `📰 Uaicode Daily Insights: ${post.title}`;
     const from = "Uaicode Insights <noreply@uaicode.ai>";
 
     // 4. Send in batches of 50
