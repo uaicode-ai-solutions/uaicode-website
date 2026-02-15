@@ -89,6 +89,92 @@ export type Database = {
         }
         Relationships: []
       }
+      tb_media_content: {
+        Row: {
+          asset_url: string | null
+          caption: string | null
+          content_type: string
+          created_at: string
+          id: string
+          instagram_media_id: string | null
+          pillar: string
+          published_at: string | null
+          scheduled_for: string | null
+          status: string
+          trend_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          asset_url?: string | null
+          caption?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          instagram_media_id?: string | null
+          pillar: string
+          published_at?: string | null
+          scheduled_for?: string | null
+          status?: string
+          trend_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asset_url?: string | null
+          caption?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          instagram_media_id?: string | null
+          pillar?: string
+          published_at?: string | null
+          scheduled_for?: string | null
+          status?: string
+          trend_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tb_media_content_trend_id_fkey"
+            columns: ["trend_id"]
+            isOneToOne: false
+            referencedRelation: "tb_media_trends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tb_media_trends: {
+        Row: {
+          created_at: string
+          hook_suggestion: string | null
+          id: string
+          pillar: string
+          source_url: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hook_suggestion?: string | null
+          id?: string
+          pillar: string
+          source_url?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hook_suggestion?: string | null
+          id?: string
+          pillar?: string
+          source_url?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tb_pms_discount_strategy: {
         Row: {
           bonus_support_days: number | null
