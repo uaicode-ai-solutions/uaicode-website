@@ -100,6 +100,7 @@ export type Database = {
           pillar: string
           published_at: string | null
           scheduled_for: string | null
+          slides_json: Json | null
           status: string
           trend_id: string | null
           updated_at: string
@@ -114,6 +115,7 @@ export type Database = {
           pillar: string
           published_at?: string | null
           scheduled_for?: string | null
+          slides_json?: Json | null
           status?: string
           trend_id?: string | null
           updated_at?: string
@@ -128,6 +130,7 @@ export type Database = {
           pillar?: string
           published_at?: string | null
           scheduled_for?: string | null
+          slides_json?: Json | null
           status?: string
           trend_id?: string | null
           updated_at?: string
