@@ -151,8 +151,12 @@ export type Database = {
           hook_suggestion: string | null
           id: string
           pillar: string
+          relevance_score: number | null
+          source: string | null
           source_url: string | null
+          spiced: Json | null
           status: string
+          summary: string | null
           title: string
           updated_at: string
         }
@@ -161,8 +165,12 @@ export type Database = {
           hook_suggestion?: string | null
           id?: string
           pillar: string
+          relevance_score?: number | null
+          source?: string | null
           source_url?: string | null
+          spiced?: Json | null
           status?: string
+          summary?: string | null
           title: string
           updated_at?: string
         }
@@ -171,8 +179,12 @@ export type Database = {
           hook_suggestion?: string | null
           id?: string
           pillar?: string
+          relevance_score?: number | null
+          source?: string | null
           source_url?: string | null
+          spiced?: Json | null
           status?: string
+          summary?: string | null
           title?: string
           updated_at?: string
         }
