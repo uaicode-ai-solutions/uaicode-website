@@ -1,20 +1,51 @@
 
 
-## Remover constraint `tb_media_trends_pillar_check`
+## Corrigir imagem de capa no email da newsletter
 
-A constraint `tb_media_trends_pillar_check` na coluna `pillar` da tabela `tb_media_trends` esta bloqueando insercoes com os novos valores de categoria (ex: "Growth & Scaling"). Vamos remove-la.
+### O que muda
 
-### Migration SQL
+Uma unica alteracao cirurgica na edge function `pms-send-newsletter-broadcast/index.ts`. Nenhum outro arquivo sera tocado.
 
-```sql
-ALTER TABLE public.tb_media_trends
-DROP CONSTRAINT IF EXISTS tb_media_trends_pillar_check;
+### Alteracao 1: Adicionar funcao helper (apos linha 18, depois da constante `DEFAULT_AUTHOR_AVATAR`)
+
+Inserir esta funcao utilitaria:
+
+```typescript
+function encodeStorageUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    parsed.pathname = parsed.pathname
+      .split('/')
+      .map(segment => encodeURIComponent(decodeURIComponent(segment)))
+      .join('/');
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
 ```
 
-### Detalhes tecnicos
+### Alteracao 2: Usar a funcao na imagem de capa (linha ~57)
 
-- **Tabela afetada**: `tb_media_trends`
-- **Constraint removida**: `tb_media_trends_pillar_check`
-- **Motivo**: Os valores de `pillar` sao definidos pelo workflow n8n e nao precisam de validacao no banco. A constraint antiga limitava a valores antigos (ex: "strategy", "technology", "marketing") que nao correspondem mais as categorias atuais.
-- **Risco**: Nenhum. A validacao dos valores corretos ja e feita no prompt do agente de IA no n8n.
+De:
+```html
+<img src="${post.cover_image_url}"
+```
+
+Para:
+```html
+<img src="${encodeStorageUrl(post.cover_image_url)}"
+```
+
+### O que NAO sera alterado
+
+- Nenhuma tabela ou migration
+- Nenhum outro arquivo do projeto
+- Nenhuma outra parte do HTML do email
+- Nenhuma logica de envio, batching ou busca de subscribers
+- O campo `cover_image_url` no banco permanece inalterado
+
+### Por que funciona
+
+A funcao apenas codifica os segmentos do path da URL (espacos viram `%20`, `&` vira `%26`), permitindo que clientes de email carreguem a imagem corretamente. Se a URL ja estiver ok, ela passa sem alteracao. Se houver qualquer erro no parsing, retorna a URL original como fallback.
 
