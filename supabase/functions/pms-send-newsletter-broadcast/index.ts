@@ -17,6 +17,19 @@ const SITE_URL = "https://uaicodewebsite.lovable.app";
 
 const DEFAULT_AUTHOR_AVATAR = "https://ccjnxselfgdoeyyuziwt.supabase.co/storage/v1/object/public/blog-images/founder-rafael-luz-00.png";
 
+function encodeStorageUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    parsed.pathname = parsed.pathname
+      .split('/')
+      .map(segment => encodeURIComponent(decodeURIComponent(segment)))
+      .join('/');
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 const generateNewsletterEmail = (post: {
   title: string;
   excerpt: string;
@@ -54,7 +67,7 @@ const generateNewsletterEmail = (post: {
 
     <!-- Cover Image -->
     <div style="border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
-      <img src="${post.cover_image_url}" alt="${post.title}" style="width: 100%; height: auto; display: block;" />
+      <img src="${encodeStorageUrl(post.cover_image_url)}" alt="${post.title}" style="width: 100%; height: auto; display: block;" />
     </div>
 
     <!-- Category & Read Time -->
