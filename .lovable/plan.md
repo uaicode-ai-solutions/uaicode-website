@@ -1,38 +1,20 @@
 
 
-## Passo 1: Migration + Primeiro No
+## Remover constraint `tb_media_trends_pillar_check`
+
+A constraint `tb_media_trends_pillar_check` na coluna `pillar` da tabela `tb_media_trends` esta bloqueando insercoes com os novos valores de categoria (ex: "Growth & Scaling"). Vamos remove-la.
 
 ### Migration SQL
 
-Expandir a constraint de status da `tb_media_trends` para permitir `processed` e `skipped`:
-
 ```sql
 ALTER TABLE public.tb_media_trends
-DROP CONSTRAINT IF EXISTS tb_media_trends_status_check;
-
-ALTER TABLE public.tb_media_trends
-ADD CONSTRAINT tb_media_trends_status_check
-CHECK (status IN ('pending', 'processed', 'skipped'));
+DROP CONSTRAINT IF EXISTS tb_media_trends_pillar_check;
 ```
 
-### Primeiro No: Google Gemini (gerar slides + caption)
+### Detalhes tecnicos
 
-Apos a migration, comecaremos pelo **No 1 do fluxo de geracao de carrossel** no n8n:
-
-- **Tipo**: Google Gemini (no nativo do n8n)
-- **Modelo**: gemini-2.5-flash
-- **Input**: dados do trend recem-inserido (title, summary, pillar, spiced, hook_suggestion)
-- **Output**: JSON estruturado com `slides` (array Hook/Content/CTA) e `caption` com hashtags
-
-O prompt do Gemini sera configurado para:
-- Gerar 6-8 slides no formato Hook - Conteudo - CTA
-- Usar a paleta UaiCode Premium (fundo #000000, destaque #FFBF1A/#FF9F00)
-- Retornar JSON estruturado para facilitar o processamento nos nos seguintes
-- Gerar caption Instagram com hashtags relevantes
-
-### Resultado
-
-Apos aprovar, vou:
-1. Executar a migration no Supabase
-2. Detalhar a configuracao exata do no Google Gemini para voce replicar no n8n
+- **Tabela afetada**: `tb_media_trends`
+- **Constraint removida**: `tb_media_trends_pillar_check`
+- **Motivo**: Os valores de `pillar` sao definidos pelo workflow n8n e nao precisam de validacao no banco. A constraint antiga limitava a valores antigos (ex: "strategy", "technology", "marketing") que nao correspondem mais as categorias atuais.
+- **Risco**: Nenhum. A validacao dos valores corretos ja e feita no prompt do agente de IA no n8n.
 
