@@ -1,0 +1,2 @@
+ALTER TABLE public.tb_media_trends
+DROP CONSTRAINT IF EXISTS tb_media_trends_pillar_check;
