@@ -147,12 +147,13 @@ export type Database = {
       }
       tb_media_trends: {
         Row: {
+          channel: string | null
           created_at: string
           hook_suggestion: string | null
           id: string
           pillar: string
+          post_type: string | null
           relevance_score: number | null
-          source: string | null
           source_url: string | null
           spiced: Json | null
           status: string
@@ -161,12 +162,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          channel?: string | null
           created_at?: string
           hook_suggestion?: string | null
           id?: string
           pillar: string
+          post_type?: string | null
           relevance_score?: number | null
-          source?: string | null
           source_url?: string | null
           spiced?: Json | null
           status?: string
@@ -175,12 +177,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          channel?: string | null
           created_at?: string
           hook_suggestion?: string | null
           id?: string
           pillar?: string
+          post_type?: string | null
           relevance_score?: number | null
-          source?: string | null
           source_url?: string | null
           spiced?: Json | null
           status?: string
