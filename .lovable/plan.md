@@ -1,22 +1,40 @@
 
 
-# Fix: Booking Page Layout to Match Homepage
+# Fix: Remove `tb_media_content_pillar_check` Constraint
 
 ## Problem
 
-Both pages use the same `<Schedule />` component, but `Booking.tsx` wraps it in `flex flex-col items-center justify-center` which constrains the Cal.com embed width, forcing a vertical/stacked layout instead of the horizontal 3-column layout seen on the homepage.
+The CHECK constraint `tb_media_content_pillar_check` on `tb_media_content` still exists and only allows these old values:
+
+```text
+'strategy', 'development', 'marketing'
+```
+
+The n8n workflow is sending `"technology"`, and the current content pillars defined in the system are:
+
+- AI & Innovation
+- Business Strategy
+- Growth & Scaling
+- Technical Guide
+
+None of these match the old constraint, so every insert fails.
+
+## Solution
+
+Drop the constraint entirely. The pillar values are controlled by the n8n workflow and AI prompts, so a database-level constraint adds friction without value.
 
 ## Change
 
-**File: `src/pages/Booking.tsx`** -- remove flex centering:
+Run a single migration:
 
-```tsx
-// From:
-<div className="min-h-screen bg-background flex flex-col items-center justify-center">
-
-// To:
-<div className="min-h-screen bg-background">
+```sql
+ALTER TABLE tb_media_content
+DROP CONSTRAINT tb_media_content_pillar_check;
 ```
 
-One class change. Nothing else.
+No code changes needed -- this is a database-only fix.
+
+## After Dropping
+
+Re-run the n8n carousel workflow to confirm the insert succeeds without error.
 
