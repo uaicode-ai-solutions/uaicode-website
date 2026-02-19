@@ -42,11 +42,11 @@ const Schedule = () => {
         </div>
 
         <div className="max-w-5xl mx-auto glass-card rounded-2xl overflow-hidden border border-accent/20 shadow-[0_0_40px_rgba(234,171,8,0.1)]">
-          <div className="w-full h-[500px] md:h-[700px] overflow-hidden">
+          <div className="w-full h-[500px] md:h-[700px] overflow-auto">
             <Cal
               namespace="diagnostic-45min"
               calLink="uaicode-ai/diagnostic-45min"
-              style={{ width: "100%", height: "100%", overflow: "hidden" }}
+              style={{ width: "100%", height: "100%", overflow: "scroll" }}
               config={{ layout: "month_view", theme: "dark" }}
             />
           </div>
