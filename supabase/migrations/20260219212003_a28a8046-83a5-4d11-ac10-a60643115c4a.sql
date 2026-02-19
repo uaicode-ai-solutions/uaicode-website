@@ -1,0 +1,1 @@
+ALTER TABLE tb_media_content DROP CONSTRAINT tb_media_content_pillar_check;
