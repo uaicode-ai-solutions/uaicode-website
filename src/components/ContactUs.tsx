@@ -122,10 +122,10 @@ const ContactUs = () => {
         {/* Header */}
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Ready to <span className="text-gradient-gold">Build Something Great?</span>
+            Ready to <span className="text-gradient-gold">Turn Your Validated Idea Into Revenue?</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Share your validated idea and get a personalized development roadmap
+            Already had your strategy call? Share your details and get a custom development roadmap with fixed pricing.
           </p>
         </div>
 

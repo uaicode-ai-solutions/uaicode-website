@@ -34,10 +34,10 @@ const Schedule = () => {
       <div className="container mx-auto max-w-6xl px-4">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Validated Your Idea? <span className="text-gradient-gold">Let's Talk Strategy</span>
+            Book Your <span className="text-gradient-gold">Free Strategy Call</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Book a strategy call to discuss your validation results and get a custom development plan
+            In 45 minutes, Rafael validates your SaaS idea live with AI — market analysis, competitors, viability score, and a personalized roadmap. No cost. No obligation.
           </p>
         </div>
 

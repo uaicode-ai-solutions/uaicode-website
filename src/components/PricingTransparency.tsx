@@ -31,15 +31,15 @@ const PricingTransparency = () => {
       <div className="container mx-auto max-w-7xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Transparent Solutions for <span className="text-gradient-gold">Every Vision</span>
+            Transparent Investment, <span className="text-gradient-gold">Validated Results</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
-            Choose the perfect package to bring your SaaS idea to life
+            Every project starts with a free strategy call. You only invest when you know it works.
           </p>
           <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 px-4 py-2 rounded-full text-sm">
             <span className="text-accent font-medium">💡 Pro tip:</span>
-            <span className="text-muted-foreground">Validated ideas have 3x higher success rate.</span>
-            <a href="/planningmysaas" className="text-accent hover:underline font-medium">Validate free →</a>
+            <span className="text-muted-foreground">Founders who validate first save an average of $40K in wasted development.</span>
+            <a href="/planningmysaas" className="text-accent hover:underline font-medium">Book your free call →</a>
           </div>
         </div>
 
@@ -115,7 +115,7 @@ const PricingTransparency = () => {
                 className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground text-sm sm:text-base py-3 sm:py-4"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                Validate My Idea
+                Book Free Strategy Call
               </Button>
             </div>
           </div>
@@ -201,7 +201,7 @@ const PricingTransparency = () => {
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-sm sm:text-base py-3 sm:py-4"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                Validate My Idea
+                Book Free Strategy Call
               </Button>
             </div>
           </div>
@@ -292,7 +292,7 @@ const PricingTransparency = () => {
                 className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground text-sm sm:text-base py-3 sm:py-4"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                Validate My Idea
+                Book Free Strategy Call
               </Button>
             </div>
           </div>

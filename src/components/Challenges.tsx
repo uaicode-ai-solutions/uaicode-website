@@ -8,26 +8,26 @@ const Challenges = () => {
   const challenges = [
     {
       icon: Target,
-      title: "Uncertain Market Fit",
-      description: "Without validation, you risk building something nobody wants. 9 out of 10 startups fail because they skip this step.",
+      title: "Building for Nobody",
+      description: "42% of startups fail because there is no market need. Without data, you are guessing with your savings.",
       highlighted: true
     },
     {
       icon: Clock,
-      title: "Slow Development",
-      description: "Traditional development takes months, delaying your market entry",
+      title: "Months of Wasted Time",
+      description: "Every month building the wrong thing is a month your competitor spends capturing your market.",
       highlighted: false
     },
     {
       icon: DollarSign,
-      title: "High Costs",
-      description: "Building in-house or hiring agencies drains your budget quickly",
+      title: "Burned Capital",
+      description: "The average failed MVP costs $50K-$150K. That is runway you can never recover.",
       highlighted: false
     },
     {
       icon: AlertCircle,
-      title: "Technical Hurdles",
-      description: "Complex technical decisions slow you down and increase risk",
+      title: "Missed Market Window",
+      description: "Your idea has a shelf life. Delays mean someone else launches first.",
       highlighted: false
     }
   ];
@@ -37,10 +37,10 @@ const Challenges = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            The Biggest Mistake? <span className="text-gradient-gold">Building Without Validating</span>
+            What Happens When You <span className="text-gradient-gold">Skip Validation?</span>
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-            Before investing thousands in development, make sure your idea has real market potential
+            These are the real costs founders pay when they build before they validate
           </p>
         </div>
 
@@ -72,10 +72,10 @@ const Challenges = () => {
             className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
           >
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-            Validate My Idea
+            Book My Free Strategy Call
           </Button>
           <p className="text-sm text-muted-foreground mt-4">
-            Free AI-powered market analysis in minutes
+            45 minutes with our founder. Complete AI validation. Zero cost.
           </p>
         </div>
       </div>

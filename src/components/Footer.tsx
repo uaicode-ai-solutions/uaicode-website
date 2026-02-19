@@ -179,7 +179,7 @@ const Footer = () => {
 
             {/* Validate My Idea */}
             <div className="mt-6">
-              <h4 className="text-lg font-semibold mb-4 text-accent">Validate My Idea</h4>
+              <h4 className="text-lg font-semibold mb-4 text-accent">Get Started</h4>
               <ul className="space-y-3">
                 <li>
                   <button 
@@ -187,7 +187,7 @@ const Footer = () => {
                     className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-2"
                   >
                     <Sparkles className="w-5 h-5" />
-                    Planning My SaaS
+                    Book Free Strategy Call
                   </button>
                 </li>
               </ul>

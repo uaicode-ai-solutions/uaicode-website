@@ -9,9 +9,9 @@ const Tools = () => {
     <section className="py-24 px-4 overflow-hidden bg-card/30">
       <div className="w-full">
         <div className="text-center mb-16 animate-fade-in-up px-4">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Powered <span className="text-gradient-gold">by</span></h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Built With the Best <span className="text-gradient-gold">AI Stack</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            We leverage the best AI technologies to deliver outstanding results
+            Enterprise-grade tools from Microsoft, Google, and Meta — now powering your validation and MVP
           </p>
         </div>
 
