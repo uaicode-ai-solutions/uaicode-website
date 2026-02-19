@@ -75,10 +75,10 @@ const MeetEve = () => {
             >
               <div className="flex items-center gap-2 text-accent font-medium">
                 <Sparkles className="h-5 w-5" />
-                Try Planning My SaaS
+                Book Your Free Strategy Call
               </div>
               <p className="text-sm text-muted-foreground mt-1 group-hover:text-foreground transition-colors">
-                Get a free AI-powered market analysis for your SaaS idea →
+                45 minutes with our founder. Live AI validation of your idea. Zero cost. →
               </p>
             </button>
 

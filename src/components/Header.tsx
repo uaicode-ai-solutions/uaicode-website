@@ -85,7 +85,7 @@ const Header = () => {
               ))}
             </div>
             <Button onClick={() => navigate("/planningmysaas")} className="font-semibold bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-              <Sparkles className="w-4 h-4 mr-2" />Validate My Idea
+              <Sparkles className="w-4 h-4 mr-2" />Book Free Strategy Call
             </Button>
           </div>
           <button className="lg:hidden text-foreground hover:text-accent transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded p-2" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label={isMenuOpen ? "Close menu" : "Open menu"}>
@@ -124,7 +124,7 @@ const Header = () => {
                 </Button>
               ))}
             </div>
-            <Button onClick={() => navigate("/planningmysaas")} className="w-full font-semibold bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"><Sparkles className="w-4 h-4 mr-2" />Validate My Idea</Button>
+            <Button onClick={() => navigate("/planningmysaas")} className="w-full font-semibold bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"><Sparkles className="w-4 h-4 mr-2" />Book Free Strategy Call</Button>
           </div>
         </div>
       )}

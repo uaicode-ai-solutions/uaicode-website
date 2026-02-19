@@ -15,7 +15,7 @@ const About = () => {
     <section id="about" className="py-24 px-4 bg-black">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Why Choose <span className="text-gradient-gold">Uaicode?</span></h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Built by Engineers Who Have Been <span className="text-gradient-gold">in Your Shoes</span></h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
@@ -30,7 +30,7 @@ const About = () => {
               Once validated, we build production-ready MVPs that turn your idea into reality—from AI-powered SaaS platforms with intelligent features, to automated workflows that scale from day one. You get a complete technical foundation with dedicated support from our experienced development team throughout your launch journey.
             </p>
             <p className="text-lg font-semibold text-accent mb-8">
-              Start with free validation. Build with confidence.
+              Call first. Build smart. Launch fast.
             </p>
 
             {/* CTAs */}
@@ -41,7 +41,7 @@ const About = () => {
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
               >
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-                Validate My Idea
+                Book My Free Strategy Call
               </Button>
               <Button 
                 size="lg"

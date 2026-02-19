@@ -13,29 +13,29 @@ const HowItWorks = () => {
   const steps = [
     {
       icon: Lightbulb,
-      title: "Validate with AI",
-      subtitle: "Start with our free Planning My SaaS tool",
-      description: "Get instant market analysis, competitor insights, and viability score. Know if your idea has real potential before investing a single dollar in development.",
+      title: "Free Strategy Call",
+      subtitle: "45 minutes with our founder, powered by AI",
+      description: "Book a free call with Rafael. During the session, he runs a complete AI-powered validation of your idea live — market analysis, competitor landscape, viability score, and financial projections. You leave with clarity and a concrete next step.",
       isFirst: true
     },
     {
       icon: Code,
       title: "Design & Develop",
-      subtitle: "Leveraging AI for rapid prototyping and development",
+      subtitle: "AI-accelerated development in 4-8 weeks",
       description: "User experience design, AI-powered code generation, agile development sprints, continuous integration, and quality assurance.",
       isFirst: false
     },
     {
       icon: Rocket,
       title: "Launch & Iterate",
-      subtitle: "We help you launch fast and gather crucial feedback",
+      subtitle: "Go to market with confidence, not hope",
       description: "Deployment strategy, go-to-market planning, performance monitoring, user feedback collection, and rapid iterations.",
       isFirst: false
     },
     {
       icon: TrendingUp,
       title: "Grow & Optimize",
-      subtitle: "Your MVP evolves with your success, powered by continuous innovation",
+      subtitle: "Scale from 10 to 10,000 users without rebuilding",
       description: "Feature expansion, performance optimization, scaling infrastructure, AI enhancements, and ongoing technical support.",
       isFirst: false
     },
@@ -45,9 +45,9 @@ const HowItWorks = () => {
     <section id="how-it-works" className="py-24 px-4 bg-black">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Your Journey to Launch: <span className="text-gradient-gold">Validate First, Build Smart</span></h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">From Idea to Revenue: <span className="text-gradient-gold">Your Risk-Free Path</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Our proven process starts with free validation—so you only invest in ideas that work
+            Start with a free strategy call. Build only what the market wants. Scale with confidence.
           </p>
         </div>
 
@@ -90,7 +90,7 @@ const HowItWorks = () => {
             className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
           >
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-            Validate My Idea
+            Book My Free Strategy Call
           </Button>
           <Button 
             size="lg"
@@ -99,7 +99,7 @@ const HowItWorks = () => {
             className="w-full sm:w-auto border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 transition-all duration-300"
           >
             <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
-            Contact Eve
+            Talk to Eve
           </Button>
         </div>
       </div>

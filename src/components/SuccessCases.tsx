@@ -83,9 +83,9 @@ const SuccessCases = () => {
     <section id="success-cases" className="py-24 px-4 bg-black">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Validated Ideas, <span className="text-gradient-gold">Real Results</span></h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">They Validated First. <span className="text-gradient-gold">Then They Built.</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Hear from clients who validated first—and built successful businesses
+            Real founders who started with a free strategy call and turned it into revenue
           </p>
         </div>
 
@@ -193,7 +193,7 @@ const SuccessCases = () => {
             className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
           >
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-            Validate My Idea
+            Book My Free Strategy Call
           </Button>
           <Button 
             size="lg"

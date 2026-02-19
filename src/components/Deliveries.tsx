@@ -46,10 +46,10 @@ const Deliveries = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            What Makes Us <span className="text-gradient-gold">Different</span>
+            Why Founders Choose Us <span className="text-gradient-gold">After Validation</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            After you validate your idea, here's what you get when you build with us
+            Your strategy call confirms the opportunity. We build the product to capture it.
           </p>
         </div>
 
@@ -90,7 +90,7 @@ const Deliveries = () => {
             className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
           >
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-            Validate My Idea
+            Book My Free Strategy Call
           </Button>
           <Button
             size="lg"
