@@ -183,7 +183,7 @@ const Footer = () => {
               <ul className="space-y-3">
                 <li>
                   <button 
-                    onClick={() => navigate("/planningmysaas")}
+                    onClick={() => window.open("https://uaicode.ai/booking", "_blank")}
                     className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-2"
                   >
                     <Sparkles className="w-5 h-5" />

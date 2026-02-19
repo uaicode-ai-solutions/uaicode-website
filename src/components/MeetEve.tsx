@@ -70,7 +70,7 @@ const MeetEve = () => {
 
             {/* Planning My SaaS CTA */}
             <button 
-              onClick={() => navigate("/planningmysaas")}
+              onClick={() => window.open("https://uaicode.ai/booking", "_blank")}
               className="w-full p-4 bg-accent/10 border border-accent/30 rounded-lg text-left hover:bg-accent/20 transition-colors group"
             >
               <div className="flex items-center gap-2 text-accent font-medium">
