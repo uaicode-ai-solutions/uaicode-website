@@ -42,7 +42,7 @@ const FAQ = () => {
         {
           icon: Target,
           question: "How do I know if my idea is worth building?",
-          answer: "That's exactly what our free Planning My SaaS tool is for! It gives you instant AI-powered market analysis, competitor insights, and a viability score. In just 5 minutes, you'll know if your idea has real potential before investing in development. Most founders who use it avoid costly mistakes and discover valuable market opportunities they hadn't considered.",
+          answer: "That is exactly what the free strategy call is for. In 45 minutes, our founder runs a live AI-powered market analysis of your idea — viability score, competitor landscape, financial projections. It replaces the $5K-$15K you would normally spend on market research consultants.",
         },
         {
           icon: Lightbulb,
@@ -52,7 +52,7 @@ const FAQ = () => {
         {
           icon: DollarSign,
           question: "How much does an MVP typically cost?",
-          answer: "Our MVP packages range from $10,000 to $160,000, depending on complexity, features, and timeline. The Starter MVP ($10,000-$25,000) is perfect for basic concepts, the Growth MVP ($25,000-$60,000) includes advanced features and AI automation, and the Enterprise MVP ($60,000-$160,000) offers full-stack solutions with custom AI models. We recommend starting with our free validation tool to ensure your idea is ready for development.",
+          answer: "Our MVP packages range from $10,000 to $160,000, depending on complexity, features, and timeline. The Starter MVP ($10,000-$25,000) is perfect for basic concepts, the Growth MVP ($25,000-$60,000) includes advanced features and AI automation, and the Enterprise MVP ($60,000-$160,000) offers full-stack solutions with custom AI models. We recommend starting with a free strategy call to ensure your idea is ready for development.",
         },
         {
           icon: Clock,
@@ -62,7 +62,7 @@ const FAQ = () => {
         {
           icon: GitBranch,
           question: "What is your development process?",
-          answer: "We follow a streamlined 4-step process: 1) Validate with AI - start with our free Planning My SaaS tool for market analysis, 2) Design & Develop - rapid MVP creation using AI-driven tools, 3) Launch & Iterate - go-to-market strategy and deployment, and 4) Grow & Optimize - post-launch support and feature expansion. Each step is collaborative and transparent.",
+          answer: "We follow a streamlined 4-step process: 1) Free Strategy Call - book a 45-minute session with our founder for live AI validation, 2) Design & Develop - rapid MVP creation using AI-driven tools, 3) Launch & Iterate - go-to-market strategy and deployment, and 4) Grow & Optimize - post-launch support and feature expansion. Each step is collaborative and transparent.",
         },
         {
           icon: Sparkles,
@@ -197,7 +197,7 @@ const FAQ = () => {
           <p className="text-lg text-muted-foreground mb-4">Still have questions?</p>
           <Button
             size="lg"
-            onClick={() => navigate("/planningmysaas")}
+            onClick={() => window.open("https://uaicode.ai/booking", "_blank")}
             className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
           >
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />

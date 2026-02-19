@@ -219,8 +219,8 @@ const ContactUs = () => {
                 Start Your <span className="text-gradient-gold">Project Today</span>
               </h3>
               <p className="text-muted-foreground text-base leading-relaxed">
-                Tell us about your Planning My SaaS report or validated idea. 
-                We'll create a personalized development roadmap for you.
+                Tell us about your strategy call results or your idea. 
+                We'll reply within 24 hours with an honest assessment and transparent quote.
               </p>
             </div>
             

@@ -84,7 +84,7 @@ const Header = () => {
                 </Button>
               ))}
             </div>
-            <Button onClick={() => navigate("/planningmysaas")} className="font-semibold bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+            <Button onClick={() => window.open("https://uaicode.ai/booking", "_blank")} className="font-semibold bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
               <Sparkles className="w-4 h-4 mr-2" />Book Free Strategy Call
             </Button>
           </div>
@@ -124,7 +124,7 @@ const Header = () => {
                 </Button>
               ))}
             </div>
-            <Button onClick={() => navigate("/planningmysaas")} className="w-full font-semibold bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"><Sparkles className="w-4 h-4 mr-2" />Book Free Strategy Call</Button>
+            <Button onClick={() => window.open("https://uaicode.ai/booking", "_blank")} className="w-full font-semibold bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"><Sparkles className="w-4 h-4 mr-2" />Book Free Strategy Call</Button>
           </div>
         </div>
       )}

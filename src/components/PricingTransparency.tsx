@@ -39,7 +39,7 @@ const PricingTransparency = () => {
           <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 px-4 py-2 rounded-full text-sm">
             <span className="text-accent font-medium">💡 Pro tip:</span>
             <span className="text-muted-foreground">Founders who validate first save an average of $40K in wasted development.</span>
-            <a href="/planningmysaas" className="text-accent hover:underline font-medium">Book your free call →</a>
+            <a href="https://uaicode.ai/booking" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline font-medium">Book your free call →</a>
           </div>
         </div>
 
@@ -110,7 +110,7 @@ const PricingTransparency = () => {
 
             <div className="mt-auto pt-6">
               <Button
-                onClick={() => navigate("/planningmysaas")}
+                onClick={() => window.open("https://uaicode.ai/booking", "_blank")}
                 variant="outline"
                 className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground text-sm sm:text-base py-3 sm:py-4"
               >
@@ -197,7 +197,7 @@ const PricingTransparency = () => {
 
             <div className="mt-auto pt-6">
               <Button
-                onClick={() => navigate("/planningmysaas")}
+                onClick={() => window.open("https://uaicode.ai/booking", "_blank")}
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-sm sm:text-base py-3 sm:py-4"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
@@ -287,7 +287,7 @@ const PricingTransparency = () => {
 
             <div className="mt-auto pt-6">
               <Button
-                onClick={() => navigate("/planningmysaas")}
+                onClick={() => window.open("https://uaicode.ai/booking", "_blank")}
                 variant="outline"
                 className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground text-sm sm:text-base py-3 sm:py-4"
               >
