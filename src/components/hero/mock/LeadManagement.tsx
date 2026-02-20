@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Eye, Download, UserCheck, Loader2, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Eye, Download, UserCheck, Loader2, ExternalLink, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import {
@@ -15,6 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type Lead = Tables<"tb_crm_leads">;
 
@@ -47,6 +52,8 @@ const LeadManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 9;
@@ -73,9 +80,12 @@ const LeadManagement = () => {
       const matchSearch = !s || (l.full_name?.toLowerCase().includes(s) || l.email?.toLowerCase().includes(s));
       const matchSource = sourceFilter === "all" || l.source === sourceFilter;
       const matchCountry = countryFilter === "all" || l.country === countryFilter;
-      return matchSearch && matchSource && matchCountry;
+      const createdAt = new Date(l.created_at);
+      const matchStart = !startDate || createdAt >= new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+      const matchEnd = !endDate || createdAt <= new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999);
+      return matchSearch && matchSource && matchCountry && matchStart && matchEnd;
     });
-  }, [leads, searchTerm, sourceFilter, countryFilter]);
+  }, [leads, searchTerm, sourceFilter, countryFilter, startDate, endDate]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginatedLeads = useMemo(() => {
@@ -85,7 +95,7 @@ const LeadManagement = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sourceFilter, countryFilter]);
+  }, [searchTerm, sourceFilter, countryFilter, startDate, endDate]);
 
   const downloadCSV = () => {
     const headers = ["Name", "Email", "Company", "Job Title", "Country", "Source", "Phone", "LinkedIn", "Created"];
@@ -97,7 +107,13 @@ const LeadManagement = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    let filename = "leads";
+    if (sourceFilter !== "all") filename += `-source-${sourceFilter}`;
+    if (countryFilter !== "all") filename += `-country-${countryFilter}`;
+    if (startDate) filename += `-from-${format(startDate, "yyyy-MM-dd")}`;
+    if (endDate) filename += `-to-${format(endDate, "yyyy-MM-dd")}`;
+    filename += `-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -142,6 +158,28 @@ const LeadManagement = () => {
             ))}
           </SelectContent>
         </Select>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-[160px] justify-start text-left font-normal bg-white/[0.04] border-white/[0.06] text-sm hover:bg-white/[0.08]", !startDate && "text-white/40")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {startDate ? format(startDate, "MMM dd, yyyy") : "Start date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 bg-[#1a1a2e] border-white/[0.08]" align="start">
+            <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus className="p-3 pointer-events-auto" />
+          </PopoverContent>
+        </Popover>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-[160px] justify-start text-left font-normal bg-white/[0.04] border-white/[0.06] text-sm hover:bg-white/[0.08]", !endDate && "text-white/40")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {endDate ? format(endDate, "MMM dd, yyyy") : "End date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 bg-[#1a1a2e] border-white/[0.08]" align="start">
+            <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus className="p-3 pointer-events-auto" />
+          </PopoverContent>
+        </Popover>
         <Select value={countryFilter} onValueChange={setCountryFilter}>
           <SelectTrigger className="w-[160px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm">
             <SelectValue placeholder="Country" />
