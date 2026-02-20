@@ -69,7 +69,7 @@ const HeroLogin = () => {
       {/* Left - Visual */}
       <div className="relative w-full lg:w-1/2 h-56 sm:h-72 lg:h-auto lg:min-h-screen overflow-hidden">
         <img src={heroLoginBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-black/10" />
 
         <div className="relative z-10 flex flex-col justify-between h-full p-6 sm:p-8 lg:p-12">
           <div className="flex items-center gap-3">
