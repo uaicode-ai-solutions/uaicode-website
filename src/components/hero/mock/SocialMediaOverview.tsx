@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Image, Video, Layers, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Share2, Eraser } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Tables } from "@/integrations/supabase/types";
@@ -58,6 +59,8 @@ const SocialMediaOverview = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [contentType, setContentType] = useState<string | undefined>();
+  const [pillarFilter, setPillarFilter] = useState<string | undefined>();
 
   const { data: contents, isLoading } = useQuery({
     queryKey: ["media-content"],
@@ -73,7 +76,17 @@ const SocialMediaOverview = () => {
 
   useEffect(() => {
     setCurrentPage(0);
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, contentType, pillarFilter]);
+
+  const contentTypes = useMemo(() => {
+    if (!contents) return [];
+    return [...new Set(contents.map((c) => c.content_type))].sort();
+  }, [contents]);
+
+  const pillars = useMemo(() => {
+    if (!contents) return [];
+    return [...new Set(contents.map((c) => c.pillar))].sort();
+  }, [contents]);
 
   const filteredContents = useMemo(() => {
     if (!contents) return [];
@@ -81,14 +94,25 @@ const SocialMediaOverview = () => {
       const created = new Date(c.created_at);
       if (dateFrom && isBefore(created, startOfDay(dateFrom))) return false;
       if (dateTo && isAfter(created, endOfDay(dateTo))) return false;
+      if (contentType && c.content_type !== contentType) return false;
+      if (pillarFilter && c.pillar !== pillarFilter) return false;
       return true;
     });
-  }, [contents, dateFrom, dateTo]);
+  }, [contents, dateFrom, dateTo, contentType, pillarFilter]);
+
+  const hasFilters = !!dateFrom || !!dateTo || !!contentType || !!pillarFilter;
+
+  const clearFilters = () => {
+    setDateFrom(undefined);
+    setDateTo(undefined);
+    setContentType(undefined);
+    setPillarFilter(undefined);
+  };
 
   const totalPages = Math.ceil(filteredContents.length / PAGE_SIZE);
   const paginatedContents = filteredContents.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
-  const hasFilters = !!dateFrom || !!dateTo;
+  
 
   const openDetail = (content: MediaContent) => {
     setSelectedContent(content);
@@ -107,12 +131,12 @@ const SocialMediaOverview = () => {
       <h2 className="text-lg font-bold text-white">Social Media</h2>
 
       {/* Filter bar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className={cn("h-8 text-xs bg-white/[0.04] border-white/[0.08] text-white/70 hover:bg-white/[0.08] gap-1.5", dateFrom && "text-white")}>
               <CalendarIcon className="w-3.5 h-3.5" />
-              {dateFrom ? format(dateFrom, "MMM d, yyyy") : "From"}
+              {dateFrom ? format(dateFrom, "MMM d, yyyy") : "Start Date"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -124,7 +148,7 @@ const SocialMediaOverview = () => {
           <PopoverTrigger asChild>
             <Button variant="outline" className={cn("h-8 text-xs bg-white/[0.04] border-white/[0.08] text-white/70 hover:bg-white/[0.08] gap-1.5", dateTo && "text-white")}>
               <CalendarIcon className="w-3.5 h-3.5" />
-              {dateTo ? format(dateTo, "MMM d, yyyy") : "To"}
+              {dateTo ? format(dateTo, "MMM d, yyyy") : "End Date"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -132,9 +156,34 @@ const SocialMediaOverview = () => {
           </PopoverContent>
         </Popover>
 
+        <Select value={contentType || "all"} onValueChange={(v) => setContentType(v === "all" ? undefined : v)}>
+          <SelectTrigger className="h-8 w-[130px] text-xs bg-white/[0.04] border-white/[0.08] text-white/70 hover:bg-white/[0.08]">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#1a1a1a] border-white/[0.08]">
+            <SelectItem value="all" className="text-white/70 text-xs focus:bg-white/[0.08] focus:text-white">All Types</SelectItem>
+            {contentTypes.map((t) => (
+              <SelectItem key={t} value={t} className="text-white/70 text-xs focus:bg-white/[0.08] focus:text-white">{t}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={pillarFilter || "all"} onValueChange={(v) => setPillarFilter(v === "all" ? undefined : v)}>
+          <SelectTrigger className="h-8 w-[130px] text-xs bg-white/[0.04] border-white/[0.08] text-white/70 hover:bg-white/[0.08]">
+            <SelectValue placeholder="All Pillars" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#1a1a1a] border-white/[0.08]">
+            <SelectItem value="all" className="text-white/70 text-xs focus:bg-white/[0.08] focus:text-white">All Pillars</SelectItem>
+            {pillars.map((p) => (
+              <SelectItem key={p} value={p} className="text-white/70 text-xs focus:bg-white/[0.08] focus:text-white">{p}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         {hasFilters && (
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.08]" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
-            <Eraser className="w-4 h-4" />
+          <Button variant="ghost" className="h-8 text-xs text-white/40 hover:text-white hover:bg-white/[0.08] gap-1.5" onClick={clearFilters}>
+            <Eraser className="w-3.5 h-3.5" />
+            Clear Filters
           </Button>
         )}
       </div>
