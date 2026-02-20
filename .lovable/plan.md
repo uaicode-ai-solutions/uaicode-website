@@ -1,64 +1,45 @@
 
 
-# Social Media - Exibicao de conteudo em cards
+# Social Media - Paginacao e cards menores
 
 ## O que muda
 
-Substituir o placeholder "Coming soon" por uma grade de cards que exibe o conteudo da tabela `tb_media_content`. Cada card mostra a primeira imagem (ou asset), tipo de midia, pilar, status e data. Ao clicar, abre um Dialog com visualizacao ampliada e todos os detalhes da midia (incluindo navegacao por slides no caso de carrossel).
+1. Adicionar barra de paginacao na parte inferior para navegar entre paginas de 8 cards
+2. Reduzir o tamanho dos cards removendo o aspect-square e usando uma proporcao menor
+3. Garantir que os 8 cards caibam na tela sem gerar scroll vertical
 
 ## Detalhes Tecnicos
 
-### `src/components/hero/mock/SocialMediaOverview.tsx` (reescrever)
+### `src/components/hero/mock/SocialMediaOverview.tsx`
 
-**Imports:**
-- `useState` de React
-- `useQuery` de `@tanstack/react-query`
-- `supabase` de `@/integrations/supabase/client`
-- `format` de `date-fns`
-- `Dialog, DialogContent, DialogHeader, DialogTitle` de `@/components/ui/dialog`
-- `Badge` de `@/components/ui/badge`
-- `Button` de `@/components/ui/button`
-- `Image, Video, Layers, ChevronLeft, ChevronRight, Calendar, Eye` de `lucide-react`
-- Tipo `Tables` de `@/integrations/supabase/types`
+**Novo estado:**
+- `currentPage` iniciando em `0`
 
-**Query Supabase:**
-- Buscar todos os registros de `tb_media_content` ordenados por `created_at` desc
-- A tabela ja tem RLS para admins (o usuario logado e admin)
+**Paginacao:**
+- Constante `PAGE_SIZE = 8`
+- Calcular `totalPages = Math.ceil(contents.length / PAGE_SIZE)`
+- Fatiar os dados: `paginatedContents = contents.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)`
+- Renderizar apenas `paginatedContents` no grid
 
-**Interface de slide:**
-```typescript
-interface Slide {
-  image_url: string;
-  slide_number: number;
-}
-```
+**Cards menores:**
+- Trocar `aspect-square` por `aspect-[4/3]` nos cards para reduzir a altura
+- Grid permanece `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4` (2 linhas x 4 colunas = 8 cards)
+- Reduzir padding inferior do card de `px-3 py-2` para `px-2 py-1`
 
-**Grid de cards:**
-- Layout: `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4`
-- Cada card:
-  - Imagem de preview: primeira imagem do `slides_json` (para carousel) ou `asset_url` (para single_image/video)
-  - Aspect ratio quadrado (1:1) com `object-cover`
-  - Overlay inferior com gradiente escuro mostrando:
-    - Badge com `content_type` (icone Layers para carousel, Image para single_image, Video para video)
-    - Badge com `pillar`
-    - Badge com `status` (cores diferentes: ready=verde, generating=amarelo, draft=cinza)
-  - Data de criacao no canto
-  - Estilo dark: `rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden cursor-pointer hover:border-white/[0.12] transition-colors`
+**Barra de navegacao (paginacao):**
+- Renderizar abaixo do grid apenas quando `totalPages > 1`
+- Layout: `flex items-center justify-between` com estilo dark
+- Lado esquerdo: texto "Page X of Y" em `text-xs text-white/40`
+- Centro: botoes de pagina numerados (1, 2, 3...) com destaque no ativo
+- Lado direito: botoes Previous/Next usando `ChevronLeft`/`ChevronRight` (ja importados)
+- Botoes desabilitados quando na primeira/ultima pagina
+- Estilo dos botoes: `bg-white/[0.04] hover:bg-white/[0.08] text-white/60 rounded-lg px-3 py-1.5 text-xs`
+- Botao ativo: `bg-white/[0.12] text-white`
 
-**Dialog de detalhes (ao clicar no card):**
-- Estado: `selectedContent` e `currentSlide` (para navegacao de carrossel)
-- Imagem ampliada no topo (aspect ratio 1:1)
-- Para carrossel: botoes de navegacao prev/next com indicador de slide atual (ex: "3 / 7")
-- Abaixo da imagem:
-  - Badges: content_type, pillar, status
-  - Caption completa (texto scrollavel)
-  - Datas: created_at, scheduled_for, published_at (se existirem)
-  - Instagram Media ID (se existir)
-- Estilo do dialog: `bg-[#0a0a0a] border-white/[0.06] text-white max-w-2xl`
+**Container principal:**
+- Trocar `space-y-6` por `flex flex-col h-[calc(100vh-theme(spacing.24))]` para ocupar a altura disponivel sem scroll
+- O grid de cards recebe `flex-1` e a barra de paginacao fica fixa na parte inferior
 
-**Estado de loading:**
-- Skeleton cards enquanto carrega
-
-**Estado vazio:**
-- Manter estilo similar ao atual caso nao haja conteudo
+**Resetar pagina:**
+- Ao mudar o total de conteudos (refetch), resetar `currentPage` para 0
 
