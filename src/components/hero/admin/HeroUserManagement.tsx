@@ -1,13 +1,17 @@
 import { useState } from "react";
-import { useHeroUsers } from "@/hooks/useHeroUsers";
+import { useHeroUsers, HeroUserWithRoles } from "@/hooks/useHeroUsers";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Users, UserPlus } from "lucide-react";
+import { Users, UserPlus, Pencil, Trash2 } from "lucide-react";
 import InviteUserDialog from "./InviteUserDialog";
+import EditUserDialog from "./EditUserDialog";
+import DeleteUserDialog from "./DeleteUserDialog";
 
 const HeroUserManagement = () => {
   const { data: users, isLoading, error } = useHeroUsers();
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<HeroUserWithRoles | null>(null);
+  const [deletingUser, setDeletingUser] = useState<HeroUserWithRoles | null>(null);
 
   if (isLoading) {
     return (
@@ -53,6 +57,8 @@ const HeroUserManagement = () => {
         </Button>
       </div>
       <InviteUserDialog open={inviteOpen} onOpenChange={setInviteOpen} />
+      <EditUserDialog user={editingUser} open={!!editingUser} onOpenChange={(o) => !o && setEditingUser(null)} />
+      <DeleteUserDialog user={deletingUser} open={!!deletingUser} onOpenChange={(o) => !o && setDeletingUser(null)} />
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
         <table className="w-full">
           <thead>
@@ -62,6 +68,7 @@ const HeroUserManagement = () => {
               <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Role</th>
               <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Status</th>
               <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Team</th>
+              <th className="text-right px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -84,6 +91,16 @@ const HeroUserManagement = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-white/60 capitalize">{u.team === "none" ? "—" : u.team}</td>
+                <td className="px-6 py-4 text-right">
+                  <div className="flex justify-end gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.06]" onClick={() => setEditingUser(u)}>
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white/40 hover:text-red-400 hover:bg-red-500/10" onClick={() => setDeletingUser(u)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
