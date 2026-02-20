@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Eye, Download, UserCheck, Loader2, ExternalLink } from "lucide-react";
+import { Search, Eye, Download, UserCheck, Loader2, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import {
@@ -48,6 +48,8 @@ const LeadManagement = () => {
   const [sourceFilter, setSourceFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 15;
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -74,6 +76,16 @@ const LeadManagement = () => {
       return matchSearch && matchSource && matchCountry;
     });
   }, [leads, searchTerm, sourceFilter, countryFilter]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedLeads = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filtered.slice(start, start + ITEMS_PER_PAGE);
+  }, [filtered, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, sourceFilter, countryFilter]);
 
   const downloadCSV = () => {
     const headers = ["Name", "Email", "Company", "Job Title", "Country", "Source", "Phone", "LinkedIn", "Created"];
@@ -177,7 +189,7 @@ const LeadManagement = () => {
                   </td>
                 </tr>
               ) : (
-                filtered.map((lead) => (
+                paginatedLeads.map((lead) => (
                   <tr key={lead.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3 text-sm text-white/80 truncate" title={lead.full_name || ""}>{lead.full_name || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 truncate" title={lead.email || ""}>{lead.email || "—"}</td>
@@ -201,6 +213,34 @@ const LeadManagement = () => {
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {filtered.length > ITEMS_PER_PAGE && (
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs text-white/40">
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" /> Previous
+            </button>
+            <span className="text-xs text-white/50">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none"
+            >
+              Next <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedLead} onOpenChange={(open) => !open && setSelectedLead(null)}>
