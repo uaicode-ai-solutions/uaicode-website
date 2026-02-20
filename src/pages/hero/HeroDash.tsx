@@ -5,6 +5,7 @@ import HeroSidebar from "@/components/hero/HeroSidebar";
 import AdminOverview from "@/components/hero/mock/AdminOverview";
 import MarketingOverview from "@/components/hero/mock/MarketingOverview";
 import SalesOverview from "@/components/hero/mock/SalesOverview";
+import HeroProfileForm from "@/components/hero/profile/HeroProfileForm";
 import { useHeroAuth } from "@/hooks/useHeroAuth";
 
 const HeroDash = () => {
@@ -31,6 +32,7 @@ const HeroDash = () => {
   };
 
   const renderContent = () => {
+    if (activeItem === "profile") return <HeroProfileForm />;
     if (activeItem.startsWith("admin")) return <AdminOverview view={activeItem} />;
     if (activeItem.startsWith("mkt")) return <MarketingOverview view={activeItem} />;
     if (activeItem.startsWith("sales")) return <SalesOverview view={activeItem} />;
