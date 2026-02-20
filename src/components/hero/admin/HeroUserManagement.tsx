@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { useHeroUsers } from "@/hooks/useHeroUsers";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, UserPlus } from "lucide-react";
+import InviteUserDialog from "./InviteUserDialog";
 
 const HeroUserManagement = () => {
   const { data: users, isLoading, error } = useHeroUsers();
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -41,7 +45,14 @@ const HeroUserManagement = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-white">User Management</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-white">User Management</h2>
+        <Button onClick={() => setInviteOpen(true)} className="bg-uai-500 text-black hover:bg-uai-400 gap-2">
+          <UserPlus className="w-4 h-4" />
+          Invite User
+        </Button>
+      </div>
+      <InviteUserDialog open={inviteOpen} onOpenChange={setInviteOpen} />
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
         <table className="w-full">
           <thead>
