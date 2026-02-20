@@ -1,45 +1,64 @@
 
 
-# Social Media - Paginacao e cards menores
+# Social Media - 4 Cards, Paginacao e Filtro por Data com Calendarios
 
-## O que muda
+## Resumo
 
-1. Adicionar barra de paginacao na parte inferior para navegar entre paginas de 8 cards
-2. Reduzir o tamanho dos cards removendo o aspect-square e usando uma proporcao menor
-3. Garantir que os 8 cards caibam na tela sem gerar scroll vertical
+Limitar a exibicao a 4 cards por pagina (grid 2x2), adicionar barra de paginacao inferior e uma barra de filtros com dois date pickers (data inicio e data fim) usando o componente Calendar dentro de Popovers, mais um botao de reset com icone de borracha (Eraser do lucide-react).
 
 ## Detalhes Tecnicos
 
-### `src/components/hero/mock/SocialMediaOverview.tsx`
+### Arquivo: `src/components/hero/mock/SocialMediaOverview.tsx`
 
-**Novo estado:**
-- `currentPage` iniciando em `0`
+**Novos imports:**
+- `useMemo, useEffect` de React
+- `Popover, PopoverContent, PopoverTrigger` de `@/components/ui/popover`
+- `Calendar` de `@/components/ui/calendar`
+- `Eraser` de `lucide-react`
+- `cn` de `@/lib/utils`
+- `isAfter, isBefore, startOfDay, endOfDay` de `date-fns`
 
-**Paginacao:**
-- Constante `PAGE_SIZE = 8`
-- Calcular `totalPages = Math.ceil(contents.length / PAGE_SIZE)`
-- Fatiar os dados: `paginatedContents = contents.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)`
-- Renderizar apenas `paginatedContents` no grid
+**Novos estados:**
+- `currentPage` (number, default 0)
+- `dateFrom` (Date | undefined)
+- `dateTo` (Date | undefined)
 
-**Cards menores:**
-- Trocar `aspect-square` por `aspect-[4/3]` nos cards para reduzir a altura
-- Grid permanece `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4` (2 linhas x 4 colunas = 8 cards)
-- Reduzir padding inferior do card de `px-3 py-2` para `px-2 py-1`
+**Constante:**
+- `PAGE_SIZE = 4`
 
-**Barra de navegacao (paginacao):**
-- Renderizar abaixo do grid apenas quando `totalPages > 1`
-- Layout: `flex items-center justify-between` com estilo dark
-- Lado esquerdo: texto "Page X of Y" em `text-xs text-white/40`
-- Centro: botoes de pagina numerados (1, 2, 3...) com destaque no ativo
-- Lado direito: botoes Previous/Next usando `ChevronLeft`/`ChevronRight` (ja importados)
-- Botoes desabilitados quando na primeira/ultima pagina
-- Estilo dos botoes: `bg-white/[0.04] hover:bg-white/[0.08] text-white/60 rounded-lg px-3 py-1.5 text-xs`
-- Botao ativo: `bg-white/[0.12] text-white`
+**Logica de filtragem (useMemo):**
+1. Partir de `contents`
+2. Se `dateFrom` definido, filtrar `content.created_at >= startOfDay(dateFrom)`
+3. Se `dateTo` definido, filtrar `content.created_at <= endOfDay(dateTo)`
+4. Resultado: `filteredContents`
 
-**Container principal:**
-- Trocar `space-y-6` por `flex flex-col h-[calc(100vh-theme(spacing.24))]` para ocupar a altura disponivel sem scroll
-- O grid de cards recebe `flex-1` e a barra de paginacao fica fixa na parte inferior
+**Paginacao (useMemo):**
+- `totalPages = Math.ceil(filteredContents.length / PAGE_SIZE)`
+- `paginatedContents = filteredContents.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)`
 
-**Resetar pagina:**
-- Ao mudar o total de conteudos (refetch), resetar `currentPage` para 0
+**Reset de pagina:**
+- `useEffect` com dependencias `[dateFrom, dateTo]` para setar `currentPage = 0`
+
+**Barra de filtros (entre titulo e grid):**
+```text
+[Calendar icon] [From: Pick a date ▼] [To: Pick a date ▼] [Eraser icon button]
+```
+- Cada date picker: `Popover` contendo `PopoverTrigger` (botao com icone Calendar + data formatada ou placeholder) e `PopoverContent` com o componente `Calendar` mode="single"
+- Estilo dos botoes trigger: `h-8 text-xs bg-white/[0.04] border-white/[0.08] text-white/70 hover:bg-white/[0.08]`
+- Botao de reset: `Button` variant="ghost" size="icon" com icone `Eraser`, visivel apenas quando algum filtro esta ativo, limpa `dateFrom` e `dateTo` para `undefined`
+- Estilo do botao reset: `h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.08]`
+
+**Grid de cards:**
+- Mudar para `grid-cols-1 sm:grid-cols-2 gap-4` (maximo 2 colunas, 2 linhas = 4 cards)
+- Renderizar apenas `paginatedContents`
+- Skeleton loading: mostrar 4 skeletons (em vez de 8) com grid `grid-cols-1 sm:grid-cols-2`
+
+**Barra de paginacao (abaixo do grid, somente se totalPages > 1):**
+- Layout: `flex items-center justify-between pt-4`
+- Esquerda: "Page X of Y" em `text-xs text-white/40`
+- Centro: botoes de pagina numerados (1, 2, 3...) com destaque no ativo (`bg-white/[0.12] text-white` vs `text-white/40`)
+- Direita: botoes Previous/Next com `ChevronLeft`/`ChevronRight`, desabilitados na primeira/ultima pagina
+- Direita inferior: "N items" em `text-xs text-white/40`
+
+**Dialog de detalhes:** permanece inalterado.
 
