@@ -45,7 +45,7 @@ const AdminOverview = ({ view }: AdminOverviewProps) => {
                 <tr key={u.email} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
                   <td className="px-6 py-4 text-sm text-white">{u.name}</td>
                   <td className="px-6 py-4 text-sm text-white/60">{u.email}</td>
-                  <td className="px-6 py-4"><span className="text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-500">{u.role}</span></td>
+                  <td className="px-6 py-4"><span className="text-xs px-2 py-1 rounded-full bg-uai-500/10 text-uai-500">{u.role}</span></td>
                   <td className="px-6 py-4 text-sm text-white/60 capitalize">{u.team}</td>
                 </tr>
               ))}
@@ -104,8 +104,8 @@ const AdminOverview = ({ view }: AdminOverviewProps) => {
               className="rounded-xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl p-5 hover:bg-white/[0.04] transition-colors"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                  <Icon className="w-4 h-4 text-amber-500" />
+                <div className="w-9 h-9 rounded-lg bg-uai-500/10 flex items-center justify-center">
+                  <Icon className="w-4 h-4 text-uai-500" />
                 </div>
                 <span className="text-sm text-white/50">{s.label}</span>
               </div>

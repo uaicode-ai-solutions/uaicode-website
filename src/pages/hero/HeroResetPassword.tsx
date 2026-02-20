@@ -40,12 +40,10 @@ const HeroResetPassword = () => {
       }
     );
 
-    // Check if there's already a valid session (fallback)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setPageState("form");
       } else {
-        // Give Supabase a moment to process the hash
         setTimeout(() => {
           setPageState((prev) => (prev === "loading" ? "error" : prev));
         }, 3000);
@@ -89,13 +87,13 @@ const HeroResetPassword = () => {
         <div className="flex items-center justify-center gap-3">
           <img src={uaicodeLogo} alt="Uaicode" className="h-8 w-auto" />
           <span className="text-lg font-bold text-white">
-            Hero<span className="text-amber-500">Ecosystem</span>
+            Hero<span className="text-uai-500">Ecosystem</span>
           </span>
         </div>
 
         {pageState === "loading" && (
           <div className="flex flex-col items-center gap-4 py-12">
-            <div className="h-8 w-8 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+            <div className="h-8 w-8 border-4 border-uai-500/30 border-t-uai-500 rounded-full animate-spin" />
             <p className="text-white/60 text-sm">Verifying reset link...</p>
           </div>
         )}
@@ -107,7 +105,7 @@ const HeroResetPassword = () => {
             </div>
             <h1 className="text-xl font-bold text-white">Invalid or Expired Link</h1>
             <p className="text-white/50 text-sm">This password reset link is no longer valid. Please request a new one.</p>
-            <Button onClick={() => navigate("/hero")} className="bg-amber-500 hover:bg-amber-600 text-black font-semibold">
+            <Button onClick={() => navigate("/hero")} className="bg-uai-500 hover:bg-uai-600 text-black font-semibold">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Login
             </Button>
@@ -117,8 +115,8 @@ const HeroResetPassword = () => {
         {pageState === "form" && (
           <div className="space-y-6">
             <div className="text-center space-y-3">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-2">
-                <Lock className="w-7 h-7 text-amber-500" />
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-uai-500/10 border border-uai-500/20 mb-2">
+                <Lock className="w-7 h-7 text-uai-500" />
               </div>
               <h1 className="text-2xl font-bold text-white">Set New Password</h1>
               <p className="text-white/50 text-sm">Choose a strong password for your account.</p>
@@ -142,7 +140,7 @@ const HeroResetPassword = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50"
+                    className="pl-10 pr-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-uai-500/50"
                     required
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
@@ -162,7 +160,7 @@ const HeroResetPassword = () => {
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 pr-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50"
+                    className="pl-10 pr-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-uai-500/50"
                     required
                   />
                   <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
@@ -180,14 +178,14 @@ const HeroResetPassword = () => {
                 )}
               </div>
 
-              <Button type="submit" disabled={!canSubmit || isSubmitting} className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-black font-semibold">
+              <Button type="submit" disabled={!canSubmit || isSubmitting} className="w-full h-12 bg-uai-500 hover:bg-uai-600 text-black font-semibold">
                 {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Lock className="w-4 h-4 mr-2" />}
                 {isSubmitting ? "Updating..." : "Update Password"}
               </Button>
             </form>
 
             <div className="flex items-center justify-center gap-2 text-sm text-white/30 pt-2">
-              <Shield className="w-4 h-4 text-amber-500/50" />
+              <Shield className="w-4 h-4 text-uai-500/50" />
               <span>Your data is secure and encrypted</span>
             </div>
           </div>
@@ -200,7 +198,7 @@ const HeroResetPassword = () => {
             </div>
             <h1 className="text-xl font-bold text-white">Password Updated!</h1>
             <p className="text-white/50 text-sm">Your password has been changed successfully.</p>
-            <Button onClick={() => navigate("/hero/home")} className="bg-amber-500 hover:bg-amber-600 text-black font-semibold">
+            <Button onClick={() => navigate("/hero/home")} className="bg-uai-500 hover:bg-uai-600 text-black font-semibold">
               Go to Dashboard
             </Button>
           </div>

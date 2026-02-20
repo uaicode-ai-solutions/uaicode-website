@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Mail, Lock, Shield, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Shield, Loader2, AlertCircle, CheckCircle2, UserX } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuthContext } from "@/contexts/AuthContext";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
@@ -56,7 +56,7 @@ const HeroLogin = () => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+          <div className="h-8 w-8 border-4 border-uai-500/30 border-t-uai-500 rounded-full animate-spin" />
           <p className="text-white/60 text-sm">Loading...</p>
         </div>
       </div>
@@ -67,22 +67,22 @@ const HeroLogin = () => {
     <div className="min-h-screen flex flex-col lg:flex-row bg-black">
       {/* Left - Visual */}
       <div className="relative w-full lg:w-1/2 h-56 sm:h-72 lg:h-auto lg:min-h-screen overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-amber-500/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-uai-500/10" />
         <div className="absolute inset-0" style={{
-          background: "radial-gradient(ellipse at 70% 50%, rgba(234,171,8,0.08) 0%, transparent 60%)"
+          background: "radial-gradient(ellipse at 70% 50%, rgba(255,191,26,0.08) 0%, transparent 60%)"
         }} />
 
         <div className="relative z-10 flex flex-col justify-between h-full p-6 sm:p-8 lg:p-12">
           <div className="flex items-center gap-3">
             <img src={uaicodeLogo} alt="Uaicode" className="h-8 sm:h-10 w-auto" />
             <span className="text-lg sm:text-xl font-bold text-white">
-              Hero<span className="text-amber-500">Ecosystem</span>
+              Hero<span className="text-uai-500">Ecosystem</span>
             </span>
           </div>
 
           <div className="hidden lg:block space-y-4 max-w-lg">
             <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight">
-              Welcome to the <span className="text-amber-500">Hero Ecosystem</span>
+              Welcome to the <span className="text-uai-500">Hero Ecosystem</span>
             </h2>
             <p className="text-lg text-white/50">
               Internal corporate portal for Uaicode team members. Access your tools, dashboards, and resources.
@@ -99,8 +99,8 @@ const HeroLogin = () => {
       <div className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center space-y-3">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-2">
-              <Lock className="w-7 h-7 text-amber-500" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-uai-500/10 border border-uai-500/20 mb-2">
+              <Lock className="w-7 h-7 text-uai-500" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white">Sign In</h1>
             <p className="text-white/50 max-w-sm mx-auto">
@@ -119,7 +119,7 @@ const HeroLogin = () => {
                   placeholder="you@uaicode.ai"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50"
+                  className="pl-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-uai-500/50"
                   required
                 />
               </div>
@@ -135,7 +135,7 @@ const HeroLogin = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50"
+                  className="pl-10 pr-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-uai-500/50"
                   required
                 />
                 <button
@@ -152,7 +152,7 @@ const HeroLogin = () => {
               <button
                 type="button"
                 onClick={() => { setShowForgotPassword(true); setForgotEmail(email); setForgotSuccess(false); setForgotError(""); }}
-                className="text-sm text-amber-500/70 hover:text-amber-500 transition-colors"
+                className="text-sm text-uai-500/70 hover:text-uai-500 transition-colors"
               >
                 Forgot your password?
               </button>
@@ -161,7 +161,7 @@ const HeroLogin = () => {
             <Button
               type="submit"
               disabled={!canSubmit || isSubmitting}
-              className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-black font-semibold"
+              className="w-full h-12 bg-uai-500 hover:bg-uai-600 text-black font-semibold"
             >
               {isSubmitting ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -171,7 +171,7 @@ const HeroLogin = () => {
           </form>
 
           <div className="flex items-center justify-center gap-2 text-sm text-white/30 pt-4">
-            <Shield className="w-4 h-4 text-amber-500/50" />
+            <Shield className="w-4 h-4 text-uai-500/50" />
             <span>Authorized personnel only</span>
           </div>
         </div>
@@ -187,7 +187,7 @@ const HeroLogin = () => {
             </DialogTitle>
             <DialogDescription className="text-white/60">{errorMsg}</DialogDescription>
           </DialogHeader>
-          <Button onClick={() => setShowError(false)} className="bg-amber-500 hover:bg-amber-600 text-black">
+          <Button onClick={() => setShowError(false)} className="bg-uai-500 hover:bg-uai-600 text-black">
             Try Again
           </Button>
         </DialogContent>
@@ -198,7 +198,7 @@ const HeroLogin = () => {
         <DialogContent className="bg-zinc-900 border-white/10 text-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Mail className="w-5 h-5 text-amber-500" />
+              <Mail className="w-5 h-5 text-uai-500" />
               Reset Password
             </DialogTitle>
             <DialogDescription className="text-white/60">
@@ -207,12 +207,29 @@ const HeroLogin = () => {
           </DialogHeader>
 
           {forgotSuccess ? (
-            <div className="flex flex-col items-center gap-3 py-4">
-              <CheckCircle2 className="w-10 h-10 text-green-500" />
-              <p className="text-white/80 text-center text-sm">
-                Check your email for the reset link. It may take a few minutes.
+            <div className="flex flex-col items-center gap-4 py-4">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-uai-500/10 border border-uai-500/20">
+                <CheckCircle2 className="w-8 h-8 text-uai-500" />
+              </div>
+              <p className="text-white/90 text-center text-sm font-medium">
+                Reset link sent!
               </p>
-              <Button onClick={() => setShowForgotPassword(false)} className="bg-amber-500 hover:bg-amber-600 text-black mt-2">
+              <div className="rounded-xl bg-white/[0.04] border border-white/[0.08] p-4 space-y-2">
+                <div className="flex items-start gap-2">
+                  <UserX className="w-4 h-4 text-uai-500 mt-0.5 shrink-0" />
+                  <p className="text-white/60 text-xs leading-relaxed">
+                    If you don't receive an email within a few minutes, your account may not exist in the system. Please contact the system administrator.
+                  </p>
+                </div>
+                <a
+                  href="mailto:admin@uaicode.ai"
+                  className="flex items-center gap-2 text-uai-500 hover:text-uai-600 text-xs font-medium transition-colors"
+                >
+                  <Mail className="w-3 h-3" />
+                  admin@uaicode.ai
+                </a>
+              </div>
+              <Button onClick={() => setShowForgotPassword(false)} className="bg-uai-500 hover:bg-uai-600 text-black mt-1 w-full">
                 Got it
               </Button>
             </div>
@@ -238,12 +255,12 @@ const HeroLogin = () => {
                   placeholder="you@uaicode.ai"
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
-                  className="pl-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50"
+                  className="pl-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-uai-500/50"
                   required
                 />
               </div>
               {forgotError && <p className="text-red-400 text-sm">{forgotError}</p>}
-              <Button type="submit" disabled={!forgotEmail || forgotLoading} className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold">
+              <Button type="submit" disabled={!forgotEmail || forgotLoading} className="w-full bg-uai-500 hover:bg-uai-600 text-black font-semibold">
                 {forgotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                 {forgotLoading ? "Sending..." : "Send Reset Link"}
               </Button>

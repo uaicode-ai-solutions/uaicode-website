@@ -73,11 +73,11 @@ const HeroHome = () => {
       <main className="max-w-6xl mx-auto px-6 py-10 space-y-12">
         {/* Welcome Banner */}
         <div className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl p-8 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-uai-500/5 via-transparent to-transparent" />
           <div className="relative">
-            <p className="text-amber-500 text-sm font-medium mb-1">{getGreeting()}</p>
+            <p className="text-uai-500 text-sm font-medium mb-1">{getGreeting()}</p>
             <h1 className="text-3xl sm:text-4xl font-bold text-white">
-              Welcome back, <span className="text-amber-500">{firstName}</span>
+              Welcome back, <span className="text-uai-500">{firstName}</span>
             </h1>
             <p className="text-white/50 mt-2 max-w-lg">
               Access your tools and dashboards from the Hero Ecosystem.
@@ -99,13 +99,13 @@ const HeroHome = () => {
                   disabled={!hasAccess}
                   className={`relative group text-left rounded-xl border p-6 transition-all duration-300 ${
                     hasAccess
-                      ? "border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-amber-500/20 hover:-translate-y-0.5 cursor-pointer"
+                      ? "border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-uai-500/20 hover:-translate-y-0.5 cursor-pointer"
                       : "border-white/[0.04] bg-white/[0.01] opacity-50 cursor-not-allowed"
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${hasAccess ? "bg-amber-500/10" : "bg-white/[0.04]"}`}>
-                      {hasAccess ? <Icon className="w-5 h-5 text-amber-500" /> : <Lock className="w-5 h-5 text-white/20" />}
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${hasAccess ? "bg-uai-500/10" : "bg-white/[0.04]"}`}>
+                      {hasAccess ? <Icon className="w-5 h-5 text-uai-500" /> : <Lock className="w-5 h-5 text-white/20" />}
                     </div>
                     <h3 className="text-white font-semibold">{s.label}</h3>
                   </div>
@@ -125,7 +125,7 @@ const HeroHome = () => {
             const Icon = s.icon;
             return (
               <div key={s.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 text-center">
-                <Icon className="w-5 h-5 text-amber-500 mx-auto mb-2" />
+                <Icon className="w-5 h-5 text-uai-500 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-white font-mono">{s.value}</p>
                 <p className="text-xs text-white/40 mt-1">{s.label}</p>
               </div>
@@ -137,7 +137,7 @@ const HeroHome = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <section className="lg:col-span-2 space-y-4">
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-amber-500" /> Internal News
+              <BookOpen className="w-4 h-4 text-uai-500" /> Internal News
             </h2>
             <div className="space-y-3">
               {newsItems.map((n, i) => (
@@ -163,7 +163,7 @@ const HeroHome = () => {
                   href={l.url}
                   className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] transition-colors text-white/60 hover:text-white"
                 >
-                  <ExternalLink className="w-4 h-4 text-amber-500/60" />
+                  <ExternalLink className="w-4 h-4 text-uai-500/60" />
                   <span className="text-sm">{l.label}</span>
                 </a>
               ))}

@@ -33,7 +33,7 @@ const MarketingOverview = ({ view }: MarketingOverviewProps) => {
           {calendarEvents.map((e, i) => (
             <div key={i} className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] transition-colors">
               <div className="w-16 text-center">
-                <p className="text-xs text-amber-500 font-semibold">{e.date}</p>
+                <p className="text-xs text-uai-500 font-semibold">{e.date}</p>
               </div>
               <div className="flex-1">
                 <p className="text-sm text-white">{e.title}</p>
@@ -83,8 +83,8 @@ const MarketingOverview = ({ view }: MarketingOverviewProps) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {["Logo Pack", "Color Palette", "Typography Guide", "Social Templates"].map((asset) => (
             <div key={asset} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-colors cursor-pointer flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                <Palette className="w-5 h-5 text-amber-500" />
+              <div className="w-12 h-12 rounded-lg bg-uai-500/10 flex items-center justify-center">
+                <Palette className="w-5 h-5 text-uai-500" />
               </div>
               <div>
                 <h3 className="text-white font-medium">{asset}</h3>
@@ -107,8 +107,8 @@ const MarketingOverview = ({ view }: MarketingOverviewProps) => {
           return (
             <div key={s.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl p-5 hover:bg-white/[0.04] transition-colors">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                  <Icon className="w-4 h-4 text-amber-500" />
+                <div className="w-9 h-9 rounded-lg bg-uai-500/10 flex items-center justify-center">
+                  <Icon className="w-4 h-4 text-uai-500" />
                 </div>
                 <span className="text-sm text-white/50">{s.label}</span>
               </div>

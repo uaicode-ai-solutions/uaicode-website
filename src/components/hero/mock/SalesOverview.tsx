@@ -16,7 +16,7 @@ const leads = [
 
 const stageColors: Record<string, string> = {
   Proposal: "bg-blue-500/10 text-blue-400",
-  Negotiation: "bg-amber-500/10 text-amber-400",
+  Negotiation: "bg-uai-500/10 text-uai-500",
   Discovery: "bg-purple-500/10 text-purple-400",
   Qualification: "bg-emerald-500/10 text-emerald-400",
 };
@@ -63,7 +63,7 @@ const SalesOverview = ({ view }: SalesOverviewProps) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {["Monthly Revenue Report", "Lead Conversion Analysis", "Team Performance", "Forecast vs Actual"].map((r) => (
             <div key={r} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-colors cursor-pointer">
-              <FileText className="w-5 h-5 text-amber-500 mb-3" />
+              <FileText className="w-5 h-5 text-uai-500 mb-3" />
               <h3 className="text-white font-medium">{r}</h3>
               <p className="text-xs text-white/40 mt-1">View report →</p>
             </div>
@@ -103,8 +103,8 @@ const SalesOverview = ({ view }: SalesOverviewProps) => {
           return (
             <div key={s.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl p-5 hover:bg-white/[0.04] transition-colors">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                  <Icon className="w-4 h-4 text-amber-500" />
+                <div className="w-9 h-9 rounded-lg bg-uai-500/10 flex items-center justify-center">
+                  <Icon className="w-4 h-4 text-uai-500" />
                 </div>
                 <span className="text-sm text-white/50">{s.label}</span>
               </div>

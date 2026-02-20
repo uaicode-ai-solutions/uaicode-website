@@ -37,7 +37,7 @@ const HeroHeader = () => {
         >
           <img src={uaicodeLogo} alt="Uaicode" className="h-8 w-auto" />
           <span className="text-lg font-bold text-white">
-            Hero<span className="text-amber-500">Ecosystem</span>
+            Hero<span className="text-uai-500">Ecosystem</span>
           </span>
         </button>
 
@@ -49,7 +49,7 @@ const HeroHeader = () => {
               </span>
               <Avatar className="h-9 w-9 border border-white/10">
                 <AvatarImage src={heroUser?.avatar_url || undefined} />
-                <AvatarFallback className="bg-amber-500/20 text-amber-500 text-xs font-bold">
+                <AvatarFallback className="bg-uai-500/20 text-uai-500 text-xs font-bold">
                   {initials}
                 </AvatarFallback>
               </Avatar>
