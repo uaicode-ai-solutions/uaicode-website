@@ -149,7 +149,7 @@ const LeadManagement = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/[0.06]">
-                {["Name", "Email", "Company", "Job Title", "Country", "Created", ""].map((h) => (
+                {["Name", "Email", "Job Title", "Country", "Created", ""].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">
                     {h}
                   </th>
@@ -159,13 +159,13 @@ const LeadManagement = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center">
+                   <td colSpan={6} className="px-4 py-16 text-center">
                     <Loader2 className="w-6 h-6 animate-spin text-white/30 mx-auto" />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center">
+                  <td colSpan={6} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center">
                         <UserCheck className="w-6 h-6 text-white/20" />
@@ -179,7 +179,6 @@ const LeadManagement = () => {
                   <tr key={lead.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3 text-sm text-white/80 whitespace-nowrap">{lead.full_name || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 whitespace-nowrap">{lead.email || "—"}</td>
-                    <td className="px-4 py-3 text-sm text-white/60 whitespace-nowrap">{lead.company_name || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 whitespace-nowrap">{lead.job_title || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 whitespace-nowrap">{lead.country || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/50 whitespace-nowrap">{formatDate(lead.created_at)}</td>
