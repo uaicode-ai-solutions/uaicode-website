@@ -1,5 +1,9 @@
 project_id = "ccjnxselfgdoeyyuziwt"
 
+[auth.email.template.recovery]
+subject = "Reset Your Password - UaiCode Hero Ecosystem"
+content_path = "./supabase/templates/recovery.html"
+
 [functions.demo-chat]
 verify_jwt = false
 
