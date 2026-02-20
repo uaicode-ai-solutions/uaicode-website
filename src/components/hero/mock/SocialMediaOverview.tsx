@@ -223,12 +223,14 @@ const SocialMediaOverview = () => {
           </SelectContent>
         </Select>
 
-        {hasFilters && (
-          <Button variant="ghost" className="h-8 text-xs text-white/40 hover:text-white hover:bg-white/[0.08] gap-1.5" onClick={clearFilters}>
-            <Eraser className="w-3.5 h-3.5" />
-            Clear Filters
-          </Button>
-        )}
+        <button
+          onClick={clearFilters}
+          disabled={!hasFilters}
+          title="Clear filters"
+          className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white/40 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none"
+        >
+          <Eraser className="w-4 h-4" />
+        </button>
       </div>
 
       {isLoading ? (
