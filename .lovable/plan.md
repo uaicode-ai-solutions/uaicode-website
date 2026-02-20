@@ -1,35 +1,43 @@
 
+# Fix: Invite User - Feedback Invisivel e Timeout
 
-# Fix: Invite User Edge Function Crash
+## Problema
+Dois problemas combinados fazem parecer que "nada acontece":
 
-## Problem
-The `hero-invite-user` edge function crashes because it calls `anonClient.auth.getClaims(token)`, which does not exist in supabase-js v2. The request fails with "Failed to fetch" (the function crashes before returning a response).
+1. **Toast desabilitado**: O arquivo `src/components/ui/sonner.tsx` exporta funcoes vazias (no-ops). Quando o invite falha, `toast.error()` nao mostra nada. Quando tem sucesso, `toast.success()` tambem nao mostra nada.
 
-## Root Cause
-`getClaims()` is not a method on the Supabase Auth client. The function needs to use `getUser()` instead to extract the caller's identity from the JWT.
+2. **Erro silencioso na chamada**: O request retorna "Failed to fetch" (visivel apenas no DevTools), mas o catch block so chama `toast.error()` que e um no-op.
 
-## Fix
+## Solucao
 
-### File: `supabase/functions/hero-invite-user/index.ts`
+### 1. Adicionar feedback inline no `InviteUserDialog.tsx`
 
-Replace the authentication block that uses `getClaims` with `adminClient.auth.getUser(token)`:
+Como o toast global esta desabilitado no projeto, adicionar um estado de erro/sucesso inline dentro do dialog:
 
-```text
-BEFORE (broken):
-  const anonClient = createClient(SUPABASE_URL, ANON_KEY, ...);
-  const { data: claimsData, error } = await anonClient.auth.getClaims(token);
-  const callerAuthId = claimsData.claims.sub;
+- Adicionar estado `errorMessage` e `successMessage`
+- Mostrar mensagem de erro em vermelho abaixo do formulario quando falha
+- Mostrar mensagem de sucesso em verde quando funciona
+- Adicionar `console.error` no catch para debugging
+- Manter as chamadas de toast como bonus (caso sejam reativadas no futuro)
 
-AFTER (fixed):
-  const { data: { user }, error } = await adminClient.auth.getUser(token);
-  const callerAuthId = user.id;
-```
+### 2. Adicionar timeout mais longo na chamada da edge function
 
-This removes the unnecessary `anonClient` entirely and uses the already-created `adminClient` to validate the token and get the user ID.
+O `supabase.functions.invoke` pode estar dando timeout porque a edge function faz varias operacoes (criar user, gerar link, enviar email). Nao ha como configurar timeout no invoke, mas podemos tratar o erro de forma mais informativa.
 
-## Technical Details
+## Arquivos
 
-- Single file change: `supabase/functions/hero-invite-user/index.ts`
-- No database migration needed
-- No frontend changes needed
-- The `adminClient` (service role) can call `getUser(token)` to validate any JWT and extract user info
+| Arquivo | Acao |
+|---|---|
+| `src/components/hero/admin/InviteUserDialog.tsx` | Adicionar feedback inline (erro/sucesso) + console.error para debugging |
+
+## Detalhes Tecnicos
+
+Adicionar ao componente:
+- `const [errorMessage, setErrorMessage] = useState("")`
+- `const [successMessage, setSuccessMessage] = useState("")`
+- Limpar mensagens no inicio do submit
+- No catch: `setErrorMessage(err.message)` + `console.error`
+- No sucesso: `setSuccessMessage("Invite sent!")` com auto-close apos 2s
+- Renderizar mensagens inline com estilos verde/vermelho
+
+Nenhuma alteracao no backend necessaria - a edge function esta funcionando corretamente (testada e retornando 401 sem auth, como esperado).
