@@ -1,36 +1,26 @@
 
 
-# Dialog de Imagem nos Cards do Social Media
+# Ajuste no Menu Lateral - Mover Leads para Marketing
 
-Adicionar um dialog minimalista que abre ao clicar num card, mostrando apenas a imagem em tamanho grande com navegacao entre slides para carroseis.
+## Resumo
 
-## Alteracoes
+Mover o item "Lead Management" do subsistema Sales para Marketing e renomear para "Leads".
 
-### Arquivo: `src/components/hero/mock/SocialMediaOverview.tsx`
+## Alteracao
 
-**1. Novo estado para controlar o dialog:**
-- Adicionar `selectedContent: MediaContent | null` para rastrear qual card foi clicado
-- Adicionar `dialogSlide: number` para controlar o slide ativo dentro do dialog
+### Arquivo: `src/components/hero/HeroSidebar.tsx`
 
-**2. Tornar o card clicavel:**
-- Adicionar `cursor-pointer` e `onClick={() => { setSelectedContent(content); setDialogSlide(activeSlides[content.id] || 0); }}` no container do card
-- O click no download e nas setas do card continuam com `e.stopPropagation()`
+Na array `sidebarItems` (linha 18), alterar o item `sales-leads`:
 
-**3. Adicionar Dialog minimalista:**
-- Importar `Dialog`, `DialogContent` de `@/components/ui/dialog`
-- O dialog abre quando `selectedContent !== null`
-- Conteudo do dialog: apenas a imagem centralizada, sem titulo, sem descricao, sem footer
-- Usar `max-w-3xl` ou similar para a imagem ficar grande
-- Fundo escuro (`bg-black/95` ou `bg-transparent`) sem padding extra
-- Esconder o botao X padrao ou estiliza-lo discretamente
+**De:**
+```
+{ id: "sales-leads", label: "Lead Management", icon: UserCheck, subsystem: "sales" }
+```
 
-**4. Navegacao de slides no dialog (apenas para carroseis):**
-- Se `selectedContent.content_type === "carousel"` e houver mais de 1 slide:
-  - Setas ChevronLeft/ChevronRight posicionadas nos lados da imagem (mesmo estilo das setas dos cards, porem maiores: `h-10 w-10`)
-  - Contador de slides na parte inferior da imagem (`{dialogSlide + 1} / {total}`)
-  - Desabilitar seta esquerda no primeiro slide, direita no ultimo
-- Se for imagem unica: mostrar apenas a imagem, sem setas
+**Para:**
+```
+{ id: "sales-leads", label: "Leads", icon: UserCheck, subsystem: "marketing" }
+```
 
-**5. Fechar o dialog:**
-- `onOpenChange` do Dialog seta `selectedContent` para `null`
+O `id` permanece `"sales-leads"` para nao quebrar nenhuma referencia existente (como o `defaultView` no `HeroDash.tsx` e a query param `view=sales-leads`). Apenas o label e o subsystem mudam.
 
