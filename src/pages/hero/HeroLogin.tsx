@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Mail, Lock, Shield, Loader2, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Shield, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuthContext } from "@/contexts/AuthContext";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
@@ -11,7 +11,7 @@ import uaicodeLogo from "@/assets/uaicode-logo.png";
 const HeroLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, isAuthenticated, loading } = useAuthContext();
+  const { signIn, resetPassword, isAuthenticated, loading } = useAuthContext();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +19,11 @@ const HeroLogin = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+  const [forgotError, setForgotError] = useState("");
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/hero/home";
 
@@ -143,6 +148,16 @@ const HeroLogin = () => {
               </div>
             </div>
 
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => { setShowForgotPassword(true); setForgotEmail(email); setForgotSuccess(false); setForgotError(""); }}
+                className="text-sm text-amber-500/70 hover:text-amber-500 transition-colors"
+              >
+                Forgot your password?
+              </button>
+            </div>
+
             <Button
               type="submit"
               disabled={!canSubmit || isSubmitting}
@@ -175,6 +190,65 @@ const HeroLogin = () => {
           <Button onClick={() => setShowError(false)} className="bg-amber-500 hover:bg-amber-600 text-black">
             Try Again
           </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={showForgotPassword} onOpenChange={(open) => { setShowForgotPassword(open); if (!open) { setForgotSuccess(false); setForgotError(""); } }}>
+        <DialogContent className="bg-zinc-900 border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-amber-500" />
+              Reset Password
+            </DialogTitle>
+            <DialogDescription className="text-white/60">
+              Enter your email and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+
+          {forgotSuccess ? (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <CheckCircle2 className="w-10 h-10 text-green-500" />
+              <p className="text-white/80 text-center text-sm">
+                Check your email for the reset link. It may take a few minutes.
+              </p>
+              <Button onClick={() => setShowForgotPassword(false)} className="bg-amber-500 hover:bg-amber-600 text-black mt-2">
+                Got it
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!forgotEmail) return;
+              setForgotLoading(true);
+              setForgotError("");
+              try {
+                await resetPassword(forgotEmail, `${window.location.origin}/hero/reset-password`);
+                setForgotSuccess(true);
+              } catch (err: any) {
+                setForgotError(err.message || "Failed to send reset email.");
+              } finally {
+                setForgotLoading(false);
+              }
+            }} className="space-y-4">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <Input
+                  type="email"
+                  placeholder="you@uaicode.ai"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  className="pl-10 h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-amber-500/50"
+                  required
+                />
+              </div>
+              {forgotError && <p className="text-red-400 text-sm">{forgotError}</p>}
+              <Button type="submit" disabled={!forgotEmail || forgotLoading} className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold">
+                {forgotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                {forgotLoading ? "Sending..." : "Send Reset Link"}
+              </Button>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>
