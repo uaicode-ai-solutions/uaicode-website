@@ -1,21 +1,42 @@
 
 
-# Botao Clear Filters com icone de borracha
+# Ordenacao por colunas na tabela de Leads
 
 ## O que muda
 
-Adicionar um botao com o icone `Eraser` do Lucide na barra de filtros que limpa todos os filtros de uma vez (search, source, country, startDate, endDate).
+Adicionar setas clicaveis nos cabecalhos das colunas da tabela para ordenar os dados de forma ascendente ou descendente. O estado default sera ordenado por data de criacao (descendente).
 
 ## Detalhes Tecnicos
 
 ### `src/components/hero/mock/LeadManagement.tsx`
 
-- Adicionar import do icone `Eraser` de `lucide-react`
-- Criar uma funcao `clearFilters` que reseta: `setSearchTerm("")`, `setSourceFilter("all")`, `setCountryFilter("all")`, `setStartDate(undefined)`, `setEndDate(undefined)`
-- Adicionar um botao ao final da barra de filtros com:
-  - Icone `Eraser` (w-4 h-4)
-  - Sem texto, apenas o icone
-  - Tooltip ou title "Clear filters"
-  - Estilo consistente: `p-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white/40 hover:bg-white/[0.08] hover:text-white transition-colors`
-  - Desabilitado quando nenhum filtro esta ativo (todos nos valores default)
+**Novos imports:**
+- `ArrowUp`, `ArrowDown`, `ArrowUpDown` de `lucide-react`
+
+**Novo estado:**
+- `sortConfig: { key: string; direction: 'asc' | 'desc' }` com valor default `{ key: 'created_at', direction: 'desc' }`
+
+**Logica de ordenacao:**
+- Funcao `handleSort(key)`: se a coluna clicada ja e a ativa, inverte a direcao; caso contrario, define a nova coluna com direcao `asc`
+- Aplicar ordenacao no `useMemo` de `filtered` (ou criar novo `useMemo` entre `filtered` e `paginatedLeads`) usando `sort()` com comparacao por string (para nome, email, company, job_title, country) e por data (para created_at)
+- Tratar valores nulos colocando-os no final independente da direcao
+
+**Colunas ordenaveis:**
+- Name (`full_name`)
+- Email (`email`)
+- Company (`company_name`)
+- Job Title (`job_title`)
+- Country (`country`)
+- Created (`created_at`)
+
+**UI dos cabecalhos:**
+- Cada `<th>` ordenavel se torna clicavel com `cursor-pointer` e `hover:text-white/60`
+- Icone ao lado do texto:
+  - `ArrowUp` (w-3 h-3) quando ativo e direcao `asc`
+  - `ArrowDown` (w-3 h-3) quando ativo e direcao `desc`
+  - `ArrowUpDown` (w-3 h-3, opacity mais baixa) quando inativo
+- Layout do cabecalho: `flex items-center gap-1` dentro do `<th>`
+
+**Componente auxiliar (inline):**
+- `SortableHeader({ label, sortKey })` que renderiza o texto + icone correto baseado no `sortConfig` atual e chama `handleSort` no click
 
