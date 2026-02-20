@@ -20,7 +20,7 @@ interface Slide {
   slide_number: number;
 }
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 6;
 
 const getPreviewUrl = (content: MediaContent): string | null => {
   if (content.content_type === "carousel" && content.slides_json) {
@@ -103,8 +103,8 @@ const SocialMediaOverview = () => {
     : null;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold text-white">Social Media</h2>
+    <div className="space-y-4">
+      <h2 className="text-lg font-bold text-white">Social Media</h2>
 
       {/* Filter bar */}
       <div className="flex items-center gap-3">
@@ -140,10 +140,10 @@ const SocialMediaOverview = () => {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-              <Skeleton className="aspect-square w-full bg-white/[0.04]" />
+              <Skeleton className="aspect-[4/5] w-full bg-white/[0.04]" />
               <div className="p-3 space-y-2">
                 <Skeleton className="h-4 w-20 bg-white/[0.04]" />
                 <Skeleton className="h-3 w-16 bg-white/[0.04]" />
@@ -161,7 +161,7 @@ const SocialMediaOverview = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {paginatedContents.map((content) => {
               const previewUrl = getPreviewUrl(content);
               return (
@@ -170,7 +170,7 @@ const SocialMediaOverview = () => {
                   onClick={() => openDetail(content)}
                   className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden cursor-pointer hover:border-white/[0.12] transition-colors group"
                 >
-                  <div className="relative aspect-square bg-white/[0.02]">
+                  <div className="relative aspect-[4/5] bg-white/[0.02]">
                     {previewUrl ? (
                       <img src={previewUrl} alt={content.caption || "Media content"} className="w-full h-full object-cover" loading="lazy" />
                     ) : (
@@ -199,7 +199,7 @@ const SocialMediaOverview = () => {
                       </div>
                     )}
                   </div>
-                  <div className="px-3 py-2 flex items-center gap-1.5 text-[11px] text-white/30">
+                  <div className="px-2 py-1 flex items-center gap-1.5 text-[11px] text-white/30">
                     <CalendarIcon className="w-3 h-3" />
                     {format(new Date(content.created_at), "MMM d, yyyy")}
                   </div>
