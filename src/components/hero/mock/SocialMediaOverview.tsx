@@ -227,7 +227,7 @@ const SocialMediaOverview = () => {
                         <ContentTypeIcon type={content.content_type} />
                       </div>
                     )}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-8">
+                    <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/80 via-black/40 to-transparent p-3 pb-8">
                       <div className="flex flex-wrap gap-1.5">
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-white/20 text-white/70 bg-black/40 gap-1">
                           <ContentTypeIcon type={content.content_type} />
