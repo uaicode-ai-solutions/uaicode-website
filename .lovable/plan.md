@@ -1,41 +1,40 @@
 
-# User Management com Dados Reais do Supabase
 
-## O que muda
-A view "User Management" (`admin-users`) vai deixar de usar dados mock hardcoded e passar a carregar usuarios reais das tabelas `tb_hero_users` e `tb_hero_roles` do Supabase.
+# Adicionar Status ao User Management
 
-## Implementacao
+## Objetivo
+Mostrar o status de cada usuario na tabela de User Management: **Invited** (convidado, ainda nao completou o perfil) ou **Approved** (ja ativou a conta e preencheu o nome).
 
-### 1. Criar hook `useHeroUsers`
-Novo arquivo `src/hooks/useHeroUsers.ts` que:
-- Busca todos os usuarios de `tb_hero_users` (permitido pela RLS para admins)
-- Busca todos os roles de `tb_hero_roles` (permitido pela RLS para admins)
-- Combina os dados em um array de usuarios com seus roles
-- Usa `@tanstack/react-query` seguindo o padrao existente (ex: `useAdminUsers.ts`)
+## Abordagem
 
-### 2. Criar componente `HeroUserManagement`
-Novo arquivo `src/components/hero/admin/HeroUserManagement.tsx` que:
-- Usa o hook `useHeroUsers` para carregar dados reais
-- Exibe tabela com colunas: Name, Email, Role, Team
-- Mostra skeleton/loading enquanto carrega
-- Mostra estado vazio caso nao haja usuarios
-- Mantem o visual glass-premium atual (bordas `white/[0.06]`, fundo `white/[0.02]`)
+Como nao e' possivel consultar `auth.users` pelo client-side (restricao do Supabase), o status sera derivado dos dados existentes na tabela `tb_hero_users`:
 
-### 3. Atualizar `AdminOverview.tsx`
-- No bloco `view === "admin-users"`, renderizar o novo `HeroUserManagement` em vez da tabela mock
-- Remover os dados mock `recentUsers` que nao serao mais usados
+- **Approved**: usuario com `full_name` preenchido (diferente de string vazia)
+- **Invited**: usuario com `full_name` vazio (valor default quando convidado)
+
+Isso funciona porque, pelo fluxo de convite, o usuario e' criado com `full_name` vazio e so preenche ao completar o onboarding no `/hero/dash?view=profile`.
+
+## Alteracoes
+
+### 1. Atualizar `HeroUserManagement.tsx`
+- Adicionar coluna "Status" na tabela
+- Renderizar badge colorido:
+  - **Approved** (verde) se `full_name` nao vazio
+  - **Invited** (amarelo) se `full_name` vazio
+
+### 2. Atualizar `useHeroUsers.ts`
+- Adicionar campo `status` derivado ao tipo `HeroUserWithRoles`
 
 ## Arquivos
 
 | Arquivo | Acao |
 |---|---|
-| `src/hooks/useHeroUsers.ts` | Criar - hook para buscar usuarios hero do Supabase |
-| `src/components/hero/admin/HeroUserManagement.tsx` | Criar - componente com tabela de usuarios reais |
-| `src/components/hero/mock/AdminOverview.tsx` | Atualizar - usar componente real no lugar do mock |
+| `src/hooks/useHeroUsers.ts` | Adicionar campo `status` derivado do `full_name` |
+| `src/components/hero/admin/HeroUserManagement.tsx` | Adicionar coluna Status com badges coloridos |
 
 ## Detalhes Tecnicos
 
-- As tabelas `tb_hero_users` e `tb_hero_roles` ja possuem RLS configurada para que admins vejam todos os registros
-- O hook usa `supabase.from("tb_hero_users" as any)` pois essas tabelas nao estao no tipo gerado (padrao ja usado em `useHeroAuth.ts`)
-- Roles possiveis: `admin`, `contributor`, `viewer` (enum `hero_role`)
-- Teams possiveis: `admin`, `marketing`, `sales`, `none`
+- Nenhuma migracao de banco necessaria - status derivado em runtime
+- Logica: `status = user.full_name.trim() ? 'approved' : 'invited'`
+- Badge approved: `bg-emerald-500/10 text-emerald-400`
+- Badge invited: `bg-amber-500/10 text-amber-400`
