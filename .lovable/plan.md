@@ -1,24 +1,25 @@
 
 
-# Fixar largura das colunas e truncar Job Title
+# Incluir coluna Company e ajustar larguras
 
 ## O que muda
 
-Definir larguras fixas para cada coluna da tabela de leads, garantindo que todas caibam na tela. A coluna "Job Title" tera seu conteudo truncado com "..." via CSS quando exceder o espaco disponivel.
+Adicionar de volta a coluna "Company" na tabela de leads e redistribuir as larguras para que tudo caiba na tela.
 
 ## Detalhes Tecnicos
 
 ### `src/components/hero/mock/LeadManagement.tsx`
 
-1. Substituir o loop generico de headers por colunas individuais com `width` ou `className` de largura fixa:
-   - Name: `w-[20%]`
-   - Email: `w-[25%]`
-   - Job Title: `w-[20%]`
-   - Country: `w-[12%]`
-   - Created: `w-[15%]`
-   - Actions: `w-[8%]`
-
-2. Na celula de Job Title no `<tbody>`, aplicar `max-w-[160px] truncate` (CSS nativo do Tailwind que adiciona `overflow: hidden; text-overflow: ellipsis; white-space: nowrap`) e um atributo `title` com o texto completo para que o usuario veja ao passar o mouse.
-
-3. Aplicar `table-fixed` na tag `<table>` para forcar o navegador a respeitar as larguras definidas.
+1. Adicionar header "Company" entre "Email" e "Job Title" com largura fixa
+2. Adicionar `<td>` com `lead.company_name` na mesma posicao, com `truncate` para textos longos
+3. Redistribuir larguras das colunas:
+   - Name: `w-[18%]`
+   - Email: `w-[22%]`
+   - Company: `w-[15%]`
+   - Job Title: `w-[17%]`
+   - Country: `w-[10%]`
+   - Created: `w-[12%]`
+   - Actions: `w-[6%]`
+4. Atualizar `colSpan` de loading e empty state de `6` para `7`
+5. Adicionar "Company" de volta no array de headers do CSV export
 
