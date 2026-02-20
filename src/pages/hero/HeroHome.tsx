@@ -3,8 +3,6 @@ import { useHeroAuth } from "@/hooks/useHeroAuth";
 import HeroHeader from "@/components/hero/HeroHeader";
 import {
   Shield, Megaphone, BarChart3, Lock,
-  Users, FileText, Zap, BookOpen,
-  ExternalLink,
 } from "lucide-react";
 
 const getGreeting = () => {
@@ -41,24 +39,6 @@ const subsystems = [
   },
 ];
 
-const quickStats = [
-  { label: "Team Members", value: "24", icon: Users },
-  { label: "Reports Generated", value: "187", icon: FileText },
-  { label: "Active Leads", value: "67", icon: Zap },
-];
-
-const newsItems = [
-  { title: "Company Values Update", excerpt: "Our refreshed mission and vision for 2026.", date: "Feb 18" },
-  { title: "New AI Tools Available", excerpt: "Check out the latest internal tools powered by AI.", date: "Feb 15" },
-  { title: "Team Building Event", excerpt: "March retreat planning is underway!", date: "Feb 12" },
-];
-
-const usefulLinks = [
-  { label: "Brand Guidelines", url: "#" },
-  { label: "Knowledge Base", url: "#" },
-  { label: "HR Portal", url: "#" },
-  { label: "IT Support", url: "#" },
-];
 
 const HeroHome = () => {
   const navigate = useNavigate();
@@ -119,57 +99,6 @@ const HeroHome = () => {
           </div>
         </section>
 
-        {/* Quick Stats */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {quickStats.map((s) => {
-            const Icon = s.icon;
-            return (
-              <div key={s.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 text-center">
-                <Icon className="w-5 h-5 text-uai-500 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-white font-mono">{s.value}</p>
-                <p className="text-xs text-white/40 mt-1">{s.label}</p>
-              </div>
-            );
-          })}
-        </section>
-
-        {/* News + Useful Links */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <section className="lg:col-span-2 space-y-4">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-uai-500" /> Internal News
-            </h2>
-            <div className="space-y-3">
-              {newsItems.map((n, i) => (
-                <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-colors cursor-pointer">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-white font-medium">{n.title}</h3>
-                      <p className="text-sm text-white/40 mt-1">{n.excerpt}</p>
-                    </div>
-                    <span className="text-xs text-white/25 shrink-0 ml-4">{n.date}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-lg font-semibold text-white">Quick Links</h2>
-            <div className="space-y-2">
-              {usefulLinks.map((l) => (
-                <a
-                  key={l.label}
-                  href={l.url}
-                  className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] transition-colors text-white/60 hover:text-white"
-                >
-                  <ExternalLink className="w-4 h-4 text-uai-500/60" />
-                  <span className="text-sm">{l.label}</span>
-                </a>
-              ))}
-            </div>
-          </section>
-        </div>
       </main>
     </div>
   );
