@@ -49,7 +49,7 @@ const LeadManagement = () => {
   const [countryFilter, setCountryFilter] = useState("all");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 15;
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     const fetchLeads = async () => {
