@@ -223,7 +223,7 @@ const HeroLogin = () => {
               setForgotLoading(true);
               setForgotError("");
               try {
-                await resetPassword(forgotEmail, `${window.location.origin}/hero/reset-password`);
+                await resetPassword(forgotEmail, `https://uaicode.ai/hero/reset-password`);
                 setForgotSuccess(true);
               } catch (err: any) {
                 setForgotError(err.message || "Failed to send reset email.");
