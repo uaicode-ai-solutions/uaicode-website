@@ -1,4 +1,5 @@
 import { Users, FileText, Activity, Server } from "lucide-react";
+import UserManagement from "@/components/hero/admin/UserManagement";
 
 const stats = [
   { label: "Total Users", value: "24", icon: Users, change: "+3 this week" },
@@ -27,33 +28,7 @@ interface AdminOverviewProps {
 
 const AdminOverview = ({ view }: AdminOverviewProps) => {
   if (view === "admin-users") {
-    return (
-      <div className="space-y-6">
-        <h2 className="text-xl font-bold text-white">User Management</h2>
-        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/[0.06]">
-                <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Name</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Email</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Role</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Team</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentUsers.map((u) => (
-                <tr key={u.email} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
-                  <td className="px-6 py-4 text-sm text-white">{u.name}</td>
-                  <td className="px-6 py-4 text-sm text-white/60">{u.email}</td>
-                  <td className="px-6 py-4"><span className="text-xs px-2 py-1 rounded-full bg-uai-500/10 text-uai-500">{u.role}</span></td>
-                  <td className="px-6 py-4 text-sm text-white/60 capitalize">{u.team}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
+    return <UserManagement />;
   }
 
   if (view === "admin-settings") {

@@ -198,7 +198,7 @@ const HeroResetPassword = () => {
             </div>
             <h1 className="text-xl font-bold text-white">Password Updated!</h1>
             <p className="text-white/50 text-sm">Your password has been changed successfully.</p>
-            <Button onClick={() => navigate("/hero/home")} className="bg-uai-500 hover:bg-uai-600 text-black font-semibold">
+            <Button onClick={() => navigate("/hero/dash?view=profile")} className="bg-uai-500 hover:bg-uai-600 text-black font-semibold">
               Go to Dashboard
             </Button>
           </div>

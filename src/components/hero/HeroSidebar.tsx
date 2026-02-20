@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Settings, Activity,
   Calendar, Share2, Megaphone, Palette,
   BarChart3, UserCheck, FileText, Database,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -58,6 +58,25 @@ const HeroSidebar = ({ activeItem, onItemClick }: HeroSidebarProps) => {
       )}
     >
       <div className="flex-1 overflow-y-auto py-4 px-2 space-y-6">
+        {/* My Profile - always visible */}
+        <div>
+          <div className="space-y-0.5">
+            <button
+              onClick={() => onItemClick("profile")}
+              title={collapsed ? "My Profile" : undefined}
+              className={cn(
+                "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
+                activeItem === "profile"
+                  ? "bg-uai-500/10 text-uai-500 font-medium"
+                  : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+              )}
+            >
+              <User className="w-4 h-4 shrink-0" />
+              {!collapsed && <span>My Profile</span>}
+            </button>
+          </div>
+        </div>
+
         {accessibleSubsystems.map((subsystem) => {
           const items = sidebarItems.filter((i) => i.subsystem === subsystem);
           return (
