@@ -1,27 +1,24 @@
 
 
-# Social Media - Voltar para 4 cards sem scroll vertical
+# Social Media - 4 Cards em Uma Unica Linha
 
 ## Resumo
 
-Reverter para 4 cards por pagina (grid 2x2) e reduzir ainda mais o aspect ratio dos cards para garantir que nao haja barra de rolagem vertical.
+Reorganizar o grid para exibir os 4 cards lado a lado em uma unica linha horizontal (4 colunas), eliminando a segunda linha e maximizando o espaco vertical disponivel.
 
 ## Detalhes Tecnicos
 
 ### Arquivo: `src/components/hero/mock/SocialMediaOverview.tsx`
 
-**PAGE_SIZE (linha 23):**
-- Alterar de `6` para `4`
+**PAGE_SIZE:** permanece `4`
 
 **Grid de cards (linha 164):**
-- Trocar `grid-cols-2 sm:grid-cols-3 gap-3` por `grid-cols-2 gap-3`
-- 2 colunas x 2 linhas = 4 cards
+- Trocar `grid-cols-2 gap-3` por `grid-cols-4 gap-3`
+- 4 colunas x 1 linha = 4 cards lado a lado
 
-**Aspect ratio dos cards (linha 173):**
-- Trocar `aspect-[4/5]` por `aspect-[3/4]` para reduzir ainda mais a altura de cada card
+**Skeleton loading (linha 143):**
+- Trocar `grid-cols-2 gap-3` por `grid-cols-4 gap-3`
+- Manter `length: 4`
 
-**Skeleton loading (linhas 143-145):**
-- Trocar `grid-cols-2 sm:grid-cols-3 gap-3` por `grid-cols-2 gap-3`
-- Trocar `length: 6` por `length: 4`
-- Trocar `aspect-[4/5]` por `aspect-[3/4]`
+**Aspect ratio dos cards:** manter `aspect-[3/4]` (pode ser ajustado se necessario apos teste visual)
 
