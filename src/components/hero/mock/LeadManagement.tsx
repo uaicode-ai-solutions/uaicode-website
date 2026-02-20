@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Eye, Download, UserCheck, Loader2, ExternalLink, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
+import { Search, Eye, Download, UserCheck, Loader2, ExternalLink, ChevronLeft, ChevronRight, CalendarIcon, Eraser } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -191,6 +191,14 @@ const LeadManagement = () => {
             ))}
           </SelectContent>
         </Select>
+        <button
+          onClick={() => { setSearchTerm(""); setSourceFilter("all"); setCountryFilter("all"); setStartDate(undefined); setEndDate(undefined); }}
+          disabled={!searchTerm && sourceFilter === "all" && countryFilter === "all" && !startDate && !endDate}
+          title="Clear filters"
+          className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white/40 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none"
+        >
+          <Eraser className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Table */}
