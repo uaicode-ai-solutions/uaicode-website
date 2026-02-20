@@ -1,56 +1,51 @@
 
 
-# Fix: Screen Auto-Refresh + Emails Going to Spam
+# Simplificar Menus Laterais do Hero Dashboard
 
-## Issue 1: Screen keeps refreshing by itself
+## O que muda
 
-**Root cause**: The `useHeroAuth` hook (line 36 in `useHeroAuth.ts`) has `[user, authLoading]` as its `useEffect` dependencies. Supabase's `onAuthStateChange` fires periodically for `TOKEN_REFRESHED` events, which creates a **new `user` object reference** each time. This triggers the effect, which sets `loading: true`, showing the loading spinner briefly -- appearing as a "screen refresh."
+O sidebar atual tem 12 itens em 3 grupos. Vamos reduzir para apenas 3 itens:
 
-**Fix**: Change the dependency from `user` (object reference) to `user?.id` (stable string). This way the effect only re-runs when the user actually changes (login/logout), not on every token refresh.
+| Grupo | Menu atual | Menu final |
+|---|---|---|
+| Admin | Overview, User Management, System Settings, Activity Logs | **User Management** (apenas) |
+| Marketing | Content Calendar, Social Media, Campaigns, Brand Assets | **Lead Management** (novo) |
+| Sales | Pipeline, Lead Management, Reports & Analytics, CRM Overview | **Planning My SaaS** (novo) |
 
-### File: `src/hooks/useHeroAuth.ts`
+## Detalhes Tecnicos
 
-- Line 36: change `[user, authLoading]` to `[user?.id, authLoading]`
-- This stabilizes the dependency and prevents unnecessary re-fetches on token refresh events
+### 1. `src/components/hero/HeroSidebar.tsx`
+- Reduzir `sidebarItems` para 3 itens:
+  - `{ id: "admin-users", label: "User Management", icon: Users, subsystem: "admin" }`
+  - `{ id: "mkt-leads", label: "Lead Management", icon: UserCheck, subsystem: "marketing" }`
+  - `{ id: "sales-pms", label: "Planning My SaaS", icon: BarChart3, subsystem: "sales" }`
 
----
+### 2. `src/pages/hero/HeroDash.tsx`
+- Atualizar `defaultView` para refletir os novos IDs
+- Atualizar `renderContent()` para rotear:
+  - `admin-users` -> `<HeroUserManagement />`  (importar diretamente)
+  - `mkt-leads` -> novo componente `<LeadManagement />`
+  - `sales-pms` -> novo componente `<PlanningMySaasOverview />`
 
-## Issue 2: Emails arriving as spam
+### 3. `src/components/hero/mock/AdminOverview.tsx` -- REMOVER
+- Nao sera mais necessario (User Management ja e importado diretamente)
 
-**Root cause**: This is a **DNS/email authentication** issue, not a code issue. For emails sent from `noreply@uaicode.ai` via Resend to land in the inbox reliably, the domain `uaicode.ai` needs proper email authentication records configured.
+### 4. `src/components/hero/mock/MarketingOverview.tsx` -- REMOVER
+- Todo o conteudo mock sera substituido
 
-**What needs to be done (outside of code)**:
+### 5. `src/components/hero/mock/SalesOverview.tsx` -- REMOVER
+- Todo o conteudo mock sera substituido
 
-1. Log into the **Resend dashboard** at [resend.com/domains](https://resend.com/domains)
-2. Verify that the domain `uaicode.ai` has all 3 DNS records properly configured:
-   - **SPF** record -- authorizes Resend to send emails on behalf of your domain
-   - **DKIM** record -- digitally signs emails to prove authenticity
-   - **DMARC** record -- tells email providers how to handle unauthenticated emails
-3. Resend provides these exact DNS values when you add/verify a domain. All 3 must show a green checkmark.
+### 6. Novo: `src/components/hero/mock/LeadManagement.tsx`
+- Tela inicial com placeholder para gerenciamento de leads
+- Tabela vazia com estrutura para: Nome, Email, Origem, Status, Data
+- Mensagem "No leads yet" com visual consistente com o design atual (dark theme, bordas `white/[0.06]`)
 
-**Code-level improvement** (optional, helps reduce spam score):
+### 7. Novo: `src/components/hero/mock/PlanningMySaasOverview.tsx`
+- Tela que mostra dados/links relacionados ao PlanningMySaaS
+- Cards com metricas placeholder: Total Reports, Active Users, Revenue
+- Visual consistente com o design atual
 
-Add a `List-Unsubscribe` header to transactional emails. This signals to email providers like Gmail that the sender follows best practices. I'll update the invite email function as an example.
-
-### File: `supabase/functions/hero-invite-user/index.ts`
-
-- Add `headers` with `List-Unsubscribe` to the Resend API call body
-
-### File: `supabase/functions/pms-send-welcome-email/index.ts`
-
-- Add `headers` with `List-Unsubscribe` to the Resend API call body
-
----
-
-## Summary of code changes
-
-| File | Change |
-|---|---|
-| `src/hooks/useHeroAuth.ts` | Change `useEffect` dependency from `[user, authLoading]` to `[user?.id, authLoading]` |
-| `supabase/functions/hero-invite-user/index.ts` | Add `List-Unsubscribe` header to Resend API call |
-| `supabase/functions/pms-send-welcome-email/index.ts` | Add `List-Unsubscribe` header to Resend API call |
-
-## Action required from you (for email spam)
-
-The most impactful fix is verifying DNS records in the Resend dashboard. Without proper SPF, DKIM, and DMARC, emails will continue going to spam regardless of code changes. Go to **resend.com/domains** and check the status of `uaicode.ai`.
+### 8. `src/hooks/useHeroAuth.ts`
+- Atualizar `defaultView` references se houver fallback para views removidas
 
