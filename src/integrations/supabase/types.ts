@@ -89,6 +89,68 @@ export type Database = {
         }
         Relationships: []
       }
+      tb_hero_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["hero_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["hero_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["hero_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tb_hero_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "tb_hero_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tb_hero_users: {
+        Row: {
+          auth_user_id: string
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          team: string
+          updated_at: string
+        }
+        Insert: {
+          auth_user_id: string
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string
+          id?: string
+          team?: string
+          updated_at?: string
+        }
+        Update: {
+          auth_user_id?: string
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          team?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tb_media_content: {
         Row: {
           asset_url: string | null
@@ -858,8 +920,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_hero_user_id: { Args: never; Returns: string }
       get_pms_user_id: { Args: never; Returns: string }
       get_session_id: { Args: never; Returns: string }
+      has_hero_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["hero_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -870,6 +940,7 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "admin" | "contributor"
+      hero_role: "admin" | "contributor" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -998,6 +1069,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "admin", "contributor"],
+      hero_role: ["admin", "contributor", "viewer"],
     },
   },
 } as const
