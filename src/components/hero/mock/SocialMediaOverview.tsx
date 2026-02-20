@@ -10,8 +10,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Image, Video, Layers, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Share2, Eraser } from "lucide-react";
+import { Image, Video, Layers, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Share2, Eraser, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import JSZip from "jszip";
 import type { Tables } from "@/integrations/supabase/types";
 
 type MediaContent = Tables<"tb_media_content">;
@@ -112,7 +114,41 @@ const SocialMediaOverview = () => {
   const totalPages = Math.ceil(filteredContents.length / PAGE_SIZE);
   const paginatedContents = filteredContents.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
-  
+  const handleDownload = async (content: MediaContent, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const toastId = toast.loading("Preparing download...");
+    try {
+      const urls: { url: string; name: string }[] = [];
+      if (content.content_type === "carousel" && content.slides_json) {
+        const slides = (content.slides_json as unknown as Slide[]).sort((a, b) => a.slide_number - b.slide_number);
+        slides.forEach((s, i) => {
+          const ext = s.image_url.split(".").pop()?.split("?")[0] || "webp";
+          urls.push({ url: s.image_url, name: `slide-${i + 1}.${ext}` });
+        });
+      } else if (content.asset_url) {
+        const ext = content.asset_url.split(".").pop()?.split("?")[0] || "webp";
+        urls.push({ url: content.asset_url, name: `media.${ext}` });
+      }
+      if (urls.length === 0) { toast.dismiss(toastId); return; }
+
+      const zip = new JSZip();
+      await Promise.all(urls.map(async ({ url, name }) => {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        zip.file(name, blob);
+      }));
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `social-${content.pillar}-${content.content_type}.zip`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast.success("Download ready!", { id: toastId });
+    } catch {
+      toast.error("Download failed", { id: toastId });
+    }
+  };
 
   const openDetail = (content: MediaContent) => {
     setSelectedContent(content);
@@ -248,9 +284,14 @@ const SocialMediaOverview = () => {
                       </div>
                     )}
                   </div>
-                  <div className="px-2 py-1 flex items-center gap-1.5 text-[11px] text-white/30">
-                    <CalendarIcon className="w-3 h-3" />
-                    {format(new Date(content.created_at), "MMM d, yyyy")}
+                  <div className="px-2 py-1 flex items-center justify-between text-[11px] text-white/30">
+                    <div className="flex items-center gap-1.5">
+                      <CalendarIcon className="w-3 h-3" />
+                      {format(new Date(content.created_at), "MMM d, yyyy")}
+                    </div>
+                    <button onClick={(e) => handleDownload(content, e)} className="text-white/30 hover:text-white/60 transition-colors p-0.5">
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               );
