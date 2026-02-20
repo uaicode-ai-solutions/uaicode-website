@@ -1,0 +1,79 @@
+import { useHeroUsers } from "@/hooks/useHeroUsers";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Users } from "lucide-react";
+
+const HeroUserManagement = () => {
+  const { data: users, isLoading, error } = useHeroUsers();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-white">User Management</h2>
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full bg-white/[0.04]" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-white">User Management</h2>
+        <p className="text-sm text-red-400">Failed to load users.</p>
+      </div>
+    );
+  }
+
+  if (!users?.length) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-white">User Management</h2>
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-12 flex flex-col items-center gap-3">
+          <Users className="w-8 h-8 text-white/20" />
+          <p className="text-sm text-white/40">No users found</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold text-white">User Management</h2>
+      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/[0.06]">
+              <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Name</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Email</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Role</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Team</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((u) => (
+              <tr key={u.id} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
+                <td className="px-6 py-4 text-sm text-white">{u.full_name || "—"}</td>
+                <td className="px-6 py-4 text-sm text-white/60">{u.email}</td>
+                <td className="px-6 py-4">
+                  <div className="flex gap-1.5">
+                    {u.roles.length > 0 ? u.roles.map((role) => (
+                      <span key={role} className="text-xs px-2 py-1 rounded-full bg-uai-500/10 text-uai-500 capitalize">{role}</span>
+                    )) : (
+                      <span className="text-xs text-white/30">No role</span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-sm text-white/60 capitalize">{u.team === "none" ? "—" : u.team}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default HeroUserManagement;
