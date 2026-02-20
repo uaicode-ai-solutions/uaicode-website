@@ -34,8 +34,7 @@ const generatePasswordChangedEmail = (userName: string) => {
       
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #FACC15 0%, #EAB308 50%, #CA8A04 100%); padding: 32px 40px; text-align: center;">
-        <div style="color: #0A0A0A; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">✨ PlanningMySaaS</div>
-        <div style="font-size: 12px; color: #0A0A0A; opacity: 0.8; margin-top: 4px;">by UaiCode</div>
+        <div style="color: #0A0A0A; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">✨ UaiCode <span style="color:#FACC15;">Hero</span> Ecosystem</div>
       </div>
       
       <!-- Content -->
@@ -120,9 +119,9 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "PlanningMySaaS <noreply@uaicode.ai>",
+        from: "Hero Ecosystem <noreply@uaicode.ai>",
         to: [email],
-        subject: "✅ Your Password Was Successfully Changed",
+        subject: "✅ Your Password Was Successfully Changed - Hero Ecosystem",
         html: emailHtml,
       }),
     });
