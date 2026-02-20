@@ -1,25 +1,21 @@
 
 
-# Incluir coluna Company e ajustar larguras
+# Paginacao na tabela de Leads
 
 ## O que muda
 
-Adicionar de volta a coluna "Company" na tabela de leads e redistribuir as larguras para que tudo caiba na tela.
+Adicionar paginacao na tabela para exibir um numero fixo de leads por pagina, eliminando a barra de rolagem vertical. Sem necessidade de fixar cabecalho ou filtros.
 
 ## Detalhes Tecnicos
 
 ### `src/components/hero/mock/LeadManagement.tsx`
 
-1. Adicionar header "Company" entre "Email" e "Job Title" com largura fixa
-2. Adicionar `<td>` com `lead.company_name` na mesma posicao, com `truncate` para textos longos
-3. Redistribuir larguras das colunas:
-   - Name: `w-[18%]`
-   - Email: `w-[22%]`
-   - Company: `w-[15%]`
-   - Job Title: `w-[17%]`
-   - Country: `w-[10%]`
-   - Created: `w-[12%]`
-   - Actions: `w-[6%]`
-4. Atualizar `colSpan` de loading e empty state de `6` para `7`
-5. Adicionar "Company" de volta no array de headers do CSV export
+1. Adicionar estado `currentPage` e constante `ITEMS_PER_PAGE = 15`
+2. Criar `useMemo` para calcular `totalPages` e `paginatedLeads` (fatia do array `filtered`)
+3. Adicionar `useEffect` para resetar `currentPage` para 1 quando `filtered` mudar (busca/filtros)
+4. Substituir `filtered.map(...)` por `paginatedLeads.map(...)` no render da tabela
+5. Adicionar rodape abaixo da tabela com:
+   - Texto "Showing X-Y of Z"
+   - Botoes "Previous" e "Next" desabilitados quando na primeira/ultima pagina
+   - Estilo dark consistente com o restante da pagina
 
