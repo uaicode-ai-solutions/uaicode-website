@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Image, Video, Layers, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Share2, Eraser, Download } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import JSZip from "jszip";
@@ -62,6 +63,15 @@ const SocialMediaOverview = () => {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [contentType, setContentType] = useState<string | undefined>();
   const [pillarFilter, setPillarFilter] = useState<string | undefined>();
+  const [selectedContent, setSelectedContent] = useState<MediaContent | null>(null);
+  const [dialogSlide, setDialogSlide] = useState(0);
+
+  const dialogSlides = selectedContent ? getSlides(selectedContent) : [];
+  const dialogImageUrl = selectedContent
+    ? selectedContent.content_type === "carousel" && dialogSlides.length > 0
+      ? dialogSlides[dialogSlide]?.image_url || null
+      : selectedContent.asset_url
+    : null;
 
   const { data: contents, isLoading } = useQuery({
     queryKey: ["media-content"],
@@ -251,7 +261,8 @@ const SocialMediaOverview = () => {
               return (
                 <div
                   key={content.id}
-                  className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden hover:border-white/[0.12] transition-colors group"
+                  onClick={() => { setSelectedContent(content); setDialogSlide(activeSlides[content.id] || 0); }}
+                  className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden hover:border-white/[0.12] transition-colors group cursor-pointer"
                 >
                   <div className="relative aspect-[3/4] bg-white/[0.02]">
                     {previewUrl ? (
@@ -335,6 +346,40 @@ const SocialMediaOverview = () => {
         </>
       )}
 
+      {/* Image dialog */}
+      <Dialog open={!!selectedContent} onOpenChange={(open) => { if (!open) setSelectedContent(null); }}>
+        <DialogContent className="max-w-3xl bg-black/95 border-white/[0.08] p-0 overflow-hidden [&>button]:text-white/60 [&>button]:hover:text-white">
+          <div className="relative flex items-center justify-center min-h-[300px]">
+            {dialogImageUrl ? (
+              <img src={dialogImageUrl} alt="" className="w-full h-auto max-h-[80vh] object-contain" />
+            ) : (
+              <div className="w-full h-64 flex items-center justify-center text-white/30">No image</div>
+            )}
+            {dialogSlides.length > 1 && (
+              <>
+                <button
+                  onClick={() => setDialogSlide((s) => Math.max(0, s - 1))}
+                  disabled={dialogSlide === 0}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full h-10 w-10 flex items-center justify-center disabled:opacity-30 transition-opacity"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setDialogSlide((s) => Math.min(dialogSlides.length - 1, s + 1))}
+                  disabled={dialogSlide === dialogSlides.length - 1}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full h-10 w-10 flex items-center justify-center disabled:opacity-30 transition-opacity"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white/80 text-xs px-3 py-1 rounded-full flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5" />
+                  {dialogSlide + 1} / {dialogSlides.length}
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
