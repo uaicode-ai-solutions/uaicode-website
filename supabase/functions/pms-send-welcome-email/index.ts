@@ -128,6 +128,9 @@ const handler = async (req: Request): Promise<Response> => {
         to: [email],
         subject: "🚀 Welcome to PlanningMySaaS - Let's Build Your Vision!",
         html: emailHtml,
+        headers: {
+          "List-Unsubscribe": "<mailto:hello@uaicode.ai?subject=Unsubscribe>",
+        },
       }),
     });
 

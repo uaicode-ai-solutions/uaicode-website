@@ -276,6 +276,9 @@ async function generateAndSendInvite(
         to: [email],
         subject: "You've Been Invited to UaiCode Hero Ecosystem",
         html: emailHtml,
+        headers: {
+          "List-Unsubscribe": "<mailto:hello@uaicode.ai?subject=Unsubscribe>",
+        },
       }),
     });
 
