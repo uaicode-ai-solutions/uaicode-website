@@ -5,6 +5,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/admin/AdminRoute";
+import HeroRoute from "./components/hero/HeroRoute";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
 import Newsletter from "./pages/Newsletter";
@@ -22,6 +23,9 @@ import PmsProfile from "./pages/PmsProfile";
 import PmsAdmin from "./pages/PmsAdmin";
 import PmsSharedReport from "./pages/PmsSharedReport";
 import Booking from "./pages/Booking";
+import HeroLogin from "./pages/hero/HeroLogin";
+import HeroHome from "./pages/hero/HeroHome";
+import HeroDash from "./pages/hero/HeroDash";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +68,15 @@ const App = () => (
             } />
             <Route path="/planningmysaas/admin" element={
               <AdminRoute><PmsAdmin /></AdminRoute>
+            } />
+            
+            {/* Hero Ecosystem routes */}
+            <Route path="/hero" element={<HeroLogin />} />
+            <Route path="/hero/home" element={
+              <HeroRoute><HeroHome /></HeroRoute>
+            } />
+            <Route path="/hero/dash" element={
+              <HeroRoute><HeroDash /></HeroRoute>
             } />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
