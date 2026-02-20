@@ -76,7 +76,7 @@ export const useHeroAuth = () => {
     };
 
     fetchHeroData();
-  }, [user, authLoading]);
+  }, [user?.id, authLoading]);
 
   const isHeroAdmin = heroRoles.some((r) => r.role === "admin");
   const isContributor = heroRoles.some((r) => r.role === "contributor");
