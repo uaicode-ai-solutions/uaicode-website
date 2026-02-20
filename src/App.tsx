@@ -26,6 +26,7 @@ import Booking from "./pages/Booking";
 import HeroLogin from "./pages/hero/HeroLogin";
 import HeroHome from "./pages/hero/HeroHome";
 import HeroDash from "./pages/hero/HeroDash";
+import HeroResetPassword from "./pages/hero/HeroResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +73,7 @@ const App = () => (
             
             {/* Hero Ecosystem routes */}
             <Route path="/hero" element={<HeroLogin />} />
+            <Route path="/hero/reset-password" element={<HeroResetPassword />} />
             <Route path="/hero/home" element={
               <HeroRoute><HeroHome /></HeroRoute>
             } />
