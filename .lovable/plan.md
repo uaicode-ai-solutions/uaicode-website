@@ -1,37 +1,29 @@
 
 
-# Nova Imagem de Fundo - Hero Login
+# Regenerar Imagem Hero Login - Tentativa 2
 
 ## O que sera feito
 
-Excluir a imagem atual `src/assets/hero-login-bg.webp` e gerar uma nova usando Nano Banana (google/gemini-2.5-flash-image) com as seguintes caracteristicas:
+Gerar uma nova imagem usando a edge function `generate-hero-bg` ja existente, com um prompt refinado e mais descritivo para melhor resultado. A imagem atual sera substituida.
 
-- **Dois empresarios fechando negocio** (aperto de maos, reuniao corporativa)
-- **Um dos empresarios com o rosto do founder Rafael Luz** - usando a imagem `src/assets/founder-rafael-luz.webp` como referencia
-- **Paleta de cores UaiCode**: fundo escuro (#000000), destaques em amarelo dourado (#FFBF1A, #FF9F00), cinza escuro (#222A2E)
-- **SEM usar amber** - foco no amarelo UaiCode como cor principal
-- **Estilo**: corporativo premium, iluminacao cinematografica com tons dourados, orientacao retrato (9:16)
+## Mudancas no prompt
 
-## Abordagem tecnica
+O prompt sera mais detalhado para guiar melhor a geracao:
 
-1. Criar uma edge function temporaria `generate-hero-bg` que:
-   - Recebe a imagem do founder como input (base64)
-   - Usa o modelo `google/gemini-2.5-flash-image` com image editing (passando a foto do founder + prompt descritivo)
-   - Retorna a imagem gerada
+**Novo prompt:**
+"Professional cinematic photograph of two businessmen in dark suits shaking hands, closing a business deal. One businessman must look exactly like the person in the reference photo. Setting: modern dark office or conference room. Lighting: dramatic golden yellow spotlights (#FFBF1A, #FF9F00) creating warm highlights on faces and hands. Background: deep black (#000000) with subtle golden bokeh lights. Color palette: ONLY black and golden yellow - NO amber, NO orange, NO brown tones. Photorealistic, shallow depth of field, 9:16 portrait orientation. No text overlays."
 
-2. **Prompt da imagem:**
-   "Create a professional corporate photo of two businessmen shaking hands closing a deal. One of the businessmen should look exactly like the person in the reference photo. Dark moody background with warm golden yellow lighting (#FFBF1A). Cinematic corporate atmosphere, shallow depth of field, professional studio quality. Portrait orientation 9:16. No text."
+## Passos
 
-3. Salvar a imagem gerada em `src/assets/hero-login-bg.webp` (substituindo a atual)
-
-4. Nenhuma alteracao em `HeroLogin.tsx` necessaria - ja esta usando o import correto
+1. Atualizar o prompt na edge function `generate-hero-bg/index.ts` com o texto refinado acima
+2. Fazer deploy da edge function atualizada
+3. Chamar a edge function passando a imagem do founder (`founder-rafael-luz.webp`) como referencia
+4. Salvar a nova imagem gerada em `src/assets/hero-login-bg.webp` (substituindo a atual)
 
 ## Arquivos afetados
 
 | Arquivo | Alteracao |
 |---|---|
-| `supabase/functions/generate-hero-bg/index.ts` | Nova edge function temporaria |
-| `src/assets/hero-login-bg.webp` | Substituir pela nova imagem |
-
-Apos confirmar que a imagem ficou boa, a edge function temporaria sera removida.
+| `supabase/functions/generate-hero-bg/index.ts` | Prompt refinado |
+| `src/assets/hero-login-bg.webp` | Nova imagem gerada |
 
