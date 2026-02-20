@@ -19,16 +19,20 @@ const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) => {
   const [role, setRole] = useState<string>("viewer");
   const [team, setTeam] = useState<string>("none");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const queryClient = useQueryClient();
 
   const handleSubmit = async () => {
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      toast.error("Please enter a valid email address.");
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
     setLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
     try {
       const { data, error } = await supabase.functions.invoke("hero-invite-user", {
         body: { email: trimmedEmail, role, team },
@@ -37,14 +41,21 @@ const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
+      setSuccessMessage(`${trimmedEmail} has been invited as ${role}.`);
       toast.success(`${trimmedEmail} has been invited as ${role}.`);
       queryClient.invalidateQueries({ queryKey: ["hero-users"] });
-      setEmail("");
-      setRole("viewer");
-      setTeam("none");
-      onOpenChange(false);
+      setTimeout(() => {
+        setEmail("");
+        setRole("viewer");
+        setTeam("none");
+        setSuccessMessage("");
+        onOpenChange(false);
+      }, 2000);
     } catch (err: any) {
-      toast.error(err.message || "Something went wrong.");
+      console.error("Invite user error:", err);
+      const msg = err.message || "Something went wrong. Please try again.";
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -87,7 +98,18 @@ const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) => {
                 <SelectItem value="viewer">Viewer</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+        </div>
+
+          {errorMessage && (
+            <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2">
+              {errorMessage}
+            </p>
+          )}
+          {successMessage && (
+            <p className="text-sm text-green-400 bg-green-500/10 border border-green-500/20 rounded-md px-3 py-2">
+              {successMessage}
+            </p>
+          )}
 
           <div className="space-y-2">
             <Label className="text-white/70">Team</Label>
