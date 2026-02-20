@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Eye, Download, UserCheck, Loader2, ExternalLink, ChevronLeft, ChevronRight, CalendarIcon, Eraser } from "lucide-react";
+import { Search, Eye, Download, UserCheck, Loader2, ExternalLink, ChevronLeft, ChevronRight, CalendarIcon, Eraser, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -46,6 +46,9 @@ const DetailRow = ({ label, value, href }: { label: string; value: string | numb
   );
 };
 
+type SortKey = 'full_name' | 'email' | 'company_name' | 'job_title' | 'country' | 'created_at';
+type SortConfig = { key: SortKey; direction: 'asc' | 'desc' };
+
 const LeadManagement = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +59,7 @@ const LeadManagement = () => {
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'created_at', direction: 'desc' });
   const ITEMS_PER_PAGE = 9;
 
   useEffect(() => {
@@ -87,11 +91,43 @@ const LeadManagement = () => {
     });
   }, [leads, searchTerm, sourceFilter, countryFilter, startDate, endDate]);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const handleSort = (key: SortKey) => {
+    setSortConfig((prev) =>
+      prev.key === key
+        ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+        : { key, direction: 'asc' }
+    );
+  };
+
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    arr.sort((a, b) => {
+      const aVal = a[sortConfig.key];
+      const bVal = b[sortConfig.key];
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      let cmp: number;
+      if (sortConfig.key === 'created_at') {
+        cmp = new Date(aVal as string).getTime() - new Date(bVal as string).getTime();
+      } else {
+        cmp = String(aVal).localeCompare(String(bVal), undefined, { sensitivity: 'base' });
+      }
+      return sortConfig.direction === 'asc' ? cmp : -cmp;
+    });
+    return arr;
+  }, [filtered, sortConfig]);
+
+  const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE);
   const paginatedLeads = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filtered.slice(start, start + ITEMS_PER_PAGE);
-  }, [filtered, currentPage]);
+    return sorted.slice(start, start + ITEMS_PER_PAGE);
+  }, [sorted, currentPage]);
+
+  const SortIcon = ({ sortKey }: { sortKey: SortKey }) => {
+    if (sortConfig.key !== sortKey) return <ArrowUpDown className="w-3 h-3 opacity-30" />;
+    return sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />;
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -207,12 +243,24 @@ const LeadManagement = () => {
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-white/[0.06]">
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[18%]">Name</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[22%]">Email</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[15%]">Company</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[17%]">Job Title</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[10%]">Country</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[12%]">Created</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[18%] cursor-pointer hover:text-white/60 transition-colors" onClick={() => handleSort('full_name')}>
+                  <span className="flex items-center gap-1">Name <SortIcon sortKey="full_name" /></span>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[22%] cursor-pointer hover:text-white/60 transition-colors" onClick={() => handleSort('email')}>
+                  <span className="flex items-center gap-1">Email <SortIcon sortKey="email" /></span>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[15%] cursor-pointer hover:text-white/60 transition-colors" onClick={() => handleSort('company_name')}>
+                  <span className="flex items-center gap-1">Company <SortIcon sortKey="company_name" /></span>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[17%] cursor-pointer hover:text-white/60 transition-colors" onClick={() => handleSort('job_title')}>
+                  <span className="flex items-center gap-1">Job Title <SortIcon sortKey="job_title" /></span>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[10%] cursor-pointer hover:text-white/60 transition-colors" onClick={() => handleSort('country')}>
+                  <span className="flex items-center gap-1">Country <SortIcon sortKey="country" /></span>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[12%] cursor-pointer hover:text-white/60 transition-colors" onClick={() => handleSort('created_at')}>
+                  <span className="flex items-center gap-1">Created <SortIcon sortKey="created_at" /></span>
+                </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[6%]"></th>
               </tr>
             </thead>
