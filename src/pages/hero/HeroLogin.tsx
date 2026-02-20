@@ -7,6 +7,7 @@ import { Eye, EyeOff, Mail, Lock, Shield, Loader2, AlertCircle, CheckCircle2, Us
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuthContext } from "@/contexts/AuthContext";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
+import heroLoginBg from "@/assets/hero-login-bg.webp";
 
 const HeroLogin = () => {
   const navigate = useNavigate();
@@ -67,10 +68,8 @@ const HeroLogin = () => {
     <div className="min-h-screen flex flex-col lg:flex-row bg-black">
       {/* Left - Visual */}
       <div className="relative w-full lg:w-1/2 h-56 sm:h-72 lg:h-auto lg:min-h-screen overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-uai-500/10" />
-        <div className="absolute inset-0" style={{
-          background: "radial-gradient(ellipse at 70% 50%, rgba(255,191,26,0.08) 0%, transparent 60%)"
-        }} />
+        <img src={heroLoginBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/40" />
 
         <div className="relative z-10 flex flex-col justify-between h-full p-6 sm:p-8 lg:p-12">
           <div className="flex items-center gap-3">
@@ -90,7 +89,7 @@ const HeroLogin = () => {
           </div>
 
           <p className="hidden lg:block text-sm text-white/30">
-            © 2025 Uaicode. Internal use only.
+            © {new Date().getFullYear()} Uaicode. Internal use only.
           </p>
         </div>
       </div>

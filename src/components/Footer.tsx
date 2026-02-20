@@ -343,7 +343,7 @@ const Footer = () => {
 
           <div className="text-center text-sm text-muted-foreground border-t border-border pt-6">
             <p className="mb-2">
-              © 2025 Uaicode. All rights reserved. This website and all its content, including text and visual identity, are protected by intellectual property laws.
+              © {new Date().getFullYear()} Uaicode. All rights reserved. This website and all its content, including text and visual identity, are protected by intellectual property laws.
             </p>
             <p>
               Any reproduction, plagiarism, or improper use, in whole or in part, without express authorization, may result in legal action, including extrajudicial notifications, forced removal, and civil and criminal liability.
