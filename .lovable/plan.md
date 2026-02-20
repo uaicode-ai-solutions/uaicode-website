@@ -1,53 +1,56 @@
 
-# Add Edit and Delete Actions to User Management Table
 
-## Overview
+# Fix: Screen Auto-Refresh + Emails Going to Spam
 
-Add an "Actions" column to the Hero User Management table with edit (pencil) and delete (trash) icons for each user row. Clicking edit opens a dialog to modify the user's role and team. Clicking delete opens a confirmation dialog before removing the user.
+## Issue 1: Screen keeps refreshing by itself
 
-## Changes
+**Root cause**: The `useHeroAuth` hook (line 36 in `useHeroAuth.ts`) has `[user, authLoading]` as its `useEffect` dependencies. Supabase's `onAuthStateChange` fires periodically for `TOKEN_REFRESHED` events, which creates a **new `user` object reference** each time. This triggers the effect, which sets `loading: true`, showing the loading spinner briefly -- appearing as a "screen refresh."
 
-### 1. New file: `src/components/hero/admin/EditUserDialog.tsx`
+**Fix**: Change the dependency from `user` (object reference) to `user?.id` (stable string). This way the effect only re-runs when the user actually changes (login/logout), not on every token refresh.
 
-A dialog similar to `InviteUserDialog` that allows editing:
-- **Role** (admin / contributor / viewer) -- updates `tb_hero_roles`
-- **Team** (none / admin / marketing / sales) -- updates `tb_hero_users.team`
-- Displays the user's name and email as read-only context
-- On save: updates the database, invalidates the `hero-users` query, shows a success toast
+### File: `src/hooks/useHeroAuth.ts`
 
-### 2. New file: `src/components/hero/admin/DeleteUserDialog.tsx`
+- Line 36: change `[user, authLoading]` to `[user?.id, authLoading]`
+- This stabilizes the dependency and prevents unnecessary re-fetches on token refresh events
 
-An AlertDialog confirmation before deleting:
-- Shows the user's name/email for confirmation
-- On confirm: deletes from `tb_hero_roles` (user's roles) and `tb_hero_users` (the user record)
-- Invalidates `hero-users` query and shows success toast
-- Styled with the dark Hero theme (same as existing dialogs)
+---
 
-### 3. Modified: `src/components/hero/admin/HeroUserManagement.tsx`
+## Issue 2: Emails arriving as spam
 
-- Add a 6th column header: **Actions**
-- Add edit (Pencil icon) and delete (Trash2 icon) buttons in each row
-- Both are icon-only buttons with ghost variant, styled for the dark theme
-- Pencil: opens `EditUserDialog` with the selected user's data
-- Trash: opens `DeleteUserDialog` with the selected user's data
-- State management: `editingUser` and `deletingUser` state variables to track which user is being acted on
+**Root cause**: This is a **DNS/email authentication** issue, not a code issue. For emails sent from `noreply@uaicode.ai` via Resend to land in the inbox reliably, the domain `uaicode.ai` needs proper email authentication records configured.
 
-## Technical Details
+**What needs to be done (outside of code)**:
 
-| File | Type | Description |
-|---|---|---|
-| `src/components/hero/admin/EditUserDialog.tsx` | New | Edit role/team dialog |
-| `src/components/hero/admin/DeleteUserDialog.tsx` | New | Delete confirmation dialog |
-| `src/components/hero/admin/HeroUserManagement.tsx` | Modified | Add Actions column with edit/delete icons |
+1. Log into the **Resend dashboard** at [resend.com/domains](https://resend.com/domains)
+2. Verify that the domain `uaicode.ai` has all 3 DNS records properly configured:
+   - **SPF** record -- authorizes Resend to send emails on behalf of your domain
+   - **DKIM** record -- digitally signs emails to prove authenticity
+   - **DMARC** record -- tells email providers how to handle unauthenticated emails
+3. Resend provides these exact DNS values when you add/verify a domain. All 3 must show a green checkmark.
 
-### Database Operations
+**Code-level improvement** (optional, helps reduce spam score):
 
-- **Edit**: `supabase.from("tb_hero_roles").delete().eq("user_id", id)` then insert new role; `supabase.from("tb_hero_users").update({ team }).eq("id", id)`
-- **Delete**: `supabase.from("tb_hero_roles").delete().eq("user_id", id)` then `supabase.from("tb_hero_users").delete().eq("id", id)`
-- All operations use `as any` cast (same pattern as existing code) since these tables are not in the generated types
+Add a `List-Unsubscribe` header to transactional emails. This signals to email providers like Gmail that the sender follows best practices. I'll update the invite email function as an example.
 
-### UI Consistency
+### File: `supabase/functions/hero-invite-user/index.ts`
 
-- Follows the same dark theme (`bg-[#141414]`, `border-white/[0.06]`, `text-white`)
-- Uses existing UI components: Dialog, AlertDialog, Button, Select, Label
-- Icons: `Pencil` and `Trash2` from lucide-react
+- Add `headers` with `List-Unsubscribe` to the Resend API call body
+
+### File: `supabase/functions/pms-send-welcome-email/index.ts`
+
+- Add `headers` with `List-Unsubscribe` to the Resend API call body
+
+---
+
+## Summary of code changes
+
+| File | Change |
+|---|---|
+| `src/hooks/useHeroAuth.ts` | Change `useEffect` dependency from `[user, authLoading]` to `[user?.id, authLoading]` |
+| `supabase/functions/hero-invite-user/index.ts` | Add `List-Unsubscribe` header to Resend API call |
+| `supabase/functions/pms-send-welcome-email/index.ts` | Add `List-Unsubscribe` header to Resend API call |
+
+## Action required from you (for email spam)
+
+The most impactful fix is verifying DNS records in the Resend dashboard. Without proper SPF, DKIM, and DMARC, emails will continue going to spam regardless of code changes. Go to **resend.com/domains** and check the status of `uaicode.ai`.
+
