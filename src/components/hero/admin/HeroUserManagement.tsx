@@ -49,6 +49,7 @@ const HeroUserManagement = () => {
               <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Name</th>
               <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Email</th>
               <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Role</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Status</th>
               <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">Team</th>
             </tr>
           </thead>
@@ -65,6 +66,11 @@ const HeroUserManagement = () => {
                       <span className="text-xs text-white/30">No role</span>
                     )}
                   </div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`text-xs px-2 py-1 rounded-full capitalize ${u.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                    {u.status}
+                  </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-white/60 capitalize">{u.team === "none" ? "—" : u.team}</td>
               </tr>

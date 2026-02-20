@@ -19,6 +19,7 @@ interface HeroRole {
 
 export interface HeroUserWithRoles extends HeroUser {
   roles: string[];
+  status: 'approved' | 'invited';
 }
 
 export const useHeroUsers = () => {
@@ -42,7 +43,8 @@ export const useHeroUsers = () => {
         const userRoles = (rolesData as any as HeroRole[])
           .filter((r) => r.user_id === user.id)
           .map((r) => r.role);
-        return { ...user, roles: userRoles } as HeroUserWithRoles;
+        const status = user.full_name.trim() ? 'approved' : 'invited';
+        return { ...user, roles: userRoles, status } as HeroUserWithRoles;
       });
 
       return users;
