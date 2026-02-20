@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +23,8 @@ const HeroResetPassword = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const passwordUpdatedRef = useRef(false);
+  const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
 
   const passwordStrength = calculatePasswordStrength(password);
   const isValidPassword = passwordStrength.score >= 3;
@@ -32,6 +34,9 @@ const HeroResetPassword = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        // After password update, ignore all further auth events to prevent loops
+        if (passwordUpdatedRef.current) return;
+
         if (event === "PASSWORD_RECOVERY") {
           setPageState("form");
         } else if (event === "SIGNED_IN" && session) {
@@ -39,6 +44,8 @@ const HeroResetPassword = () => {
         }
       }
     );
+
+    subscriptionRef.current = subscription;
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -70,10 +77,15 @@ const HeroResetPassword = () => {
     setErrorMsg("");
 
     try {
+      // Set guard BEFORE calling updatePassword to block auth event cascades
+      passwordUpdatedRef.current = true;
+      subscriptionRef.current?.unsubscribe();
+
       await updatePassword(password);
       setPageState("success");
       toast.success("Password updated successfully!");
     } catch (err: any) {
+      passwordUpdatedRef.current = false;
       setErrorMsg(err.message || "Failed to update password.");
     } finally {
       setIsSubmitting(false);
@@ -198,8 +210,8 @@ const HeroResetPassword = () => {
             </div>
             <h1 className="text-xl font-bold text-white">Password Updated!</h1>
             <p className="text-white/50 text-sm">Your password has been changed successfully.</p>
-            <Button onClick={() => navigate("/hero/home")} className="bg-uai-500 hover:bg-uai-600 text-black font-semibold">
-              Go to Dashboard
+            <Button onClick={() => navigate("/hero/profile")} className="bg-uai-500 hover:bg-uai-600 text-black font-semibold">
+              Complete Your Profile
             </Button>
           </div>
         )}

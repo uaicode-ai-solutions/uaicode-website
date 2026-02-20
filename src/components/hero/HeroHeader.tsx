@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useHeroAuth } from "@/hooks/useHeroAuth";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { LogOut, User, Home } from "lucide-react";
+import { LogOut, User, Home, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,6 +65,13 @@ const HeroHeader = () => {
             >
               <Home className="w-4 h-4 mr-2" />
               Home
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => navigate("/hero/profile")}
+              className="hover:bg-white/5 cursor-pointer"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Profile
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={handleSignOut}
