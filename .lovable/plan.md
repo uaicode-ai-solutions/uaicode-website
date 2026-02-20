@@ -1,43 +1,48 @@
 
-# Fix: Invite User - Feedback Invisivel e Timeout
 
-## Problema
-Dois problemas combinados fazem parecer que "nada acontece":
+# Fix: hero-invite-user - Auth Validation Failing (401)
 
-1. **Toast desabilitado**: O arquivo `src/components/ui/sonner.tsx` exporta funcoes vazias (no-ops). Quando o invite falha, `toast.error()` nao mostra nada. Quando tem sucesso, `toast.success()` tambem nao mostra nada.
+## Problem
+The edge function analytics confirm every POST request returns **401 "Invalid token"**. The `adminClient.auth.getUser(token)` call fails because the service role client created with `createClient(URL, SERVICE_ROLE_KEY)` does not correctly validate user JWTs when passing a token parameter to `getUser()`.
 
-2. **Erro silencioso na chamada**: O request retorna "Failed to fetch" (visivel apenas no DevTools), mas o catch block so chama `toast.error()` que e um no-op.
+The client-side error "Failed to send a request to the Edge Function" is the supabase-js wrapper for this 401 response.
 
-## Solucao
+## Root Cause
+The admin client is initialized with the service role key as the API key. When calling `getUser(token)`, the library behavior with service role clients doesn't reliably resolve user tokens. This is a known pattern issue -- Supabase recommends creating a separate client with the user's token for auth validation.
 
-### 1. Adicionar feedback inline no `InviteUserDialog.tsx`
+## Solution
 
-Como o toast global esta desabilitado no projeto, adicionar um estado de erro/sucesso inline dentro do dialog:
+### File: `supabase/functions/hero-invite-user/index.ts`
 
-- Adicionar estado `errorMessage` e `successMessage`
-- Mostrar mensagem de erro em vermelho abaixo do formulario quando falha
-- Mostrar mensagem de sucesso em verde quando funciona
-- Adicionar `console.error` no catch para debugging
-- Manter as chamadas de toast como bonus (caso sejam reativadas no futuro)
+Create a **user-scoped client** (with anon key + user's Authorization header) for JWT validation, and keep the admin client only for privileged operations:
 
-### 2. Adicionar timeout mais longo na chamada da edge function
+```text
+BEFORE (broken):
+  const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const { data: { user: callerUser }, error } = await adminClient.auth.getUser(token);
 
-O `supabase.functions.invoke` pode estar dando timeout porque a edge function faz varias operacoes (criar user, gerar link, enviar email). Nao ha como configurar timeout no invoke, mas podemos tratar o erro de forma mais informativa.
+AFTER (fixed):
+  const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: authHeader } }
+  });
+  const { data: { user: callerUser }, error } = await userClient.auth.getUser();
+```
 
-## Arquivos
+Key changes:
+- Add `SUPABASE_ANON_KEY` env var (available by default in all edge functions)
+- Create `userClient` with anon key and user's Authorization header
+- Call `getUser()` without parameter on the user client (uses the session token from headers)
+- Keep `adminClient` for all admin operations (createUser, insert, generateLink, etc.)
 
-| Arquivo | Acao |
+## Technical Details
+
+| Aspect | Detail |
 |---|---|
-| `src/components/hero/admin/InviteUserDialog.tsx` | Adicionar feedback inline (erro/sucesso) + console.error para debugging |
+| File changed | `supabase/functions/hero-invite-user/index.ts` |
+| Root cause | `adminClient.auth.getUser(token)` not validating user JWTs correctly |
+| Fix | Separate user-scoped client for JWT validation |
+| Backend change only | No frontend changes needed |
+| Redeploy | Yes, edge function will be redeployed automatically |
 
-## Detalhes Tecnicos
-
-Adicionar ao componente:
-- `const [errorMessage, setErrorMessage] = useState("")`
-- `const [successMessage, setSuccessMessage] = useState("")`
-- Limpar mensagens no inicio do submit
-- No catch: `setErrorMessage(err.message)` + `console.error`
-- No sucesso: `setSuccessMessage("Invite sent!")` com auto-close apos 2s
-- Renderizar mensagens inline com estilos verde/vermelho
-
-Nenhuma alteracao no backend necessaria - a edge function esta funcionando corretamente (testada e retornando 401 sem auth, como esperado).
