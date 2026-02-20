@@ -149,24 +149,25 @@ const LeadManagement = () => {
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-white/[0.06]">
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[20%]">Name</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[25%]">Email</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[20%]">Job Title</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[12%]">Country</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[15%]">Created</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[8%]"></th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[18%]">Name</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[22%]">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[15%]">Company</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[17%]">Job Title</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[10%]">Country</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[12%]">Created</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[6%]"></th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                   <td colSpan={6} className="px-4 py-16 text-center">
+                   <td colSpan={7} className="px-4 py-16 text-center">
                     <Loader2 className="w-6 h-6 animate-spin text-white/30 mx-auto" />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-16 text-center">
+                  <td colSpan={7} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center">
                         <UserCheck className="w-6 h-6 text-white/20" />
@@ -178,8 +179,9 @@ const LeadManagement = () => {
               ) : (
                 filtered.map((lead) => (
                   <tr key={lead.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
-                    <td className="px-4 py-3 text-sm text-white/80 whitespace-nowrap">{lead.full_name || "—"}</td>
-                    <td className="px-4 py-3 text-sm text-white/60 whitespace-nowrap">{lead.email || "—"}</td>
+                    <td className="px-4 py-3 text-sm text-white/80 truncate" title={lead.full_name || ""}>{lead.full_name || "—"}</td>
+                    <td className="px-4 py-3 text-sm text-white/60 truncate" title={lead.email || ""}>{lead.email || "—"}</td>
+                    <td className="px-4 py-3 text-sm text-white/60 truncate" title={lead.company_name || ""}>{lead.company_name || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 truncate" title={lead.job_title || ""}>{lead.job_title || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 whitespace-nowrap">{lead.country || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/50 whitespace-nowrap">{formatDate(lead.created_at)}</td>
