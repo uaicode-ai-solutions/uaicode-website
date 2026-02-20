@@ -25,11 +25,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use service role for admin operations
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    // Admin client for privileged operations
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user: callerUser }, error: userError } = await adminClient.auth.getUser(token);
+    // User-scoped client for JWT validation
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user: callerUser }, error: userError } = await userClient.auth.getUser();
     if (userError || !callerUser) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
