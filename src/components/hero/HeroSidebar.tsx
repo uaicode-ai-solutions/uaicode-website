@@ -79,7 +79,7 @@ const HeroSidebar = ({ activeItem, onItemClick }: HeroSidebarProps) => {
                       className={cn(
                         "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
                         isActive
-                          ? "bg-amber-500/10 text-amber-500 font-medium"
+                          ? "bg-uai-500/10 text-uai-500 font-medium"
                           : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                       )}
                     >
