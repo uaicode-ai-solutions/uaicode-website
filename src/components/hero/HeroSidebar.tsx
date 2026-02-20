@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useHeroAuth } from "@/hooks/useHeroAuth";
 import {
-  LayoutDashboard, Users, Settings, Activity,
-  Calendar, Share2, Megaphone, Palette,
-  BarChart3, UserCheck, FileText, Database,
+  Users, UserCheck, BarChart3,
   ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,21 +14,9 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  // Admin
-  { id: "admin-overview", label: "Overview", icon: LayoutDashboard, subsystem: "admin" },
   { id: "admin-users", label: "User Management", icon: Users, subsystem: "admin" },
-  { id: "admin-settings", label: "System Settings", icon: Settings, subsystem: "admin" },
-  { id: "admin-logs", label: "Activity Logs", icon: Activity, subsystem: "admin" },
-  // Marketing
-  { id: "mkt-calendar", label: "Content Calendar", icon: Calendar, subsystem: "marketing" },
-  { id: "mkt-social", label: "Social Media", icon: Share2, subsystem: "marketing" },
-  { id: "mkt-campaigns", label: "Campaigns", icon: Megaphone, subsystem: "marketing" },
-  { id: "mkt-brand", label: "Brand Assets", icon: Palette, subsystem: "marketing" },
-  // Sales
-  { id: "sales-pipeline", label: "Pipeline", icon: BarChart3, subsystem: "sales" },
-  { id: "sales-leads", label: "Lead Management", icon: UserCheck, subsystem: "sales" },
-  { id: "sales-reports", label: "Reports & Analytics", icon: FileText, subsystem: "sales" },
-  { id: "sales-crm", label: "CRM Overview", icon: Database, subsystem: "sales" },
+  { id: "mkt-leads", label: "Lead Management", icon: UserCheck, subsystem: "marketing" },
+  { id: "sales-pms", label: "Planning My SaaS", icon: BarChart3, subsystem: "sales" },
 ];
 
 const subsystemLabels: Record<string, string> = {
