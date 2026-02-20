@@ -146,14 +146,15 @@ const LeadManagement = () => {
       {/* Table */}
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-white/[0.06]">
-                {["Name", "Email", "Job Title", "Country", "Created", ""].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">
-                    {h}
-                  </th>
-                ))}
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[20%]">Name</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[25%]">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[20%]">Job Title</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[12%]">Country</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[15%]">Created</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 w-[8%]"></th>
               </tr>
             </thead>
             <tbody>
@@ -179,7 +180,7 @@ const LeadManagement = () => {
                   <tr key={lead.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3 text-sm text-white/80 whitespace-nowrap">{lead.full_name || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 whitespace-nowrap">{lead.email || "—"}</td>
-                    <td className="px-4 py-3 text-sm text-white/60 whitespace-nowrap">{lead.job_title || "—"}</td>
+                    <td className="px-4 py-3 text-sm text-white/60 truncate" title={lead.job_title || ""}>{lead.job_title || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 whitespace-nowrap">{lead.country || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/50 whitespace-nowrap">{formatDate(lead.created_at)}</td>
                     <td className="px-4 py-3">
