@@ -15,8 +15,8 @@ interface SidebarItem {
 
 const sidebarItems: SidebarItem[] = [
   { id: "admin-users", label: "User Management", icon: Users, subsystem: "admin" },
-  { id: "mkt-social", label: "Social Media", icon: Share2, subsystem: "marketing" },
   { id: "sales-leads", label: "Leads", icon: UserCheck, subsystem: "marketing" },
+  { id: "mkt-social", label: "Social Media", icon: Share2, subsystem: "marketing" },
   { id: "sales-pms", label: "Planning My SaaS", icon: BarChart3, subsystem: "sales" },
 ];
 
