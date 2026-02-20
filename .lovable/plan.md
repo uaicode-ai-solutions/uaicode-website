@@ -1,51 +1,33 @@
 
 
-# Simplificar Menus Laterais do Hero Dashboard
+# Reorganizar Menus do Hero Dashboard
 
 ## O que muda
 
-O sidebar atual tem 12 itens em 3 grupos. Vamos reduzir para apenas 3 itens:
-
-| Grupo | Menu atual | Menu final |
+| Grupo | Atual | Novo |
 |---|---|---|
-| Admin | Overview, User Management, System Settings, Activity Logs | **User Management** (apenas) |
-| Marketing | Content Calendar, Social Media, Campaigns, Brand Assets | **Lead Management** (novo) |
-| Sales | Pipeline, Lead Management, Reports & Analytics, CRM Overview | **Planning My SaaS** (novo) |
+| Admin | User Management | User Management (sem mudanca) |
+| Marketing | Lead Management | **Social Media** (novo placeholder) |
+| Sales | Planning My SaaS | **Lead Management** (movido do Marketing) + Planning My SaaS |
 
 ## Detalhes Tecnicos
 
 ### 1. `src/components/hero/HeroSidebar.tsx`
-- Reduzir `sidebarItems` para 3 itens:
+- Atualizar `sidebarItems` para 4 itens:
   - `{ id: "admin-users", label: "User Management", icon: Users, subsystem: "admin" }`
-  - `{ id: "mkt-leads", label: "Lead Management", icon: UserCheck, subsystem: "marketing" }`
+  - `{ id: "mkt-social", label: "Social Media", icon: Share2, subsystem: "marketing" }` (novo)
+  - `{ id: "sales-leads", label: "Lead Management", icon: UserCheck, subsystem: "sales" }` (movido, id atualizado)
   - `{ id: "sales-pms", label: "Planning My SaaS", icon: BarChart3, subsystem: "sales" }`
 
 ### 2. `src/pages/hero/HeroDash.tsx`
-- Atualizar `defaultView` para refletir os novos IDs
-- Atualizar `renderContent()` para rotear:
-  - `admin-users` -> `<HeroUserManagement />`  (importar diretamente)
-  - `mkt-leads` -> novo componente `<LeadManagement />`
-  - `sales-pms` -> novo componente `<PlanningMySaasOverview />`
+- Atualizar `defaultView` para incluir `sales-leads` como fallback para sales
+- Atualizar `renderContent()`:
+  - `mkt-social` -> novo componente `<SocialMediaOverview />`
+  - `sales-leads` -> componente existente `<LeadManagement />`
+  - Manter `admin-users` e `sales-pms` como estao
 
-### 3. `src/components/hero/mock/AdminOverview.tsx` -- REMOVER
-- Nao sera mais necessario (User Management ja e importado diretamente)
-
-### 4. `src/components/hero/mock/MarketingOverview.tsx` -- REMOVER
-- Todo o conteudo mock sera substituido
-
-### 5. `src/components/hero/mock/SalesOverview.tsx` -- REMOVER
-- Todo o conteudo mock sera substituido
-
-### 6. Novo: `src/components/hero/mock/LeadManagement.tsx`
-- Tela inicial com placeholder para gerenciamento de leads
-- Tabela vazia com estrutura para: Nome, Email, Origem, Status, Data
-- Mensagem "No leads yet" com visual consistente com o design atual (dark theme, bordas `white/[0.06]`)
-
-### 7. Novo: `src/components/hero/mock/PlanningMySaasOverview.tsx`
-- Tela que mostra dados/links relacionados ao PlanningMySaaS
-- Cards com metricas placeholder: Total Reports, Active Users, Revenue
-- Visual consistente com o design atual
-
-### 8. `src/hooks/useHeroAuth.ts`
-- Atualizar `defaultView` references se houver fallback para views removidas
+### 3. Novo: `src/components/hero/mock/SocialMediaOverview.tsx`
+- Tela placeholder para Social Media
+- Visual consistente com dark theme existente
+- Mensagem tipo "Coming soon" ou cards placeholder para redes sociais
 
