@@ -33,7 +33,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Create a professional corporate photo of two businessmen shaking hands closing a deal. One of the businessmen should look exactly like the person in the reference photo. Dark moody background with warm golden yellow lighting (#FFBF1A, #FF9F00). Cinematic corporate atmosphere, shallow depth of field, professional studio quality. Portrait orientation 9:16. No text. No amber tones - use pure golden yellow as the accent color."
+                text: "Professional cinematic photograph of two businessmen in dark suits shaking hands, closing a business deal. One businessman must look exactly like the person in the reference photo. Setting: modern dark office or conference room. Lighting: dramatic golden yellow spotlights (#FFBF1A, #FF9F00) creating warm highlights on faces and hands. Background: deep black (#000000) with subtle golden bokeh lights. Color palette: ONLY black and golden yellow - NO amber, NO orange, NO brown tones. Photorealistic, shallow depth of field, 9:16 portrait orientation. No text overlays."
               },
               {
                 type: "image_url",
