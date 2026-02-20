@@ -1,47 +1,43 @@
 
 
-# Corrigir Imagem Hero Login - Altura Total + Founder a Direita
+# Alterar Email de Recuperacao de Senha para "UaiCode Hero Ecosystem"
 
-## Problemas identificados
+## Problema
 
-1. **Imagem quadrada** - precisa ser em formato retrato (9:16) para preencher a altura total da tela
-2. **Founder no lado errado** - o founder (Rafael Luz) precisa estar do lado direito da imagem, nao do esquerdo
+O email de recuperacao de senha esta usando o branding "PlanningMySaaS by UaiCode". Precisa ser alterado para "UaiCode Hero Ecosystem".
 
-## O que sera feito
+## Solucao
 
-### 1. Regenerar a imagem com composicao corrigida
+Customizar o template de email de recuperacao de senha do Supabase Auth usando a configuracao em `config.toml` e um arquivo HTML customizado.
 
-Usar o modelo Nano Banana (`google/gemini-2.5-flash-image`) com a imagem do founder como referencia e um prompt corrigido:
+## Passos
 
-- Formato **retrato 9:16** (portrait) para preencher a altura total
-- **Founder posicionado do lado direito** da imagem
-- Outro empresario do lado esquerdo
-- Mesma paleta UaiCode: preto (#000000), amarelo dourado (#FFBF1A, #FF9F00)
-- Sem tons amber/laranja/marrom
+### 1. Criar template HTML customizado
 
-**Prompt atualizado:**
-"Professional cinematic photograph, portrait orientation 9:16 tall format. Two businessmen in dark suits shaking hands closing a deal. The person from the reference photo must be positioned on the RIGHT side of the image. The other businessman on the LEFT side. Setting: modern dark office. Lighting: dramatic golden yellow spotlights (#FFBF1A, #FF9F00). Background: deep black (#000000) with subtle golden bokeh. Color palette: ONLY black and golden yellow. NO amber, NO orange, NO brown. Photorealistic, shallow depth of field. No text."
+Criar o arquivo `supabase/templates/recovery.html` com:
+- Header: "UaiCode Hero Ecosystem" (em vez de "PlanningMySaaS")
+- Mesma paleta visual UaiCode (fundo escuro #0A0A0A, dourado #FACC15)
+- Botao "Reset My Password" com link `{{ .ConfirmationURL }}`
+- Footer com "UaiCode. All rights reserved." e ano atualizado
+- Design premium consistente com os outros emails do sistema
 
-### 2. Verificar CSS do HeroLogin.tsx
+### 2. Atualizar config.toml
 
-O CSS atual ja tem `object-cover` e `h-full` no container, mas verificar se o `lg:min-h-screen` esta funcionando corretamente para garantir que a imagem preencha 100% da altura da tela.
+Adicionar a configuracao do template de recovery:
 
-O container atual (linha 69):
 ```
-<div className="relative w-full lg:w-1/2 h-56 sm:h-72 lg:h-auto lg:min-h-screen overflow-hidden">
+[auth.email.template.recovery]
+subject = "Reset Your Password - UaiCode Hero Ecosystem"
+content_path = "./supabase/templates/recovery.html"
 ```
-
-A tag `<img>` (linha 70):
-```
-<img src={heroLoginBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-```
-
-Isso ja deveria funcionar - o `object-cover` garante que a imagem cubra todo o espaco. Com uma imagem em formato retrato (tall), o resultado sera muito melhor.
 
 ## Arquivos afetados
 
 | Arquivo | Alteracao |
 |---|---|
-| `src/assets/hero-login-bg.webp` | Nova imagem regenerada (retrato, founder a direita) |
+| `supabase/templates/recovery.html` | Novo - template HTML customizado |
+| `supabase/config.toml` | Adicionar configuracao do template de recovery |
 
-Nenhuma alteracao de codigo necessaria - apenas a nova imagem.
+## Observacao
+
+O template usa variaveis do Supabase Auth como `{{ .ConfirmationURL }}` para o link de reset e `{{ .SiteURL }}` para URLs do site. O design seguira o mesmo padrao visual dos emails existentes (como o `pms-send-password-changed`), mas com branding "UaiCode Hero Ecosystem".
