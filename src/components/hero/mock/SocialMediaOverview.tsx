@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, isAfter, isBefore, startOfDay, endOfDay } from "date-fns";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -56,8 +56,7 @@ const statusColors: Record<string, string> = {
 };
 
 const SocialMediaOverview = () => {
-  const [selectedContent, setSelectedContent] = useState<MediaContent | null>(null);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeSlides, setActiveSlides] = useState<Record<string, number>>({});
   const [currentPage, setCurrentPage] = useState(0);
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
@@ -150,17 +149,15 @@ const SocialMediaOverview = () => {
     }
   };
 
-  const openDetail = (content: MediaContent) => {
-    setSelectedContent(content);
-    setCurrentSlide(0);
+  const getActivePreviewUrl = (content: MediaContent): string | null => {
+    if (content.content_type === "carousel" && content.slides_json) {
+      const slides = content.slides_json as unknown as Slide[];
+      const idx = activeSlides[content.id] || 0;
+      const sorted = [...slides].sort((a, b) => a.slide_number - b.slide_number);
+      return sorted[idx]?.image_url || null;
+    }
+    return content.asset_url;
   };
-
-  const slides = selectedContent ? getSlides(selectedContent) : [];
-  const currentImageUrl = selectedContent
-    ? selectedContent.content_type === "carousel" && slides.length > 0
-      ? slides[currentSlide]?.image_url
-      : selectedContent.asset_url
-    : null;
 
   return (
     <div className="space-y-4">
@@ -248,12 +245,13 @@ const SocialMediaOverview = () => {
         <>
           <div className="grid grid-cols-4 gap-3">
             {paginatedContents.map((content) => {
-              const previewUrl = getPreviewUrl(content);
+              const previewUrl = getActivePreviewUrl(content);
+              const cardSlides = getSlides(content);
+              const activeIdx = activeSlides[content.id] || 0;
               return (
                 <div
                   key={content.id}
-                  onClick={() => openDetail(content)}
-                  className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden cursor-pointer hover:border-white/[0.12] transition-colors group"
+                  className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden hover:border-white/[0.12] transition-colors group"
                 >
                   <div className="relative aspect-[3/4] bg-white/[0.02]">
                     {previewUrl ? (
@@ -277,11 +275,27 @@ const SocialMediaOverview = () => {
                         </Badge>
                       </div>
                     </div>
-                    {content.content_type === "carousel" && content.slides_json && (
-                      <div className="absolute top-2 right-2 bg-black/60 text-white/80 text-[10px] px-1.5 py-0.5 rounded-md flex items-center gap-1">
-                        <Layers className="w-3 h-3" />
-                        {(content.slides_json as unknown as Slide[]).length}
-                      </div>
+                    {cardSlides.length > 1 && (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setActiveSlides(prev => ({ ...prev, [content.id]: Math.max(0, activeIdx - 1) })); }}
+                          disabled={activeIdx === 0}
+                          className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full h-6 w-6 flex items-center justify-center disabled:opacity-30 transition-opacity"
+                        >
+                          <ChevronLeft className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setActiveSlides(prev => ({ ...prev, [content.id]: Math.min(cardSlides.length - 1, activeIdx + 1) })); }}
+                          disabled={activeIdx === cardSlides.length - 1}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full h-6 w-6 flex items-center justify-center disabled:opacity-30 transition-opacity"
+                        >
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                        <div className="absolute top-2 right-2 bg-black/60 text-white/80 text-[10px] px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                          <Layers className="w-3 h-3" />
+                          {activeIdx + 1} / {cardSlides.length}
+                        </div>
+                      </>
                     )}
                   </div>
                   <div className="px-2 py-1 flex items-center justify-between text-[11px] text-white/30">
@@ -321,81 +335,6 @@ const SocialMediaOverview = () => {
         </>
       )}
 
-      {/* Detail Dialog */}
-      <Dialog open={!!selectedContent} onOpenChange={(open) => !open && setSelectedContent(null)}>
-        <DialogContent className="bg-[#0a0a0a] border-white/[0.06] text-white max-w-2xl p-0 gap-0">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Media Detail</DialogTitle>
-          </DialogHeader>
-
-          {selectedContent && (
-            <>
-              <div className="relative aspect-square bg-black">
-                {currentImageUrl ? (
-                  <img src={currentImageUrl} alt={selectedContent.caption || "Media"} className="w-full h-full object-contain" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white/20">
-                    <ContentTypeIcon type={selectedContent.content_type} />
-                  </div>
-                )}
-                {slides.length > 1 && (
-                  <>
-                    <Button size="icon" variant="ghost" className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white h-8 w-8 rounded-full" onClick={(e) => { e.stopPropagation(); setCurrentSlide((p) => Math.max(0, p - 1)); }} disabled={currentSlide === 0}>
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white h-8 w-8 rounded-full" onClick={(e) => { e.stopPropagation(); setCurrentSlide((p) => Math.min(slides.length - 1, p + 1)); }} disabled={currentSlide === slides.length - 1}>
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white/80 text-xs px-2.5 py-1 rounded-full">
-                      {currentSlide + 1} / {slides.length}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="p-5 space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline" className="border-white/20 text-white/70 gap-1">
-                    <ContentTypeIcon type={selectedContent.content_type} />
-                    {selectedContent.content_type}
-                  </Badge>
-                  <Badge variant="outline" className="border-white/20 text-white/70">{selectedContent.pillar}</Badge>
-                  <Badge className={`border ${statusColors[selectedContent.status] || statusColors.draft}`}>{selectedContent.status}</Badge>
-                </div>
-                {selectedContent.caption && (
-                  <ScrollArea className="max-h-32">
-                    <p className="text-sm text-white/60 whitespace-pre-wrap">{selectedContent.caption}</p>
-                  </ScrollArea>
-                )}
-                <div className="grid grid-cols-2 gap-3 text-xs text-white/40">
-                  <div>
-                    <span className="text-white/20">Created</span>
-                    <p className="text-white/50">{format(new Date(selectedContent.created_at), "MMM d, yyyy HH:mm")}</p>
-                  </div>
-                  {selectedContent.scheduled_for && (
-                    <div>
-                      <span className="text-white/20">Scheduled</span>
-                      <p className="text-white/50">{format(new Date(selectedContent.scheduled_for), "MMM d, yyyy HH:mm")}</p>
-                    </div>
-                  )}
-                  {selectedContent.published_at && (
-                    <div>
-                      <span className="text-white/20">Published</span>
-                      <p className="text-white/50">{format(new Date(selectedContent.published_at), "MMM d, yyyy HH:mm")}</p>
-                    </div>
-                  )}
-                  {selectedContent.instagram_media_id && (
-                    <div>
-                      <span className="text-white/20">IG Media ID</span>
-                      <p className="text-white/50 font-mono text-[11px]">{selectedContent.instagram_media_id}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
