@@ -124,6 +124,3 @@ verify_jwt = false
 [functions.generate-hero-bg]
 verify_jwt = false
 
-[functions.hero-invite-user]
-verify_jwt = false
-
