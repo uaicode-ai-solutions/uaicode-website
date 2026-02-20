@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,6 +23,7 @@ export const useHeroAuth = () => {
   const [heroRoles, setHeroRoles] = useState<HeroRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [notAuthorized, setNotAuthorized] = useState(false);
+  const fetchingRef = useRef(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -36,35 +37,42 @@ export const useHeroAuth = () => {
     }
 
     const fetchHeroData = async () => {
+      // Guard against concurrent fetches
+      if (fetchingRef.current) return;
+      fetchingRef.current = true;
       setLoading(true);
 
-      // Fetch hero user profile
-      const { data: heroData, error: heroError } = await supabase
-        .from("tb_hero_users" as any)
-        .select("*")
-        .eq("auth_user_id", user.id)
-        .single();
+      try {
+        // Fetch hero user profile
+        const { data: heroData, error: heroError } = await supabase
+          .from("tb_hero_users" as any)
+          .select("*")
+          .eq("auth_user_id", user.id)
+          .single();
 
-      if (heroError || !heroData) {
-        setHeroUser(null);
-        setHeroRoles([]);
-        setNotAuthorized(true);
+        if (heroError || !heroData) {
+          setHeroUser(null);
+          setHeroRoles([]);
+          setNotAuthorized(true);
+          setLoading(false);
+          return;
+        }
+
+        const typedHeroData = heroData as any as HeroUser;
+        setHeroUser(typedHeroData);
+        setNotAuthorized(false);
+
+        // Fetch hero roles
+        const { data: rolesData } = await supabase
+          .from("tb_hero_roles" as any)
+          .select("*")
+          .eq("user_id", typedHeroData.id);
+
+        setHeroRoles((rolesData as any as HeroRole[]) || []);
+      } finally {
         setLoading(false);
-        return;
+        fetchingRef.current = false;
       }
-
-      const typedHeroData = heroData as any as HeroUser;
-      setHeroUser(typedHeroData);
-      setNotAuthorized(false);
-
-      // Fetch hero roles
-      const { data: rolesData } = await supabase
-        .from("tb_hero_roles" as any)
-        .select("*")
-        .eq("user_id", typedHeroData.id);
-
-      setHeroRoles((rolesData as any as HeroRole[]) || []);
-      setLoading(false);
     };
 
     fetchHeroData();
