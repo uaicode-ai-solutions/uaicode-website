@@ -1,44 +1,16 @@
 
 
-# Filtros Avançados - Social Media
+# Badges no Topo dos Cards
 
-## Resumo
+Mover as badges (content_type, pillar, status) da parte inferior da imagem para o topo dos cards no grid do Social Media.
 
-Melhorar a barra de filtros da tela Social Media com labels "Start Date" e "End Date" nos calendarios, adicionar filtros por content_type e pillar usando Select dropdowns, e um botao "Clear Filters" com icone de borracha que aparece sempre que houver filtros ativos.
+## Alteracao
 
-## Detalhes Tecnicos
+**Arquivo:** `src/components/hero/mock/SocialMediaOverview.tsx`
 
-### Arquivo: `src/components/hero/mock/SocialMediaOverview.tsx`
+Na secao do card grid, o bloco de badges atualmente esta posicionado no bottom da imagem com um gradiente `from-black/80` de baixo para cima. A mudanca consiste em:
 
-**Novos estados (apos dateFrom/dateTo):**
-- `contentType`: `string | undefined` - filtro por content_type
-- `pillarFilter`: `string | undefined` - filtro por pillar
-
-**Listas de opcoes derivadas dos dados:**
-- Extrair valores unicos de `content_type` e `pillar` dos dados carregados usando `useMemo`
-- Isso garante que os dropdowns sempre refletem os dados reais
-
-**Atualizar `hasFilters`:**
-- Incluir `contentType` e `pillarFilter` na verificacao
-
-**Atualizar `filteredContents`:**
-- Adicionar filtros por `content_type` e `pillar` alem das datas
-- Adicionar `contentType` e `pillarFilter` nas dependencias do `useMemo`
-
-**Atualizar `useEffect` de reset de pagina:**
-- Incluir `contentType` e `pillarFilter` nas dependencias
-
-**Barra de filtros - layout:**
-- Trocar labels "From"/"To" por "Start Date"/"End Date"
-- Adicionar dois `Select` (do shadcn/ui) para content_type e pillar
-- Usar placeholder "All Types" e "All Pillars"
-- Estilizar com mesma aparencia dark dos botoes existentes (bg-white/[0.04], border-white/[0.08])
-- Adicionar botao "Clear Filters" com icone `Eraser` e texto, visivel sempre que `hasFilters` for true
-- O botao limpa todos os 4 filtros de uma vez
-
-**Importacoes adicionais:**
-- Importar `Select, SelectContent, SelectItem, SelectTrigger, SelectValue` de `@/components/ui/select`
-
-**Funcao clearFilters:**
-- Reseta `dateFrom`, `dateTo`, `contentType` e `pillarFilter` para `undefined`
+1. Trocar o posicionamento do container de badges de `bottom-0` para `top-0`
+2. Inverter o gradiente de `bg-gradient-to-t from-black/80 via-black/40 to-transparent` para `bg-gradient-to-b from-black/80 via-black/40 to-transparent`, ajustando o padding de `p-3 pt-8` para `p-3 pb-8`
+3. Manter todo o restante (estilos das badges, icones, cores de status) inalterado
 
