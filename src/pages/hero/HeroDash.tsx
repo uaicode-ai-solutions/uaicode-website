@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import HeroHeader from "@/components/hero/HeroHeader";
 import HeroSidebar from "@/components/hero/HeroSidebar";
 import HeroUserManagement from "@/components/hero/admin/HeroUserManagement";
+import SocialMediaOverview from "@/components/hero/mock/SocialMediaOverview";
 import LeadManagement from "@/components/hero/mock/LeadManagement";
 import PlanningMySaasOverview from "@/components/hero/mock/PlanningMySaasOverview";
 import { useHeroAuth } from "@/hooks/useHeroAuth";
@@ -13,8 +14,8 @@ const HeroDash = () => {
 
   const defaultView = (() => {
     if (canAccessSubsystem("admin")) return "admin-users";
-    if (canAccessSubsystem("marketing")) return "mkt-leads";
-    if (canAccessSubsystem("sales")) return "sales-pms";
+    if (canAccessSubsystem("marketing")) return "mkt-social";
+    if (canAccessSubsystem("sales")) return "sales-leads";
     return "admin-users";
   })();
 
@@ -33,7 +34,8 @@ const HeroDash = () => {
   const renderContent = () => {
     switch (activeItem) {
       case "admin-users": return <HeroUserManagement />;
-      case "mkt-leads": return <LeadManagement />;
+      case "mkt-social": return <SocialMediaOverview />;
+      case "sales-leads": return <LeadManagement />;
       case "sales-pms": return <PlanningMySaasOverview />;
       default: return <HeroUserManagement />;
     }
