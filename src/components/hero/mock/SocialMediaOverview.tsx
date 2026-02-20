@@ -140,7 +140,7 @@ const SocialMediaOverview = () => {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
               <Skeleton className="aspect-[3/4] w-full bg-white/[0.04]" />
@@ -161,7 +161,7 @@ const SocialMediaOverview = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {paginatedContents.map((content) => {
               const previewUrl = getPreviewUrl(content);
               return (
