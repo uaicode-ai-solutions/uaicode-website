@@ -1,56 +1,53 @@
 
 
-# Fix Definitivo: hero-invite-user - CORS bloqueando x-session-id
+# Fix: Post-Password-Reset Redirect, User Status, and Infinite Refresh
 
-## Causa Raiz (Confirmada)
+## Problems Identified
 
-O cliente Supabase (`src/integrations/supabase/client.ts`) adiciona um header customizado `x-session-id` a TODAS as requisicoes:
+1. **Wrong redirect after password change**: `HeroResetPassword.tsx` line 201 sends the user to `/hero/home` instead of a profile completion page.
+2. **User status stays "Invited"**: Status is derived from `full_name` being non-empty (in `useHeroUsers.ts`). There is **no Hero profile page** where invited users can fill in their name -- so it stays empty forever.
+3. **Screen keeps refreshing**: After `updatePassword()` is called, Supabase fires `USER_UPDATED` and `SIGNED_IN` auth events. The `onAuthStateChange` listener in `useAuth.ts` triggers `fetchPmsUserData` + `sendWelcomeEmailIfNew` on every `SIGNED_IN` event. The `useHeroAuth` hook re-runs its `useEffect` whenever `user` changes, causing cascading re-renders. Additionally, the `HeroResetPassword` page has its own `onAuthStateChange` listener that also reacts to `SIGNED_IN`, potentially conflicting.
 
-```text
-global: {
-  headers: {
-    'x-session-id': getSessionId()
-  }
-}
-```
+## Solution
 
-Quando o browser faz o preflight CORS (OPTIONS) para a edge function, ele inclui `x-session-id` no `Access-Control-Request-Headers`. A edge function responde com uma lista de headers permitidos que **NAO inclui** `x-session-id`. O browser entao bloqueia o POST -- o request nunca chega ao servidor.
+### 1. Create a Hero Profile Page (`src/pages/hero/HeroProfile.tsx`)
 
-**Evidencia dos analytics:**
-- OPTIONS: 200 (preflight passou)
-- POST: **nunca aparece nos logs** (browser bloqueou antes de enviar)
-- Erro no browser: "Failed to fetch" / "Failed to send a request to the Edge Function"
+A new page where Hero users can view and edit their profile (full name, avatar). This is the missing piece -- invited users currently have no way to fill in their `full_name`.
 
-## Solucao
+- Form fields: Full Name (required), Avatar upload (optional)
+- On save: updates `tb_hero_users` table via Supabase client (RLS allows `hero_users_update_own`)
+- Styled consistently with the Hero Ecosystem dark theme
+- Accessible at `/hero/profile`
 
-### Arquivo: `supabase/functions/hero-invite-user/index.ts`
+### 2. Add Route and Navigation
 
-Adicionar `x-session-id` ao `Access-Control-Allow-Headers`:
+- **`src/App.tsx`**: Add route `/hero/profile` wrapped in `<HeroRoute>`
+- **`src/components/hero/HeroHeader.tsx`**: Add "Profile" menu item in the dropdown (between Home and Sign Out)
 
-```text
-ANTES:
-"authorization, x-client-info, apikey, content-type, x-supabase-client-platform, ..."
+### 3. Fix Redirect After Password Reset
 
-DEPOIS:
-"authorization, x-client-info, apikey, content-type, x-session-id, x-supabase-client-platform, ..."
-```
+- **`src/pages/hero/HeroResetPassword.tsx`**: Change the success state redirect from `/hero/home` to `/hero/profile` so users complete their profile after setting their password
 
-Isso e uma mudanca de uma unica linha no header CORS da edge function.
+### 4. Fix Infinite Refresh Loop
 
-## Detalhes Tecnicos
+- **`src/pages/hero/HeroResetPassword.tsx`**: After successful password update, unsubscribe from `onAuthStateChange` and set a flag to prevent re-processing auth events. The current listener reacts to `SIGNED_IN` events that fire after `updateUser()`, causing state oscillation.
+- **`src/hooks/useHeroAuth.ts`**: Add a `ref` guard to prevent concurrent `fetchHeroData` calls from overlapping when auth state changes rapidly.
 
-| Aspecto | Detalhe |
+## Technical Details
+
+| File | Change |
 |---|---|
-| Arquivo alterado | `supabase/functions/hero-invite-user/index.ts` (linha 6) |
-| Causa raiz | Header customizado `x-session-id` nao listado no CORS `Allow-Headers` |
-| Por que nao apareceu antes | O OPTIONS retorna 200, mas o browser bloqueia o POST silenciosamente |
-| Por que o curl funcionou | O curl nao faz preflight CORS |
-| Redeploy | Sim, automatico |
-| Risco | Zero -- apenas adiciona um header a lista de permissoes CORS |
+| `src/pages/hero/HeroProfile.tsx` | New file -- Hero user profile editor |
+| `src/App.tsx` | Add `/hero/profile` route |
+| `src/components/hero/HeroHeader.tsx` | Add "Profile" link to dropdown menu |
+| `src/pages/hero/HeroResetPassword.tsx` | Change redirect to `/hero/profile`; fix auth listener to prevent re-render loops |
+| `src/hooks/useHeroAuth.ts` | Add fetch guard to prevent concurrent/overlapping data fetches |
 
-## Por que os fixes anteriores nao resolveram
+### How "Approved" Status Works
 
-1. **Fix do feedback inline**: Correto, mas nao resolvia o problema de rede
-2. **Fix do userClient vs adminClient**: Correto para auth, mas o request nunca chegava ao servidor por causa do CORS
-3. **Ambos os fixes continuam validos** -- o CORS era o bloqueio que impedia qualquer request de chegar
+No backend change is needed. Status is already derived in `useHeroUsers.ts`:
+```text
+status = user.full_name.trim() ? 'approved' : 'invited'
+```
+Once the user fills in their name on the new profile page, their status automatically becomes "Approved" in the admin User Management view.
 
