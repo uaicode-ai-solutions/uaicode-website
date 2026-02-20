@@ -1,24 +1,44 @@
 
 
-# Social Media - 4 Cards em Uma Unica Linha
+# Filtros Avançados - Social Media
 
 ## Resumo
 
-Reorganizar o grid para exibir os 4 cards lado a lado em uma unica linha horizontal (4 colunas), eliminando a segunda linha e maximizando o espaco vertical disponivel.
+Melhorar a barra de filtros da tela Social Media com labels "Start Date" e "End Date" nos calendarios, adicionar filtros por content_type e pillar usando Select dropdowns, e um botao "Clear Filters" com icone de borracha que aparece sempre que houver filtros ativos.
 
 ## Detalhes Tecnicos
 
 ### Arquivo: `src/components/hero/mock/SocialMediaOverview.tsx`
 
-**PAGE_SIZE:** permanece `4`
+**Novos estados (apos dateFrom/dateTo):**
+- `contentType`: `string | undefined` - filtro por content_type
+- `pillarFilter`: `string | undefined` - filtro por pillar
 
-**Grid de cards (linha 164):**
-- Trocar `grid-cols-2 gap-3` por `grid-cols-4 gap-3`
-- 4 colunas x 1 linha = 4 cards lado a lado
+**Listas de opcoes derivadas dos dados:**
+- Extrair valores unicos de `content_type` e `pillar` dos dados carregados usando `useMemo`
+- Isso garante que os dropdowns sempre refletem os dados reais
 
-**Skeleton loading (linha 143):**
-- Trocar `grid-cols-2 gap-3` por `grid-cols-4 gap-3`
-- Manter `length: 4`
+**Atualizar `hasFilters`:**
+- Incluir `contentType` e `pillarFilter` na verificacao
 
-**Aspect ratio dos cards:** manter `aspect-[3/4]` (pode ser ajustado se necessario apos teste visual)
+**Atualizar `filteredContents`:**
+- Adicionar filtros por `content_type` e `pillar` alem das datas
+- Adicionar `contentType` e `pillarFilter` nas dependencias do `useMemo`
+
+**Atualizar `useEffect` de reset de pagina:**
+- Incluir `contentType` e `pillarFilter` nas dependencias
+
+**Barra de filtros - layout:**
+- Trocar labels "From"/"To" por "Start Date"/"End Date"
+- Adicionar dois `Select` (do shadcn/ui) para content_type e pillar
+- Usar placeholder "All Types" e "All Pillars"
+- Estilizar com mesma aparencia dark dos botoes existentes (bg-white/[0.04], border-white/[0.08])
+- Adicionar botao "Clear Filters" com icone `Eraser` e texto, visivel sempre que `hasFilters` for true
+- O botao limpa todos os 4 filtros de uma vez
+
+**Importacoes adicionais:**
+- Importar `Select, SelectContent, SelectItem, SelectTrigger, SelectValue` de `@/components/ui/select`
+
+**Funcao clearFilters:**
+- Reseta `dateFrom`, `dateTo`, `contentType` e `pillarFilter` para `undefined`
 
