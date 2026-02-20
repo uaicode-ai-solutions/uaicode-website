@@ -117,3 +117,6 @@ verify_jwt = false
 [functions.pms-send-newsletter-broadcast]
 verify_jwt = false
 
+[functions.generate-hero-bg]
+verify_jwt = false
+
