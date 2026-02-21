@@ -1,27 +1,20 @@
 
-# Exibir Escudo do Time ao Lado do Avatar no Header
 
-## Resumo
-
-Adicionar o escudo do time do usuario ao lado do avatar no header da pagina `/hero/dash`, utilizando as imagens de escudo ja existentes em `src/assets/`.
+# Aumentar Tamanho do Escudo no Header
 
 ## Alteracao
 
-### Arquivo: `src/components/hero/HeroHeader.tsx`
+**Arquivo:** `src/components/hero/HeroHeader.tsx` (linha 64)
 
-1. Importar as 6 imagens de escudo (`shield-admin.png`, `shield-marketing.png`, `shield-sales.png`, `shield-product.png`, `shield-education.png`, `shield-tech.png`)
-2. Criar um mapa `teamShields` que associa o valor do campo `team` do usuario a imagem correspondente
-3. No bloco do `DropdownMenuTrigger`, adicionar uma tag `<img>` do escudo (aproximadamente 24x24px) posicionada ao lado esquerdo do avatar
-4. Caso o usuario nao tenha team definido ou seja "none", o escudo nao sera exibido
+Alterar o tamanho do escudo de `h-6 w-6` (24px) para `h-9 w-9` (36px), igualando ao tamanho do avatar.
 
-### Resultado visual
+**De:**
+```
+className="h-6 w-6 object-contain"
+```
 
-O header passara de:
+**Para:**
+```
+className="h-9 w-9 object-contain"
+```
 
-`[Nome do Usuario] [Avatar]`
-
-Para:
-
-`[Nome do Usuario] [Escudo 24px] [Avatar]`
-
-O escudo tera tamanho pequeno (h-6) para manter proporcao com o avatar de 36px.
