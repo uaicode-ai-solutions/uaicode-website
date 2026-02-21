@@ -10,6 +10,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import uaicodeLogo from "@/assets/uaicode-logo.png";
+import shieldAdmin from "@/assets/shield-admin.png";
+import shieldMarketing from "@/assets/shield-marketing.png";
+import shieldSales from "@/assets/shield-sales.png";
+import shieldProduct from "@/assets/shield-product.png";
+import shieldEducation from "@/assets/shield-education.png";
+import shieldTech from "@/assets/shield-tech.png";
+
+const teamShields: Record<string, string> = {
+  admin: shieldAdmin,
+  marketing: shieldMarketing,
+  sales: shieldSales,
+  product: shieldProduct,
+  education: shieldEducation,
+  tech: shieldTech,
+};
 
 const HeroHeader = () => {
   const navigate = useNavigate();
@@ -47,6 +62,9 @@ const HeroHeader = () => {
               <span className="text-sm text-white/70 hidden sm:block">
                 {heroUser?.full_name}
               </span>
+              {heroUser?.team && heroUser.team !== "none" && teamShields[heroUser.team] && (
+                <img src={teamShields[heroUser.team]} alt={`${heroUser.team} shield`} className="h-6 w-6 object-contain" />
+              )}
               <Avatar className="h-9 w-9 border border-white/10">
                 <AvatarImage src={heroUser?.avatar_url || undefined} />
                 <AvatarFallback className="bg-uai-500/20 text-uai-500 text-xs font-bold">
