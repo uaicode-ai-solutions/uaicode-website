@@ -63,7 +63,7 @@ const HeroHeader = () => {
                 {heroUser?.full_name}
               </span>
               {heroUser?.team && heroUser.team !== "none" && teamShields[heroUser.team] && (
-                <img src={teamShields[heroUser.team]} alt={`${heroUser.team} shield`} className="h-6 w-6 object-contain" />
+                <img src={teamShields[heroUser.team]} alt={`${heroUser.team} shield`} className="h-9 w-9 object-contain" />
               )}
               <Avatar className="h-9 w-9 border border-white/10">
                 <AvatarImage src={heroUser?.avatar_url || undefined} />
