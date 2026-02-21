@@ -24,6 +24,9 @@ const subsystemLabels: Record<string, string> = {
   admin: "Admin",
   marketing: "Marketing",
   sales: "Sales",
+  product: "Product",
+  education: "Education",
+  tech: "Tech",
 };
 
 interface HeroSidebarProps {
@@ -35,7 +38,7 @@ const HeroSidebar = ({ activeItem, onItemClick }: HeroSidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const { canAccessSubsystem } = useHeroAuth();
 
-  const accessibleSubsystems = ["admin", "marketing", "sales"].filter(canAccessSubsystem);
+  const accessibleSubsystems = ["admin", "marketing", "sales", "product", "education", "tech"].filter(canAccessSubsystem);
 
   return (
     <aside
