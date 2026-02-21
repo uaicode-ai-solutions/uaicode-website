@@ -6,6 +6,7 @@ import HeroUserManagement from "@/components/hero/admin/HeroUserManagement";
 import SocialMediaOverview from "@/components/hero/mock/SocialMediaOverview";
 import LeadManagement from "@/components/hero/mock/LeadManagement";
 import PlanningMySaasOverview from "@/components/hero/mock/PlanningMySaasOverview";
+import ICPOverview from "@/components/hero/mock/ICPOverview";
 import { useHeroAuth } from "@/hooks/useHeroAuth";
 
 const HeroDash = () => {
@@ -34,6 +35,7 @@ const HeroDash = () => {
   const renderContent = () => {
     switch (activeItem) {
       case "admin-users": return <HeroUserManagement />;
+      case "mkt-icps": return <ICPOverview />;
       case "mkt-social": return <SocialMediaOverview />;
       case "sales-leads": return <LeadManagement />;
       case "sales-pms": return <PlanningMySaasOverview />;
