@@ -122,6 +122,9 @@ const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) => {
                 <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="marketing">Marketing</SelectItem>
                 <SelectItem value="sales">Sales</SelectItem>
+                <SelectItem value="product">Product</SelectItem>
+                <SelectItem value="education">Education</SelectItem>
+                <SelectItem value="tech">Tech</SelectItem>
               </SelectContent>
             </Select>
           </div>
