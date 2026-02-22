@@ -132,16 +132,16 @@ const PMSShowcase = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-accent/30 mb-6">
             <FileText className="w-4 h-4 text-accent" />
             <span className="text-sm font-medium text-accent">
-              What You Get on Your Strategy Call
+              What You Get on Your SaaS Strategy Call
             </span>
           </div>
           
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            See What Your <span className="text-gradient-gold">Free Strategy Call</span> Reveals
+            See What Your <span className="text-gradient-gold">Free SaaS Strategy Call</span> Reveals
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            During your 45-minute call, Rafael runs a live AI analysis of your idea. 
-            Here is a sample of what you will walk away with:
+            During your 45-minute call, Rafael runs a live AI analysis of your SaaS idea. 
+            Here is a sample of what you will walk away with — plus a clear path to development partnership:
           </p>
         </div>
         
@@ -174,7 +174,7 @@ const PMSShowcase = () => {
               </div>
               <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-transparent to-background/60">
                 <span className="text-accent font-medium text-sm md:text-base">
-                  + 10 more sections including brand identity, business plan, and investor pitch
+                  + 10 more sections including brand identity, development roadmap, and partnership plan
                 </span>
               </div>
             </div>

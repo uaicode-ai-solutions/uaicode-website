@@ -30,11 +30,11 @@ const MeetEve = () => {
 
             <div className="space-y-6 text-base text-muted-foreground leading-relaxed">
               <p>
-                Eve Morgan is your friendly AI assistant at Uaicode. She's here to answer your questions about idea validation, help you understand if your SaaS concept has market potential, and guide you through our process.
+                Eve Morgan is your friendly AI assistant at Uaicode. She's here to answer your questions about SaaS validation, help you understand if your idea has market potential, and explain how our development partnership works.
               </p>
 
               <p>
-                Whether you want to chat about your idea, learn more about Planning My SaaS, or understand what happens after validation—Eve is ready to help you take the next step.
+                Whether you want to chat about your SaaS idea, learn how our validation works, or understand how we become your development, launch, and growth partner — Eve is ready to help.
               </p>
             </div>
 
@@ -78,7 +78,7 @@ const MeetEve = () => {
                 Book Your Free Strategy Call
               </div>
               <p className="text-sm text-muted-foreground mt-1 group-hover:text-foreground transition-colors">
-                45 minutes with our founder. Live AI validation of your idea. Zero cost. →
+                45 minutes with our founder. Live SaaS validation + partnership roadmap. Zero cost. →
               </p>
             </button>
 

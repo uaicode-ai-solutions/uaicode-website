@@ -24,7 +24,7 @@ const MeetTheFounder = () => {
               </p>
 
               <p>
-                Under Rafael's leadership, Uaicode.ai has become the go-to partner for Problem-Market Fit Validation and AI-accelerated MVP Development. His hands-on approach combines cutting-edge AI capabilities with proven methodologies, enabling founders to validate their ideas in weeks instead of months — with transparent pricing and honest feedback every step of the way.
+                Under Rafael's leadership, Uaicode.ai has become the go-to partner for SaaS validation, development, launch, and growth. His hands-on approach combines cutting-edge AI capabilities with proven methodologies, enabling SaaS founders to validate their ideas and build with confidence — with transparent pricing and honest feedback every step of the way.
               </p>
             </div>
 
