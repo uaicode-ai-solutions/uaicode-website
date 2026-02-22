@@ -42,12 +42,12 @@ const FAQ = () => {
         {
           icon: Target,
           question: "How do I know if my idea is worth building?",
-          answer: "That is exactly what the free strategy call is for. In 45 minutes, our founder runs a live AI-powered market analysis of your idea — viability score, competitor landscape, financial projections. It replaces the $5K-$15K you would normally spend on market research consultants.",
+          answer: "That is exactly what the free strategy call is for. In 45 minutes, our founder runs a live AI-powered market analysis of your SaaS idea — viability score, competitor landscape, financial projections. Once validated, we map out the development partnership to build, launch, and grow your product together.",
         },
         {
           icon: Lightbulb,
           question: "What is an MVP and why do I need one?",
-          answer: "An MVP (Minimum Viable Product) is a lean version of your product with core features that solve your target audience's main problem. It allows you to test your concept, gather user feedback, and validate market demand before investing heavily in full development. With an MVP, you can launch faster, reduce risk, and iterate based on real user data.",
+          answer: "An MVP (Minimum Viable Product) is a lean version of your product with core features that solve your target audience's main problem. It allows you to test your concept, gather user feedback, and validate market demand before investing heavily in full development. With an MVP, you can launch faster, reduce risk, and iterate based on real user data. At Uaicode, we validate your SaaS idea first, then build and launch your MVP as your dedicated development partner.",
         },
         {
           icon: DollarSign,
@@ -62,7 +62,7 @@ const FAQ = () => {
         {
           icon: GitBranch,
           question: "What is your development process?",
-          answer: "We follow a streamlined 4-step process: 1) Free Strategy Call - book a 45-minute session with our founder for live AI validation, 2) Design & Develop - rapid MVP creation using AI-driven tools, 3) Launch & Iterate - go-to-market strategy and deployment, and 4) Grow & Optimize - post-launch support and feature expansion. Each step is collaborative and transparent.",
+          answer: "We follow a streamlined 4-step partnership process: 1) Free Strategy Call — 45-minute SaaS validation with AI, 2) Design & Develop — we build your SaaS MVP as your partner, 3) Launch & Iterate — we launch and iterate together, and 4) Grow & Optimize — ongoing partnership for scaling your SaaS business. Each step is collaborative and transparent.",
         },
         {
           icon: Sparkles,
@@ -109,7 +109,7 @@ const FAQ = () => {
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Got Questions? <span className="text-gradient-gold">We Have Answers</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Everything founders ask before they validate and build
+            Everything SaaS founders ask before they validate and build with us
           </p>
 
           {/* Search */}

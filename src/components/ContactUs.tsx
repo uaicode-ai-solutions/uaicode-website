@@ -122,10 +122,10 @@ const ContactUs = () => {
         {/* Header */}
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Ready to <span className="text-gradient-gold">Turn Your Validated Idea Into Revenue?</span>
+            Ready to <span className="text-gradient-gold">Turn Your Validated SaaS Idea Into Revenue?</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Already had your strategy call? Share your details and get a custom development roadmap with fixed pricing.
+            Already had your strategy call? Share your details and let's start our development partnership — custom roadmap with fixed pricing.
           </p>
         </div>
 
@@ -135,7 +135,7 @@ const ContactUs = () => {
           <div className="glass-card rounded-2xl p-8 flex flex-col border border-accent/10 hover:border-accent/30 transition-all duration-300">
             <h3 className="text-2xl font-bold mb-4">Get in Touch</h3>
             <p className="text-muted-foreground mb-8">
-              Schedule a free consultation to discuss your project. We'll provide honest feedback, estimated timelines, and transparent pricing.
+              Schedule a free consultation to discuss your SaaS project. We'll provide honest feedback, a partnership roadmap, and transparent pricing.
             </p>
             
             {/* Contact Details */}
@@ -219,8 +219,8 @@ const ContactUs = () => {
                 Start Your <span className="text-gradient-gold">Project Today</span>
               </h3>
               <p className="text-muted-foreground text-base leading-relaxed">
-                Tell us about your strategy call results or your idea. 
-                We'll reply within 24 hours with an honest assessment and transparent quote.
+                Tell us about your SaaS strategy call results or your idea. 
+                We'll reply within 24 hours with an honest assessment and partnership proposal.
               </p>
             </div>
             
@@ -292,7 +292,7 @@ const ContactUs = () => {
                 </p>
                 <Textarea
                   id="contact-project"
-                  placeholder="Describe your SaaS idea, target market, and any specific features you have in mind..."
+                  placeholder="Describe your SaaS idea, target market, key features, and what you're looking for in a development partner..."
                   {...register("project")}
                   disabled={isSubmitting}
                   className="bg-background min-h-[120px] max-h-[180px] resize-y"

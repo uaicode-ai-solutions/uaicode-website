@@ -21,16 +21,16 @@ const About = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
           <div className="order-2 lg:order-1 flex flex-col">
             <p className="text-base text-muted-foreground leading-relaxed mb-6">
-              Uaicode is an AI-powered MVP development partner based in Austin, TX, serving entrepreneurs globally. We've helped over 2,500 founders validate their ideas and launch successful SaaS products.
+              Uaicode is an AI-powered MVP development partner based in Austin, TX, serving SaaS entrepreneurs globally. We've helped over 2,500 founders validate their SaaS ideas and become their partner for development, launch, and growth.
             </p>
             <p className="text-base text-muted-foreground leading-relaxed mb-6">
-              <strong className="text-foreground">We believe in validation first.</strong> That's why we created Planning My SaaS—a free tool that gives you AI-powered market analysis before you invest in development. Know your market, competitors, and viability score in minutes.
+              <strong className="text-foreground">We believe in validation first.</strong> That's why every engagement starts with a free strategy call — AI-powered SaaS market analysis before you invest in development. Once validated, we become your dedicated development partner.
             </p>
             <p className="text-base text-muted-foreground leading-relaxed mb-6">
-              Once validated, we build production-ready MVPs that turn your idea into reality—from AI-powered SaaS platforms with intelligent features, to automated workflows that scale from day one. You get a complete technical foundation with dedicated support from our experienced development team throughout your launch journey.
+              Once validated, we build production-ready SaaS MVPs that turn your idea into reality — from AI-powered platforms with intelligent features, to automated workflows that scale from day one. As your long-term partner, you get dedicated support through development, launch, and growth.
             </p>
             <p className="text-lg font-semibold text-accent mb-8">
-              Call first. Build smart. Launch fast.
+              Validate first. Build together. Launch and grow.
             </p>
 
             {/* CTAs */}

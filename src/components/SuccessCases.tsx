@@ -28,10 +28,10 @@ const SuccessCases = () => {
       country: "USA",
       countryCode: "US",
       image: sarahJohnsonImg,
-      testimonial: "The validation report gave me confidence to move forward. UaiCode then transformed our idea into a revenue-generating MVP faster than we thought possible!",
+      testimonial: "The SaaS validation gave me confidence to move forward. UaiCode became our development partner and transformed our idea into a revenue-generating product faster than we thought possible!",
       result: "Validated in 5 min, MVP in 6 weeks",
       industry: "Validated Success",
-      details: "Started with Planning My SaaS to validate market fit, then moved to development. The validation insights shaped our core features perfectly."
+      details: "Started with a strategy call to validate our SaaS market fit. Uaicode then became our full partner — building, launching, and growing the product with us."
     },
     {
       name: "Robert Taylor",
@@ -40,7 +40,7 @@ const SuccessCases = () => {
       country: "USA",
       countryCode: "US",
       image: marcusChenImg,
-      testimonial: "I almost built the wrong product. The free validation showed me a better market angle I hadn't considered. Game changer!",
+      testimonial: "I almost built the wrong SaaS product. The free validation showed me a better market angle, and Uaicode built the pivot with me. Game changer!",
       result: "Pivoted idea, 100 customers in first month",
       industry: "Startup Launch",
       details: "The AI analysis revealed a gap in my original plan. After adjusting based on the report, we launched and hit our first 100 customers fast."
@@ -55,7 +55,7 @@ const SuccessCases = () => {
       testimonial: "The validation report convinced my investors to fund the MVP. Having data-backed market analysis made all the difference.",
       result: "Secured funding, Full-stack MVP launched",
       industry: "Product Launch",
-      details: "Used the Planning My SaaS report in investor meetings. The competitive analysis and market sizing data were exactly what they wanted to see."
+      details: "Used the SaaS validation report in investor meetings. Uaicode then built the MVP, and we launched together."
     },
     {
       name: "David Park",
@@ -64,7 +64,7 @@ const SuccessCases = () => {
       country: "USA",
       countryCode: "US",
       image: jamesWilsonImg,
-      testimonial: "From concept to launch in 40 days. But more importantly, we validated first so we knew we were building something people actually wanted.",
+      testimonial: "From SaaS concept to launch in 40 days with Uaicode as our partner. We validated first, they built it, and we launched together knowing people wanted it.",
       result: "40-day MVP, Strong market validation",
       industry: "Tech Innovation",
       details: "The validation process saved us months of building the wrong thing. We knew our target market and differentiators before writing a single line of code."
@@ -85,7 +85,7 @@ const SuccessCases = () => {
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">They Validated First. <span className="text-gradient-gold">Then They Built.</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Real founders who started with a free strategy call and turned it into revenue
+            Real SaaS founders who validated first, then built and launched with us
           </p>
         </div>
 

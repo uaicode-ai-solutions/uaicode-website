@@ -9,7 +9,7 @@ const Challenges = () => {
     {
       icon: Target,
       title: "Building for Nobody",
-      description: "42% of startups fail because there is no market need. Without data, you are guessing with your savings.",
+      description: "42% of SaaS startups fail because there is no market need. Without data, you are guessing with your savings.",
       highlighted: true
     },
     {
@@ -21,7 +21,7 @@ const Challenges = () => {
     {
       icon: DollarSign,
       title: "Burned Capital",
-      description: "The average failed MVP costs $50K-$150K. That is runway you can never recover.",
+      description: "The average failed SaaS MVP costs $50K-$150K. That is runway you can never recover.",
       highlighted: false
     },
     {
@@ -37,10 +37,10 @@ const Challenges = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            What Happens When You <span className="text-gradient-gold">Skip Validation?</span>
+            What Happens When You <span className="text-gradient-gold">Skip SaaS Validation?</span>
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-            These are the real costs founders pay when they build before they validate
+            These are the real costs SaaS founders pay when they build before they validate
           </p>
         </div>
 
@@ -75,7 +75,7 @@ const Challenges = () => {
             Book My Free Strategy Call
           </Button>
           <p className="text-sm text-muted-foreground mt-4">
-            45 minutes with our founder. Complete AI validation. Zero cost.
+            45 minutes with our founder. SaaS validation + development roadmap. Zero cost.
           </p>
         </div>
       </div>

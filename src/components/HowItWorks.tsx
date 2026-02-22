@@ -15,28 +15,28 @@ const HowItWorks = () => {
       icon: Lightbulb,
       title: "Free Strategy Call",
       subtitle: "45 minutes with our founder, powered by AI",
-      description: "Book a free call with Rafael. During the session, he runs a complete AI-powered validation of your idea live — market analysis, competitor landscape, viability score, and financial projections. You leave with clarity and a concrete next step.",
+      description: "Book a free call with Rafael. During the session, he runs a complete AI-powered validation of your SaaS idea live — market analysis, competitor landscape, viability score, and financial projections. You leave with clarity and a development roadmap.",
       isFirst: true
     },
     {
       icon: Code,
       title: "Design & Develop",
-      subtitle: "AI-accelerated development in 4-8 weeks",
-      description: "User experience design, AI-powered code generation, agile development sprints, continuous integration, and quality assurance.",
+      subtitle: "Your SaaS MVP, built in 4-8 weeks",
+      description: "Once validated, we become your development partner. UX design, AI-powered code generation, agile sprints, CI/CD, and quality assurance — all handled by our team.",
       isFirst: false
     },
     {
       icon: Rocket,
       title: "Launch & Iterate",
-      subtitle: "Go to market with confidence, not hope",
-      description: "Deployment strategy, go-to-market planning, performance monitoring, user feedback collection, and rapid iterations.",
+      subtitle: "We launch your SaaS product with you",
+      description: "As your launch partner, we handle deployment strategy, go-to-market planning, performance monitoring, user feedback loops, and rapid iterations.",
       isFirst: false
     },
     {
       icon: TrendingUp,
       title: "Grow & Optimize",
-      subtitle: "Scale from 10 to 10,000 users without rebuilding",
-      description: "Feature expansion, performance optimization, scaling infrastructure, AI enhancements, and ongoing technical support.",
+      subtitle: "We grow your SaaS from 10 to 10,000 users",
+      description: "As your growth partner, we drive feature expansion, performance optimization, scaling infrastructure, AI enhancements, and ongoing technical support.",
       isFirst: false
     },
   ];
@@ -45,9 +45,9 @@ const HowItWorks = () => {
     <section id="how-it-works" className="py-24 px-4 bg-black">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">From Idea to Revenue: <span className="text-gradient-gold">Your Risk-Free Path</span></h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">From SaaS Idea to Revenue: <span className="text-gradient-gold">Your Risk-Free Path</span></h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Start with a free strategy call. Build only what the market wants. Scale with confidence.
+            Validate your SaaS idea for free. We build, launch, and scale it with you.
           </p>
         </div>
 

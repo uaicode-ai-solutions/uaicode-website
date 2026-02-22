@@ -37,7 +37,7 @@ const Schedule = () => {
             Book Your <span className="text-gradient-gold">Free Strategy Call</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            In 45 minutes, Rafael validates your SaaS idea live with AI — market analysis, competitors, viability score, and a personalized roadmap. No cost. No obligation.
+            In 45 minutes, Rafael validates your SaaS idea live with AI — market analysis, competitors, viability score, and a personalized development roadmap. Discover how we become your partner for building, launching, and growing your SaaS. No cost. No obligation.
           </p>
         </div>
 

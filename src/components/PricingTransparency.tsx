@@ -31,14 +31,14 @@ const PricingTransparency = () => {
       <div className="container mx-auto max-w-7xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Transparent Investment, <span className="text-gradient-gold">Validated Results</span>
+            Transparent Investment, <span className="text-gradient-gold">SaaS Partnership</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
-            Every project starts with a free strategy call. You only invest when you know it works.
+            Every SaaS project starts with a free validation call. You only invest in development when you know it works.
           </p>
           <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 px-4 py-2 rounded-full text-sm">
             <span className="text-accent font-medium">💡 Pro tip:</span>
-            <span className="text-muted-foreground">Founders who validate first save an average of $40K in wasted development.</span>
+            <span className="text-muted-foreground">SaaS founders who validate first save an average of $40K in wasted development.</span>
             <a href="https://uaicode.ai/booking" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline font-medium">Book your free call →</a>
           </div>
         </div>
@@ -58,7 +58,7 @@ const PricingTransparency = () => {
             <ul className="space-y-3 mb-4">
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                <span className="text-sm">Launch Your Idea Fast</span>
+                <span className="text-sm">Launch Your SaaS Fast</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
@@ -137,7 +137,7 @@ const PricingTransparency = () => {
             <ul className="space-y-3 mb-4">
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                <span className="text-sm">Scale Your Vision</span>
+                <span className="text-sm">Scale Your SaaS Vision</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
@@ -219,7 +219,7 @@ const PricingTransparency = () => {
             <ul className="space-y-3 mb-4">
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                <span className="text-sm">Full-Stack Solution</span>
+                <span className="text-sm">Full-Stack SaaS Solution</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />

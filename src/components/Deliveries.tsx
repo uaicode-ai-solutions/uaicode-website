@@ -17,22 +17,22 @@ const Deliveries = () => {
   const deliveries = [
     {
       title: "Speed Without Shortcuts",
-      description: "Launch-ready MVPs in 4-8 weeks using AI-powered development tools, proven frameworks, and battle-tested patterns. Fast iteration cycles mean you validate ideas quickly and pivot based on real user feedback.",
+      description: "Launch-ready SaaS MVPs in 4-8 weeks using AI-powered development tools, proven frameworks, and battle-tested patterns. Fast iteration cycles mean you validate ideas quickly and pivot based on real user feedback.",
       image: deliverySupport,
     },
     {
       title: "Built to Scale",
-      description: "Architecture designed for growth from day one. Clean code, modern infrastructure, and scalable databases ensure your MVP evolves smoothly as you grow from 10 to 10,000 users without costly rewrites.",
+      description: "SaaS architecture designed for growth from day one. Clean code, modern infrastructure, and scalable databases ensure your MVP evolves smoothly as you grow from 10 to 10,000 users without costly rewrites.",
       image: deliveryTeam,
     },
     {
       title: "Lean & Focused",
-      description: "We help you prioritize ruthlessly - building only what validates your core hypothesis. No feature bloat, no unnecessary complexity. Just the essential functionality to test your market fit fast.",
+      description: "We help you prioritize ruthlessly - building only what validates your core hypothesis. No feature bloat, no unnecessary complexity. Just the essential SaaS functionality to test your product-market fit fast.",
       image: deliveryMeetings,
     },
     {
       title: "Technical Excellence",
-      description: "Production-ready code, security best practices, and modern tech stack from the start. Your MVP isn't a throwaway prototype - it's a solid foundation you can confidently build your business on.",
+      description: "Production-ready code, security best practices, and modern tech stack from the start. Your SaaS MVP isn't a throwaway prototype - it's a solid foundation you can confidently build your business on.",
       image: deliveryTraining,
     },
   ];
@@ -46,10 +46,10 @@ const Deliveries = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Why Founders Choose Us <span className="text-gradient-gold">After Validation</span>
+            Why SaaS Founders Choose Us <span className="text-gradient-gold">as Their Partner</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Your strategy call confirms the opportunity. We build the product to capture it.
+            After validation, we become your development, launch, and growth partner.
           </p>
         </div>
 
