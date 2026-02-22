@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useHeroAuth } from "@/hooks/useHeroAuth";
 import {
-  Users, UserCheck, BarChart3, Share2, Target,
+  Users, UserCheck, BarChart3, Share2, Target, Truck,
   ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
+  { id: "admin-suppliers", label: "Suppliers", icon: Truck, subsystem: "admin" },
   { id: "admin-users", label: "User Management", icon: Users, subsystem: "admin" },
   { id: "mkt-icps", label: "ICPs", icon: Target, subsystem: "marketing" },
   { id: "sales-leads", label: "Leads", icon: UserCheck, subsystem: "marketing" },
