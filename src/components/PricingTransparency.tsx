@@ -102,7 +102,7 @@ const PricingTransparency = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>Marketing Launch Plan (branding, brand manual, landing page, paid media plan & 8-12 ad creatives)</span>
+                    <span>Marketing Launch Plan</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
@@ -193,7 +193,7 @@ const PricingTransparency = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>Marketing Launch Plan (branding, brand manual, landing page, paid media plan & 8-12 ad creatives)</span>
+                    <span>Marketing Launch Plan</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
@@ -283,7 +283,7 @@ const PricingTransparency = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>Marketing Launch Plan (branding, brand manual, landing page, paid media plan & 8-12 ad creatives)</span>
+                    <span>Marketing Launch Plan</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
