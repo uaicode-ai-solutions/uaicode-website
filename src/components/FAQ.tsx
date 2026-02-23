@@ -10,6 +10,8 @@ import {
   Code2,
   ShieldCheck,
   Target,
+  Megaphone,
+  BadgeDollarSign,
   LucideIcon
 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -52,7 +54,7 @@ const FAQ = () => {
         {
           icon: DollarSign,
           question: "How much does an MVP typically cost?",
-          answer: "Our MVP packages range from $10,000 to $160,000, depending on complexity, features, and timeline. The Starter MVP ($10,000-$25,000) is perfect for basic concepts, the Growth MVP ($25,000-$60,000) includes advanced features and AI automation, and the Enterprise MVP ($60,000-$160,000) offers full-stack solutions with custom AI models. We recommend starting with a free strategy call to ensure your idea is ready for development.",
+          answer: "Our MVP packages vary depending on complexity, features, and timeline. Every package includes a Marketing Launch Plan (branding, brand manual, landing page, paid media strategy, and 8-12 ad creatives). The Starter MVP is perfect for basic concepts, the Growth MVP includes advanced features and AI automation, and the Enterprise MVP offers full-stack solutions with custom AI models. Check our pricing section for current ranges, or book a free strategy call for a personalized quote.",
         },
         {
           icon: Clock,
@@ -72,7 +74,7 @@ const FAQ = () => {
         {
           icon: Headphones,
           question: "Do you offer post-launch support?",
-          answer: "Yes! All our packages include post-launch support: 45 days for Starter, 90 days for Growth, and 120 days of priority support for Enterprise. This includes bug fixes, performance monitoring, feature enhancements, and technical guidance. We also offer extended maintenance packages and partnership models for ongoing development.",
+          answer: "Yes! All our packages include post-launch priority support: 45 days for Starter, 90 days for Growth, and 120 days for Enterprise. Priority support includes bug fixes, performance monitoring, feature enhancements, technical guidance, and monitoring of your marketing campaign metrics. After the included support period ends, you can extend your partnership on a monthly basis — we continue evolving both your SaaS product and marketing strategy together, ensuring constant growth and success.",
         },
         {
           icon: Code2,
@@ -83,6 +85,16 @@ const FAQ = () => {
           icon: ShieldCheck,
           question: "Will I own the code and intellectual property?",
           answer: "Absolutely! You retain full ownership of all code, design assets, and intellectual property we create for your project. Upon final payment and project completion, we transfer all rights to you, ensuring you have complete control over your product's future.",
+        },
+        {
+          icon: Megaphone,
+          question: "What is the Marketing Launch Plan?",
+          answer: "Every package includes a complete Marketing Launch Plan to ensure your SaaS launches with a professional go-to-market strategy. This includes branding and brand identity, a brand manual, an optimized landing page, a paid media strategy, and 8 to 12 ad creatives ready for campaigns. This is included in all tiers — Starter, Growth, and Enterprise.",
+        },
+        {
+          icon: BadgeDollarSign,
+          question: "Do I need to pay for ads separately?",
+          answer: "Yes. The ads budget (the amount spent on platforms like Google Ads, Meta Ads, LinkedIn Ads, etc.) is always paid directly to the media platforms — not to Uaicode. Our Marketing Launch Plan includes the strategy, creatives, and a recommended ads budget based on your market and goals, but the actual ad spend is your investment and is separate from our packages. We provide a recommendation, but the final budget is always your decision.",
         },
       ]
     },

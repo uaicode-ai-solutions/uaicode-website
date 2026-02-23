@@ -49,7 +49,7 @@ const PricingTransparency = () => {
           <div className="glass-card p-6 md:p-8 rounded-2xl hover-lift flex flex-col transition-all duration-500 ease-in-out border border-accent/10 hover:border-accent/30 hover:shadow-[0_0_30px_rgba(234,171,8,0.1)]">
             <h3 className="text-2xl font-bold mb-4">Starter MVP</h3>
             <div className="text-2xl md:text-3xl font-bold text-accent mb-2 whitespace-nowrap">
-              $10,000 - $25,000
+              $17,000 - $32,000
             </div>
             <p className="text-sm text-muted-foreground mb-6">
               Timeline: 45-60 days
@@ -102,7 +102,11 @@ const PricingTransparency = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>45 days of support</span>
+                    <span>Marketing Launch Plan (branding, brand manual, landing page, paid media plan & 8-12 ad creatives)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                    <span>45 days of priority support</span>
                   </li>
                 </ul>
               </AccordionContent>
@@ -128,7 +132,7 @@ const PricingTransparency = () => {
             
             <h3 className="text-2xl font-bold mb-4">Growth MVP</h3>
             <div className="text-2xl md:text-3xl font-bold text-accent mb-2 whitespace-nowrap">
-              $25,000 - $60,000
+              $32,000 - $67,000
             </div>
             <p className="text-sm text-muted-foreground mb-6">
               Timeline: 60-90 days
@@ -189,7 +193,11 @@ const PricingTransparency = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>90 days of support</span>
+                    <span>Marketing Launch Plan (branding, brand manual, landing page, paid media plan & 8-12 ad creatives)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                    <span>90 days of priority support</span>
                   </li>
                 </ul>
               </AccordionContent>
@@ -210,7 +218,7 @@ const PricingTransparency = () => {
           <div className="glass-card p-6 md:p-8 rounded-2xl hover-lift flex flex-col transition-all duration-500 ease-in-out border border-accent/10 hover:border-accent/30 hover:shadow-[0_0_30px_rgba(234,171,8,0.1)]">
             <h3 className="text-2xl font-bold mb-4">Enterprise MVP</h3>
             <div className="text-2xl md:text-3xl font-bold text-accent mb-2 whitespace-nowrap">
-              $60,000 - $160,000
+              $67,000 - $167,000
             </div>
             <p className="text-sm text-muted-foreground mb-6">
               Timeline: 90-120 days
@@ -272,6 +280,10 @@ const PricingTransparency = () => {
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
                     <span>Third-party integrations</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                    <span>Marketing Launch Plan (branding, brand manual, landing page, paid media plan & 8-12 ad creatives)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />

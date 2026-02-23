@@ -1,0 +1,1 @@
+UPDATE tb_pms_mvp_tier SET min_price_cents = min_price_cents + 700000, max_price_cents = max_price_cents + 700000 WHERE is_active = true;
