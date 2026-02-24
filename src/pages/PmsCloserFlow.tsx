@@ -21,7 +21,7 @@ const PmsCloserFlow = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { pmsUser } = useAuthContext();
-  const { isAdmin, isContributor } = useUserRoles();
+  const { isAdmin, isContributor, isLoadingRoles } = useUserRoles();
   
   const [stage, setStage] = useState<CloserStage>("welcome");
   const [wizardId, setWizardId] = useState<string | null>(null);
@@ -34,10 +34,10 @@ const PmsCloserFlow = () => {
 
   // Redirect if not admin/contributor
   useEffect(() => {
-    if (pmsUser && !isAdmin && !isContributor) {
+    if (pmsUser && !isLoadingRoles && !isAdmin && !isContributor) {
       navigate("/planningmysaas/reports");
     }
-  }, [pmsUser, isAdmin, isContributor, navigate]);
+  }, [pmsUser, isAdmin, isContributor, isLoadingRoles, navigate]);
 
   const handleStartInterview = () => {
     setStage("interview");
@@ -56,7 +56,7 @@ const PmsCloserFlow = () => {
     setStage("closing");
   }, []);
 
-  if (!pmsUser) {
+  if (!pmsUser || isLoadingRoles) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
