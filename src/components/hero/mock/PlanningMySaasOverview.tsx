@@ -15,6 +15,8 @@ interface WizardRow {
   id: string;
   saas_name: string;
   client_email: string | null;
+  client_full_name: string | null;
+  client_phone: string | null;
   industry: string | null;
   created_at: string;
   user_id: string;
@@ -34,6 +36,8 @@ interface MergedCard {
   reportId: string;
   saasName: string;
   clientEmail: string | null;
+  clientFullName: string | null;
+  clientPhone: string | null;
   industry: string | null;
   status: string;
   score: number | null;
@@ -42,22 +46,22 @@ interface MergedCard {
 }
 
 const getScoreColor = (score: number) => {
-  if (score >= 70) return "bg-emerald-500";
-  if (score >= 40) return "bg-amber-500";
+  if (score >= 70) return "bg-amber-500";
+  if (score >= 40) return "bg-amber-400";
   return "bg-red-500";
 };
 
 const getVerdictStyle = (verdict: string | null) => {
   if (!verdict) return "bg-white/[0.06] text-white/40";
   const v = verdict.toLowerCase();
-  if (v.includes("proceed") || v.includes("strong")) return "bg-emerald-500/15 text-emerald-400 border-emerald-500/20";
+  if (v.includes("proceed") || v.includes("strong")) return "bg-amber-500/15 text-amber-400 border-amber-500/20";
   if (v.includes("caution") || v.includes("conditional")) return "bg-amber-500/15 text-amber-400 border-amber-500/20";
   return "bg-red-500/15 text-red-400 border-red-500/20";
 };
 
 const getStatusStyle = (status: string) => {
   const s = status.trim().toLowerCase();
-  if (s === "completed") return "bg-emerald-500/15 text-emerald-400";
+  if (s === "completed") return "bg-amber-500/15 text-amber-400";
   if (s.includes("fail")) return "bg-red-500/15 text-red-400";
   return "bg-amber-500/15 text-amber-400";
 };
@@ -75,7 +79,7 @@ const PlanningMySaasOverview = () => {
     const fetchData = async () => {
       setLoading(true);
       const [wizardRes, reportRes] = await Promise.all([
-        supabase.from("tb_pms_wizard").select("id, saas_name, client_email, industry, created_at, user_id").order("created_at", { ascending: false }),
+        supabase.from("tb_pms_wizard").select("id, saas_name, client_email, client_full_name, client_phone, industry, created_at, user_id").order("created_at", { ascending: false }),
         supabase.from("tb_pms_reports").select("id, wizard_id, status, hero_score_section, summary_section, created_at").order("created_at", { ascending: false }),
       ]);
       setWizards(wizardRes.data || []);
@@ -102,6 +106,8 @@ const PlanningMySaasOverview = () => {
           reportId: r.id,
           saasName: w.saas_name,
           clientEmail: w.client_email,
+          clientFullName: w.client_full_name,
+          clientPhone: w.client_phone,
           industry: w.industry,
           status: r.status,
           score: typeof score === "number" ? score : null,
@@ -114,7 +120,7 @@ const PlanningMySaasOverview = () => {
   const filtered = useMemo(() => {
     return cards.filter((c) => {
       const s = searchTerm.toLowerCase();
-      const matchSearch = !s || c.clientEmail?.toLowerCase().includes(s) || c.saasName.toLowerCase().includes(s);
+      const matchSearch = !s || c.clientEmail?.toLowerCase().includes(s) || c.saasName.toLowerCase().includes(s) || c.clientFullName?.toLowerCase().includes(s);
       const matchStatus = statusFilter === "all" || (() => {
         const st = c.status.trim().toLowerCase();
         if (statusFilter === "completed") return st === "completed";
@@ -230,7 +236,13 @@ const PlanningMySaasOverview = () => {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <h3 className="text-sm font-semibold text-white truncate" title={card.saasName}>{card.saasName}</h3>
+                  {card.clientFullName && (
+                    <p className="text-xs text-white/60 truncate" title={card.clientFullName}>{card.clientFullName}</p>
+                  )}
                   <p className="text-xs text-white/40 truncate" title={card.clientEmail || ""}>{card.clientEmail || "—"}</p>
+                  {card.clientPhone && (
+                    <p className="text-xs text-white/40 truncate" title={card.clientPhone}>{card.clientPhone}</p>
+                  )}
                 </div>
                 <Badge className={`text-[10px] shrink-0 ${getStatusStyle(card.status)}`}>
                   {card.status.trim().toLowerCase() === "completed" ? "Completed" : card.status.toLowerCase().includes("fail") ? "Failed" : "Pending"}
