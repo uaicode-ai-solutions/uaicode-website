@@ -1,95 +1,57 @@
 
 
-# Planning My SaaS - Admin Report Cards with Filters
+# Ajustes nos Cards do Planning My SaaS
 
-## Overview
+## Mudancas
 
-Replace the static placeholder `PlanningMySaasOverview` with a fully functional admin view that shows all PMS reports as cards, with search/filter capabilities by client email.
+### 1. Adicionar nome completo e telefone do lead
 
-## Database Changes
+- Adicionar `client_full_name` e `client_phone` na query do `tb_pms_wizard` (linha 78)
+- Adicionar esses campos na interface `WizardRow` e `MergedCard`
+- Exibir o nome completo abaixo do nome do projeto e o telefone ao lado do email no card
 
-Two new RLS policies are needed so Hero users can read PMS data:
+### 2. Substituir verde (emerald) por amber/gold (UaiCode)
 
+Todas as ocorrencias de `emerald` serao trocadas por `amber` (tom gold da UaiCode):
+
+| Onde | De | Para |
+|---|---|---|
+| `getScoreColor` (score >= 70) | `bg-emerald-500` | `bg-amber-500` |
+| `getScoreColor` (score >= 40) | `bg-amber-500` | `bg-amber-400` |
+| `getVerdictStyle` (proceed/strong) | `emerald-500/15`, `emerald-400`, `emerald-500/20` | `amber-500/15`, `amber-400`, `amber-500/20` |
+| `getStatusStyle` (completed) | `emerald-500/15`, `emerald-400` | `amber-500/15`, `amber-400` |
+
+### Arquivo modificado
+
+`src/components/hero/mock/PlanningMySaasOverview.tsx`
+
+### Detalhes tecnicos
+
+**Interface `WizardRow`** -- adicionar:
 ```text
-tb_pms_wizard  -->  hero_users_can_view_wizards (SELECT)
-tb_pms_reports -->  hero_users_can_view_reports (SELECT)
+client_full_name: string | null;
+client_phone: string | null;
 ```
 
-Both policies use `get_hero_user_id() IS NOT NULL` (same pattern as the leads/content policies from the previous plan).
-
-### SQL Migration
-
-```sql
--- Allow Hero users to read wizard data (for admin overview)
-CREATE POLICY "hero_users_can_view_wizards"
-  ON public.tb_pms_wizard
-  FOR SELECT
-  TO authenticated
-  USING (get_hero_user_id() IS NOT NULL);
-
--- Allow Hero users to read reports (for admin overview)
-CREATE POLICY "hero_users_can_view_reports"
-  ON public.tb_pms_reports
-  FOR SELECT
-  TO authenticated
-  USING (get_hero_user_id() IS NOT NULL);
-```
-
-## UI Changes
-
-### Rewrite `PlanningMySaasOverview.tsx`
-
-The component will follow the same patterns as `LeadManagement.tsx`:
-
-1. **Stats Row** - 4 summary cards at the top:
-   - Total Reports (count of completed reports)
-   - Average Score (mean viability score)
-   - Total Users (distinct user_ids from wizards)
-   - Completion Rate (completed / total)
-
-2. **Filter Bar**:
-   - Search input: filter by `client_email` or `saas_name` from `tb_pms_wizard`
-   - Status dropdown: All / Completed / Pending / Failed
-   - Clear filters button
-
-3. **Report Cards Grid** (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`):
-   Each card displays:
-   - Project name (`saas_name`)
-   - Client email (`client_email`)
-   - Industry
-   - Viability score with color-coded progress bar
-   - Verdict badge (Proceed / Caution / Reconsider)
-   - Created date
-   - Status indicator (completed / generating / failed)
-
-4. **Pagination** - 9 items per page, same style as LeadManagement
-
-### Data Fetching
-
-Fetch from Supabase directly (same pattern as `LeadManagement`):
-
+**Interface `MergedCard`** -- adicionar:
 ```text
-tb_pms_wizard (all records) + tb_pms_reports (joined by wizard_id)
-  --> merge into card data
-  --> filter by client_email search term
-  --> paginate
+clientFullName: string | null;
+clientPhone: string | null;
 ```
 
-### Styling
+**Query Supabase** (linha 78) -- adicionar campos:
+```text
+id, saas_name, client_email, client_full_name, client_phone, industry, created_at, user_id
+```
 
-All styles will match the existing Hero Dashboard dark theme:
-- `bg-white/[0.02]`, `border-white/[0.06]`
-- `text-white/80`, `text-white/40` for labels
-- Gold accent (`uai-500`) for score highlights
-- Same card hover effects as existing components
+**Card UI** -- entre o nome do projeto e o email, adicionar linha com nome completo; adicionar telefone abaixo do email:
+```text
+SaaS Name          [Status Badge]
+John Doe
+john@email.com
++55 11 99999-0000
+Industry
+```
 
-## Files Modified
+**Busca** -- tambem buscar pelo `clientFullName` no filtro de search.
 
-| File | Action |
-|---|---|
-| `src/components/hero/mock/PlanningMySaasOverview.tsx` | Full rewrite |
-| Database migration | Add 2 RLS policies |
-
-## No New Dependencies
-
-Uses only existing libraries: `supabase`, `lucide-react`, `date-fns`, and existing UI components.
