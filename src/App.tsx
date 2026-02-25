@@ -22,7 +22,6 @@ import PmsDashboard from "./pages/PmsDashboard";
 import PmsProfile from "./pages/PmsProfile";
 import PmsAdmin from "./pages/PmsAdmin";
 import PmsSharedReport from "./pages/PmsSharedReport";
-import PmsCloserFlow from "./pages/PmsCloserFlow";
 import Booking from "./pages/Booking";
 import HeroLogin from "./pages/hero/HeroLogin";
 import HeroHome from "./pages/hero/HeroHome";
@@ -71,9 +70,6 @@ const App = () => (
             } />
             <Route path="/planningmysaas/admin" element={
               <AdminRoute><PmsAdmin /></AdminRoute>
-            } />
-            <Route path="/planningmysaas/closer" element={
-              <ProtectedRoute><PmsCloserFlow /></ProtectedRoute>
             } />
             
             {/* Hero Ecosystem routes */}

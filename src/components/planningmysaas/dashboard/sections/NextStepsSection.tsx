@@ -5,12 +5,17 @@ import {
   Package, 
   Sparkles,
   Check,
+  AlertCircle,
   Star,
-  Zap,
-  Shield,
-  Send
+  Zap
 } from "lucide-react";
 
+// Founder avatars
+import sarahJohnsonImg from "@/assets/testimonial-sarah-johnson.webp";
+import marcusChenImg from "@/assets/author-marcus.webp";
+import emmaThompsonImg from "@/assets/testimonial-emma-thompson.webp";
+import johnSmithImg from "@/assets/testimonial-john-smith.webp";
+import mariaSantosImg from "@/assets/testimonial-maria-santos.webp";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,18 +32,15 @@ const iconMap: Record<string, React.ElementType> = {
   Package,
 };
 
-// Post-launch support days by MVP tier
+// Post-launch support days by MVP tier (single values as per PricingTransparency)
 const SUPPORT_DAYS_BY_TIER: Record<string, number> = {
   starter: 45,
   growth: 90,
   enterprise: 120,
 };
 
-const TIER_LABELS: Record<string, string> = {
-  starter: "Starter",
-  growth: "Growth",
-  enterprise: "Enterprise",
-};
+// Bonus days added by Flash Deal offer
+const FLASH_DEAL_BONUS_DAYS = 15;
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -55,262 +57,477 @@ interface NextStepsSectionProps {
 }
 
 const NextStepsSection = ({ onScheduleCall, onNewReport }: NextStepsSectionProps) => {
-  const { report, reportData, wizardId } = useReportContext();
+  const { report, reportData, marketingTotals, wizardId } = useReportContext();
+  const wizardIdFromData = reportData?.wizard_id;
   
+  // Parse data from report
+  const nextSteps = parseJsonField<NextSteps>(report?.next_steps, {
+    verdictSummary: "Your project is ready to be built.",
+    steps: [
+      { step: 1, title: "Free Consultation", description: "45min to align expectations and validate the scope", icon: "Calendar" },
+      { step: 2, title: "Proposal & Sign Contract", description: "Clear documentation with scope, timeline, and investment", icon: "FileText" },
+      { step: 3, title: "Start in 5 Business Days", description: "We begin the project right after approval", icon: "PlayCircle" },
+      { step: 4, title: "First Delivery in 2 Weeks", description: "You'll see real progress quickly", icon: "Package" },
+    ],
+    cta: { primary: "Schedule a Call", secondary: "Download PDF Report" },
+    contact: { email: "contact@uaicode.dev", whatsapp: "+1 (555) 123-4567", calendly: "https://calendly.com/uaicode" }
+  });
+  
+  // Get hero score data (same source as ReportHero)
+  const heroScoreData = reportData?.hero_score_section as HeroScoreSection | null;
+  const sectionInvestmentData = getSectionInvestment(reportData);
+  const sectionInvestmentRaw = reportData?.section_investment as Record<string, unknown> | null;
+  
+  // Viability score: direct from database (hero_score_section or section_investment)
+  const viabilityScore = safeNumber(
+    heroScoreData?.score ?? (sectionInvestmentRaw?.viability_score as number | null),
+    0
+  );
+  
+  // Tagline: direct from database (hero_score_section or section_investment verdict_headline)
+  const verdictHeadline = heroScoreData?.tagline || 
+    (sectionInvestmentRaw?.verdict_headline as string | null) || 
+    "...";
+  const timeline = parseJsonField<ExecutionPhase[]>(report?.execution_timeline, []);
+
+  // Calculate total weeks from timeline
+  const totalWeeks = timeline.reduce((acc, phase) => {
+    const match = phase.duration?.match(/(\d+)/);
+    return acc + (match ? parseInt(match[1]) : 0);
+  }, 0);
+
   // Get section_investment data for pricing and discounts
   const sectionInvestment = getSectionInvestment(reportData);
   
-  // MVP Price from section_investment (already includes marketing)
+  // MVP Price from section_investment only (no legacy fallback)
+  // Use safeNumber to handle scientific notation strings from JSONB
   const mvpPriceCents = safeNumber(sectionInvestment?.investment_one_payment_cents, 0);
-  const fullPrice = mvpPriceCents > 0 ? mvpPriceCents / 100 : 0;
+  const mvpPrice = mvpPriceCents > 0 ? mvpPriceCents / 100 : 0;
   
-  // Get discount strategy
+  // Get discount strategy from section_investment (with calculated fallbacks)
   const discountStrategy = getDiscountStrategy(sectionInvestment, mvpPriceCents);
-  
-  // Flash (25%) and Week (15%) prices
-  const flashPrice = discountStrategy.flash_24h.price_cents / 100;
-  const weekPrice = discountStrategy.week.price_cents / 100;
-  const flashSavings = fullPrice - flashPrice;
-  const weekSavings = fullPrice - weekPrice;
   
   // Calculate dynamic support days based on MVP tier
   const mvpTier = sectionInvestment?.mvp_tier?.toLowerCase() || 'starter';
-  const supportDays = SUPPORT_DAYS_BY_TIER[mvpTier] || SUPPORT_DAYS_BY_TIER.starter;
-  const tierLabel = TIER_LABELS[mvpTier] || "Starter";
+  const baseSupportDays = SUPPORT_DAYS_BY_TIER[mvpTier] || SUPPORT_DAYS_BY_TIER.starter;
+  const extendedSupportDays = baseSupportDays + FLASH_DEAL_BONUS_DAYS;
+  
+  // Marketing total from shared context (synced with InvestmentSection selections)
+  const marketingMonthlyUaicode = marketingTotals.uaicodeTotal / 100; // cents to dollars
+  
+  // Calculate suggested paid media based on wizard budget selection (same as InvestmentSection)
+  const calculateSuggestedPaidMedia = (budget: string | null | undefined, uaicodeTotal: number): number => {
+    const budgetMap: Record<string, number> = {
+      '5k-10k': 200000,     // $2,000
+      '10k-25k': 450000,    // $4,500
+      '25k-50k': 900000,    // $9,000
+      '50k-100k': 1800000,  // $18,000
+      '100k+': 3500000,     // $35,000
+    };
+    
+    if (budget && budgetMap[budget]) {
+      return budgetMap[budget];
+    }
+    
+    if (uaicodeTotal > 0) {
+      const suggested = Math.round(uaicodeTotal * 0.75);
+      const min = 300000;
+      const max = 1500000;
+      return Math.min(Math.max(suggested, min), max);
+    }
+    
+    return 500000;
+  };
+  
+  const userBudget = report?.budget;
+  const suggestedPaidMedia = calculateSuggestedPaidMedia(userBudget, marketingTotals.uaicodeTotal);
+  const suggestedPaidMediaDollars = suggestedPaidMedia / 100;
+  
+  // MVP Development - use month discount from strategy (fallback 10%)
+  const MVP_DEV_DISCOUNT_PERCENT = discountStrategy.month.percent;
+  const mvpDevDiscountedPrice = discountStrategy.month.price_cents > 0 
+    ? discountStrategy.month.price_cents / 100 
+    : Math.round(mvpPrice * (1 - MVP_DEV_DISCOUNT_PERCENT / 100));
+  const mvpDevSavings = discountStrategy.month.price_cents > 0 
+    ? getDiscountSavings(mvpPriceCents, discountStrategy.month) / 100 
+    : Math.round(mvpPrice * MVP_DEV_DISCOUNT_PERCENT / 100);
+  
+  // MVP + Marketing - use bundle discount from strategy (fallback 30%)
+  const MVP_MARKETING_DISCOUNT_PERCENT = discountStrategy.bundle.percent > 0 
+    ? discountStrategy.bundle.percent 
+    : 30;
+  const mvpMarketingDiscountedPrice = discountStrategy.bundle.price_cents > 0 
+    ? discountStrategy.bundle.price_cents / 100 
+    : Math.round(mvpPrice * (1 - MVP_MARKETING_DISCOUNT_PERCENT / 100));
+  const mvpMarketingSavings = discountStrategy.bundle.price_cents > 0 
+    ? getDiscountSavings(mvpPriceCents, discountStrategy.bundle) / 100 
+    : Math.round(mvpPrice * MVP_MARKETING_DISCOUNT_PERCENT / 100);
+  
+  // Annual marketing contract (12 months)
+  const marketingAnnualUaicode = marketingMonthlyUaicode * 12;
+  
+  // Total MVP + Marketing package price (MVP with 15% OFF + annual marketing)
+  const mvpMarketingTotalPrice = mvpMarketingDiscountedPrice + marketingAnnualUaicode;
+  
+  // Original price before discount (MVP full price + marketing annual)
+  const mvpMarketingOriginalPrice = mvpPrice + marketingAnnualUaicode;
+
 
   return (
     <section id="next-steps" className="space-y-6 animate-fade-in">
-      {/* Section Header */}
+      {/* ========== CHOOSE YOUR PACKAGE SECTION ========== */}
       <div className="flex items-center gap-3 mt-8 mb-6">
         <div className="p-2 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10">
-          <Star className="h-5 w-5 text-accent" />
+          <Zap className="h-5 w-5 text-accent" />
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-foreground">Your Investment</h2>
+            <h2 className="text-2xl font-bold text-foreground">Choose Your Package</h2>
             <InfoTooltip side="right" size="sm">
-              Complete SaaS partnership including development, marketing launch, and post-launch support.
+              Limited-time offers to help you save on your MVP development.
             </InfoTooltip>
           </div>
-          <p className="text-sm text-muted-foreground">Everything you need to launch and grow your SaaS</p>
+          <p className="text-sm text-muted-foreground">Limited-time discounts on all packages</p>
         </div>
       </div>
 
-      {/* ========== SINGLE UNIFIED CARD ========== */}
-      <Card className="relative overflow-hidden border-accent/30 bg-card/50">
-        {/* Corner decoration */}
-        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-accent/15 to-accent/5 rounded-bl-[50px] -mr-4 -mt-4" />
-
-        <CardContent className="relative p-6 md:p-8">
-          {/* Card Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <Star className="h-6 w-6 text-accent fill-accent" />
-              <h3 className="text-xl md:text-2xl font-bold text-foreground">Your Complete SaaS Partnership</h3>
-            </div>
-            <Badge className="bg-accent/15 text-accent border-accent/30 text-xs font-bold">
-              {tierLabel} Tier
+      {/* Aggressive Pricing Cards */}
+      <div className="grid md:grid-cols-2 gap-4 pt-4 items-stretch">
+        {/* Card 1: MVP Flash Deal (24h - 25% OFF) */}
+        <div className="relative h-full flex flex-col">
+          {/* Badge */}
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+            <Badge className="px-3 py-1 text-xs font-bold text-amber-950 border-0 hover:bg-none" style={{ background: 'linear-gradient(135deg, hsl(45, 100%, 55%), hsl(38, 100%, 50%))' }}>
+              <Zap className="h-3 w-3 mr-1" />
+              24H FLASH DEAL
             </Badge>
           </div>
 
-          {/* ========== 3 DELIVERABLES ========== */}
-          <div className="space-y-6 mb-8">
+          <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card/50 border-accent/30 hover:border-accent/40 hover:shadow-accent/10 h-full">
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            {/* Corner decoration */}
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-accent/15 to-accent/5 rounded-bl-[40px] -mr-4 -mt-4"></div>
 
-            {/* DELIVERABLE 1: Strategic Meeting */}
-            <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-green-500/15">
-                    <Calendar className="h-4 w-4 text-green-400" />
-                  </div>
-                  <h4 className="font-semibold text-foreground">Deliverable 1: Strategic Meeting</h4>
-                </div>
-                <Badge className="bg-green-500/15 text-green-400 border-green-500/30 text-[10px]">
-                  <Check className="h-3 w-3 mr-1" />
-                  COMPLETED
+            <CardContent className="relative p-6 pt-8 flex flex-col h-full">
+            {/* Package Name */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+            <Star className="h-5 w-5 text-accent fill-accent" />
+              <h3 className="text-lg font-bold text-foreground">MVP Flash Deal</h3>
+            </div>
+            
+            {/* Price Section */}
+            <div className="text-center mb-4">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <p className="text-sm text-muted-foreground line-through">
+                  {formatCurrency(mvpPrice)}
+                </p>
+                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">
+                  -{discountStrategy.flash_24h.percent}%
                 </Badge>
               </div>
-              <ul className="space-y-1.5 ml-10">
-                <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Check className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
-                  AI-Powered Business Plan
-                </li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Check className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
-                  Personalized Investment Proposal
-                </li>
-              </ul>
-            </div>
-
-            {/* DELIVERABLE 2: MVP + Marketing Launch Plan */}
-            <div className="p-4 rounded-xl bg-accent/5 border border-accent/20">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 rounded-lg bg-accent/15">
-                  <Package className="h-4 w-4 text-accent" />
-                </div>
-                <h4 className="font-semibold text-foreground">Deliverable 2: MVP + Marketing Launch Plan</h4>
+              <div className="text-4xl font-bold text-gradient-gold">
+                {formatCurrency(discountStrategy.flash_24h.price_cents / 100)}
               </div>
-              <div className="grid sm:grid-cols-2 gap-1.5 ml-10">
-                <li className="flex items-center gap-2 text-sm text-muted-foreground list-none">
-                  <Check className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  Complete SaaS Application
-                </li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground list-none">
-                  <Check className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  Branding & Brand Identity
-                </li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground list-none">
-                  <Check className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  Brand Manual
-                </li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground list-none">
-                  <Check className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  Optimized Landing Page
-                </li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground list-none">
-                  <Check className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  Paid Media Strategy
-                </li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground list-none">
-                  <Check className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  8-12 Ad Creatives
-                </li>
-              </div>
-            </div>
-
-            {/* DELIVERABLE 3: Post-Launch Support */}
-            <div className="p-4 rounded-xl bg-accent/5 border border-accent/20">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 rounded-lg bg-accent/15">
-                  <Shield className="h-4 w-4 text-accent" />
-                </div>
-                <h4 className="font-semibold text-foreground">
-                  Deliverable 3: Post-Launch Support ({supportDays} days)
-                </h4>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-1.5 ml-10">
-                <li className="flex items-center gap-2 text-sm text-muted-foreground list-none">
-                  <Check className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  Bug fixes & performance monitoring
-                </li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground list-none">
-                  <Check className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  Feature enhancements & technical guidance
-                </li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground list-none">
-                  <Check className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  Marketing campaign metrics monitoring
-                </li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground list-none">
-                  <Check className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                  Monthly extension available after period
-                </li>
-              </div>
-            </div>
-          </div>
-
-          {/* ========== INVESTMENT / PRICING TABLE ========== */}
-          <div className="p-5 rounded-xl bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/25 mb-6">
-            <h4 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-accent" />
-              Investment
-            </h4>
-
-            <div className="space-y-3">
-              {/* Row 1: Flash Deal - Close Today (25% OFF) */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/10 border border-amber-500/25">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-amber-400" />
-                  <span className="text-sm font-semibold text-foreground">Close Today</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-lg font-bold text-gradient-gold">{formatCurrency(flashPrice)}</span>
-                  <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] font-bold">
-                    {discountStrategy.flash_24h.percent}% OFF
-                  </Badge>
-                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] font-bold">
-                    BEST DEAL
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Row 2: Week Deal - Close in 7 days (15% OFF) */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/5 border border-accent/15">
-                <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-accent" />
-                  <span className="text-sm font-medium text-foreground">Close in 7 days</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-lg font-bold text-foreground">{formatCurrency(weekPrice)}</span>
-                  <Badge variant="outline" className="text-accent border-accent/30 text-[10px] font-bold">
-                    {discountStrategy.week.percent}% OFF
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Row 3: Full Price - After 7 days */}
-              <div className="flex items-center justify-between p-3 rounded-lg border border-border/50">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">After 7 days</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-lg font-bold text-muted-foreground">{formatCurrency(fullPrice)}</span>
-                  <span className="text-[10px] text-muted-foreground">Full Price</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Savings highlight */}
-            {flashSavings > 0 && (
-              <p className="text-xs text-green-400 mt-3 text-center font-medium">
-                Close today and save {formatCurrency(flashSavings)} — that's {discountStrategy.flash_24h.percent}% off!
+              <p className="text-xs text-muted-foreground mt-1 font-medium">
+                Today Only - Maximum Discount!
               </p>
-            )}
-          </div>
+            </div>
 
-          {/* ========== TRUST SIGNALS ========== */}
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground mb-6">
-            <span className="flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-accent" />
-              Full source code ownership
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-accent" />
-              12 months hosting included
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-accent" />
-              Priority onboarding
-            </span>
-          </div>
+            {/* Savings Highlights */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
+                <p className="text-lg font-bold text-green-400">
+                  {formatCurrency(getDiscountSavings(mvpPriceCents, discountStrategy.flash_24h) / 100)}
+                </p>
+                <p className="text-[10px] text-green-400/80">You Save</p>
+              </div>
+              <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 text-center">
+                <p className="text-lg font-bold text-gradient-gold">
+                  {discountStrategy.flash_24h.percent}%
+                </p>
+                <p className="text-[10px] text-muted-foreground">OFF Today</p>
+              </div>
+            </div>
 
-          {/* ========== CTA BUTTONS ========== */}
-          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Features */}
+            <ul className="space-y-2 mb-4 flex-1">
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Complete MVP development
+                  <InfoTooltip term="MVP Development">
+                    Your fully functional SaaS product built from scratch, including all core features defined in your report. Ready to launch and acquire customers.
+                  </InfoTooltip>
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80 flex items-center gap-1">
+                  25% OFF - Today only!
+                  <InfoTooltip term="Limited Discount">
+                    Exclusive 24-hour discount. After this window closes, standard pricing applies.
+                  </InfoTooltip>
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80 flex items-center gap-1">
+                  12 months hosting included
+                  <InfoTooltip term="Hosting">
+                    Professional cloud hosting with SSL, CDN, backups, and 99.9% uptime. After 12 months: $299/month or $2,990/year.
+                  </InfoTooltip>
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Priority onboarding slot
+                  <InfoTooltip term="Priority Onboarding">
+                    Start your project within 7 days instead of the standard 14-day wait. Jump the queue and get to market faster.
+                  </InfoTooltip>
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Full source code ownership
+                  <InfoTooltip term="Code Ownership">
+                    You own 100% of the code. No licensing fees, no vendor lock-in. Deploy anywhere you want.
+                  </InfoTooltip>
+                </span>
+              </li>
+            </ul>
+
+            {/* Bonuses */}
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-4">
+              <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-amber-400" />
+                Exclusive 24H Bonuses:
+              </p>
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    Extended support ({extendedSupportDays} days)
+                    <InfoTooltip size="sm">
+                      {extendedSupportDays} days of priority email support with 24-hour response time instead of standard {baseSupportDays} days.
+                    </InfoTooltip>
+                  </span>
+                  <span className="text-amber-400 font-semibold">$750 value</span>
+                </div>
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    Fast-track onboarding (7 days)
+                    <InfoTooltip size="sm">
+                      Project kickoff within 7 days instead of 14. Includes expedited requirements review.
+                    </InfoTooltip>
+                  </span>
+                  <span className="text-amber-400 font-semibold">$1,500 value</span>
+                </div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-amber-500/20 flex justify-between">
+                <span className="text-xs text-foreground font-bold">Total Bonus Value:</span>
+                <span className="text-xs text-amber-400 font-bold">$2,250</span>
+              </div>
+            </div>
+
+            {/* CTA */}
             <Button 
               onClick={(e) => {
                 e.stopPropagation();
                 onScheduleCall?.();
               }}
-              className="flex-1 gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-black hover:from-yellow-400 hover:to-amber-400 shadow-lg shadow-yellow-500/20 font-bold text-base py-6"
+              className="w-full gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-black hover:from-yellow-400 hover:to-amber-400 shadow-lg shadow-yellow-500/20 font-bold text-base py-6"
             >
-              <Zap className="h-5 w-5" />
-              CLOSE THE DEAL
+              <Star className="h-5 w-5" />
+              CLAIM 25% DISCOUNT NOW
             </Button>
+            
+          </CardContent>
+          </Card>
+        </div>
+
+        {/* Card 2: Complete Launch Bundle (30% OFF) */}
+        <div className="relative h-full flex flex-col">
+          {/* Badge */}
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+            <Badge className="px-3 py-1 text-xs font-bold text-amber-950 border-0 hover:bg-none" style={{ background: 'linear-gradient(135deg, hsl(45, 100%, 55%), hsl(38, 100%, 50%))' }}>
+              <Star className="h-3 w-3 mr-1" />
+              BEST VALUE - 30% OFF
+            </Badge>
+          </div>
+
+          <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card/50 border-accent/30 hover:border-accent/40 hover:shadow-accent/10 h-full">
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            {/* Corner decoration */}
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-accent/15 to-accent/5 rounded-bl-[40px] -mr-4 -mt-4"></div>
+
+            <CardContent className="relative p-6 pt-8 flex flex-col h-full">
+            {/* Package Name */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Star className="h-5 w-5 text-accent fill-accent" />
+              <h3 className="text-lg font-bold text-foreground">Complete Launch Bundle</h3>
+            </div>
+            
+            {/* Price Section */}
+            <div className="text-center mb-4">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <p className="text-sm text-muted-foreground line-through">
+                  {formatCurrency(mvpPrice + marketingAnnualUaicode)}
+                </p>
+                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">
+                  -{discountStrategy.bundle.percent}% on MVP
+                </Badge>
+              </div>
+              <div className="text-4xl font-bold text-gradient-gold">
+                {formatCurrency((discountStrategy.bundle.price_cents / 100) + marketingAnnualUaicode)}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 font-medium">
+                MVP + Full Marketing Team Included
+              </p>
+            </div>
+
+            {/* Savings Highlights */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
+                <p className="text-lg font-bold text-green-400">
+                  {formatCurrency(getDiscountSavings(mvpPriceCents, discountStrategy.bundle) / 100)}
+                </p>
+                <p className="text-[10px] text-green-400/80">MVP Savings</p>
+              </div>
+              <div className="p-2 rounded-lg bg-accent/10 border border-accent/20 text-center">
+                <p className="text-lg font-bold text-gradient-gold">
+                  {discountStrategy.bundle.percent}%
+                </p>
+                <p className="text-[10px] text-muted-foreground">Max Discount</p>
+              </div>
+            </div>
+
+            {/* Features */}
+            <ul className="space-y-2 mb-4 flex-1">
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80 flex items-center gap-1">
+                  30% OFF on MVP - Maximum discount!
+                  <InfoTooltip term="Maximum Discount">
+                    Our highest discount tier. Only available when bundling MVP + Marketing together.
+                  </InfoTooltip>
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Save {formatCurrency(getDiscountSavings(mvpPriceCents, discountStrategy.bundle) / 100)} on development
+                  <InfoTooltip term="Development Savings">
+                    Direct savings compared to purchasing MVP at regular price. Calculated based on your project scope.
+                  </InfoTooltip>
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80 flex items-center gap-1">
+                  Full marketing team included
+                  <InfoTooltip term="Marketing Team">
+                    Complete marketing execution: content creation, social media, email marketing, and paid ads. Billed monthly after MVP launch.
+                  </InfoTooltip>
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80 flex items-center gap-1">
+                  90-day launch roadmap
+                  <InfoTooltip term="Launch Roadmap">
+                    Structured 90-day development plan with clear milestones. Weekly progress reports keep you informed every step of the way.
+                  </InfoTooltip>
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-foreground/80 flex items-center gap-1">
+                  VIP priority support
+                  <InfoTooltip term="VIP Support">
+                    90 days of VIP support with 4-hour response time during business hours. Direct access to senior developers.
+                  </InfoTooltip>
+                </span>
+              </li>
+            </ul>
+
+            {/* Exclusive Bonuses */}
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-4">
+              <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-amber-400" />
+                Exclusive Bundle Bonuses:
+              </p>
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    3 months extra hosting
+                    <InfoTooltip size="sm">
+                      15 months total hosting instead of 12. Saves 3x $299/month market rate.
+                    </InfoTooltip>
+                  </span>
+                  <span className="text-amber-400 font-semibold">$897 value</span>
+                </div>
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    90 days VIP support
+                    <InfoTooltip size="sm">
+                      VIP support with 4-hour response time during business hours. Direct access to senior developers.
+                    </InfoTooltip>
+                  </span>
+                  <span className="text-amber-400 font-semibold">$1,500 value</span>
+                </div>
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    Marketing strategy session (2h)
+                    <InfoTooltip size="sm">
+                      2-hour strategy session with marketing specialist. Includes competitive analysis and 90-day roadmap.
+                    </InfoTooltip>
+                  </span>
+                  <span className="text-amber-400 font-semibold">$1,500 value</span>
+                </div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-amber-500/20 flex justify-between">
+                <span className="text-xs text-foreground font-bold">Total Bonus Value:</span>
+                <span className="text-xs text-amber-400 font-bold">$3,897</span>
+              </div>
+            </div>
+
+            {/* CTA */}
             <Button 
-              variant="outline"
               onClick={(e) => {
                 e.stopPropagation();
                 onScheduleCall?.();
               }}
-              className="flex-1 gap-2 border-accent/30 text-foreground hover:bg-accent/10 font-medium py-6"
+              className="w-full gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-black hover:from-yellow-400 hover:to-amber-400 shadow-lg shadow-yellow-500/20 font-bold text-base py-6"
             >
-              <Send className="h-4 w-4" />
-              Send Proposal
+              <Star className="h-5 w-5" />
+              GET MAXIMUM SAVINGS
             </Button>
-          </div>
-        </CardContent>
-      </Card>
+            
+          </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Marketing Billing Notice */}
+      <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+        <div className="flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-amber-400 flex-shrink-0" />
+          <p className="text-sm text-foreground">
+            <span className="font-medium">Important:</span> Marketing costs are 
+            <span className="text-amber-400 font-semibold"> only charged after your MVP is launched</span>
+          </p>
+        </div>
+        <p className="text-xs text-muted-foreground text-center">
+          The {formatCurrency(marketingMonthlyUaicode)}/month contract is an annual commitment. 
+          The {formatCurrency(suggestedPaidMediaDollars)}/month ad spend is a recommendation and can be adjusted based on your budget.
+        </p>
+      </div>
+
     </section>
   );
 };

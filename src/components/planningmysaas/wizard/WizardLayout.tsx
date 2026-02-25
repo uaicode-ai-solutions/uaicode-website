@@ -16,8 +16,6 @@ interface WizardLayoutProps {
   isLastStep: boolean;
   onSubmit?: () => void;
   isSubmitting?: boolean;
-  /** When true, hides the close button (used in closer flow) */
-  closerMode?: boolean;
 }
 
 const steps = [
@@ -38,7 +36,6 @@ const WizardLayout = ({
   isLastStep,
   onSubmit,
   isSubmitting = false,
-  closerMode = false,
 }: WizardLayoutProps) => {
   const navigate = useNavigate();
 

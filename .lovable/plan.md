@@ -1,46 +1,57 @@
 
-# Fix: Redirect prematuro no PmsCloserFlow
 
-## Problema
+# Ajustes nos Cards do Planning My SaaS
 
-O `useEffect` no `PmsCloserFlow.tsx` (linha 36-40) redireciona o usuario para `/planningmysaas/reports` **antes** dos roles terminarem de carregar do Supabase.
+## Mudancas
 
-**Sequencia atual:**
-1. Pagina carrega, `pmsUser` existe
-2. `useUserRoles` inicia a query async para buscar roles
-3. Enquanto carrega: `isAdmin = false`, `isContributor = false`
-4. O `useEffect` ve `pmsUser` + `!isAdmin` + `!isContributor` e redireciona imediatamente
-5. Os roles chegam do banco (tarde demais)
+### 1. Adicionar nome completo e telefone do lead
 
-## Correcao
+- Adicionar `client_full_name` e `client_phone` na query do `tb_pms_wizard` (linha 78)
+- Adicionar esses campos na interface `WizardRow` e `MergedCard`
+- Exibir o nome completo abaixo do nome do projeto e o telefone ao lado do email no card
 
-Usar o `isLoadingRoles` (ja disponivel no hook `useUserRoles`) para aguardar o carregamento antes de decidir:
+### 2. Substituir verde (emerald) por amber/gold (UaiCode)
 
-**Arquivo:** `src/pages/PmsCloserFlow.tsx`
+Todas as ocorrencias de `emerald` serao trocadas por `amber` (tom gold da UaiCode):
 
-**Mudanca 1** -- Desestruturar `isLoadingRoles` do hook (linha 24):
-```ts
-const { isAdmin, isContributor, isLoadingRoles } = useUserRoles();
+| Onde | De | Para |
+|---|---|---|
+| `getScoreColor` (score >= 70) | `bg-emerald-500` | `bg-amber-500` |
+| `getScoreColor` (score >= 40) | `bg-amber-500` | `bg-amber-400` |
+| `getVerdictStyle` (proceed/strong) | `emerald-500/15`, `emerald-400`, `emerald-500/20` | `amber-500/15`, `amber-400`, `amber-500/20` |
+| `getStatusStyle` (completed) | `emerald-500/15`, `emerald-400` | `amber-500/15`, `amber-400` |
+
+### Arquivo modificado
+
+`src/components/hero/mock/PlanningMySaasOverview.tsx`
+
+### Detalhes tecnicos
+
+**Interface `WizardRow`** -- adicionar:
+```text
+client_full_name: string | null;
+client_phone: string | null;
 ```
 
-**Mudanca 2** -- Adicionar guard no useEffect (linhas 36-40):
-```ts
-useEffect(() => {
-  if (pmsUser && !isLoadingRoles && !isAdmin && !isContributor) {
-    navigate("/planningmysaas/reports");
-  }
-}, [pmsUser, isAdmin, isContributor, isLoadingRoles, navigate]);
+**Interface `MergedCard`** -- adicionar:
+```text
+clientFullName: string | null;
+clientPhone: string | null;
 ```
 
-**Mudanca 3** -- Mostrar loading enquanto roles carregam (linhas 59-65):
-```ts
-if (!pmsUser || isLoadingRoles) {
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <p className="text-muted-foreground">Loading...</p>
-    </div>
-  );
-}
+**Query Supabase** (linha 78) -- adicionar campos:
+```text
+id, saas_name, client_email, client_full_name, client_phone, industry, created_at, user_id
 ```
 
-Sao 3 linhas alteradas no total. Nenhum arquivo novo, nenhuma dependencia nova.
+**Card UI** -- entre o nome do projeto e o email, adicionar linha com nome completo; adicionar telefone abaixo do email:
+```text
+SaaS Name          [Status Badge]
+John Doe
+john@email.com
++55 11 99999-0000
+Industry
+```
+
+**Busca** -- tambem buscar pelo `clientFullName` no filtro de search.
+
