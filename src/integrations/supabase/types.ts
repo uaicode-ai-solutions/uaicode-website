@@ -17,75 +17,141 @@ export type Database = {
       tb_crm_leads: {
         Row: {
           city: string | null
+          company_city: string | null
+          company_country: string | null
+          company_description: string | null
+          company_email_enriched: string | null
+          company_facebook_url: string | null
+          company_founded_year: number | null
+          company_instagram_url: string | null
+          company_keywords: Json | null
+          company_linkedin_url: string | null
+          company_logo_url: string | null
           company_name: string | null
+          company_phone_enriched: string | null
           company_revenue: string | null
           company_size: number | null
+          company_state: string | null
+          company_tech_stack: Json | null
+          company_tiktok_url: string | null
           company_website: string | null
+          company_youtube_url: string | null
           country: string | null
           created_at: string
           departments: string | null
           email: string | null
+          employment_history: Json | null
           facebook_url: string | null
+          first_name: string | null
           full_name: string | null
           github_url: string | null
+          headline: string | null
           id: string
           industry: string | null
+          instagram_url: string | null
           job_title: string | null
+          last_name: string | null
           linkedin_profile: string | null
           phone: string | null
+          photo_url: string | null
           seniority: string | null
           source: string | null
           state: string | null
           twitter_url: string | null
           updated_at: string
+          years_of_experience: number | null
         }
         Insert: {
           city?: string | null
+          company_city?: string | null
+          company_country?: string | null
+          company_description?: string | null
+          company_email_enriched?: string | null
+          company_facebook_url?: string | null
+          company_founded_year?: number | null
+          company_instagram_url?: string | null
+          company_keywords?: Json | null
+          company_linkedin_url?: string | null
+          company_logo_url?: string | null
           company_name?: string | null
+          company_phone_enriched?: string | null
           company_revenue?: string | null
           company_size?: number | null
+          company_state?: string | null
+          company_tech_stack?: Json | null
+          company_tiktok_url?: string | null
           company_website?: string | null
+          company_youtube_url?: string | null
           country?: string | null
           created_at?: string
           departments?: string | null
           email?: string | null
+          employment_history?: Json | null
           facebook_url?: string | null
+          first_name?: string | null
           full_name?: string | null
           github_url?: string | null
+          headline?: string | null
           id?: string
           industry?: string | null
+          instagram_url?: string | null
           job_title?: string | null
+          last_name?: string | null
           linkedin_profile?: string | null
           phone?: string | null
+          photo_url?: string | null
           seniority?: string | null
           source?: string | null
           state?: string | null
           twitter_url?: string | null
           updated_at?: string
+          years_of_experience?: number | null
         }
         Update: {
           city?: string | null
+          company_city?: string | null
+          company_country?: string | null
+          company_description?: string | null
+          company_email_enriched?: string | null
+          company_facebook_url?: string | null
+          company_founded_year?: number | null
+          company_instagram_url?: string | null
+          company_keywords?: Json | null
+          company_linkedin_url?: string | null
+          company_logo_url?: string | null
           company_name?: string | null
+          company_phone_enriched?: string | null
           company_revenue?: string | null
           company_size?: number | null
+          company_state?: string | null
+          company_tech_stack?: Json | null
+          company_tiktok_url?: string | null
           company_website?: string | null
+          company_youtube_url?: string | null
           country?: string | null
           created_at?: string
           departments?: string | null
           email?: string | null
+          employment_history?: Json | null
           facebook_url?: string | null
+          first_name?: string | null
           full_name?: string | null
           github_url?: string | null
+          headline?: string | null
           id?: string
           industry?: string | null
+          instagram_url?: string | null
           job_title?: string | null
+          last_name?: string | null
           linkedin_profile?: string | null
           phone?: string | null
+          photo_url?: string | null
           seniority?: string | null
           source?: string | null
           state?: string | null
           twitter_url?: string | null
           updated_at?: string
+          years_of_experience?: number | null
         }
         Relationships: []
       }
