@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Eye, Download, UserCheck, Loader2, ExternalLink, ChevronLeft, ChevronRight, CalendarIcon, Eraser, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Search, Eye, Download, UserCheck, Loader2, ExternalLink, ChevronLeft, ChevronRight, CalendarIcon, Eraser, ArrowUp, ArrowDown, ArrowUpDown, Linkedin, Facebook, Instagram, Youtube, Globe, Github, Briefcase } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
 import {
   Dialog,
   DialogContent,
@@ -21,14 +20,64 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type Lead = Tables<"tb_crm_leads">;
+// Extended type since types.ts is read-only and may not have new columns yet
+type Lead = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  full_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  job_title: string | null;
+  seniority: string | null;
+  departments: string | null;
+  headline: string | null;
+  photo_url: string | null;
+  years_of_experience: number | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  linkedin_profile: string | null;
+  facebook_url: string | null;
+  twitter_url: string | null;
+  github_url: string | null;
+  instagram_url: string | null;
+  company_name: string | null;
+  company_website: string | null;
+  industry: string | null;
+  company_size: number | null;
+  company_revenue: string | null;
+  company_description: string | null;
+  company_logo_url: string | null;
+  company_founded_year: number | null;
+  company_city: string | null;
+  company_state: string | null;
+  company_country: string | null;
+  company_linkedin_url: string | null;
+  company_facebook_url: string | null;
+  company_instagram_url: string | null;
+  company_youtube_url: string | null;
+  company_tiktok_url: string | null;
+  company_phone_enriched: string | null;
+  company_email_enriched: string | null;
+  company_keywords: string[] | null;
+  company_tech_stack: string[] | null;
+  source: string | null;
+  employment_history: EmploymentEntry[] | null;
+};
+
+type EmploymentEntry = {
+  company: string;
+  title: string;
+  start_date: string | null;
+  end_date: string | null;
+  is_current: boolean;
+};
 
 const formatDate = (d: string) =>
-  new Date(d).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
 const DetailRow = ({ label, value, href }: { label: string; value: string | number | null; href?: string }) => {
   if (!value) return null;
@@ -43,6 +92,15 @@ const DetailRow = ({ label, value, href }: { label: string; value: string | numb
         <span className="text-xs text-white/80 text-right max-w-[60%] truncate">{String(value)}</span>
       )}
     </div>
+  );
+};
+
+const SocialLink = ({ href, icon: Icon, label }: { href: string | null; icon: React.ElementType; label: string }) => {
+  if (!href) return null;
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" title={label} className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-white/40 hover:text-white/80 transition-colors">
+      <Icon className="w-3.5 h-3.5" />
+    </a>
   );
 };
 
@@ -69,7 +127,7 @@ const LeadManagement = () => {
         .from("tb_crm_leads")
         .select("*")
         .order("created_at", { ascending: false });
-      setLeads(data || []);
+      setLeads((data as unknown as Lead[]) || []);
       setLoading(false);
     };
     fetchLeads();
@@ -93,9 +151,7 @@ const LeadManagement = () => {
 
   const handleSort = (key: SortKey) => {
     setSortConfig((prev) =>
-      prev.key === key
-        ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
-        : { key, direction: 'asc' }
+      prev.key === key ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' }
     );
   };
 
@@ -129,16 +185,14 @@ const LeadManagement = () => {
     return sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />;
   };
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, sourceFilter, countryFilter, startDate, endDate]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, sourceFilter, countryFilter, startDate, endDate]);
 
   const downloadCSV = () => {
-    const headers = ["Name", "Email", "Company", "Job Title", "Country", "Source", "Phone", "LinkedIn", "Created"];
+    const headers = ["Name", "First Name", "Last Name", "Email", "Phone", "Job Title", "Seniority", "Departments", "Headline", "Years of Exp", "City", "State", "Country", "LinkedIn", "Facebook", "Twitter", "GitHub", "Instagram", "Company", "Company Website", "Industry", "Company Size", "Company Revenue", "Company Founded", "Company City", "Company State", "Company Country", "Source", "Created"];
     const rows = filtered.map((l) => [
-      l.full_name, l.email, l.company_name, l.job_title, l.country, l.source, l.phone, l.linkedin_profile, l.created_at,
+      l.full_name, l.first_name, l.last_name, l.email, l.phone, l.job_title, l.seniority, l.departments, l.headline, l.years_of_experience, l.city, l.state, l.country, l.linkedin_profile, l.facebook_url, l.twitter_url, l.github_url, l.instagram_url, l.company_name, l.company_website, l.industry, l.company_size, l.company_revenue, l.company_founded_year, l.company_city, l.company_state, l.company_country, l.source, l.created_at,
     ]);
-    const csv = [headers, ...rows].map((r) => r.map((v) => `"${(v || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${(v == null ? "" : String(v)).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -162,11 +216,7 @@ const LeadManagement = () => {
           Lead Management
           {!loading && <span className="ml-2 text-sm font-normal text-white/40">({filtered.length})</span>}
         </h2>
-        <button
-          onClick={downloadCSV}
-          disabled={filtered.length === 0}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-sm text-white/70 hover:bg-white/[0.10] hover:text-white transition-colors disabled:opacity-40"
-        >
+        <button onClick={downloadCSV} disabled={filtered.length === 0} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-sm text-white/70 hover:bg-white/[0.10] hover:text-white transition-colors disabled:opacity-40">
           <Download className="w-4 h-4" /> Export CSV
         </button>
       </div>
@@ -175,23 +225,13 @@ const LeadManagement = () => {
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
-          />
+          <input type="text" placeholder="Search by name or email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/20" />
         </div>
         <Select value={sourceFilter} onValueChange={setSourceFilter}>
-          <SelectTrigger className="w-[160px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm">
-            <SelectValue placeholder="Source" />
-          </SelectTrigger>
+          <SelectTrigger className="w-[160px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm"><SelectValue placeholder="Source" /></SelectTrigger>
           <SelectContent className="bg-[#1a1a2e] border-white/[0.08]">
             <SelectItem value="all">All Sources</SelectItem>
-            {sources.map((s) => (
-              <SelectItem key={s} value={s!}>{s}</SelectItem>
-            ))}
+            {sources.map((s) => (<SelectItem key={s} value={s!}>{s}</SelectItem>))}
           </SelectContent>
         </Select>
         <Popover>
@@ -217,22 +257,13 @@ const LeadManagement = () => {
           </PopoverContent>
         </Popover>
         <Select value={countryFilter} onValueChange={setCountryFilter}>
-          <SelectTrigger className="w-[160px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm">
-            <SelectValue placeholder="Country" />
-          </SelectTrigger>
+          <SelectTrigger className="w-[160px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm"><SelectValue placeholder="Country" /></SelectTrigger>
           <SelectContent className="bg-[#1a1a2e] border-white/[0.08]">
             <SelectItem value="all">All Countries</SelectItem>
-            {countries.map((c) => (
-              <SelectItem key={c} value={c!}>{c}</SelectItem>
-            ))}
+            {countries.map((c) => (<SelectItem key={c} value={c!}>{c}</SelectItem>))}
           </SelectContent>
         </Select>
-        <button
-          onClick={() => { setSearchTerm(""); setSourceFilter("all"); setCountryFilter("all"); setStartDate(undefined); setEndDate(undefined); }}
-          disabled={!searchTerm && sourceFilter === "all" && countryFilter === "all" && !startDate && !endDate}
-          title="Clear filters"
-          className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white/40 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none"
-        >
+        <button onClick={() => { setSearchTerm(""); setSourceFilter("all"); setCountryFilter("all"); setStartDate(undefined); setEndDate(undefined); }} disabled={!searchTerm && sourceFilter === "all" && countryFilter === "all" && !startDate && !endDate} title="Clear filters" className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white/40 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none">
           <Eraser className="w-4 h-4" />
         </button>
       </div>
@@ -266,37 +297,36 @@ const LeadManagement = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                   <td colSpan={7} className="px-4 py-16 text-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-white/30 mx-auto" />
-                  </td>
-                </tr>
+                <tr><td colSpan={7} className="px-4 py-16 text-center"><Loader2 className="w-6 h-6 animate-spin text-white/30 mx-auto" /></td></tr>
               ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center">
-                        <UserCheck className="w-6 h-6 text-white/20" />
-                      </div>
-                      <p className="text-sm text-white/40">No leads found</p>
-                    </div>
-                  </td>
-                </tr>
+                <tr><td colSpan={7} className="px-4 py-16 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center"><UserCheck className="w-6 h-6 text-white/20" /></div>
+                    <p className="text-sm text-white/40">No leads found</p>
+                  </div>
+                </td></tr>
               ) : (
                 paginatedLeads.map((lead) => (
                   <tr key={lead.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
-                    <td className="px-4 py-3 text-sm text-white/80 truncate" title={lead.full_name || ""}>{lead.full_name || "—"}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        {lead.photo_url ? (
+                          <img src={lead.photo_url} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] text-white/40">{lead.full_name?.charAt(0)?.toUpperCase() || "?"}</span>
+                          </div>
+                        )}
+                        <span className="text-sm text-white/80 truncate" title={lead.full_name || ""}>{lead.full_name || "—"}</span>
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-sm text-white/60 truncate" title={lead.email || ""}>{lead.email || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 truncate" title={lead.company_name || ""}>{lead.company_name || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 truncate" title={lead.job_title || ""}>{lead.job_title || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/60 whitespace-nowrap">{lead.country || "—"}</td>
                     <td className="px-4 py-3 text-sm text-white/50 whitespace-nowrap">{formatDate(lead.created_at)}</td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => setSelectedLead(lead)}
-                        className="p-1.5 rounded-lg hover:bg-white/[0.08] text-white/40 hover:text-white/80 transition-colors"
-                        title="View details"
-                      >
+                      <button onClick={() => setSelectedLead(lead)} className="p-1.5 rounded-lg hover:bg-white/[0.08] text-white/40 hover:text-white/80 transition-colors" title="View details">
                         <Eye className="w-4 h-4" />
                       </button>
                     </td>
@@ -311,25 +341,13 @@ const LeadManagement = () => {
       {/* Pagination */}
       {filtered.length > ITEMS_PER_PAGE && (
         <div className="flex items-center justify-between px-1">
-          <span className="text-xs text-white/40">
-            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
-          </span>
+          <span className="text-xs text-white/40">Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}</span>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none"
-            >
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none">
               <ChevronLeft className="w-3.5 h-3.5" /> Previous
             </button>
-            <span className="text-xs text-white/50">
-              {currentPage} / {totalPages}
-            </span>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none"
-            >
+            <span className="text-xs text-white/50">{currentPage} / {totalPages}</span>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none">
               Next <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -340,33 +358,77 @@ const LeadManagement = () => {
       <Dialog open={!!selectedLead} onOpenChange={(open) => !open && setSelectedLead(null)}>
         <DialogContent className="bg-[#12121f] border-white/[0.08] text-white max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-white">
-              {selectedLead?.full_name || "Lead Details"}
-            </DialogTitle>
+            <div className="flex items-center gap-3">
+              {selectedLead?.photo_url ? (
+                <img src={selectedLead.photo_url} alt="" className="w-12 h-12 rounded-full object-cover" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-white/[0.06] flex items-center justify-center">
+                  <span className="text-lg text-white/40">{selectedLead?.full_name?.charAt(0)?.toUpperCase() || "?"}</span>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <DialogTitle className="text-lg font-semibold text-white">{selectedLead?.full_name || "Lead Details"}</DialogTitle>
+                {selectedLead?.headline && <p className="text-xs text-white/50 mt-0.5 truncate">{selectedLead.headline}</p>}
+              </div>
+            </div>
           </DialogHeader>
           {selectedLead && (
             <div className="space-y-5 mt-2">
+              {/* Personal Socials */}
+              {(selectedLead.linkedin_profile || selectedLead.facebook_url || selectedLead.twitter_url || selectedLead.github_url || selectedLead.instagram_url) && (
+                <div className="flex items-center gap-1.5">
+                  <SocialLink href={selectedLead.linkedin_profile} icon={Linkedin} label="LinkedIn" />
+                  <SocialLink href={selectedLead.facebook_url} icon={Facebook} label="Facebook" />
+                  <SocialLink href={selectedLead.instagram_url} icon={Instagram} label="Instagram" />
+                  <SocialLink href={selectedLead.twitter_url} icon={Globe} label="Twitter/X" />
+                  <SocialLink href={selectedLead.github_url} icon={Github} label="GitHub" />
+                </div>
+              )}
+
+              {/* Contact */}
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-2">Contact</h4>
                 <div className="rounded-lg bg-white/[0.03] p-3 space-y-0.5">
                   <DetailRow label="Email" value={selectedLead.email} />
                   <DetailRow label="Phone" value={selectedLead.phone} />
-                  <DetailRow label="LinkedIn" value={selectedLead.linkedin_profile} href={selectedLead.linkedin_profile || undefined} />
-                  <DetailRow label="Facebook" value={selectedLead.facebook_url} href={selectedLead.facebook_url || undefined} />
-                  <DetailRow label="Twitter" value={selectedLead.twitter_url} href={selectedLead.twitter_url || undefined} />
-                  <DetailRow label="GitHub" value={selectedLead.github_url} href={selectedLead.github_url || undefined} />
+                  <DetailRow label="Years of Exp." value={selectedLead.years_of_experience} />
                 </div>
               </div>
+
+              {/* Company */}
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-2">Company</h4>
                 <div className="rounded-lg bg-white/[0.03] p-3 space-y-0.5">
-                  <DetailRow label="Name" value={selectedLead.company_name} />
+                  <div className="flex items-center gap-2 pb-1.5 border-b border-white/[0.04]">
+                    {selectedLead.company_logo_url && <img src={selectedLead.company_logo_url} alt="" className="w-6 h-6 rounded object-contain" />}
+                    <span className="text-xs text-white/80 font-medium">{selectedLead.company_name || "—"}</span>
+                  </div>
                   <DetailRow label="Website" value={selectedLead.company_website} href={selectedLead.company_website || undefined} />
                   <DetailRow label="Industry" value={selectedLead.industry} />
                   <DetailRow label="Size" value={selectedLead.company_size} />
                   <DetailRow label="Revenue" value={selectedLead.company_revenue} />
+                  <DetailRow label="Founded" value={selectedLead.company_founded_year} />
+                  <DetailRow label="HQ" value={[selectedLead.company_city, selectedLead.company_state, selectedLead.company_country].filter(Boolean).join(", ") || null} />
+                  <DetailRow label="Phone" value={selectedLead.company_phone_enriched} />
+                  <DetailRow label="Email" value={selectedLead.company_email_enriched} />
                 </div>
+                {/* Company Socials */}
+                {(selectedLead.company_linkedin_url || selectedLead.company_facebook_url || selectedLead.company_instagram_url || selectedLead.company_youtube_url || selectedLead.company_tiktok_url) && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <SocialLink href={selectedLead.company_linkedin_url} icon={Linkedin} label="Company LinkedIn" />
+                    <SocialLink href={selectedLead.company_facebook_url} icon={Facebook} label="Company Facebook" />
+                    <SocialLink href={selectedLead.company_instagram_url} icon={Instagram} label="Company Instagram" />
+                    <SocialLink href={selectedLead.company_youtube_url} icon={Youtube} label="Company YouTube" />
+                    {selectedLead.company_tiktok_url && <SocialLink href={selectedLead.company_tiktok_url} icon={Globe} label="Company TikTok" />}
+                  </div>
+                )}
+                {/* Company Description */}
+                {selectedLead.company_description && (
+                  <p className="text-xs text-white/40 mt-2 leading-relaxed line-clamp-4">{selectedLead.company_description}</p>
+                )}
               </div>
+
+              {/* Location */}
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-2">Location</h4>
                 <div className="rounded-lg bg-white/[0.03] p-3 space-y-0.5">
@@ -375,6 +437,8 @@ const LeadManagement = () => {
                   <DetailRow label="Country" value={selectedLead.country} />
                 </div>
               </div>
+
+              {/* Role */}
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-2">Role</h4>
                 <div className="rounded-lg bg-white/[0.03] p-3 space-y-0.5">
@@ -384,6 +448,27 @@ const LeadManagement = () => {
                   <DetailRow label="Source" value={selectedLead.source} />
                 </div>
               </div>
+
+              {/* Employment History */}
+              {selectedLead.employment_history && selectedLead.employment_history.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-2">Employment History</h4>
+                  <div className="space-y-2">
+                    {selectedLead.employment_history.map((entry, i) => (
+                      <div key={i} className="rounded-lg bg-white/[0.03] p-3 flex items-start gap-2.5">
+                        <Briefcase className="w-3.5 h-3.5 text-white/20 mt-0.5 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-xs text-white/80 font-medium">{entry.title}</p>
+                          <p className="text-xs text-white/40">{entry.company}</p>
+                          <p className="text-[10px] text-white/25 mt-0.5">
+                            {entry.start_date?.slice(0, 7)} → {entry.is_current ? "Present" : entry.end_date?.slice(0, 7)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
