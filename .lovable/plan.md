@@ -1,57 +1,96 @@
 
 
-# Ajustes nos Cards do Planning My SaaS
+## Recriar tb_crm_leads com todos os campos do payload
 
-## Mudancas
+### Objetivo
+Dropar e recriar a tabela `tb_crm_leads` com todas as colunas do payload flat validado, na mesma ordem do JSON.
 
-### 1. Adicionar nome completo e telefone do lead
+### Migration SQL
 
-- Adicionar `client_full_name` e `client_phone` na query do `tb_pms_wizard` (linha 78)
-- Adicionar esses campos na interface `WizardRow` e `MergedCard`
-- Exibir o nome completo abaixo do nome do projeto e o telefone ao lado do email no card
+A migration vai:
+1. Dropar a tabela existente (CASCADE para remover policies e triggers)
+2. Recriar com todas as colunas na ordem exata do JSON
+3. Recriar o trigger de `updated_at`
+4. Habilitar RLS e recriar as 4 policies originais
+5. Adicionar UNIQUE constraint no email
 
-### 2. Substituir verde (emerald) por amber/gold (UaiCode)
+### Ordem das colunas (espelhando o JSON)
 
-Todas as ocorrencias de `emerald` serao trocadas por `amber` (tom gold da UaiCode):
-
-| Onde | De | Para |
-|---|---|---|
-| `getScoreColor` (score >= 70) | `bg-emerald-500` | `bg-amber-500` |
-| `getScoreColor` (score >= 40) | `bg-amber-500` | `bg-amber-400` |
-| `getVerdictStyle` (proceed/strong) | `emerald-500/15`, `emerald-400`, `emerald-500/20` | `amber-500/15`, `amber-400`, `amber-500/20` |
-| `getStatusStyle` (completed) | `emerald-500/15`, `emerald-400` | `amber-500/15`, `amber-400` |
-
-### Arquivo modificado
-
-`src/components/hero/mock/PlanningMySaasOverview.tsx`
-
-### Detalhes tecnicos
-
-**Interface `WizardRow`** -- adicionar:
 ```text
-client_full_name: string | null;
-client_phone: string | null;
+-- Colunas de sistema (sempre primeiro)
+id                     uuid         PK, default gen_random_uuid()
+created_at             timestamptz  NOT NULL, default now()
+updated_at             timestamptz  NOT NULL, default now()
+
+-- Dados do Lead (pessoais)
+full_name              text
+first_name             text
+last_name              text
+email                  text         UNIQUE
+phone                  text
+job_title              text
+seniority              text
+departments            text
+headline               text
+photo_url              text
+years_of_experience    integer
+city                   text
+state                  text
+country                text
+linkedin_profile       text
+facebook_url           text
+twitter_url            text
+github_url             text
+instagram_url          text
+
+-- Dados da Empresa
+company_name           text
+company_website        text
+industry               text
+company_size           integer
+company_revenue        text
+company_description    text
+company_logo_url       text
+company_founded_year   integer
+company_city           text
+company_state          text
+company_country        text
+company_linkedin_url   text
+company_facebook_url   text
+company_instagram_url  text
+company_youtube_url    text
+company_tiktok_url     text
+company_phone_enriched text
+company_email_enriched text
+company_keywords       jsonb        default '[]'
+company_tech_stack     jsonb        default '[]'
+
+-- Metadados
+source                 text         default 'n8n_workflow'
+employment_history     jsonb        default '[]'
 ```
 
-**Interface `MergedCard`** -- adicionar:
-```text
-clientFullName: string | null;
-clientPhone: string | null;
-```
+### RLS Policies (recriadas identicas)
 
-**Query Supabase** (linha 78) -- adicionar campos:
-```text
-id, saas_name, client_email, client_full_name, client_phone, industry, created_at, user_id
-```
+| Policy | Command | Expression |
+|--------|---------|------------|
+| Admins can view leads | SELECT | `has_role(get_pms_user_id(), 'admin')` |
+| Admins can update leads | UPDATE | `has_role(get_pms_user_id(), 'admin')` |
+| Admins can delete leads | DELETE | `has_role(get_pms_user_id(), 'admin')` |
+| Service role can insert leads | INSERT | `auth.role() = 'service_role'` |
 
-**Card UI** -- entre o nome do projeto e o email, adicionar linha com nome completo; adicionar telefone abaixo do email:
-```text
-SaaS Name          [Status Badge]
-John Doe
-john@email.com
-+55 11 99999-0000
-Industry
-```
+### Atualizar LeadManagement.tsx
 
-**Busca** -- tambem buscar pelo `clientFullName` no filtro de search.
+Atualizar o componente para exibir os novos campos no dialog de detalhes:
+- Foto do lead como avatar
+- Headline abaixo do nome
+- Seção de redes sociais pessoais (incluindo Instagram)
+- Seção de empresa com logo, description, socials da empresa
+- Employment history como lista
+- CSV export com os novos campos
+
+### Arquivos modificados
+
+1. **Migration SQL** -- nova migration para DROP + CREATE da tabela
+2. **`src/components/hero/mock/LeadManagement.tsx`** -- exibir novos campos no dialog e tabela
 
