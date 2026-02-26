@@ -1,96 +1,49 @@
 
 
-## Recriar tb_crm_leads com todos os campos do payload
+## Criar tabela `tb_crm_lead_prospects`
 
-### Objetivo
-Dropar e recriar a tabela `tb_crm_leads` com todas as colunas do payload flat validado, na mesma ordem do JSON.
+Criar apenas a tabela no banco de dados, sem alteracoes no frontend.
 
 ### Migration SQL
 
-A migration vai:
-1. Dropar a tabela existente (CASCADE para remover policies e triggers)
-2. Recriar com todas as colunas na ordem exata do JSON
-3. Recriar o trigger de `updated_at`
-4. Habilitar RLS e recriar as 4 policies originais
-5. Adicionar UNIQUE constraint no email
+Uma unica migration que cria a tabela com todas as colunas do payload flat, trigger de `updated_at`, RLS habilitado e policies.
 
-### Ordem das colunas (espelhando o JSON)
+**Detalhes:**
+- `stage` e `source` terao default vazio (`''`) em vez de valores pre-definidos
+- UNIQUE constraint no campo `email`
+- Reutiliza a funcao `update_tb_crm_leads_updated_at()` existente para o trigger
+- 5 RLS policies identicas ao padrao de `tb_crm_leads`
+
+### Colunas
 
 ```text
--- Colunas de sistema (sempre primeiro)
-id                     uuid         PK, default gen_random_uuid()
-created_at             timestamptz  NOT NULL, default now()
-updated_at             timestamptz  NOT NULL, default now()
-
--- Dados do Lead (pessoais)
-full_name              text
-first_name             text
-last_name              text
-email                  text         UNIQUE
-phone                  text
-job_title              text
-seniority              text
-departments            text
-headline               text
-photo_url              text
-years_of_experience    integer
-city                   text
-state                  text
-country                text
-linkedin_profile       text
-facebook_url           text
-twitter_url            text
-github_url             text
-instagram_url          text
-
--- Dados da Empresa
-company_name           text
-company_website        text
-industry               text
-company_size           integer
-company_revenue        text
-company_description    text
-company_logo_url       text
-company_founded_year   integer
-company_city           text
-company_state          text
-company_country        text
-company_linkedin_url   text
-company_facebook_url   text
-company_instagram_url  text
-company_youtube_url    text
-company_tiktok_url     text
-company_phone_enriched text
-company_email_enriched text
-company_keywords       jsonb        default '[]'
-company_tech_stack     jsonb        default '[]'
-
--- Metadados
-source                 text         default 'n8n_workflow'
-employment_history     jsonb        default '[]'
+id, created_at, updated_at,
+full_name, first_name, last_name, email (UNIQUE), phone,
+job_title, seniority, departments, headline, photo_url,
+years_of_experience, city, state, country,
+linkedin_profile, facebook_url, twitter_url, github_url, instagram_url,
+company_name, company_website, industry, company_size, company_revenue,
+company_description, company_logo_url, company_founded_year,
+company_city, company_state, company_country,
+company_linkedin_url, company_facebook_url, company_instagram_url,
+company_youtube_url, company_tiktok_url,
+company_phone_enriched, company_email_enriched,
+company_keywords (jsonb), company_tech_stack (jsonb),
+source (default ''), stage (default ''),
+employment_history (jsonb)
 ```
 
-### RLS Policies (recriadas identicas)
+### RLS Policies
 
 | Policy | Command | Expression |
 |--------|---------|------------|
-| Admins can view leads | SELECT | `has_role(get_pms_user_id(), 'admin')` |
-| Admins can update leads | UPDATE | `has_role(get_pms_user_id(), 'admin')` |
-| Admins can delete leads | DELETE | `has_role(get_pms_user_id(), 'admin')` |
-| Service role can insert leads | INSERT | `auth.role() = 'service_role'` |
+| Admins can view prospects | SELECT | `has_role(get_pms_user_id(), 'admin')` |
+| Admins can update prospects | UPDATE | `has_role(get_pms_user_id(), 'admin')` |
+| Admins can delete prospects | DELETE | `has_role(get_pms_user_id(), 'admin')` |
+| Service role can insert prospects | INSERT | `auth.role() = 'service_role'` |
+| hero_users can view prospects | SELECT | `get_hero_user_id() IS NOT NULL` |
 
-### Atualizar LeadManagement.tsx
+### Arquivo modificado
 
-Atualizar o componente para exibir os novos campos no dialog de detalhes:
-- Foto do lead como avatar
-- Headline abaixo do nome
-- Seção de redes sociais pessoais (incluindo Instagram)
-- Seção de empresa com logo, description, socials da empresa
-- Employment history como lista
-- CSV export com os novos campos
-
-### Arquivos modificados
-
-1. **Migration SQL** -- nova migration para DROP + CREATE da tabela
-2. **`src/components/hero/mock/LeadManagement.tsx`** -- exibir novos campos no dialog e tabela
+Apenas uma nova migration SQL. Nenhum codigo frontend alterado.
 
