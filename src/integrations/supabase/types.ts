@@ -56,6 +56,7 @@ export type Database = {
           photo_url: string | null
           seniority: string | null
           source: string | null
+          stage: string | null
           state: string | null
           twitter_url: string | null
           updated_at: string
@@ -102,6 +103,7 @@ export type Database = {
           photo_url?: string | null
           seniority?: string | null
           source?: string | null
+          stage?: string | null
           state?: string | null
           twitter_url?: string | null
           updated_at?: string
@@ -148,6 +150,7 @@ export type Database = {
           photo_url?: string | null
           seniority?: string | null
           source?: string | null
+          stage?: string | null
           state?: string | null
           twitter_url?: string | null
           updated_at?: string
