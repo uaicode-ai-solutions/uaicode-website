@@ -26,14 +26,14 @@ import { determineMvpTier } from "@/types/report";
 // Tier to budget/timeline availability mapping
 const TIER_BUDGET_MAP: Record<string, string[]> = {
   starter: ['10k-25k', 'guidance'],
-  growth: ['25k-60k', '60k-160k', '160k+', 'guidance'],
-  enterprise: ['60k-160k', '160k+', 'guidance'],
+  enterprise: ['25k-60k', '60k-160k', '160k+', 'guidance'],
+  professional: ['60k-160k', '160k+', 'guidance'],
 };
 
 const TIER_TIMELINE_MAP: Record<string, string[]> = {
   starter: ['asap', 'this-year', 'next-year', 'flexible'],
-  growth: ['this-year', 'next-year', 'flexible'],
-  enterprise: ['next-year', 'flexible'],
+  enterprise: ['this-year', 'next-year', 'flexible'],
+  professional: ['next-year', 'flexible'],
 };
 
 const TIER_LABELS: Record<string, { name: string; budget: string; timeline: string }> = {
@@ -42,13 +42,13 @@ const TIER_LABELS: Record<string, { name: string; budget: string; timeline: stri
     budget: '$10K - $25K',
     timeline: '45-60 days'
   },
-  growth: { 
-    name: 'Growth MVP', 
+  enterprise: { 
+    name: 'Enterprise MVP', 
     budget: '$25K - $60K',
     timeline: '60-90 days'
   },
-  enterprise: { 
-    name: 'Enterprise MVP', 
+  professional: { 
+    name: 'Professional MVP', 
     budget: '$60K - $160K+',
     timeline: '90-120 days'
   },
