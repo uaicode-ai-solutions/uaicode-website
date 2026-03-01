@@ -127,4 +127,7 @@ verify_jwt = false
 [functions.hero-invite-user]
 verify_jwt = false
 
+[functions.pms-lp-wizard-submit]
+verify_jwt = false
+
 

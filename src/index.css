@@ -160,6 +160,22 @@ All colors MUST be HSL.
     }
   }
 
+  /* Lead wizard step entrance animation */
+  .animate-step-enter {
+    animation: stepEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes stepEnter {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   /* Smooth fade transition for page content */
   @keyframes smoothFadeIn {
     from { opacity: 0; }

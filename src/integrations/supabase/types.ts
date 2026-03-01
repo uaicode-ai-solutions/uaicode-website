@@ -510,6 +510,75 @@ export type Database = {
         }
         Relationships: []
       }
+      tb_pms_lp_wizard: {
+        Row: {
+          country: string | null
+          created_at: string
+          description: string | null
+          email: string
+          full_name: string
+          geographic_region: string | null
+          geographic_region_other: string | null
+          id: string
+          industry: string | null
+          industry_other: string | null
+          linkedin: string | null
+          phone: string | null
+          role: string | null
+          role_other: string | null
+          saas_logo_url: string | null
+          saas_name: string | null
+          saas_type: string | null
+          saas_type_other: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          email: string
+          full_name: string
+          geographic_region?: string | null
+          geographic_region_other?: string | null
+          id?: string
+          industry?: string | null
+          industry_other?: string | null
+          linkedin?: string | null
+          phone?: string | null
+          role?: string | null
+          role_other?: string | null
+          saas_logo_url?: string | null
+          saas_name?: string | null
+          saas_type?: string | null
+          saas_type_other?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string
+          full_name?: string
+          geographic_region?: string | null
+          geographic_region_other?: string | null
+          id?: string
+          industry?: string | null
+          industry_other?: string | null
+          linkedin?: string | null
+          phone?: string | null
+          role?: string | null
+          role_other?: string | null
+          saas_logo_url?: string | null
+          saas_name?: string | null
+          saas_type?: string | null
+          saas_type_other?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tb_pms_mkt_tier: {
         Row: {
           ad_spend_fee_percent: number | null
