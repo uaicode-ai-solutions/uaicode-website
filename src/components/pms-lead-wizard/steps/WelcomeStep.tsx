@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, Sparkles, BarChart3, Mail } from "lucide-react";
 
+
 interface WelcomeStepProps {
   onStart: () => void;
 }
@@ -8,9 +9,6 @@ interface WelcomeStepProps {
 const WelcomeStep = ({ onStart }: WelcomeStepProps) => {
   return (
     <div className="flex flex-col items-center justify-center text-center px-4 animate-step-enter max-w-lg mx-auto">
-      <div className="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-6">
-        <Sparkles className="w-8 h-8 text-accent" />
-      </div>
 
       <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
         Validate Your <span className="text-gradient-gold">SaaS Idea</span>

@@ -32,31 +32,33 @@ const LeadWizardLayout = ({
   return (
     <div className="min-h-screen bg-background mesh-gradient flex flex-col">
       {/* Header */}
-      <header className="flex items-center justify-center py-6">
-        <img src={uaicodeLogo} alt="UaiCode" className="h-8 md:h-10" />
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/30">
+        <div className="flex items-center justify-center py-6">
+          <img src={uaicodeLogo} alt="UaiCode" className="h-8 md:h-10" />
+        </div>
+
+        {/* Progress dots */}
+        {!isFirstStep && !isLastStep && (
+          <div className="flex items-center justify-center gap-1.5 pb-4">
+            {Array.from({ length: totalSteps - 2 }).map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "h-1.5 rounded-full transition-all duration-500",
+                  i + 1 === currentStep
+                    ? "w-6 bg-accent"
+                    : i + 1 < currentStep
+                    ? "w-1.5 bg-accent/60"
+                    : "w-1.5 bg-border/50"
+                )}
+              />
+            ))}
+          </div>
+        )}
       </header>
 
-      {/* Progress dots */}
-      {!isFirstStep && !isLastStep && (
-        <div className="flex items-center justify-center gap-1.5 pb-6">
-          {Array.from({ length: totalSteps - 2 }).map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-500",
-                i + 1 === currentStep
-                  ? "w-6 bg-accent"
-                  : i + 1 < currentStep
-                  ? "w-1.5 bg-accent/60"
-                  : "w-1.5 bg-border/50"
-              )}
-            />
-          ))}
-        </div>
-      )}
-
       {/* Content */}
-      <main className="flex-1 flex items-center justify-center pb-24">
+      <main className="flex-1 overflow-y-auto py-8 pb-24">
         {children}
       </main>
 
