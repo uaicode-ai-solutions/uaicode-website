@@ -651,6 +651,39 @@ export type Database = {
         }
         Relationships: []
       }
+      tb_pms_mvp_features: {
+        Row: {
+          complexity_weight: number
+          created_at: string
+          feature_category: string
+          feature_description: string | null
+          feature_id: string
+          feature_name: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          complexity_weight: number
+          created_at?: string
+          feature_category: string
+          feature_description?: string | null
+          feature_id: string
+          feature_name: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          complexity_weight?: number
+          created_at?: string
+          feature_category?: string
+          feature_description?: string | null
+          feature_id?: string
+          feature_name?: string
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
       tb_pms_mvp_tier: {
         Row: {
           created_at: string
