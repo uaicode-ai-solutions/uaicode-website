@@ -1,80 +1,35 @@
 
 
-## Criar tabela `tb_pms_mvp_features` (apenas banco de dados)
+## Atualizar descricoes das features na `tb_pms_mvp_features`
 
-### O que sera feito
+### Objetivo
 
-Criar a tabela `tb_pms_mvp_features` no Supabase para armazenar todas as features possiveis que a Uaicode pode implementar nos MVPs. Essa tabela sera consumida futuramente por uma automacao n8n (nao por Edge Functions nem pelo front-end atual).
+Reescrever as 28 `feature_description` da tabela `tb_pms_mvp_features` com descricoes muito mais detalhadas e contextuais, para que a IA do n8n consiga identificar com precisao quando cada feature deve ser incluida no PRD de um projeto.
 
-**Nenhuma alteracao sera feita no front-end ou em qualquer codigo existente.**
+### O que muda
 
-### Schema da tabela
+- 28 UPDATEs na coluna `feature_description` da tabela `tb_pms_mvp_features`
+- Nenhuma alteracao de schema, front-end ou Edge Functions
 
-| Campo | Tipo | Nullable | Default | Descricao |
-|---|---|---|---|---|
-| id | uuid (PK) | No | gen_random_uuid() | ID unico |
-| feature_id | text (UNIQUE) | No | - | Identificador da feature (ex: "auth", "ai") |
-| feature_name | text | No | - | Nome legivel (ex: "User Registration & Authentication") |
-| feature_description | text | Yes | - | Descricao da feature para contexto da IA |
-| feature_category | text | No | - | Categoria: "essential", "advanced", "professional" |
-| complexity_weight | integer | No | - | Peso para calculo de complexidade (essential=1, advanced=2, professional=3) |
-| is_active | boolean | No | true | Se a feature esta disponivel |
-| created_at | timestamptz | No | now() | Data de criacao |
+### Abordagem das descricoes
 
-### RLS
+Cada descricao incluira:
+1. **O que a feature faz** - funcionalidade concreta
+2. **Quando usar** - cenarios e tipos de SaaS onde faz sentido
+3. **O que inclui tecnicamente** - componentes e capacidades especificas
+4. **Exemplos praticos** - casos de uso reais
 
-- SELECT publico (mesma politica das tabelas de referencia como `tb_pms_mvp_tiers`)
-- Sem INSERT/UPDATE/DELETE para usuarios comuns
+### Exemplo de antes/depois
 
-### Dados a inserir (28 features)
+**Antes:**
+> "User signup, login, password recovery and session management"
 
-**Essential (8 features, weight=1):**
-- auth: "User Registration & Authentication"
-- profiles: "Basic User Profiles"
-- crud: "Simple Database CRUD Operations"
-- reporting: "Basic Reporting & Analytics"
-- notifications: "Email Notifications"
-- admin: "Basic Admin Panel"
-- responsive: "Mobile Responsive Design"
-- security: "Basic Security Measures"
+**Depois:**
+> "Complete user authentication system including email/password registration with validation, secure login with session tokens, password recovery via email, optional social login (Google, GitHub), email verification flow, rate limiting on auth endpoints, and session management with automatic token refresh. Essential for any SaaS that needs to identify individual users, protect private data, or offer personalized experiences. Includes signup forms, login pages, forgot password flow, and account verification. Use this feature when the product requires user accounts, saved preferences, or any form of personalized content."
 
-**Advanced (10 features, weight=2):**
-- advancedAnalytics: "Advanced Analytics Dashboard"
-- apiIntegrations: "Third-party API Integrations"
-- payments: "Payment Processing & Billing"
-- roles: "Multi-user Roles & Permissions"
-- search: "Advanced Search & Filtering"
-- fileUpload: "File Upload & Management"
-- realtime: "Real-time Updates"
-- workflows: "Custom Workflows"
-- advancedReporting: "Advanced Reporting Tools"
-- emailMarketing: "Email Marketing Integration"
+### Execucao
 
-**Professional (10 features, weight=3):**
-- ai: "AI/Machine Learning Capabilities"
-- dataAnalytics: "Advanced Data Analytics"
-- multiTenant: "Multi-tenant Architecture"
-- sso: "SSO & Enterprise Security"
-- customIntegrations: "Custom Integrations"
-- apiManagement: "Advanced API Management"
-- collaboration: "Real-time Collaboration Tools"
-- automation: "Advanced Automation"
-- customReporting: "Custom Reporting Engine"
-- support: "Enterprise-grade Support"
-
-### Por que o campo `complexity_weight`
-
-Esse campo permite que a IA do n8n replique o calculo de complexidade sem precisar de logica hardcoded:
-- Soma dos pesos das features sugeridas = score
-- Soma de todos os pesos possiveis = maxScore
-- percentage = (score / maxScore) * 100
-- Tier = determinado pela feature de maior categoria sugerida
-
-### Detalhes tecnicos
-
-- 1 migracao SQL: CREATE TABLE + ENABLE RLS + CREATE POLICY
-- Insert dos 28 registros via ferramenta de insert
-- Nenhum arquivo do front-end sera alterado
-- Nenhuma Edge Function sera criada
-- A tabela sera usada exclusivamente pela automacao n8n
+- 1 operacao de UPDATE com todas as 28 descricoes usando o insert tool (ferramenta de dados, nao migracao)
+- Sem alteracao de schema
+- Sem alteracao de front-end
 
