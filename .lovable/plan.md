@@ -1,21 +1,24 @@
 
 
-## Remover auto-advance nos steps com cards
+## Scroll to top ao avançar + autofocus no campo "Other"
 
-O comportamento atual usa a funcao `autoAdvance` que automaticamente avanca para o proximo step 350ms apos selecionar um card. O usuario quer que a navegacao ocorra apenas ao clicar no botao "Next" ou "Submit".
+### 1. Scroll to top ao mudar de step
 
-### Alteracao
+**Arquivo:** `src/components/pms-lead-wizard/LeadWizardLayout.tsx`
 
-**Arquivo:** `src/pages/PmsLeadWizard.tsx`
+Adicionar um `useEffect` que observa `currentStep` e faz scroll do `<main>` para o topo sempre que o step muda. Usar uma `ref` no elemento `<main>` e chamar `scrollTo(0, 0)` a cada mudanca de step.
 
-Remover a funcao `autoAdvance` e substituir todas as suas referencias por `set` (o setter simples que apenas atualiza o valor sem avancar automaticamente).
+### 2. Autofocus no campo "Other"
 
-Steps afetados (que usam `autoAdvance` atualmente):
-- Step 5: CountryStep - `autoAdvance("country")` -> `set("country")`
-- Step 6: RoleStep - `autoAdvance("role")` -> `set("role")`
-- Step 7: SaasTypeStep - `autoAdvance("saasType")` -> `set("saasType")`
-- Step 8: IndustryStep - `autoAdvance("industry")` -> `set("industry")`
-- Step 12: GeographicRegionStep - `autoAdvance("geographicRegion")` -> `set("geographicRegion")`
+Os inputs de "Other" nos steps com cards ja possuem `autoFocus` no JSX (`CountryStep`, `RoleStep`, `SaasTypeStep`, `IndustryStep`, `GeographicRegionStep`). Porem, como o componente ja esta montado quando o usuario clica "Other" (apenas o bloco condicional aparece), o `autoFocus` do React funciona apenas na montagem inicial.
 
-Remover a funcao `autoAdvance` por completo, ja que nao sera mais utilizada.
+Para garantir o foco, usar `useEffect` com `useRef` em cada input "Other", ou mais simples: como os inputs ja usam `autoFocus` e o bloco condicional `{value === "other" && ...}` causa uma montagem nova do Input a cada vez que "other" e selecionado, o `autoFocus` ja deveria funcionar. Verificar se ha algum problema e, se necessario, adicionar um `useEffect` para forcar o foco.
+
+**Verificacao:** Os 5 steps com "Other" (`CountryStep`, `RoleStep`, `SaasTypeStep`, `IndustryStep`, `GeographicRegionStep`) ja possuem `autoFocus` no Input. Como o Input e montado condicionalmente (`{value === "other" && <Input autoFocus ... />}`), o autoFocus do HTML nativo deve funcionar. Se nao funcionar, adicionaremos um `ref` com `useEffect` para forcar `.focus()`.
+
+### Resumo
+
+| Arquivo | Alteracao |
+|---------|-----------|
+| `LeadWizardLayout.tsx` | Adicionar `useRef` + `useEffect` para scroll to top ao mudar step |
 
