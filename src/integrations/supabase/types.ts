@@ -702,6 +702,57 @@ export type Database = {
         }
         Relationships: []
       }
+      tb_pms_mvp_tiers: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          max_days: number
+          max_price_cents: number
+          min_days: number
+          min_price_cents: number
+          tier_id: string
+          tier_name: string
+          traditional_max_cents: number
+          traditional_max_days: number
+          traditional_min_cents: number
+          traditional_min_days: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_days: number
+          max_price_cents: number
+          min_days: number
+          min_price_cents: number
+          tier_id: string
+          tier_name: string
+          traditional_max_cents: number
+          traditional_max_days: number
+          traditional_min_cents: number
+          traditional_min_days: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_days?: number
+          max_price_cents?: number
+          min_days?: number
+          min_price_cents?: number
+          tier_id?: string
+          tier_name?: string
+          traditional_max_cents?: number
+          traditional_max_days?: number
+          traditional_min_cents?: number
+          traditional_min_days?: number
+        }
+        Relationships: []
+      }
       tb_pms_price_model: {
         Row: {
           created_at: string | null
