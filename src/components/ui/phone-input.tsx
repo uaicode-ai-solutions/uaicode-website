@@ -31,8 +31,6 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
     defaultCountry,
     value,
     countries: defaultCountries,
-    disableDialCodeAndPrefix: true,
-    disableDialCodePrefill: true,
     onChange: (data) => {
       onChange(data.phone);
     },
