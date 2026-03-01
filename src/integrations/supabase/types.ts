@@ -903,6 +903,41 @@ export type Database = {
         }
         Relationships: []
       }
+      tb_pms_reports_complexity: {
+        Row: {
+          complexity_classification: string
+          complexity_score: number
+          created_at: string | null
+          id: string
+          report_id: string
+          wizard_id: string
+        }
+        Insert: {
+          complexity_classification: string
+          complexity_score: number
+          created_at?: string | null
+          id?: string
+          report_id: string
+          wizard_id: string
+        }
+        Update: {
+          complexity_classification?: string
+          complexity_score?: number
+          created_at?: string | null
+          id?: string
+          report_id?: string
+          wizard_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tb_pms_reports_complexity_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "tb_pms_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tb_pms_users: {
         Row: {
           auth_user_id: string
