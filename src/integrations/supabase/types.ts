@@ -944,6 +944,78 @@ export type Database = {
           },
         ]
       }
+      tb_pms_reports_investment: {
+        Row: {
+          created_at: string
+          delivery_days_traditional_max: number
+          delivery_days_traditional_min: number
+          delivery_days_uaicode_max: number
+          delivery_days_uaicode_min: number
+          delivery_weeks_traditional_max: number
+          delivery_weeks_traditional_min: number
+          delivery_weeks_uaicode_max: number
+          delivery_weeks_uaicode_min: number
+          discount_strategy: Json
+          feature_counts: Json
+          id: string
+          investment_breakdown: Json
+          investment_one_payment_cents: number
+          investment_one_payment_cents_traditional: number
+          mvp_tier: string
+          report_id: string
+          savings_amount_cents: number
+          savings_marketing_months: number
+          savings_percentage: number
+          wizard_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_days_traditional_max: number
+          delivery_days_traditional_min: number
+          delivery_days_uaicode_max: number
+          delivery_days_uaicode_min: number
+          delivery_weeks_traditional_max: number
+          delivery_weeks_traditional_min: number
+          delivery_weeks_uaicode_max: number
+          delivery_weeks_uaicode_min: number
+          discount_strategy?: Json
+          feature_counts?: Json
+          id?: string
+          investment_breakdown?: Json
+          investment_one_payment_cents: number
+          investment_one_payment_cents_traditional: number
+          mvp_tier: string
+          report_id: string
+          savings_amount_cents?: number
+          savings_marketing_months?: number
+          savings_percentage?: number
+          wizard_id: string
+        }
+        Update: {
+          created_at?: string
+          delivery_days_traditional_max?: number
+          delivery_days_traditional_min?: number
+          delivery_days_uaicode_max?: number
+          delivery_days_uaicode_min?: number
+          delivery_weeks_traditional_max?: number
+          delivery_weeks_traditional_min?: number
+          delivery_weeks_uaicode_max?: number
+          delivery_weeks_uaicode_min?: number
+          discount_strategy?: Json
+          feature_counts?: Json
+          id?: string
+          investment_breakdown?: Json
+          investment_one_payment_cents?: number
+          investment_one_payment_cents_traditional?: number
+          mvp_tier?: string
+          report_id?: string
+          savings_amount_cents?: number
+          savings_marketing_months?: number
+          savings_percentage?: number
+          wizard_id?: string
+        }
+        Relationships: []
+      }
       tb_pms_users: {
         Row: {
           auth_user_id: string
