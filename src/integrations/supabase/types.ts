@@ -913,6 +913,7 @@ export type Database = {
           created_at: string | null
           id: string
           report_id: string
+          selected_feature_ids: Json
           wizard_id: string
         }
         Insert: {
@@ -921,6 +922,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           report_id: string
+          selected_feature_ids?: Json
           wizard_id: string
         }
         Update: {
@@ -929,6 +931,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           report_id?: string
+          selected_feature_ids?: Json
           wizard_id?: string
         }
         Relationships: [
