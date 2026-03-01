@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS public.tb_pms_reports_investment CASCADE;
