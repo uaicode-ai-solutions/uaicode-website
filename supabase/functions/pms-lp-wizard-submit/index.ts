@@ -81,6 +81,60 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Fire-and-forget: trigger n8n webhook
+    try {
+      const webhookSecret = Deno.env.get("WEBHOOK_PMS_LP_WIZARD_GENERATE_REPORT");
+      if (webhookSecret) {
+        let webhookUrl: string;
+
+        if (webhookSecret.startsWith("http")) {
+          webhookUrl = webhookSecret;
+        } else if (webhookSecret.trim().startsWith("{")) {
+          try {
+            const parsed = JSON.parse(webhookSecret);
+            if (parsed.pinData) {
+              for (const nodeData of Object.values(parsed.pinData)) {
+                if (Array.isArray(nodeData) && (nodeData as any[])[0]?.webhookUrl) {
+                  webhookUrl = (nodeData as any[])[0].webhookUrl;
+                  break;
+                }
+              }
+            }
+            if (!webhookUrl! && parsed.nodes) {
+              for (const node of parsed.nodes) {
+                if (node.type === "n8n-nodes-base.webhook" && node.parameters?.path) {
+                  webhookUrl = `https://n8n.uaicode.dev/webhook/${node.parameters.path}`;
+                  break;
+                }
+              }
+            }
+            if (!webhookUrl!) throw new Error("Could not extract webhook URL from JSON");
+          } catch (e) {
+            console.error("Failed to parse webhook secret JSON:", e);
+          }
+        } else {
+          webhookUrl = `https://n8n.uaicode.dev/webhook/${webhookSecret}`;
+        }
+
+        if (webhookUrl!) {
+          console.log("🚀 Triggering n8n webhook for wizard:", data.id);
+          fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              wizard_id: data.id,
+              tool_name: "call_new_report_requested",
+              timestamp: new Date().toISOString(),
+            }),
+          }).catch((err) => console.error("❌ Webhook call failed:", err));
+        }
+      } else {
+        console.warn("⚠️ WEBHOOK_PMS_LP_WIZARD_GENERATE_REPORT not configured");
+      }
+    } catch (webhookErr) {
+      console.error("❌ Webhook trigger error:", webhookErr);
+    }
+
     return new Response(
       JSON.stringify({ success: true, id: data.id }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
