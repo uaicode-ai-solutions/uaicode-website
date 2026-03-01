@@ -1,21 +1,21 @@
 
 
-## Centralizar conteudo verticalmente no frame central
+## Remover auto-advance nos steps com cards
 
-Alterar o `<main>` no `LeadWizardLayout.tsx` para usar `flex items-center justify-center` combinado com `min-h` calculado (descontando header e footer), permitindo centralizacao vertical em steps curtos enquanto steps com muito conteudo continuam scrollando naturalmente.
+O comportamento atual usa a funcao `autoAdvance` que automaticamente avanca para o proximo step 350ms apos selecionar um card. O usuario quer que a navegacao ocorra apenas ao clicar no botao "Next" ou "Submit".
 
 ### Alteracao
 
-**Arquivo:** `src/components/pms-lead-wizard/LeadWizardLayout.tsx` (linha 61)
+**Arquivo:** `src/pages/PmsLeadWizard.tsx`
 
-Mudar o `<main>` de:
-```
-<main className="flex-1 overflow-y-auto py-8 pb-24">
-```
-Para:
-```
-<main className="flex-1 overflow-y-auto py-8 pb-24 flex items-center justify-center">
-```
+Remover a funcao `autoAdvance` e substituir todas as suas referencias por `set` (o setter simples que apenas atualiza o valor sem avancar automaticamente).
 
-Isso centraliza verticalmente o conteudo quando ele e menor que o espaco disponivel, e permite scroll natural quando o conteudo excede a area visivel.
+Steps afetados (que usam `autoAdvance` atualmente):
+- Step 5: CountryStep - `autoAdvance("country")` -> `set("country")`
+- Step 6: RoleStep - `autoAdvance("role")` -> `set("role")`
+- Step 7: SaasTypeStep - `autoAdvance("saasType")` -> `set("saasType")`
+- Step 8: IndustryStep - `autoAdvance("industry")` -> `set("industry")`
+- Step 12: GeographicRegionStep - `autoAdvance("geographicRegion")` -> `set("geographicRegion")`
+
+Remover a funcao `autoAdvance` por completo, ja que nao sera mais utilizada.
 
