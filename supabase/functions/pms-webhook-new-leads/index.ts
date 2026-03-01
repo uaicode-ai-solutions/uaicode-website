@@ -32,7 +32,7 @@ const getWebhookUrl = (): string => {
       if (parsed.nodes) {
         for (const node of parsed.nodes) {
           if (node.type === "n8n-nodes-base.webhook" && node.parameters?.path) {
-            return `https://n8n.uaicode.dev/webhook/${node.parameters.path}`;
+            return `https://uaicode-n8n.ax5vln.easypanel.host/webhook/${node.parameters.path}`;
           }
         }
       }
@@ -44,7 +44,7 @@ const getWebhookUrl = (): string => {
     }
   }
 
-  return `https://n8n.uaicode.dev/webhook/${webhookId}`;
+  return `https://uaicode-n8n.ax5vln.easypanel.host/webhook/${webhookId}`;
 };
 
 interface RequestPayload {
