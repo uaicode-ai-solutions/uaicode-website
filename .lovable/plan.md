@@ -1,35 +1,35 @@
 
 
-## Atualizar descricoes das features na `tb_pms_mvp_features`
+## Criar tabela `tb_pms_reports_complexity`
 
-### Objetivo
+### Schema
 
-Reescrever as 28 `feature_description` da tabela `tb_pms_mvp_features` com descricoes muito mais detalhadas e contextuais, para que a IA do n8n consiga identificar com precisao quando cada feature deve ser incluida no PRD de um projeto.
+| Coluna | Tipo | Constraint |
+|--------|------|------------|
+| `id` | uuid | PK, default `gen_random_uuid()` |
+| `report_id` | uuid | NOT NULL, UNIQUE, FK -> `tb_pms_reports(id)` ON DELETE CASCADE |
+| `wizard_id` | uuid | NOT NULL (sem FK, valor copiado do report) |
+| `complexity_score` | integer | NOT NULL |
+| `complexity_classification` | text | NOT NULL, CHECK IN ('Low','Medium','High','Very High') |
+| `created_at` | timestamptz | default `now()` |
 
-### O que muda
+- Apenas 1 foreign key: `report_id -> tb_pms_reports(id)`
+- `wizard_id` armazenado como campo denormalizado, sem FK para `tb_pms_wizard`
+- UNIQUE em `report_id` (1 registro por report)
 
-- 28 UPDATEs na coluna `feature_description` da tabela `tb_pms_mvp_features`
-- Nenhuma alteracao de schema, front-end ou Edge Functions
+### RLS Policies
 
-### Abordagem das descricoes
+Seguindo o padrao existente em `tb_pms_reports`:
 
-Cada descricao incluira:
-1. **O que a feature faz** - funcionalidade concreta
-2. **Quando usar** - cenarios e tipos de SaaS onde faz sentido
-3. **O que inclui tecnicamente** - componentes e capacidades especificas
-4. **Exemplos praticos** - casos de uso reais
-
-### Exemplo de antes/depois
-
-**Antes:**
-> "User signup, login, password recovery and session management"
-
-**Depois:**
-> "Complete user authentication system including email/password registration with validation, secure login with session tokens, password recovery via email, optional social login (Google, GitHub), email verification flow, rate limiting on auth endpoints, and session management with automatic token refresh. Essential for any SaaS that needs to identify individual users, protect private data, or offer personalized experiences. Includes signup forms, login pages, forgot password flow, and account verification. Use this feature when the product requires user accounts, saved preferences, or any form of personalized content."
+1. **SELECT own** - usuario ve complexidade dos seus reports (via wizard chain: `report_id IN (SELECT id FROM tb_pms_reports WHERE wizard_id IN (...))`)
+2. **INSERT own** - usuario insere para seus reports
+3. **UPDATE own** - usuario atualiza seus registros
+4. **DELETE own** - usuario deleta seus registros
+5. **SELECT shared** - reports compartilhados (share_enabled + share_token) visiveis publicamente
+6. **SELECT hero_users** - hero users veem todos
 
 ### Execucao
 
-- 1 operacao de UPDATE com todas as 28 descricoes usando o insert tool (ferramenta de dados, nao migracao)
-- Sem alteracao de schema
-- Sem alteracao de front-end
+1. Migration SQL com CREATE TABLE, FK, CHECK, RLS enable + policies
+2. `types.ts` atualiza automaticamente apos migration
 
