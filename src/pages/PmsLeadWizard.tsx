@@ -142,14 +142,6 @@ const PmsLeadWizard = () => {
 
   const handleBack = () => setStep((s) => Math.max(s - 1, 0));
 
-  // Auto-advance for card-selection steps when no "other" is selected
-  const autoAdvance = (field: keyof FormData) => (value: string) => {
-    set(field)(value);
-    if (value !== "other") {
-      setTimeout(() => setStep((s) => s + 1), 350);
-    }
-  };
-
   const renderStep = () => {
     switch (step) {
       case 0: return <WelcomeStep onStart={() => setStep(1)} />;
@@ -157,14 +149,14 @@ const PmsLeadWizard = () => {
       case 2: return <EmailStep value={form.email} onChange={set("email")} />;
       case 3: return <PhoneStep value={form.phone} onChange={set("phone")} />;
       case 4: return <LinkedInStep value={form.linkedin} onChange={set("linkedin")} />;
-      case 5: return <CountryStep value={form.country} otherValue={form.countryOther} onChange={autoAdvance("country")} onOtherChange={set("countryOther")} />;
-      case 6: return <RoleStep value={form.role} otherValue={form.roleOther} onChange={autoAdvance("role")} onOtherChange={set("roleOther")} />;
-      case 7: return <SaasTypeStep value={form.saasType} otherValue={form.saasTypeOther} onChange={autoAdvance("saasType")} onOtherChange={set("saasTypeOther")} />;
-      case 8: return <IndustryStep value={form.industry} otherValue={form.industryOther} onChange={autoAdvance("industry")} onOtherChange={set("industryOther")} />;
+      case 5: return <CountryStep value={form.country} otherValue={form.countryOther} onChange={set("country")} onOtherChange={set("countryOther")} />;
+      case 6: return <RoleStep value={form.role} otherValue={form.roleOther} onChange={set("role")} onOtherChange={set("roleOther")} />;
+      case 7: return <SaasTypeStep value={form.saasType} otherValue={form.saasTypeOther} onChange={set("saasType")} onOtherChange={set("saasTypeOther")} />;
+      case 8: return <IndustryStep value={form.industry} otherValue={form.industryOther} onChange={set("industry")} onOtherChange={set("industryOther")} />;
       case 9: return <DescriptionStep value={form.description} onChange={set("description")} saasType={form.saasType} industry={form.industry} />;
       case 10: return <SaasNameStep value={form.saasName} onChange={set("saasName")} description={form.description} saasType={form.saasType} industry={form.industry} />;
       case 11: return <LogoStep value={form.saasLogo} onChange={set("saasLogo")} description={form.description} saasName={form.saasName} saasType={form.saasType} industry={form.industry} />;
-      case 12: return <GeographicRegionStep value={form.geographicRegion} otherValue={form.geographicRegionOther} onChange={autoAdvance("geographicRegion")} onOtherChange={set("geographicRegionOther")} />;
+      case 12: return <GeographicRegionStep value={form.geographicRegion} otherValue={form.geographicRegionOther} onChange={set("geographicRegion")} onOtherChange={set("geographicRegionOther")} />;
       case 13: return <ThankYouStep />;
       default: return null;
     }
