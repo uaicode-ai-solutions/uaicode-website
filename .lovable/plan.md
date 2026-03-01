@@ -1,24 +1,29 @@
 
 
-## Adicionar campo `support_days` na `tb_pms_mvp_tiers`
+## Adicionar campo `selected_feature_ids` na `tb_pms_reports_complexity`
 
-### Passo 1 - Migration (schema)
-Adicionar coluna `support_days` (integer, NOT NULL, default 45):
+### Alteracao
 
-```sql
-ALTER TABLE public.tb_pms_mvp_tiers
-  ADD COLUMN support_days integer NOT NULL DEFAULT 45;
-```
+Adicionar coluna `selected_feature_ids` (jsonb, default '[]') na tabela `tb_pms_reports_complexity` para armazenar os IDs das features selecionadas pela IA, referenciando os valores de `tb_pms_mvp_features.feature_id`.
 
-### Passo 2 - Atualizar dados por tier
-Usando o insert tool (UPDATE statements):
+### Migration SQL
 
 ```sql
-UPDATE public.tb_pms_mvp_tiers SET support_days = 45 WHERE tier_id = 'starter';
-UPDATE public.tb_pms_mvp_tiers SET support_days = 90 WHERE tier_id = 'enterprise';
-UPDATE public.tb_pms_mvp_tiers SET support_days = 120 WHERE tier_id = 'professional';
+ALTER TABLE public.tb_pms_reports_complexity
+  ADD COLUMN selected_feature_ids jsonb NOT NULL DEFAULT '[]'::jsonb;
 ```
 
-### Passo 3 - types.ts
-Atualizado automaticamente apos a migration com o novo campo `support_days`.
+### Exemplo de valor armazenado
+
+```json
+["auth_basic", "crud_operations", "dashboard_analytics", "api_integration"]
+```
+
+Cada string corresponde a um `feature_id` da tabela `tb_pms_mvp_features`.
+
+### Impacto
+
+- `src/integrations/supabase/types.ts` sera atualizado automaticamente com o novo campo
+- Registros existentes receberao `[]` como valor default (array vazio)
+- Nenhuma foreign key formal e necessaria pois o campo armazena um array de text IDs dentro de jsonb
 
