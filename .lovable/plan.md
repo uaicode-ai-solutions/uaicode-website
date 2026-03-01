@@ -1,31 +1,35 @@
 
 
-## Corrigir mascara de telefone ao trocar pais no PhoneInput
+## Corrigir PhoneInput: manter dial code fora do input e atualizar mascara
 
 ### Problema
 
-O componente `PhoneInput` usa as opcoes `disableDialCodeAndPrefix: true` e `disableDialCodePrefill: true` no hook `usePhoneInput`. Isso impede que a biblioteca `react-international-phone` atualize a formatacao/mascara do numero quando o usuario troca de pais.
+A correcao anterior removeu ambas as flags `disableDialCodeAndPrefix` e `disableDialCodePrefill`. Isso fez o codigo do pais (+55) aparecer dentro do campo de texto, duplicando a informacao que ja esta no botao seletor.
+
+### Causa raiz
+
+A flag `disableDialCodeAndPrefix` deve permanecer `true` para esconder o dial code do input. O problema original de mascara era causado pela combinacao com `disableDialCodePrefill`. Removendo apenas `disableDialCodePrefill`, a biblioteca consegue aplicar a mascara correta ao trocar de pais, sem exibir o dial code no campo.
 
 ### Solucao
 
 **Arquivo:** `src/components/ui/phone-input.tsx`
 
-Remover as duas opcoes `disableDialCodeAndPrefix` e `disableDialCodePrefill` da chamada ao `usePhoneInput`. Isso permite que a biblioteca gerencie o prefixo do codigo do pais e aplique a mascara correta automaticamente ao trocar de pais.
-
-Como o dial code passara a aparecer dentro do input, o placeholder sera ajustado para refletir apenas o formato do numero local (ex: "Phone number").
-
-Alteracao nas linhas 30-39:
+Restaurar `disableDialCodeAndPrefix: true` no hook `usePhoneInput`, mantendo `disableDialCodePrefill` removido:
 
 ```ts
 const { inputValue, handlePhoneValueChange, inputRef, country, setCountry } = usePhoneInput({
   defaultCountry,
   value,
   countries: defaultCountries,
+  disableDialCodeAndPrefix: true,
   onChange: (data) => {
     onChange(data.phone);
   },
 });
 ```
 
-Isso e tudo -- uma remocao de 2 linhas de configuracao.
+Isso garante:
+- O dial code aparece apenas no botao seletor de pais (nao duplicado no input)
+- A mascara de formatacao atualiza ao trocar de pais
+- O valor salvo no banco continua sendo o E.164 completo (via `data.phone`)
 
