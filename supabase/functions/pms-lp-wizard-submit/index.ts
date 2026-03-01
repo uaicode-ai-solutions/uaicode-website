@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
             if (!webhookUrl! && parsed.nodes) {
               for (const node of parsed.nodes) {
                 if (node.type === "n8n-nodes-base.webhook" && node.parameters?.path) {
-                  webhookUrl = `https://n8n.uaicode.dev/webhook/${node.parameters.path}`;
+                  webhookUrl = `https://uaicode-n8n.ax5vln.easypanel.host/webhook/${node.parameters.path}`;
                   break;
                 }
               }
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
             console.error("Failed to parse webhook secret JSON:", e);
           }
         } else {
-          webhookUrl = `https://n8n.uaicode.dev/webhook/${webhookSecret}`;
+          webhookUrl = `https://uaicode-n8n.ax5vln.easypanel.host/webhook/${webhookSecret}`;
         }
 
         if (webhookUrl!) {
@@ -126,7 +126,9 @@ Deno.serve(async (req) => {
               tool_name: "call_new_report_requested",
               timestamp: new Date().toISOString(),
             }),
-          }).catch((err) => console.error("❌ Webhook call failed:", err));
+          })
+            .then((res) => console.log("✅ Webhook response:", res.status, res.statusText))
+            .catch((err) => console.error("❌ Webhook call failed:", err));
         }
       } else {
         console.warn("⚠️ WEBHOOK_PMS_LP_WIZARD_GENERATE_REPORT not configured");
