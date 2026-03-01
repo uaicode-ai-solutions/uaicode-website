@@ -58,7 +58,7 @@ const LeadWizardLayout = ({
       </header>
 
       {/* Content */}
-      <main className="flex-1 overflow-y-auto py-8 pb-24">
+      <main className="flex-1 overflow-y-auto py-8 pb-24 flex items-center justify-center">
         {children}
       </main>
 
