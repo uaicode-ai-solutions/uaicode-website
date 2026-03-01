@@ -30,7 +30,7 @@ interface Props {
 
 const IndustryStep = ({ value, otherValue, onChange, onOtherChange }: Props) => (
   <LeadWizardStep title="Which industry are you targeting?" subtitle="Select the primary industry for your product">
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto pr-1">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
       {industries.map((ind) => (
         <SelectableCard
           key={ind.id}

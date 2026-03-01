@@ -35,7 +35,7 @@ interface Props {
 
 const SaasTypeStep = ({ value, otherValue, onChange, onOtherChange }: Props) => (
   <LeadWizardStep title="What type of SaaS are you building?" subtitle="Select the category that best describes your product">
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-h-[50vh] overflow-y-auto pr-1">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {saasTypes.map((t) => (
         <SelectableCard
           key={t.id}
