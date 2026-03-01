@@ -1,51 +1,46 @@
 
 
-## LinkedIn step: prefixo fixo + input apenas do username
+## Corrigir URL do webhook n8n na edge function
 
-### O que muda
+### Problema
 
-No step "What's your LinkedIn?", o campo deixara de ser um input de URL livre. Em vez disso, tera um prefixo visual fixo `https://linkedin.com/in/` seguido de um input onde o usuario digita apenas o username.
+A edge function `pms-lp-wizard-submit` tem uma logica de fallback que usa o dominio antigo `https://n8n.uaicode.dev/webhook/` para construir a URL do webhook quando a secret `WEBHOOK_PMS_LP_WIZARD_GENERATE_REPORT` contem um JSON ou apenas o path. A URL correta e `https://uaicode-n8n.ax5vln.easypanel.host/webhook/...`.
 
-### Arquivo: `src/components/pms-lead-wizard/steps/LinkedInStep.tsx`
+### Solucao recomendada
 
-1. **Prefixo visual fixo**: Renderizar um container flex com um `<span>` contendo `https://linkedin.com/in/` estilizado como parte do campo (fundo levemente diferente, borda arredondada apenas a esquerda)
-2. **Input do username**: O `<Input>` recebe apenas o username (sem o prefixo), com placeholder `your_username`
-3. **Logica de valor**:
-   - O `value` prop vem como URL completa (ex: `https://linkedin.com/in/johndoe`)
-   - Ao exibir, extrair apenas o username (remover o prefixo)
-   - Ao salvar (`onChange`), concatenar o prefixo + username digitado
-   - Se o usuario apagar tudo, salvar string vazia (campo e opcional)
+A forma mais simples e segura de resolver e **atualizar a secret** `WEBHOOK_PMS_LP_WIZARD_GENERATE_REPORT` para conter a URL completa:
 
-### Exemplo visual
-
-```text
-[ https://linkedin.com/in/ |  johndoe          ]
-   (fixo, nao editavel)      (input editavel)
+```
+https://uaicode-n8n.ax5vln.easypanel.host/webhook/webhook-pms-lp-wizard-generate-report
 ```
 
-### Detalhes tecnicos
+Isso faz com que a condicao da linha 90 (`webhookSecret.startsWith("http")`) capture o valor diretamente, sem passar pelos fallbacks com dominio errado.
 
-```tsx
-const PREFIX = "https://linkedin.com/in/";
+### Adicionalmente: corrigir o dominio hardcoded nas edge functions
 
-const extractUsername = (url: string) => {
-  if (url.startsWith(PREFIX)) return url.slice(PREFIX.length);
-  return url;
-};
+Para evitar problemas futuros caso alguem use o formato JSON ou path, atualizar o dominio base nas duas edge functions afetadas:
 
-// No render:
-<div className="flex items-center ...">
-  <span className="...">https://linkedin.com/in/</span>
-  <Input
-    value={extractUsername(value)}
-    onChange={(e) => {
-      const username = e.target.value.trim();
-      onChange(username ? PREFIX + username : "");
-    }}
-    placeholder="your_username"
-  />
-</div>
+**Arquivo 1:** `supabase/functions/pms-lp-wizard-submit/index.ts`
+- Linha 106: trocar `https://n8n.uaicode.dev/webhook/` por `https://uaicode-n8n.ax5vln.easypanel.host/webhook/`
+- Linha 116: mesma troca
+
+**Arquivo 2:** `supabase/functions/pms-webhook-new-leads/index.ts`
+- Linha com `https://n8n.uaicode.dev/webhook/`: mesma troca
+
+### Tambem: melhorar logging do webhook
+
+Adicionar log da resposta do webhook para facilitar debug futuro (em vez de fire-and-forget silencioso):
+
+```typescript
+// Antes (fire-and-forget)
+fetch(webhookUrl, { ... }).catch((err) => console.error("Webhook failed:", err));
+
+// Depois (com logging)
+fetch(webhookUrl, { ... })
+  .then((res) => console.log("Webhook response:", res.status, res.statusText))
+  .catch((err) => console.error("Webhook failed:", err));
 ```
 
-Apenas o arquivo `LinkedInStep.tsx` sera modificado. Nenhum outro arquivo precisa de alteracao, pois o valor salvo continuara sendo a URL completa.
+### Acao imediata do usuario
 
+Verificar e atualizar a secret `WEBHOOK_PMS_LP_WIZARD_GENERATE_REPORT` no painel do Supabase para conter a URL completa correta. Isso resolve o problema independentemente das correcoes no codigo.
