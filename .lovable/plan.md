@@ -1,35 +1,24 @@
 
 
-## Criar tabela `tb_pms_reports_complexity`
+## Adicionar campo `support_days` na `tb_pms_mvp_tiers`
 
-### Schema
+### Passo 1 - Migration (schema)
+Adicionar coluna `support_days` (integer, NOT NULL, default 45):
 
-| Coluna | Tipo | Constraint |
-|--------|------|------------|
-| `id` | uuid | PK, default `gen_random_uuid()` |
-| `report_id` | uuid | NOT NULL, UNIQUE, FK -> `tb_pms_reports(id)` ON DELETE CASCADE |
-| `wizard_id` | uuid | NOT NULL (sem FK, valor copiado do report) |
-| `complexity_score` | integer | NOT NULL |
-| `complexity_classification` | text | NOT NULL, CHECK IN ('Low','Medium','High','Very High') |
-| `created_at` | timestamptz | default `now()` |
+```sql
+ALTER TABLE public.tb_pms_mvp_tiers
+  ADD COLUMN support_days integer NOT NULL DEFAULT 45;
+```
 
-- Apenas 1 foreign key: `report_id -> tb_pms_reports(id)`
-- `wizard_id` armazenado como campo denormalizado, sem FK para `tb_pms_wizard`
-- UNIQUE em `report_id` (1 registro por report)
+### Passo 2 - Atualizar dados por tier
+Usando o insert tool (UPDATE statements):
 
-### RLS Policies
+```sql
+UPDATE public.tb_pms_mvp_tiers SET support_days = 45 WHERE tier_id = 'starter';
+UPDATE public.tb_pms_mvp_tiers SET support_days = 90 WHERE tier_id = 'enterprise';
+UPDATE public.tb_pms_mvp_tiers SET support_days = 120 WHERE tier_id = 'professional';
+```
 
-Seguindo o padrao existente em `tb_pms_reports`:
-
-1. **SELECT own** - usuario ve complexidade dos seus reports (via wizard chain: `report_id IN (SELECT id FROM tb_pms_reports WHERE wizard_id IN (...))`)
-2. **INSERT own** - usuario insere para seus reports
-3. **UPDATE own** - usuario atualiza seus registros
-4. **DELETE own** - usuario deleta seus registros
-5. **SELECT shared** - reports compartilhados (share_enabled + share_token) visiveis publicamente
-6. **SELECT hero_users** - hero users veem todos
-
-### Execucao
-
-1. Migration SQL com CREATE TABLE, FK, CHECK, RLS enable + policies
-2. `types.ts` atualiza automaticamente apos migration
+### Passo 3 - types.ts
+Atualizado automaticamente apos a migration com o novo campo `support_days`.
 
