@@ -521,6 +521,7 @@ export type Database = {
           geographic_region_other: string | null
           id: string
           ideal_business_model: string | null
+          ideal_market_size: string | null
           ideal_target_audience: string | null
           ideal_target_customers: string | null
           industry: string | null
@@ -546,6 +547,7 @@ export type Database = {
           geographic_region_other?: string | null
           id?: string
           ideal_business_model?: string | null
+          ideal_market_size?: string | null
           ideal_target_audience?: string | null
           ideal_target_customers?: string | null
           industry?: string | null
@@ -571,6 +573,7 @@ export type Database = {
           geographic_region_other?: string | null
           id?: string
           ideal_business_model?: string | null
+          ideal_market_size?: string | null
           ideal_target_audience?: string | null
           ideal_target_customers?: string | null
           industry?: string | null
