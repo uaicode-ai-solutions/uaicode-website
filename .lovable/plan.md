@@ -1,30 +1,51 @@
 
 
-## Corrigir mascara de telefone: placeholder dinamico por pais
+## LinkedIn step: prefixo fixo + input apenas do username
 
-### Problema
+### O que muda
 
-Quando o usuario troca de pais no seletor, o campo de telefone continua mostrando a mascara/placeholder dos EUA "(555) 123-4567". A flag `disableDialCodeAndPrefix: true` funciona corretamente para esconder o dial code do input, mas o placeholder e estatico.
+No step "What's your LinkedIn?", o campo deixara de ser um input de URL livre. Em vez disso, tera um prefixo visual fixo `https://linkedin.com/in/` seguido de um input onde o usuario digita apenas o username.
 
-### Solucao
+### Arquivo: `src/components/pms-lead-wizard/steps/LinkedInStep.tsx`
 
-**Arquivo:** `src/components/ui/phone-input.tsx`
+1. **Prefixo visual fixo**: Renderizar um container flex com um `<span>` contendo `https://linkedin.com/in/` estilizado como parte do campo (fundo levemente diferente, borda arredondada apenas a esquerda)
+2. **Input do username**: O `<Input>` recebe apenas o username (sem o prefixo), com placeholder `your_username`
+3. **Logica de valor**:
+   - O `value` prop vem como URL completa (ex: `https://linkedin.com/in/johndoe`)
+   - Ao exibir, extrair apenas o username (remover o prefixo)
+   - Ao salvar (`onChange`), concatenar o prefixo + username digitado
+   - Se o usuario apagar tudo, salvar string vazia (campo e opcional)
 
-1. Importar `getActiveFormattingMask` da biblioteca `react-international-phone` para obter a mascara de formatacao do pais selecionado
-2. Criar uma funcao que gera um placeholder dinamico baseado no pais atual, convertendo a mascara (ex: `"(..) .....-...."` para Brasil) em um exemplo legivel
-3. Usar esse placeholder dinamico no campo `<Input>` ao inves do prop estatico
+### Exemplo visual
 
-**Arquivo:** `src/components/pms-lead-wizard/steps/PhoneStep.tsx`
-
-- Remover o `placeholder` hardcoded "(555) 123-4567", deixando o componente PhoneInput gerar o placeholder correto automaticamente
+```text
+[ https://linkedin.com/in/ |  johndoe          ]
+   (fixo, nao editavel)      (input editavel)
+```
 
 ### Detalhes tecnicos
 
-A funcao `getActiveFormattingMask` da biblioteca retorna a mascara de formatacao para um dado pais. Usaremos isso junto com `parseCountry` para:
+```tsx
+const PREFIX = "https://linkedin.com/in/";
 
-1. Obter a mascara do pais selecionado (ex: `"(..) .....-...."` para BR)
-2. Substituir os caracteres de mascara `.` por digitos de exemplo (0-9)
-3. Exibir como placeholder no input
+const extractUsername = (url: string) => {
+  if (url.startsWith(PREFIX)) return url.slice(PREFIX.length);
+  return url;
+};
 
-O `disableDialCodeAndPrefix: true` sera mantido -- ele funciona corretamente para esconder o codigo do pais no input. O problema era apenas o placeholder estatico.
+// No render:
+<div className="flex items-center ...">
+  <span className="...">https://linkedin.com/in/</span>
+  <Input
+    value={extractUsername(value)}
+    onChange={(e) => {
+      const username = e.target.value.trim();
+      onChange(username ? PREFIX + username : "");
+    }}
+    placeholder="your_username"
+  />
+</div>
+```
+
+Apenas o arquivo `LinkedInStep.tsx` sera modificado. Nenhum outro arquivo precisa de alteracao, pois o valor salvo continuara sendo a URL completa.
 
