@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
@@ -28,6 +29,12 @@ const LeadWizardLayout = ({
 }: LeadWizardLayoutProps) => {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
+  const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
+  }, [currentStep]);
 
   return (
     <div className="min-h-screen bg-background mesh-gradient flex flex-col">
@@ -58,7 +65,7 @@ const LeadWizardLayout = ({
       </header>
 
       {/* Content */}
-      <main className="flex-1 overflow-y-auto py-8 pb-24 flex items-center justify-center">
+      <main ref={mainRef} className="flex-1 overflow-y-auto py-8 pb-24 flex items-center justify-center">
         {children}
       </main>
 
