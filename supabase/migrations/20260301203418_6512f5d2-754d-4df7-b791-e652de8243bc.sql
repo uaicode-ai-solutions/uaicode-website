@@ -1,0 +1,1 @@
+ALTER TABLE public.tb_pms_lp_wizard ADD COLUMN ideal_market_size text;
