@@ -745,6 +745,7 @@ export type Database = {
           max_price_cents: number
           min_delivery_days: number
           min_price_cents: number
+          support_days: number
           tier_id: string
           tier_name: string
           traditional_max_cents: number
@@ -761,6 +762,7 @@ export type Database = {
           max_price_cents: number
           min_delivery_days: number
           min_price_cents: number
+          support_days?: number
           tier_id: string
           tier_name: string
           traditional_max_cents: number
@@ -777,6 +779,7 @@ export type Database = {
           max_price_cents?: number
           min_delivery_days?: number
           min_price_cents?: number
+          support_days?: number
           tier_id?: string
           tier_name?: string
           traditional_max_cents?: number

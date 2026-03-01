@@ -1,0 +1,1 @@
+ALTER TABLE public.tb_pms_mvp_tiers ADD COLUMN support_days integer NOT NULL DEFAULT 45;
