@@ -83,8 +83,8 @@ export function useMvpTier(selectedFeatures: string[] = []): MvpTierResult {
 
   // Calculate timeline
   const timeline = tier ? {
-    uaicode: { min: tier.min_days, max: tier.max_days },
-    traditional: { min: tier.traditional_min_days, max: tier.traditional_max_days },
+    uaicode: { min: tier.min_delivery_days, max: tier.max_delivery_days },
+    traditional: { min: tier.traditional_min_delivery_days, max: tier.traditional_max_delivery_days },
   } : {
     uaicode: { min: 0, max: 0 },
     traditional: { min: 0, max: 0 },

@@ -1629,10 +1629,11 @@ export interface MvpTier {
   max_price_cents: number;
   traditional_min_cents: number;
   traditional_max_cents: number;
-  min_days: number;
-  max_days: number;
-  traditional_min_days: number;
-  traditional_max_days: number;
+  min_delivery_days: number;
+  max_delivery_days: number;
+  traditional_min_delivery_days: number;
+  traditional_max_delivery_days: number;
+  support_days: number;
   description: string | null;
   is_active: boolean;
   created_at: string;
