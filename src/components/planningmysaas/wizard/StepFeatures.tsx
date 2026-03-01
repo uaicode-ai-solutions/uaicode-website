@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
 
 const TIER_WEIGHTS: Record<string, number> = {
   starter: 1,
-  growth: 2,
-  enterprise: 3,
+  enterprise: 2,
+  professional: 3,
 };
 
 const tiers = [
@@ -32,7 +32,7 @@ const tiers = [
     ],
   },
   {
-    id: "growth",
+    id: "enterprise",
     title: "Advanced Features",
     icon: TrendingUp,
     features: [
@@ -49,8 +49,8 @@ const tiers = [
     ],
   },
   {
-    id: "enterprise",
-    title: "Enterprise Features",
+    id: "professional",
+    title: "Professional Features",
     icon: Building,
     features: [
       { id: "ai", label: "AI/Machine Learning Capabilities", description: "Leverage AI for predictions, recommendations, and automation." },
@@ -82,8 +82,8 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
   useEffect(() => {
     const planToTier: Record<string, string> = {
       starter: "starter",
-      pro: "growth",
-      enterprise: "enterprise",
+      pro: "enterprise",
+      enterprise: "professional",
     };
     const defaultTier = planToTier[selectedPlan || ""] || "starter";
     setOpenTiers([defaultTier]);
@@ -141,8 +141,8 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
     let maxScore = 0;
     const selectedByTier: Record<string, number> = {
       starter: 0,
-      growth: 0,
       enterprise: 0,
+      professional: 0,
     };
 
     tiers.forEach((tier) => {
@@ -168,17 +168,17 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
   ) => {
     if (percentage === 0) return { label: "No Features", color: "gray" };
     
+    const hasProfessional = selectedByTier.professional > 0;
     const hasEnterprise = selectedByTier.enterprise > 0;
-    const hasGrowth = selectedByTier.growth > 0;
     
-    // Se tem Enterprise, mínimo é High
-    if (hasEnterprise) {
+    // Se tem Professional, mínimo é High
+    if (hasProfessional) {
       if (percentage > 80) return { label: "Very High", color: "red" };
       return { label: "High", color: "orange" };
     }
     
-    // Se tem Growth, mínimo é Medium
-    if (hasGrowth) {
+    // Se tem Enterprise, mínimo é Medium
+    if (hasEnterprise) {
       if (percentage > 80) return { label: "Very High", color: "red" };
       if (percentage > 60) return { label: "High", color: "orange" };
       return { label: "Medium", color: "yellow" };
@@ -197,11 +197,11 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
   ) => {
     if (actualPercentage === 0) return 0;
     
+    const hasProfessional = selectedByTier.professional > 0;
     const hasEnterprise = selectedByTier.enterprise > 0;
-    const hasGrowth = selectedByTier.growth > 0;
     
-    // Se tem Enterprise: zona 65% a 100%
-    if (hasEnterprise) {
+    // Se tem Professional: zona 65% a 100%
+    if (hasProfessional) {
       const zoneMin = 65;
       const zoneMax = 100;
       const zoneRange = zoneMax - zoneMin; // 35%
@@ -211,8 +211,8 @@ const StepFeatures = ({ data, onChange, selectedPlan }: StepFeaturesProps) => {
       return zoneMin + progressInZone;
     }
     
-    // Se tem Growth: zona 40% a 80%
-    if (hasGrowth) {
+    // Se tem Enterprise: zona 40% a 80%
+    if (hasEnterprise) {
       const zoneMin = 40;
       const zoneMax = 80;
       const zoneRange = zoneMax - zoneMin; // 40%

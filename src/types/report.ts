@@ -821,22 +821,22 @@ export const safeNumber = (value: unknown, fallback = 0): number => {
 
 export const FEATURE_TIERS = {
   starter: ['auth', 'profiles', 'crud', 'reporting', 'notifications', 'admin', 'responsive', 'security'],
-  growth: ['advancedAnalytics', 'apiIntegrations', 'payments', 'roles', 'search', 'fileUpload', 'realtime', 'workflows', 'advancedReporting', 'emailMarketing'],
-  enterprise: ['ai', 'dataAnalytics', 'multiTenant', 'sso', 'customIntegrations', 'apiManagement', 'collaboration', 'automation', 'customReporting', 'support']
+  enterprise: ['advancedAnalytics', 'apiIntegrations', 'payments', 'roles', 'search', 'fileUpload', 'realtime', 'workflows', 'advancedReporting', 'emailMarketing'],
+  professional: ['ai', 'dataAnalytics', 'multiTenant', 'sso', 'customIntegrations', 'apiManagement', 'collaboration', 'automation', 'customReporting', 'support']
 };
 
-export function countFeaturesByTier(selectedFeatures: string[]): { starter: number; growth: number; enterprise: number } {
+export function countFeaturesByTier(selectedFeatures: string[]): { starter: number; enterprise: number; professional: number } {
   return {
     starter: selectedFeatures.filter(f => FEATURE_TIERS.starter.includes(f)).length,
-    growth: selectedFeatures.filter(f => FEATURE_TIERS.growth.includes(f)).length,
     enterprise: selectedFeatures.filter(f => FEATURE_TIERS.enterprise.includes(f)).length,
+    professional: selectedFeatures.filter(f => FEATURE_TIERS.professional.includes(f)).length,
   };
 }
 
-export function determineMvpTier(selectedFeatures: string[]): 'starter' | 'growth' | 'enterprise' {
+export function determineMvpTier(selectedFeatures: string[]): 'starter' | 'enterprise' | 'professional' {
   const counts = countFeaturesByTier(selectedFeatures);
+  if (counts.professional > 0) return 'professional';
   if (counts.enterprise > 0) return 'enterprise';
-  if (counts.growth > 0) return 'growth';
   return 'starter';
 }
 

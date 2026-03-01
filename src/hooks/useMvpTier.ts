@@ -5,7 +5,7 @@ import { MvpTier, determineMvpTier, calculateDynamicPrice, countFeaturesByTier, 
 interface MvpTierResult {
   tier: MvpTier | null;
   allTiers: MvpTier[];
-  tierId: 'starter' | 'growth' | 'enterprise';
+  tierId: 'starter' | 'enterprise' | 'professional';
   pricing: {
     uaicode: { min: number; max: number; calculated: number };
     traditional: { min: number; max: number; calculated: number };
@@ -15,7 +15,7 @@ interface MvpTierResult {
     uaicode: { min: number; max: number };
     traditional: { min: number; max: number };
   };
-  featureCounts: { starter: number; growth: number; enterprise: number };
+  featureCounts: { starter: number; enterprise: number; professional: number };
   isLoading: boolean;
   error: Error | null;
 }
@@ -25,7 +25,7 @@ export function useMvpTier(selectedFeatures: string[] = []): MvpTierResult {
     queryKey: ["mvp-tiers"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("tb_pms_mvp_tier")
+        .from("tb_pms_mvp_tiers")
         .select("*")
         .eq("is_active", true)
         .order("min_price_cents", { ascending: true });
