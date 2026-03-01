@@ -1,6 +1,15 @@
+import { useEffect } from "react";
 import { CheckCircle, Mail, Clock } from "lucide-react";
+import { useConfetti } from "@/hooks/useConfetti";
 
-const ThankYouStep = () => (
+const ThankYouStep = () => {
+  const { fireConfetti } = useConfetti();
+
+  useEffect(() => {
+    fireConfetti();
+  }, []);
+
+  return (
   <div className="flex flex-col items-center justify-center text-center px-4 animate-step-enter max-w-lg mx-auto">
     <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mb-6">
       <CheckCircle className="w-8 h-8 text-accent" />
@@ -25,6 +34,7 @@ const ThankYouStep = () => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default ThankYouStep;
