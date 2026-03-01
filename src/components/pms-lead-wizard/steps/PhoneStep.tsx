@@ -12,7 +12,6 @@ const PhoneStep = ({ value, onChange }: Props) => (
       value={value}
       onChange={onChange}
       defaultCountry="us"
-      placeholder="(555) 123-4567"
     />
   </LeadWizardStep>
 );

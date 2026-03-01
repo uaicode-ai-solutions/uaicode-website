@@ -1,5 +1,13 @@
 import React from "react";
 import { usePhoneInput, defaultCountries, parseCountry, FlagImage, CountryIso2 } from "react-international-phone";
+
+/** Convert a country's format mask to a readable placeholder.
+ *  e.g. "(..) .....-...." → "(12) 34567-8901" */
+function maskToPlaceholder(format: string | undefined): string {
+  if (!format) return "";
+  let digit = 1;
+  return format.replace(/\./g, () => String(digit++ % 10));
+}
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -97,7 +105,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         type="tel"
         value={inputValue}
         onChange={handlePhoneValueChange}
-        placeholder={placeholder}
+        placeholder={maskToPlaceholder(country.format as string | undefined) || placeholder}
         disabled={disabled}
         className="flex-1 bg-background"
       />
