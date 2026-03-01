@@ -520,6 +520,9 @@ export type Database = {
           geographic_region: string | null
           geographic_region_other: string | null
           id: string
+          ideal_business_model: string | null
+          ideal_target_audience: string | null
+          ideal_target_customers: string | null
           industry: string | null
           industry_other: string | null
           linkedin: string | null
@@ -542,6 +545,9 @@ export type Database = {
           geographic_region?: string | null
           geographic_region_other?: string | null
           id?: string
+          ideal_business_model?: string | null
+          ideal_target_audience?: string | null
+          ideal_target_customers?: string | null
           industry?: string | null
           industry_other?: string | null
           linkedin?: string | null
@@ -564,6 +570,9 @@ export type Database = {
           geographic_region?: string | null
           geographic_region_other?: string | null
           id?: string
+          ideal_business_model?: string | null
+          ideal_target_audience?: string | null
+          ideal_target_customers?: string | null
           industry?: string | null
           industry_other?: string | null
           linkedin?: string | null
