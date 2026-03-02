@@ -1,14 +1,12 @@
 
-
-# Remover botão Email do Kyle
+# Remover banner "Ready to move forward?"
 
 ## Alteração
 
-**Arquivo:** `src/components/planningmysaas/dashboard/sections/MeetKyleSection.tsx`
+**Arquivo:** `src/components/planningmysaas/dashboard/businessplan/StrategicVerdictCard.tsx`
 
-- Remover o botão "Email" e o state/dialog associado (`emailDialogOpen`, `EmailKyleDialog`)
-- Remover o import do `Mail` (lucide-react) e do `EmailKyleDialog`
-- Manter apenas os botões "Chat" e "Call"
+Remover o bloco do banner CTA (linhas 111-118) que contém:
+- "Ready to move forward?"
+- "Schedule a call with our team to discuss your roadmap"
 
-Ficarão apenas 2 botões: Chat (outline) e Call (gold gradient).
-
+O card manterá todo o restante do conteúdo (verdict, score, pontos fortes/fracos).
