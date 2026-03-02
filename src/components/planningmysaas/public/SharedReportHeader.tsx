@@ -27,9 +27,8 @@ const SharedReportHeader = () => {
         <div className="max-w-5xl mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left side - Logo + Brand */}
-            <Link 
-              to="/planningmysaas"
-              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            <div 
+              className="flex items-center gap-3"
             >
               <img 
                 src={uaicodeLogo} 
@@ -41,7 +40,7 @@ const SharedReportHeader = () => {
                   Planning<span className="text-accent">My</span>SaaS
                 </span>
               </div>
-            </Link>
+            </div>
 
             {/* Right side - Kyle Avatar + Badge */}
             <div className="flex items-center gap-2">
