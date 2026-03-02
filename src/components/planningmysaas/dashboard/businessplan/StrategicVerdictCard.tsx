@@ -107,15 +107,6 @@ const StrategicVerdictCard: React.FC<StrategicVerdictCardProps> = ({
             </div>
           </div>
         )}
-
-        <div className="p-4 rounded-lg bg-accent/10 border border-accent/20 text-center">
-          <p className="text-sm text-muted-foreground mb-2">
-            Ready to move forward?
-          </p>
-          <p className="text-foreground font-medium">
-            Schedule a call with our team to discuss your roadmap
-          </p>
-        </div>
       </CardContent>
     </Card>
   );
