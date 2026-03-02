@@ -32,18 +32,11 @@ const SharedReportFooter = () => {
       <footer className="text-center py-6 border-t border-border/50">
         <p className="text-sm text-muted-foreground">
           Powered by{" "}
-          <Link 
-            to="/planningmysaas" 
-            className="text-accent hover:underline font-medium"
-          >
-            PlanningMySaaS
-          </Link>
-          {" "}|{" "}
           <a 
             href="https://uaicode.ai" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-accent hover:underline"
+            className="text-accent hover:underline font-medium"
           >
             uaicode.ai
           </a>
