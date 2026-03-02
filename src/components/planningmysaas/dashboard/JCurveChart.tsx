@@ -76,7 +76,15 @@ const calculateCumulativeFlow = (
   for (let m = 1; m <= month; m++) {
     const revenueGrowthFactor = m <= 12
       ? Math.pow(m / 12, 1.5)
-      : 1 + ((m - 12) * 0.025);
+      : (() => {
+          let factor = 1;
+          const baseRate = 0.06;
+          const decay = 0.002;
+          for (let i = 1; i <= m - 12; i++) {
+            factor *= (1 + Math.max(0.02, baseRate - i * decay));
+          }
+          return factor;
+        })();
 
     // Revenue uses adjusted MRR
     const monthlyRevenue = adjustedMrrMonth12 * revenueGrowthFactor;
