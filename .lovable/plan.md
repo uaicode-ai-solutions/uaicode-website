@@ -1,68 +1,46 @@
 
-# Criar Edge Function "pms-finalize-report"
 
-## Problema
+# Automatizar Finalizacao do Relatorio via Database Trigger
 
-O n8n preencheu todas as 12 secoes do relatorio com sucesso, mas nao executou o passo final de finalizacao. O registro ficou com:
-- Status: `step completed - call_get_mvp_business_plan` (deveria ser `completed`)
-- Sem `share_token`, `share_url`, `wizard_snapshot`, `marketing_snapshot`
-
-Anteriormente essa logica vivia dentro do orchestrator, mas foi removida quando simplificamos para "fire-and-forget".
+## Problema Atual
+O n8n preenche todas as secoes do relatorio e atualiza o status para `step completed - call_get_mvp_business_plan`, mas ninguem chama o `pms-finalize-report` para marcar como `completed` e gerar os snapshots/share_token.
 
 ## Solucao
+Criar um database trigger em `tb_pms_reports` que detecta quando o status muda para o padrao do ultimo step completado e automaticamente chama a Edge Function `pms-finalize-report`.
 
-Criar uma nova Edge Function `pms-finalize-report` que o n8n chamara como ultimo passo do workflow. Essa funcao:
+## Implementacao
 
-1. Recebe `{ wizard_id }` via POST
-2. Busca o wizard data de `tb_pms_lp_wizard` para gerar o `wizard_snapshot`
-3. Busca os dados de marketing de `tb_pms_mkt_tier` para calcular o `marketing_snapshot`
-4. Gera um `share_token` criptograficamente seguro (32 hex chars)
-5. Atualiza `tb_pms_reports` com:
-   - `status = "completed"`
-   - `share_token`
-   - `share_url` (usando dominio de producao)
-   - `share_enabled = true`
-   - `share_created_at`
-   - `wizard_snapshot`
-   - `marketing_snapshot`
-6. Retorna 200 com o share_url
+### 1. Criar funcao de trigger no banco
 
-## Arquivo novo
+Uma funcao PL/pgSQL que:
+- Detecta UPDATE na coluna `status` de `tb_pms_reports`
+- Verifica se o novo status contem `call_get_mvp_business_plan` e `completed` (case-insensitive)
+- Usa `net.http_post` (extensao pg_net ja disponivel) para chamar `pms-finalize-report` com o `wizard_id`
+- Inclui tratamento de erro para nao bloquear o UPDATE do n8n
 
-### `supabase/functions/pms-finalize-report/index.ts`
+### 2. Criar o trigger
 
-Logica principal:
+Trigger AFTER UPDATE na tabela `tb_pms_reports` que dispara apenas quando a coluna `status` muda.
+
+### Fluxo automatizado
 
 ```text
-POST { wizard_id }
+n8n atualiza status -> "step completed - call_get_mvp_business_plan"
   |
-  +-> Fetch tb_pms_lp_wizard (id, saas_name, market_type, industry, description)
-  +-> Fetch tb_pms_mkt_tier (active services, prices)
-  +-> Calculate marketing totals (uaicode vs traditional, savings)
-  +-> Generate share_token (crypto.getRandomValues)
-  +-> UPDATE tb_pms_reports SET status='completed', share_token, share_url, snapshots
-  |
-  <- 200 { success, share_url }
+  +-> Trigger dispara automaticamente
+  +-> Chama pms-finalize-report via HTTP
+  +-> Edge Function marca status = "completed"
+  +-> Gera share_token, snapshots, share_url
 ```
 
-## Configuracao
+### Detalhes tecnicos
 
-- Adicionar `[functions.pms-finalize-report]` com `verify_jwt = false` no `supabase/config.toml` (pois sera chamado pelo n8n com service role)
-- Usar `SUPABASE_SERVICE_ROLE_KEY` (ja existe nos secrets)
-- URL de producao: `https://uaicodewebsite.lovable.app`
+- Usa `net.http_post` (mesmo padrao ja usado em `notify_pms_user_created_webhook` e `notify_pms_wizard_created_webhook`)
+- URL: `https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-finalize-report`
+- Authorization: Bearer com anon key (mesmo padrao dos triggers existentes)
+- Body: `{ "wizard_id": NEW.wizard_id }`
+- Tratamento EXCEPTION para nao quebrar a transacao do n8n
 
-## Integracao com n8n
+### Nenhuma mudanca necessaria no n8n
+O n8n continua fazendo exatamente o que ja faz. O trigger cuida do resto automaticamente.
 
-Apos o deploy, o n8n deve adicionar um ultimo step no workflow:
-
-```text
-POST https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-finalize-report
-Headers:
-  Authorization: Bearer <SUPABASE_ANON_KEY>
-  Content-Type: application/json
-Body: { "wizard_id": "..." }
-```
-
-## Correcao do registro atual
-
-Alem de criar a funcao, vou chamar a funcao via curl para corrigir o registro existente do wizard `6f0f25c9-f93d-461b-9956-06da723599ad`.
