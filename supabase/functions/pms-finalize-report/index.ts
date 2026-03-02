@@ -20,11 +20,42 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { wizard_id } = await req.json();
+    let wizard_id: string | undefined;
+
+    // Parse body robustly - handle empty body, query params, etc.
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      try {
+        const body = await req.text();
+        if (body && body.trim().length > 0) {
+          const parsed = JSON.parse(body);
+          wizard_id = parsed.wizard_id;
+        }
+      } catch (parseErr) {
+        console.warn("⚠️ Failed to parse JSON body:", parseErr);
+      }
+    } else {
+      // Try reading as text anyway (n8n sometimes sends JSON without correct content-type)
+      try {
+        const body = await req.text();
+        if (body && body.trim().length > 0) {
+          const parsed = JSON.parse(body);
+          wizard_id = parsed.wizard_id;
+        }
+      } catch {
+        // ignore parse errors for non-JSON content types
+      }
+    }
+
+    // Fallback: check query params
+    if (!wizard_id) {
+      const url = new URL(req.url);
+      wizard_id = url.searchParams.get("wizard_id") || undefined;
+    }
 
     if (!wizard_id) {
       return new Response(
-        JSON.stringify({ error: "wizard_id is required" }),
+        JSON.stringify({ error: "wizard_id is required. Send as JSON body or query param." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
