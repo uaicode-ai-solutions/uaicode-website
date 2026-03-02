@@ -28,7 +28,7 @@ const MeetKyleSection = ({ wizardId }: MeetKyleSectionProps) => {
           {/* Texto */}
           <div className="flex-1 text-center sm:text-left">
             <p className="text-base font-medium text-foreground">
-              Have questions? <span className="text-gradient-gold font-bold">Talk to Kyle</span>
+              Have questions about your report? <span className="text-gradient-gold font-bold">Talk to Kyle</span>
             </p>
             <p className="text-sm text-muted-foreground">
               Your AI sales consultant, available 24/7
