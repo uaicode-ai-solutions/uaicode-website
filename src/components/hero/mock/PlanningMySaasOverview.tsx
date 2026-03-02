@@ -56,13 +56,6 @@ const getScoreColor = (score: number) => {
   return "bg-red-500";
 };
 
-const getVerdictStyle = (verdict: string | null) => {
-  if (!verdict) return "bg-white/[0.06] text-white/40";
-  const v = verdict.toLowerCase();
-  if (v.includes("proceed") || v.includes("strong")) return "bg-amber-500/15 text-amber-400 border-amber-500/20";
-  if (v.includes("caution") || v.includes("conditional")) return "bg-amber-500/15 text-amber-400 border-amber-500/20";
-  return "bg-red-500/15 text-red-400 border-red-500/20";
-};
 
 const getStatusStyle = (status: string) => {
   const s = status.trim().toLowerCase();
@@ -332,7 +325,7 @@ const PlanningMySaasOverview = () => {
           <p className="text-sm text-white/40">No reports found</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-white/[0.06] overflow-x-auto">
+        <div className="rounded-xl border border-white/[0.06] overflow-x-auto overflow-y-hidden">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-white/[0.06] bg-white/[0.02]">
@@ -343,7 +336,7 @@ const PlanningMySaasOverview = () => {
                 <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Industry</th>
                 <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Model</th>
                 <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Score</th>
-                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Verdict</th>
+                
                 <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Status</th>
                 <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Date</th>
               </tr>
@@ -365,13 +358,6 @@ const PlanningMySaasOverview = () => {
                           <div className={`h-full rounded-full ${getScoreColor(card.score)}`} style={{ width: `${card.score}%` }} />
                         </div>
                       </div>
-                    ) : (
-                      <span className="text-white/20">—</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    {card.verdict ? (
-                      <Badge className={`text-[10px] border ${getVerdictStyle(card.verdict)}`}>{card.verdict}</Badge>
                     ) : (
                       <span className="text-white/20">—</span>
                     )}
