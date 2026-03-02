@@ -1,21 +1,19 @@
 
-# Manter nome PlanningMySaaS mas remover links
 
-## Alteracoes
+# Adicionar banner do Kyle abaixo da Hero no relatório
 
-### 1. Rodape (SharedReportFooter.tsx)
-Recolocar o nome "PlanningMySaaS" no texto do rodape, mas como texto simples (sem link). Manter o link externo para uaicode.ai.
+## Alteração
 
-**Resultado:**
-```
-Powered by PlanningMySaaS | uaicode.ai
-```
-- "PlanningMySaaS" sera texto puro com estilo accent (sem `<Link>` ou `<a>`)
-- "uaicode.ai" continua como link externo
+**Arquivo:** `src/pages/hero/HeroReportPreview.tsx`
 
-### 2. Cabecalho (SharedReportHeader.tsx)
-O logo + nome "PlanningMySaaS" no cabecalho esta envolvido em um `<Link to="/planningmysaas">`. Trocar o `<Link>` por uma `<div>` simples, mantendo o visual identico mas sem navegacao.
+Adicionar o componente `MeetKyleSection` (já existente) logo abaixo do `<SharedReportHero />`. Este componente já tem os 3 botões (Email, Chat, Call) com os dialogs do Kyle incluídos.
 
-## Arquivos Alterados
-1. `src/components/planningmysaas/public/SharedReportFooter.tsx` -- recolocar "PlanningMySaaS" como texto, sem link
-2. `src/components/planningmysaas/public/SharedReportHeader.tsx` -- trocar `<Link>` do logo por `<div>`
+- Importar `MeetKyleSection` de `@/components/planningmysaas/dashboard/sections/MeetKyleSection`
+- Importar `useReportContext` (já usado) para obter o `wizardId`
+- Inserir `<MeetKyleSection wizardId={wizardId} />` entre `<SharedReportHero />` e `<BusinessPlanTab />`
+- Obter `wizardId` do `useReportContext()` no componente `HeroReportContent`
+
+O texto do banner existente já diz "Have questions? Talk to Kyle - Your AI sales consultant, available 24/7", que encaixa perfeitamente com o pedido de ajudar com dúvidas sobre o relatório ou agendar a call.
+
+## Arquivo Alterado
+1. `src/pages/hero/HeroReportPreview.tsx` -- adicionar MeetKyleSection após SharedReportHero
