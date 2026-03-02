@@ -37,7 +37,7 @@ const getWebhookUrl = (): string => {
       if (parsed.nodes) {
         for (const node of parsed.nodes) {
           if (node.type === "n8n-nodes-base.webhook" && node.parameters?.path) {
-            return `https://uaicode-n8n.ax5vln.easypanel.host/webhook/${node.parameters.path}`;
+            return `https://n8n.uaicode.dev/webhook/${node.parameters.path}`;
           }
         }
       }
@@ -49,7 +49,7 @@ const getWebhookUrl = (): string => {
   }
 
   // Plain path ID
-  return `https://uaicode-n8n.ax5vln.easypanel.host/webhook/${webhookSecret}`;
+  return `https://n8n.uaicode.dev/webhook/${webhookSecret}`;
 };
 
 const generateShareToken = (): string => {
@@ -141,7 +141,15 @@ async function processReportSteps(wizard_id: string): Promise<void> {
           throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
 
-        await response.text();
+        const responseBody = await response.text();
+
+        // Log response body for debugging
+        console.log(`📦 Step ${tool.step} response (${responseBody.length} chars): ${responseBody.substring(0, 200)}`);
+
+        // Warning if response body suggests an error despite HTTP 200
+        if (responseBody && /error|fail|not.found/i.test(responseBody)) {
+          console.warn(`⚠️ Step ${tool.step} returned 200 but body suggests error: ${responseBody.substring(0, 300)}`);
+        }
 
         await supabase
           .from("tb_pms_reports")
@@ -149,6 +157,12 @@ async function processReportSteps(wizard_id: string): Promise<void> {
           .eq("wizard_id", wizard_id);
 
         console.log(`✅ ${statusCompleted}`);
+
+        // Delay between steps to allow n8n to finish writing to Supabase
+        if (i < TOOLS_SEQUENCE.length - 1) {
+          console.log(`⏳ Waiting 3s before next step...`);
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
       } catch (error: unknown) {
         const isTimeout = error instanceof Error && error.name === "AbortError";
         const errorMessage = isTimeout
