@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const SharedReportFooter = () => {
@@ -10,19 +10,19 @@ const SharedReportFooter = () => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="text-xl font-semibold text-foreground mb-2">
-              Want Your Own SaaS Validation Report?
+              Liked What You Saw? Let's Talk Strategy
             </h3>
             <p className="text-muted-foreground">
-              Get comprehensive market research, financial projections, and actionable insights for your SaaS idea.
+              Schedule a free consultation with our specialist to discuss your SaaS idea and next steps.
             </p>
           </div>
           <Button
             asChild
             className="gap-2 bg-accent hover:bg-accent/90 text-background font-semibold"
           >
-            <Link to="/planningmysaas">
-              Create Your Report
-              <ArrowRight className="h-4 w-4" />
+            <Link to="/booking">
+              Schedule a Call
+              <Calendar className="h-4 w-4" />
             </Link>
           </Button>
         </div>
