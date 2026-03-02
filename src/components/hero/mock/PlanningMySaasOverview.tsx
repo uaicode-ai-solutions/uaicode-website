@@ -110,7 +110,7 @@ const PlanningMySaasOverview = () => {
   const [industryFilter, setIndustryFilter] = useState("all");
   const [modelFilter, setModelFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 9;
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -332,60 +332,60 @@ const PlanningMySaasOverview = () => {
           <p className="text-sm text-white/40">No reports found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {paginated.map((card) => (
-            <div
-              key={card.reportId}
-              className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-colors space-y-3"
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-white truncate" title={card.saasName || "—"}>{card.saasName || "—"}</h3>
-                  <p className="text-xs text-white/60 truncate" title={card.fullName}>{card.fullName}</p>
-                  <p className="text-xs text-white/40 truncate" title={card.email}>{card.email}</p>
-                  {card.phone && <p className="text-xs text-white/40 truncate" title={card.phone}>{card.phone}</p>}
-                </div>
-                <Badge className={`text-[10px] shrink-0 ${getStatusStyle(card.status)}`}>
-                  {card.status.trim().toLowerCase() === "completed" ? "Completed" : card.status.toLowerCase().includes("fail") ? "Failed" : "Pending"}
-                </Badge>
-              </div>
-
-              {/* Details */}
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-white/30">
-                {card.country && <span>{card.country}</span>}
-                {card.region && <span>· {card.region}</span>}
-                {card.industry && <span>· {card.industry}</span>}
-                {card.businessModel && <span>· {card.businessModel}</span>}
-              </div>
-
-              {/* Score */}
-              {card.score !== null ? (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/40">Viability Score</span>
-                    <span className="text-sm font-bold text-white font-mono">{card.score}%</span>
-                  </div>
-                  <Progress value={card.score} className="h-1.5 bg-white/[0.06]" indicatorClassName={getScoreColor(card.score)} />
-                </div>
-              ) : (
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/40">Viability Score</span>
-                  <span className="text-xs text-white/20">—</span>
-                </div>
-              )}
-
-              {/* Verdict + Date */}
-              <div className="flex items-center justify-between pt-1">
-                {card.verdict ? (
-                  <Badge className={`text-[10px] border ${getVerdictStyle(card.verdict)}`}>{card.verdict}</Badge>
-                ) : (
-                  <span />
-                )}
-                <span className="text-[10px] text-white/30">{formatDate(card.createdAt)}</span>
-              </div>
-            </div>
-          ))}
+        <div className="rounded-xl border border-white/[0.06] overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">SaaS Name</th>
+                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Name</th>
+                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Email</th>
+                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Country / Region</th>
+                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Industry</th>
+                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Model</th>
+                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Score</th>
+                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Verdict</th>
+                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Status</th>
+                <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map((card) => (
+                <tr key={card.reportId} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.04] transition-colors">
+                  <td className="px-3 py-2.5 text-white font-medium truncate max-w-[140px]" title={card.saasName || "—"}>{card.saasName || "—"}</td>
+                  <td className="px-3 py-2.5 text-white/70 truncate max-w-[120px]" title={card.fullName}>{card.fullName}</td>
+                  <td className="px-3 py-2.5 text-white/50 truncate max-w-[160px]" title={card.email}>{card.email}</td>
+                  <td className="px-3 py-2.5 text-white/50 whitespace-nowrap">{[card.country, card.region].filter(Boolean).join(" / ") || "—"}</td>
+                  <td className="px-3 py-2.5 text-white/50 truncate max-w-[120px]" title={card.industry || "—"}>{card.industry || "—"}</td>
+                  <td className="px-3 py-2.5 text-white/50 truncate max-w-[100px]" title={card.businessModel || "—"}>{card.businessModel || "—"}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">
+                    {card.score !== null ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-mono font-bold">{card.score}%</span>
+                        <div className="w-12 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                          <div className={`h-full rounded-full ${getScoreColor(card.score)}`} style={{ width: `${card.score}%` }} />
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-white/20">—</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5">
+                    {card.verdict ? (
+                      <Badge className={`text-[10px] border ${getVerdictStyle(card.verdict)}`}>{card.verdict}</Badge>
+                    ) : (
+                      <span className="text-white/20">—</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <Badge className={`text-[10px] ${getStatusStyle(card.status)}`}>
+                      {card.status.trim().toLowerCase() === "completed" ? "Completed" : card.status.toLowerCase().includes("fail") ? "Failed" : "Pending"}
+                    </Badge>
+                  </td>
+                  <td className="px-3 py-2.5 text-white/30 whitespace-nowrap">{formatDate(card.createdAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
