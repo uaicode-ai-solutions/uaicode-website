@@ -1,17 +1,14 @@
 
 
-# Remover Kyle do Cabeçalho
+# Remover botão Email do Kyle
 
 ## Alteração
 
-**Arquivo:** `src/components/planningmysaas/public/SharedReportHeader.tsx`
+**Arquivo:** `src/components/planningmysaas/dashboard/sections/MeetKyleSection.tsx`
 
-Remover do cabeçalho:
-- O avatar do Kyle com o dropdown (Email, Chat, Call)
-- O badge "Ask Kyle"
-- Os 3 dialogs (KyleConsultantDialog, KyleChatDialog, EmailKyleDialog)
-- Os states associados (kyleDialogOpen, kyleChatDialogOpen, emailKyleDialogOpen)
-- Os imports do kyleAvatar, dos dialogs, e dos ícones (Mail, MessageSquare, Phone)
+- Remover o botão "Email" e o state/dialog associado (`emailDialogOpen`, `EmailKyleDialog`)
+- Remover o import do `Mail` (lucide-react) e do `EmailKyleDialog`
+- Manter apenas os botões "Chat" e "Call"
 
-O cabeçalho ficará apenas com o logo + nome "PlanningMySaaS" à esquerda, sem nada à direita (ou apenas o container vazio).
+Ficarão apenas 2 botões: Chat (outline) e Call (gold gradient).
 
