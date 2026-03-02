@@ -1,19 +1,21 @@
 
-# Atualizar Rodapé do Relatório
+# Manter nome PlanningMySaaS mas remover links
 
-## Alteração
-**Arquivo:** `src/components/planningmysaas/public/SharedReportFooter.tsx`
+## Alteracoes
 
-Substituir o texto "Powered by PlanningMySaaS" (com link para `/planningmysaas`) por "Powered by UAICode" mantendo apenas o link externo para `uaicode.ai`. Remover o link interno para a rota antiga.
+### 1. Rodape (SharedReportFooter.tsx)
+Recolocar o nome "PlanningMySaaS" no texto do rodape, mas como texto simples (sem link). Manter o link externo para uaicode.ai.
 
-**Antes:**
+**Resultado:**
 ```
 Powered by PlanningMySaaS | uaicode.ai
 ```
+- "PlanningMySaaS" sera texto puro com estilo accent (sem `<Link>` ou `<a>`)
+- "uaicode.ai" continua como link externo
 
-**Depois:**
-```
-Powered by uaicode.ai
-```
+### 2. Cabecalho (SharedReportHeader.tsx)
+O logo + nome "PlanningMySaaS" no cabecalho esta envolvido em um `<Link to="/planningmysaas">`. Trocar o `<Link>` por uma `<div>` simples, mantendo o visual identico mas sem navegacao.
 
-O link para `uaicode.ai` continua abrindo em nova aba. O separador "|" e o link para `/planningmysaas` serão removidos.
+## Arquivos Alterados
+1. `src/components/planningmysaas/public/SharedReportFooter.tsx` -- recolocar "PlanningMySaaS" como texto, sem link
+2. `src/components/planningmysaas/public/SharedReportHeader.tsx` -- trocar `<Link>` do logo por `<div>`
