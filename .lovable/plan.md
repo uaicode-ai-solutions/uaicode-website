@@ -1,12 +1,17 @@
 
-# Remover banner "Ready to move forward?"
+# Adicionar botão "Voltar ao Topo" nas páginas PMS
 
 ## Alteração
 
-**Arquivo:** `src/components/planningmysaas/dashboard/businessplan/StrategicVerdictCard.tsx`
+Reutilizar o componente `BackToTopButton` (já existente em `src/components/blog/BackToTopButton.tsx`) nas páginas que precisam dele.
 
-Remover o bloco do banner CTA (linhas 111-118) que contém:
-- "Ready to move forward?"
-- "Schedule a call with our team to discuss your roadmap"
+**Arquivo:** `src/pages/PmsDashboard.tsx`
+- Importar e adicionar `<BackToTopButton />` no final do JSX
 
-O card manterá todo o restante do conteúdo (verdict, score, pontos fortes/fracos).
+**Arquivo:** `src/pages/PmsSharedReport.tsx`
+- Importar e adicionar `<BackToTopButton />` no final do JSX
+
+**Arquivo:** `src/pages/hero/HeroReportPreview.tsx`
+- Importar e adicionar `<BackToTopButton />` dentro do componente `HeroReportContent`
+
+O componente já existe e funciona: aparece ao scrollar 300px, com animação suave de volta ao topo.
