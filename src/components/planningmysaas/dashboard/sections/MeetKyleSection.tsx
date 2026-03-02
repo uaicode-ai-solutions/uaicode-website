@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Mail, MessageSquare, Phone } from "lucide-react";
+import { MessageSquare, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import kyleAvatar from "@/assets/kyle-avatar.webp";
 import KyleConsultantDialog from "../KyleConsultantDialog";
 import KyleChatDialog from "../KyleChatDialog";
-import EmailKyleDialog from "../EmailKyleDialog";
 
 interface MeetKyleSectionProps {
   wizardId: string | undefined;
@@ -14,7 +13,6 @@ interface MeetKyleSectionProps {
 const MeetKyleSection = ({ wizardId }: MeetKyleSectionProps) => {
   const [kyleDialogOpen, setKyleDialogOpen] = useState(false);
   const [kyleChatDialogOpen, setKyleChatDialogOpen] = useState(false);
-  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
   return (
     <section className="py-6">
@@ -39,16 +37,7 @@ const MeetKyleSection = ({ wizardId }: MeetKyleSectionProps) => {
           
           {/* Botões Compactos */}
           <div className="flex gap-2">
-            <Button 
-              onClick={() => setEmailDialogOpen(true)} 
-              variant="outline" 
-              size="sm"
-              className="gap-2 border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/50"
-            >
-              <Mail className="h-4 w-4" />
-              <span className="hidden sm:inline">Email</span>
-            </Button>
-            <Button 
+            <Button
               onClick={() => setKyleChatDialogOpen(true)} 
               variant="outline" 
               size="sm"
@@ -79,10 +68,6 @@ const MeetKyleSection = ({ wizardId }: MeetKyleSectionProps) => {
         open={kyleChatDialogOpen} 
         onOpenChange={setKyleChatDialogOpen}
         wizardId={wizardId}
-      />
-      <EmailKyleDialog 
-        open={emailDialogOpen} 
-        onOpenChange={setEmailDialogOpen}
       />
     </section>
   );
