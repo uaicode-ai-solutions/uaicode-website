@@ -1,46 +1,28 @@
 
 
-# Automatizar Finalizacao do Relatorio via Database Trigger
+# Remover Database Trigger de Auto-Finalizacao
 
-## Problema Atual
-O n8n preenche todas as secoes do relatorio e atualiza o status para `step completed - call_get_mvp_business_plan`, mas ninguem chama o `pms-finalize-report` para marcar como `completed` e gerar os snapshots/share_token.
+## O que sera feito
 
-## Solucao
-Criar um database trigger em `tb_pms_reports` que detecta quando o status muda para o padrao do ultimo step completado e automaticamente chama a Edge Function `pms-finalize-report`.
+Criar uma migration SQL para remover o trigger e a funcao que foram criados anteriormente, ja que a finalizacao sera chamada diretamente pelo n8n.
 
-## Implementacao
+## SQL da migration
 
-### 1. Criar funcao de trigger no banco
-
-Uma funcao PL/pgSQL que:
-- Detecta UPDATE na coluna `status` de `tb_pms_reports`
-- Verifica se o novo status contem `call_get_mvp_business_plan` e `completed` (case-insensitive)
-- Usa `net.http_post` (extensao pg_net ja disponivel) para chamar `pms-finalize-report` com o `wizard_id`
-- Inclui tratamento de erro para nao bloquear o UPDATE do n8n
-
-### 2. Criar o trigger
-
-Trigger AFTER UPDATE na tabela `tb_pms_reports` que dispara apenas quando a coluna `status` muda.
-
-### Fluxo automatizado
-
-```text
-n8n atualiza status -> "step completed - call_get_mvp_business_plan"
-  |
-  +-> Trigger dispara automaticamente
-  +-> Chama pms-finalize-report via HTTP
-  +-> Edge Function marca status = "completed"
-  +-> Gera share_token, snapshots, share_url
+```sql
+DROP TRIGGER IF EXISTS trg_pms_report_auto_finalize ON public.tb_pms_reports;
+DROP FUNCTION IF EXISTS public.notify_pms_report_finalize();
 ```
 
-### Detalhes tecnicos
+## Configuracao no n8n
 
-- Usa `net.http_post` (mesmo padrao ja usado em `notify_pms_user_created_webhook` e `notify_pms_wizard_created_webhook`)
-- URL: `https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-finalize-report`
-- Authorization: Bearer com anon key (mesmo padrao dos triggers existentes)
-- Body: `{ "wizard_id": NEW.wizard_id }`
-- Tratamento EXCEPTION para nao quebrar a transacao do n8n
+Adicionar um node **HTTP Request** como ultimo step do workflow:
 
-### Nenhuma mudanca necessaria no n8n
-O n8n continua fazendo exatamente o que ja faz. O trigger cuida do resto automaticamente.
+- **Method**: POST
+- **URL**: `https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-finalize-report`
+- **Headers**:
+  - `Authorization`: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg`
+  - `Content-Type`: `application/json`
+- **Body (JSON)**: `{ "wizard_id": "{{ $json.wizard_id }}" }`
+
+Ajuste o caminho da variavel `wizard_id` conforme o seu workflow (pode ser `{{ $('Set Variables').item.json.wizard_id }}` ou similar).
 
