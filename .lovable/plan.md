@@ -1,33 +1,68 @@
 
-# Simplificar Orchestrador LP: Chamada Unica ao n8n
+# Criar Edge Function "pms-finalize-report"
 
-## Contexto
+## Problema
 
-O orchestrador atual (`pms-orchestrate-lp-report`) faz 15 chamadas sequenciais ao webhook do n8n, uma para cada step. A nova abordagem delega todo o controle de fluxo ao n8n -- o Edge Function faz apenas **uma unica chamada** passando o `wizard_id`.
+O n8n preencheu todas as 12 secoes do relatorio com sucesso, mas nao executou o passo final de finalizacao. O registro ficou com:
+- Status: `step completed - call_get_mvp_business_plan` (deveria ser `completed`)
+- Sem `share_token`, `share_url`, `wizard_snapshot`, `marketing_snapshot`
 
-## Alteracoes
+Anteriormente essa logica vivia dentro do orchestrator, mas foi removida quando simplificamos para "fire-and-forget".
 
-### Arquivo: `supabase/functions/pms-orchestrate-lp-report/index.ts`
+## Solucao
 
-Reescrever para:
+Criar uma nova Edge Function `pms-finalize-report` que o n8n chamara como ultimo passo do workflow. Essa funcao:
 
-1. **Remover** toda a logica de loop sequencial (`TOOLS_SEQUENCE`, `processReportSteps`, delays, shutdown listener)
-2. **Manter** o `getWebhookUrl()` para resolver a URL do webhook
-3. **Manter** CORS headers
-4. **Nova logica**: Uma unica chamada POST ao webhook com `{ wizard_id }`, fire-and-forget via `EdgeRuntime.waitUntil()`
-5. **Manter** tratamento de erro basico: se o fetch falhar, logar o erro (o n8n agora e responsavel por atualizar status no banco)
-6. **Remover** toda a logica de snapshots/share token pos-completacao (o n8n tambem vai controlar isso, ou podemos manter como um segundo webhook call -- mas pela sua instrucao, tudo fica no n8n)
+1. Recebe `{ wizard_id }` via POST
+2. Busca o wizard data de `tb_pms_lp_wizard` para gerar o `wizard_snapshot`
+3. Busca os dados de marketing de `tb_pms_mkt_tier` para calcular o `marketing_snapshot`
+4. Gera um `share_token` criptograficamente seguro (32 hex chars)
+5. Atualiza `tb_pms_reports` com:
+   - `status = "completed"`
+   - `share_token`
+   - `share_url` (usando dominio de producao)
+   - `share_enabled = true`
+   - `share_created_at`
+   - `wizard_snapshot`
+   - `marketing_snapshot`
+6. Retorna 200 com o share_url
 
-### Resultado final
+## Arquivo novo
 
-O Edge Function fica com ~60 linhas:
-- Recebe `wizard_id` do frontend
-- Faz um unico POST ao webhook n8n com `{ wizard_id }`
-- Retorna 202 imediatamente
-- O n8n controla todo o fluxo internamente (steps, status updates, snapshots, share token)
+### `supabase/functions/pms-finalize-report/index.ts`
 
-### Consideracao
+Logica principal:
 
-Os snapshots (`wizard_snapshot`, `marketing_snapshot`, `share_token`) que eram gerados no Edge Function apos todos os steps -- voce vai gerar isso no n8n tambem? Se sim, removo completamente. Se nao, posso manter uma segunda chamada pos-webhook para gerar os snapshots.
+```text
+POST { wizard_id }
+  |
+  +-> Fetch tb_pms_lp_wizard (id, saas_name, market_type, industry, description)
+  +-> Fetch tb_pms_mkt_tier (active services, prices)
+  +-> Calculate marketing totals (uaicode vs traditional, savings)
+  +-> Generate share_token (crypto.getRandomValues)
+  +-> UPDATE tb_pms_reports SET status='completed', share_token, share_url, snapshots
+  |
+  <- 200 { success, share_url }
+```
 
-**Assumindo que o n8n vai controlar tudo**, vou remover toda a logica de snapshots do Edge Function.
+## Configuracao
+
+- Adicionar `[functions.pms-finalize-report]` com `verify_jwt = false` no `supabase/config.toml` (pois sera chamado pelo n8n com service role)
+- Usar `SUPABASE_SERVICE_ROLE_KEY` (ja existe nos secrets)
+- URL de producao: `https://uaicodewebsite.lovable.app`
+
+## Integracao com n8n
+
+Apos o deploy, o n8n deve adicionar um ultimo step no workflow:
+
+```text
+POST https://ccjnxselfgdoeyyuziwt.supabase.co/functions/v1/pms-finalize-report
+Headers:
+  Authorization: Bearer <SUPABASE_ANON_KEY>
+  Content-Type: application/json
+Body: { "wizard_id": "..." }
+```
+
+## Correcao do registro atual
+
+Alem de criar a funcao, vou chamar a funcao via curl para corrigir o registro existente do wizard `6f0f25c9-f93d-461b-9956-06da723599ad`.
