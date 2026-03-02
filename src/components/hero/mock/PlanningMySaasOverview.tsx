@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { FileText, BarChart3, Globe, Building2, Search, Loader2, ChevronLeft, ChevronRight, Eraser } from "lucide-react";
+import { FileText, BarChart3, Globe, Building2, Search, Loader2, ChevronLeft, ChevronRight, Eraser, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -339,6 +339,7 @@ const PlanningMySaasOverview = () => {
                 
                 <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Status</th>
                 <th className="text-left px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Date</th>
+                <th className="text-center px-3 py-2.5 text-white/40 font-medium whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -368,6 +369,19 @@ const PlanningMySaasOverview = () => {
                     </Badge>
                   </td>
                   <td className="px-3 py-2.5 text-white/30 whitespace-nowrap">{formatDate(card.createdAt)}</td>
+                  <td className="px-3 py-2.5 text-center">
+                    {card.status.trim().toLowerCase() === "completed" ? (
+                      <button
+                        onClick={() => window.open(`/hero/report/${card.reportId}`, '_blank')}
+                        title="View report"
+                        className="p-1.5 rounded-lg hover:bg-white/[0.08] text-white/40 hover:text-amber-400 transition-colors"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <span className="text-white/10">—</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
