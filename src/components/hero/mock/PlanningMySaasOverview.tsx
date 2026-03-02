@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { FileText, Users, TrendingUp, BarChart3, Search, Loader2, ChevronLeft, ChevronRight, Eraser } from "lucide-react";
+import { FileText, BarChart3, Globe, Building2, Search, Loader2, ChevronLeft, ChevronRight, Eraser } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -11,15 +11,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface WizardRow {
+interface LpWizardRow {
   id: string;
-  saas_name: string;
-  client_email: string | null;
-  client_full_name: string | null;
-  client_phone: string | null;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  country: string | null;
+  geographic_region: string | null;
   industry: string | null;
-  created_at: string;
-  user_id: string;
+  industry_other: string | null;
+  ideal_business_model: string | null;
+  saas_name: string | null;
 }
 
 interface ReportRow {
@@ -32,13 +34,16 @@ interface ReportRow {
 }
 
 interface MergedCard {
-  wizardId: string;
   reportId: string;
-  saasName: string;
-  clientEmail: string | null;
-  clientFullName: string | null;
-  clientPhone: string | null;
+  wizardId: string;
+  saasName: string | null;
+  fullName: string;
+  email: string;
+  phone: string | null;
+  country: string | null;
+  region: string | null;
   industry: string | null;
+  businessModel: string | null;
   status: string;
   score: number | null;
   verdict: string | null;
@@ -66,61 +71,103 @@ const getStatusStyle = (status: string) => {
   return "bg-amber-500/15 text-amber-400";
 };
 
+const getMostFrequent = (arr: (string | null)[]): string => {
+  const counts: Record<string, number> = {};
+  for (const v of arr) {
+    if (v) {
+      counts[v] = (counts[v] || 0) + 1;
+    }
+  }
+  let max = 0;
+  let result = "—";
+  for (const [key, count] of Object.entries(counts)) {
+    if (count > max) {
+      max = count;
+      result = key;
+    }
+  }
+  return result;
+};
+
+const getDistinct = (arr: (string | null)[]): string[] => {
+  const set = new Set<string>();
+  for (const v of arr) {
+    if (v && v.trim()) set.add(v.trim());
+  }
+  return Array.from(set).sort();
+};
+
 const PlanningMySaasOverview = () => {
-  const [wizards, setWizards] = useState<WizardRow[]>([]);
+  const [lpWizards, setLpWizards] = useState<LpWizardRow[]>([]);
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [countryFilter, setCountryFilter] = useState("all");
+  const [regionFilter, setRegionFilter] = useState("all");
+  const [industryFilter, setIndustryFilter] = useState("all");
+  const [modelFilter, setModelFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 9;
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [wizardRes, reportRes] = await Promise.all([
-        supabase.from("tb_pms_wizard").select("id, saas_name, client_email, client_full_name, client_phone, industry, created_at, user_id").order("created_at", { ascending: false }),
+      const [reportRes, lpRes] = await Promise.all([
         supabase.from("tb_pms_reports").select("id, wizard_id, status, hero_score_section, summary_section, created_at").order("created_at", { ascending: false }),
+        supabase.from("tb_pms_lp_wizard").select("id, full_name, email, phone, country, geographic_region, industry, industry_other, ideal_business_model, saas_name"),
       ]);
-      setWizards(wizardRes.data || []);
       setReports(reportRes.data || []);
+      setLpWizards(lpRes.data || []);
       setLoading(false);
     };
     fetchData();
   }, []);
 
   const cards: MergedCard[] = useMemo(() => {
-    const reportMap = new Map<string, ReportRow>();
-    for (const r of reports) {
-      if (!reportMap.has(r.wizard_id)) reportMap.set(r.wizard_id, r);
-    }
+    const lpMap = new Map<string, LpWizardRow>();
+    for (const w of lpWizards) lpMap.set(w.id, w);
 
-    return wizards
-      .filter((w) => reportMap.has(w.id))
-      .map((w) => {
-        const r = reportMap.get(w.id)!;
+    return reports
+      .filter((r) => lpMap.has(r.wizard_id))
+      .map((r) => {
+        const w = lpMap.get(r.wizard_id)!;
         const score = r.hero_score_section?.overall_score ?? r.hero_score_section?.score ?? null;
         const verdict = r.summary_section?.verdict ?? r.hero_score_section?.verdict ?? null;
+        const industry = w.industry_other || w.industry;
         return {
-          wizardId: w.id,
           reportId: r.id,
+          wizardId: w.id,
           saasName: w.saas_name,
-          clientEmail: w.client_email,
-          clientFullName: w.client_full_name,
-          clientPhone: w.client_phone,
-          industry: w.industry,
+          fullName: w.full_name,
+          email: w.email,
+          phone: w.phone,
+          country: w.country,
+          region: w.geographic_region,
+          industry,
+          businessModel: w.ideal_business_model,
           status: r.status,
           score: typeof score === "number" ? score : null,
           verdict: typeof verdict === "string" ? verdict : null,
           createdAt: r.created_at,
         };
       });
-  }, [wizards, reports]);
+  }, [reports, lpWizards]);
+
+  // Filter options
+  const filterOptions = useMemo(() => ({
+    countries: getDistinct(cards.map((c) => c.country)),
+    regions: getDistinct(cards.map((c) => c.region)),
+    industries: getDistinct(cards.map((c) => c.industry)),
+    models: getDistinct(cards.map((c) => c.businessModel)),
+  }), [cards]);
 
   const filtered = useMemo(() => {
     return cards.filter((c) => {
       const s = searchTerm.toLowerCase();
-      const matchSearch = !s || c.clientEmail?.toLowerCase().includes(s) || c.saasName.toLowerCase().includes(s) || c.clientFullName?.toLowerCase().includes(s);
+      const matchSearch = !s || c.fullName.toLowerCase().includes(s) || c.email.toLowerCase().includes(s) || (c.saasName?.toLowerCase().includes(s) ?? false);
       const matchStatus = statusFilter === "all" || (() => {
         const st = c.status.trim().toLowerCase();
         if (statusFilter === "completed") return st === "completed";
@@ -128,9 +175,13 @@ const PlanningMySaasOverview = () => {
         if (statusFilter === "pending") return st !== "completed" && !st.includes("fail");
         return true;
       })();
-      return matchSearch && matchStatus;
+      const matchCountry = countryFilter === "all" || c.country === countryFilter;
+      const matchRegion = regionFilter === "all" || c.region === regionFilter;
+      const matchIndustry = industryFilter === "all" || c.industry === industryFilter;
+      const matchModel = modelFilter === "all" || c.businessModel === modelFilter;
+      return matchSearch && matchStatus && matchCountry && matchRegion && matchIndustry && matchModel;
     });
-  }, [cards, searchTerm, statusFilter]);
+  }, [cards, searchTerm, statusFilter, countryFilter, regionFilter, industryFilter, modelFilter]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = useMemo(() => {
@@ -138,25 +189,36 @@ const PlanningMySaasOverview = () => {
     return filtered.slice(start, start + ITEMS_PER_PAGE);
   }, [filtered, currentPage]);
 
-  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, countryFilter, regionFilter, industryFilter, modelFilter]);
 
   // Stats
   const stats = useMemo(() => {
     const completed = cards.filter((c) => c.status.trim().toLowerCase() === "completed");
     const scores = completed.map((c) => c.score).filter((s): s is number => s !== null);
     const avgScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-    const uniqueUsers = new Set(wizards.map((w) => w.user_id)).size;
-    const completionRate = wizards.length ? Math.round((completed.length / cards.length) * 100) : 0;
+    const topIndustry = getMostFrequent(completed.map((c) => c.industry));
+    const topRegion = getMostFrequent(completed.map((c) => c.region));
     return [
       { label: "Total Reports", value: String(completed.length), icon: FileText },
       { label: "Avg. Score", value: scores.length ? `${avgScore}%` : "—", icon: BarChart3 },
-      { label: "Total Users", value: String(uniqueUsers), icon: Users },
-      { label: "Completion Rate", value: `${completionRate || 0}%`, icon: TrendingUp },
+      { label: "Top Industry", value: topIndustry, icon: Building2 },
+      { label: "Top Region", value: topRegion, icon: Globe },
     ];
-  }, [cards, wizards]);
+  }, [cards]);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+  const hasFilters = searchTerm || statusFilter !== "all" || countryFilter !== "all" || regionFilter !== "all" || industryFilter !== "all" || modelFilter !== "all";
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setCountryFilter("all");
+    setRegionFilter("all");
+    setIndustryFilter("all");
+    setModelFilter("all");
+  };
 
   return (
     <div className="space-y-6">
@@ -174,7 +236,7 @@ const PlanningMySaasOverview = () => {
                 </div>
                 <span className="text-sm text-white/50">{s.label}</span>
               </div>
-              <p className="text-2xl font-bold text-white font-mono">{s.value}</p>
+              <p className="text-2xl font-bold text-white font-mono truncate" title={s.value}>{s.value}</p>
             </div>
           );
         })}
@@ -186,14 +248,58 @@ const PlanningMySaasOverview = () => {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
           <input
             type="text"
-            placeholder="Search by email or project name..."
+            placeholder="Search name, email or project..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
           />
         </div>
+        {filterOptions.countries.length > 0 && (
+          <Select value={countryFilter} onValueChange={setCountryFilter}>
+            <SelectTrigger className="w-[140px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm">
+              <SelectValue placeholder="Country" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a1a2e] border-white/[0.08]">
+              <SelectItem value="all">All Countries</SelectItem>
+              {filterOptions.countries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
+        {filterOptions.regions.length > 0 && (
+          <Select value={regionFilter} onValueChange={setRegionFilter}>
+            <SelectTrigger className="w-[140px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm">
+              <SelectValue placeholder="Region" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a1a2e] border-white/[0.08]">
+              <SelectItem value="all">All Regions</SelectItem>
+              {filterOptions.regions.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
+        {filterOptions.industries.length > 0 && (
+          <Select value={industryFilter} onValueChange={setIndustryFilter}>
+            <SelectTrigger className="w-[140px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm">
+              <SelectValue placeholder="Industry" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a1a2e] border-white/[0.08]">
+              <SelectItem value="all">All Industries</SelectItem>
+              {filterOptions.industries.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
+        {filterOptions.models.length > 0 && (
+          <Select value={modelFilter} onValueChange={setModelFilter}>
+            <SelectTrigger className="w-[140px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm">
+              <SelectValue placeholder="Model" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a1a2e] border-white/[0.08]">
+              <SelectItem value="all">All Models</SelectItem>
+              {filterOptions.models.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[160px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm">
+          <SelectTrigger className="w-[140px] bg-white/[0.04] border-white/[0.06] text-white/70 text-sm">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent className="bg-[#1a1a2e] border-white/[0.08]">
@@ -204,8 +310,8 @@ const PlanningMySaasOverview = () => {
           </SelectContent>
         </Select>
         <button
-          onClick={() => { setSearchTerm(""); setStatusFilter("all"); }}
-          disabled={!searchTerm && statusFilter === "all"}
+          onClick={clearFilters}
+          disabled={!hasFilters}
           title="Clear filters"
           className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white/40 hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none"
         >
@@ -235,24 +341,23 @@ const PlanningMySaasOverview = () => {
               {/* Header */}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-white truncate" title={card.saasName}>{card.saasName}</h3>
-                  {card.clientFullName && (
-                    <p className="text-xs text-white/60 truncate" title={card.clientFullName}>{card.clientFullName}</p>
-                  )}
-                  <p className="text-xs text-white/40 truncate" title={card.clientEmail || ""}>{card.clientEmail || "—"}</p>
-                  {card.clientPhone && (
-                    <p className="text-xs text-white/40 truncate" title={card.clientPhone}>{card.clientPhone}</p>
-                  )}
+                  <h3 className="text-sm font-semibold text-white truncate" title={card.saasName || "—"}>{card.saasName || "—"}</h3>
+                  <p className="text-xs text-white/60 truncate" title={card.fullName}>{card.fullName}</p>
+                  <p className="text-xs text-white/40 truncate" title={card.email}>{card.email}</p>
+                  {card.phone && <p className="text-xs text-white/40 truncate" title={card.phone}>{card.phone}</p>}
                 </div>
                 <Badge className={`text-[10px] shrink-0 ${getStatusStyle(card.status)}`}>
                   {card.status.trim().toLowerCase() === "completed" ? "Completed" : card.status.toLowerCase().includes("fail") ? "Failed" : "Pending"}
                 </Badge>
               </div>
 
-              {/* Industry */}
-              {card.industry && (
-                <p className="text-xs text-white/30">{card.industry}</p>
-              )}
+              {/* Details */}
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-white/30">
+                {card.country && <span>{card.country}</span>}
+                {card.region && <span>· {card.region}</span>}
+                {card.industry && <span>· {card.industry}</span>}
+                {card.businessModel && <span>· {card.businessModel}</span>}
+              </div>
 
               {/* Score */}
               {card.score !== null ? (
