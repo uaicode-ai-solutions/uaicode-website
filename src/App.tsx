@@ -29,6 +29,7 @@ import HeroHome from "./pages/hero/HeroHome";
 import HeroDash from "./pages/hero/HeroDash";
 import HeroResetPassword from "./pages/hero/HeroResetPassword";
 import HeroProfile from "./pages/hero/HeroProfile";
+import HeroReportPreview from "./pages/hero/HeroReportPreview";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -85,6 +86,9 @@ const App = () => (
             } />
             <Route path="/hero/profile" element={
               <HeroRoute><HeroProfile /></HeroRoute>
+            } />
+            <Route path="/hero/report/:reportId" element={
+              <HeroRoute><HeroReportPreview /></HeroRoute>
             } />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
