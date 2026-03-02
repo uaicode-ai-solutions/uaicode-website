@@ -21,7 +21,7 @@ import {
   TargetCustomerCard,
   BusinessModelCard,
   FinancialProjectionsCard,
-  InvestmentAskCard,
+  
   StrategicVerdictCard,
 } from "../businessplan";
 
@@ -118,12 +118,7 @@ const BusinessPlanTab = () => {
         insight={aiInsights?.financial_insight}
       />
 
-      {/* 8. Investment Ask */}
-      <InvestmentAskCard
-        investment={investment}
-      />
-
-      {/* 9. Strategic Verdict - AI Generated */}
+      {/* 8. Strategic Verdict - AI Generated */}
       <StrategicVerdictCard
         verdict={businessPlan?.ai_strategic_verdict}
         recommendations={businessPlan?.ai_key_recommendations}
