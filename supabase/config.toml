@@ -130,6 +130,9 @@ verify_jwt = false
 [functions.pms-lp-wizard-submit]
 verify_jwt = false
 
+[functions.pms-finalize-report]
+verify_jwt = false
+
 [functions.pms-orchestrate-lp-report]
 verify_jwt = false
 
