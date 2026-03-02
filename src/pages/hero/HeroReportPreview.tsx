@@ -7,9 +7,10 @@ import SharedReportFooter from "@/components/planningmysaas/public/SharedReportF
 import SharedReportSkeleton from "@/components/planningmysaas/public/SharedReportSkeleton";
 import SharedReportError from "@/components/planningmysaas/public/SharedReportError";
 import BusinessPlanTab from "@/components/planningmysaas/dashboard/sections/BusinessPlanTab";
+import MeetKyleSection from "@/components/planningmysaas/dashboard/sections/MeetKyleSection";
 
 const HeroReportContent = () => {
-  const { reportData, isLoading, error } = useReportContext();
+  const { reportData, isLoading, error, wizardId } = useReportContext();
 
   if (isLoading) return <SharedReportSkeleton />;
   if (error || !reportData) return <SharedReportError />;
@@ -20,6 +21,7 @@ const HeroReportContent = () => {
       <main className="pt-24 pb-16">
         <div className="max-w-5xl mx-auto px-4 lg:px-6">
           <SharedReportHero />
+          <MeetKyleSection wizardId={wizardId} />
           <BusinessPlanTab />
           <div className="mt-12">
             <SharedReportFooter />
