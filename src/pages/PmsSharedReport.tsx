@@ -7,6 +7,7 @@ import SharedReportFooter from "@/components/planningmysaas/public/SharedReportF
 import SharedReportSkeleton from "@/components/planningmysaas/public/SharedReportSkeleton";
 import SharedReportError from "@/components/planningmysaas/public/SharedReportError";
 import BusinessPlanTab from "@/components/planningmysaas/dashboard/sections/BusinessPlanTab";
+import { BackToTopButton } from "@/components/blog/BackToTopButton";
 
 /**
  * Content component that uses the shared report context.
@@ -33,10 +34,11 @@ const SharedReportContent = () => {
           <SharedReportHero />
           <BusinessPlanTab />
           <div className="mt-12">
-            <SharedReportFooter />
+           <SharedReportFooter />
           </div>
         </div>
       </main>
+      <BackToTopButton />
     </div>
   );
 };

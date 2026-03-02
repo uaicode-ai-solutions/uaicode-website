@@ -8,6 +8,7 @@ import SharedReportSkeleton from "@/components/planningmysaas/public/SharedRepor
 import SharedReportError from "@/components/planningmysaas/public/SharedReportError";
 import BusinessPlanTab from "@/components/planningmysaas/dashboard/sections/BusinessPlanTab";
 import MeetKyleSection from "@/components/planningmysaas/dashboard/sections/MeetKyleSection";
+import { BackToTopButton } from "@/components/blog/BackToTopButton";
 
 const HeroReportContent = () => {
   const { reportData, isLoading, error, wizardId } = useReportContext();
@@ -28,6 +29,7 @@ const HeroReportContent = () => {
           </div>
         </div>
       </main>
+      <BackToTopButton />
     </div>
   );
 };
