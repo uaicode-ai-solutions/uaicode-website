@@ -65,6 +65,7 @@ const PmsLeadWizard = () => {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [wizardId, setWizardId] = useState<string | null>(null);
 
   const set = (field: keyof FormData) => (value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -123,6 +124,8 @@ const PmsLeadWizard = () => {
         throw new Error(err.error || "Submission failed");
       }
 
+      const data = await res.json();
+      setWizardId(data.id);
       setStep(TOTAL_STEPS - 1); // Thank you
     } catch (err: any) {
       toast.error(err.message || "Something went wrong. Please try again.");
@@ -157,7 +160,7 @@ const PmsLeadWizard = () => {
       case 10: return <SaasNameStep value={form.saasName} onChange={set("saasName")} description={form.description} saasType={form.saasType} industry={form.industry} />;
       case 11: return <LogoStep value={form.saasLogo} onChange={set("saasLogo")} description={form.description} saasName={form.saasName} saasType={form.saasType} industry={form.industry} />;
       case 12: return <GeographicRegionStep value={form.geographicRegion} otherValue={form.geographicRegionOther} onChange={set("geographicRegion")} onOtherChange={set("geographicRegionOther")} />;
-      case 13: return <ThankYouStep />;
+      case 13: return <ThankYouStep wizardId={wizardId} />;
       default: return null;
     }
   };

@@ -2,12 +2,29 @@ import { useEffect } from "react";
 import { CheckCircle, Mail, Clock } from "lucide-react";
 import { useConfetti } from "@/hooks/useConfetti";
 
-const ThankYouStep = () => {
+const SUPABASE_URL = "https://ccjnxselfgdoeyyuziwt.supabase.co";
+const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg";
+
+interface ThankYouStepProps {
+  wizardId?: string | null;
+}
+
+const ThankYouStep = ({ wizardId }: ThankYouStepProps) => {
   const { fireConfetti } = useConfetti();
 
   useEffect(() => {
     fireConfetti();
   }, []);
+
+  // Fire-and-forget: trigger orchestrator after mount
+  useEffect(() => {
+    if (!wizardId) return;
+    fetch(`${SUPABASE_URL}/functions/v1/pms-orchestrate-lp-report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: ANON_KEY },
+      body: JSON.stringify({ wizard_id: wizardId }),
+    }).catch(() => {}); // fire-and-forget
+  }, [wizardId]);
 
   return (
   <div className="flex flex-col items-center justify-center text-center px-4 animate-step-enter max-w-lg mx-auto">
