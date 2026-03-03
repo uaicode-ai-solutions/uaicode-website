@@ -92,21 +92,21 @@ const LpHowItWorks = () => (
 
             {/* Founder inline for Step 04 */}
             {step.isSpecial && (
-              <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center gap-4">
+              <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center gap-5">
                 <div className="relative flex-shrink-0">
                   <div className="absolute -inset-1 bg-gradient-to-br from-accent/30 to-accent/5 rounded-full blur-lg" />
                   <img
                     src={founderPhoto}
                     alt="Rafael Luz — Founder & CEO at Uaicode.ai"
                     loading="lazy"
-                    className="relative w-16 h-16 rounded-full object-cover border-2 border-accent/30"
+                    className="relative w-20 h-20 rounded-full object-cover border-2 border-accent/30"
                   />
                 </div>
                 <div className="text-center sm:text-left">
-                  <p className="text-sm font-semibold text-foreground">Rafael Luz</p>
-                  <p className="text-xs text-muted-foreground mb-1.5">Founder & CEO at Uaicode.ai</p>
-                  <Badge className="bg-accent/10 text-accent border-accent/20 gap-1 text-xs">
-                    <Award className="w-3 h-3" />
+                  <p className="text-base font-semibold text-foreground">Rafael Luz</p>
+                  <p className="text-sm text-muted-foreground mb-1.5">Founder & CEO at Uaicode.ai</p>
+                  <Badge className="bg-accent/10 text-accent border-accent/20 gap-1 text-sm">
+                    <Award className="w-4 h-4" />
                     Ex-Microsoft AI Solutions Architect
                   </Badge>
                 </div>
