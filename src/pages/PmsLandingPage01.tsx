@@ -13,7 +13,7 @@ const PmsLandingPage01 = () => (
       <LpHero />
       <LpProblem />
       <LpSolution />
-      <SuccessCases />
+      <SuccessCases showCTAs={false} />
       <LpHowItWorks />
     </div>
   </div>

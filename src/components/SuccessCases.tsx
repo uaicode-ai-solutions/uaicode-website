@@ -11,7 +11,7 @@ import robertoSilvaImg from "@/assets/testimonial-carlos-oliveira.webp?v=2";
 import emmaThompsonImg from "@/assets/testimonial-emma-thompson.webp";
 import jamesWilsonImg from "@/assets/testimonial-john-smith.webp?v=2";
 
-const SuccessCases = () => {
+const SuccessCases = ({ showCTAs = true }: { showCTAs?: boolean }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
 
@@ -185,26 +185,27 @@ const SuccessCases = () => {
           </div>
         </div>
 
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button 
-            size="lg"
-            onClick={() => window.open("https://uaicode.ai/booking", "_blank")}
-            className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
-          >
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-            Book My Free Strategy Call
-          </Button>
-          <Button 
-            size="lg"
-            variant="outline"
-            onClick={() => scrollToSection("eve")}
-            className="w-full sm:w-auto border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 transition-all duration-300"
-          >
-            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
-            Contact Eve
-          </Button>
-        </div>
+        {showCTAs && (
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              size="lg"
+              onClick={() => window.open("https://uaicode.ai/booking", "_blank")}
+              className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 glow-white"
+            >
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+              Book My Free Strategy Call
+            </Button>
+            <Button 
+              size="lg"
+              variant="outline"
+              onClick={() => scrollToSection("eve")}
+              className="w-full sm:w-auto border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold text-base sm:text-lg px-5 sm:px-8 py-4 sm:py-6 transition-all duration-300"
+            >
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
+              Contact Eve
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );
