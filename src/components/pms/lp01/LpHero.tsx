@@ -31,7 +31,7 @@ const LpHero = () => (
       </h1>
 
       {/* Sub-headline */}
-      <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+      <p className="text-lg md:text-xl text-muted-foreground max-w-4xl mx-auto mb-10 leading-relaxed">
         Answer a few questions. Get a complete market validation report, it's free!
       </p>
 
