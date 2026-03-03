@@ -13,8 +13,8 @@ const trustItems = [
 const LpHero = () => (
   <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-20">
     {/* Background orbs */}
-    <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-accent/10 blur-[120px] animate-float pointer-events-none" />
-    <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-accent/5 blur-[100px] animate-float-delayed pointer-events-none" />
+    <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-accent/5 blur-[120px] animate-float pointer-events-none" />
+    <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-accent/[0.03] blur-[100px] animate-float-delayed pointer-events-none" />
 
     <div className="relative z-10 max-w-4xl mx-auto text-center">
       {/* Badge */}
