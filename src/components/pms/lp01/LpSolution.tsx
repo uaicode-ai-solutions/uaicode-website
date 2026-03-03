@@ -31,7 +31,7 @@ const LpSolution = () => (
     <div className="relative z-10 max-w-5xl mx-auto">
       <div className="text-center mb-16">
         <h2 className="text-foreground mb-4">
-          Everything You Need to{" "}
+          Everything You Need to<br />
           <span className="text-gradient-gold">Launch With Confidence</span>
         </h2>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
