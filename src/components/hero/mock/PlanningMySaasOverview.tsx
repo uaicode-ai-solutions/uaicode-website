@@ -117,13 +117,7 @@ const PlanningMySaasOverview = () => {
       prev.map((r) => (r.id === reportId ? { ...r, status: "processing" } : r))
     );
 
-    // Reset status in DB
-    await supabase
-      .from("tb_pms_reports")
-      .update({ status: "processing" })
-      .eq("id", reportId);
-
-    // Call edge function with direct fetch
+    // Call edge function with direct fetch (status reset happens server-side)
     const SUPABASE_URL = "https://ccjnxselfgdoeyyuziwt.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg";
 
@@ -137,7 +131,7 @@ const PlanningMySaasOverview = () => {
             "apikey": SUPABASE_ANON_KEY,
             "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
           },
-          body: JSON.stringify({ wizard_id: wizardId }),
+          body: JSON.stringify({ wizard_id: wizardId, report_id: reportId }),
         }
       );
       if (!res.ok) {
@@ -151,7 +145,8 @@ const PlanningMySaasOverview = () => {
       toast.error(`Erro ao chamar edge function: ${String(err)}`);
     }
 
-    // Start polling every 5s
+    // Start polling after 10s delay (wait for edge function to reset status)
+    setTimeout(() => {
     const interval = setInterval(async () => {
       const { data } = await supabase
         .from("tb_pms_reports")
@@ -181,6 +176,7 @@ const PlanningMySaasOverview = () => {
     }, 5000);
 
     pollingIntervals.current.set(reportId, interval);
+    }, 10000); // 10s delay before first poll
 
     // Safety timeout: stop polling after 5 minutes
     setTimeout(() => {

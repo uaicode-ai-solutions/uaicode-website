@@ -51,13 +51,30 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { wizard_id } = await req.json();
+    const { wizard_id, report_id } = await req.json();
 
     if (!wizard_id) {
       return new Response(
         JSON.stringify({ error: "wizard_id is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Reset status to "processing" using service role (bypasses RLS)
+    if (report_id) {
+      const supabaseAdmin = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+      const { error: updateError } = await supabaseAdmin
+        .from("tb_pms_reports")
+        .update({ status: "processing" })
+        .eq("id", report_id);
+      if (updateError) {
+        console.error("❌ Failed to reset status:", updateError.message);
+      } else {
+        console.log(`✅ Status reset to processing for report: ${report_id}`);
+      }
     }
 
     const webhookUrl = getWebhookUrl();
