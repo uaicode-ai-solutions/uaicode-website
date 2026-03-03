@@ -1,11 +1,16 @@
 
 
-# Fix SuccessCases Background Color
+# Adjust Hero Text Layout
 
-The `SuccessCases` component has a hardcoded `bg-black` on line 83. Since the LP already has a full-page gradient background, this section should be transparent to inherit the parent gradient.
+## Changes
 
-## Change
+### `src/components/pms/lp01/LpHero.tsx`
 
-### `src/components/SuccessCases.tsx` (line 83)
-- Replace `bg-black` with `bg-transparent` so it inherits the LP's gradient when used there, while still looking fine on the home page (which also has a dark background).
+**Headline (lines 27-31)**: Break into 3 lines using `<br />` tags:
+- Line 1: "Turn Your SaaS Idea Into a"
+- Line 2: "Data-Driven Strategy" (gold gradient)
+- Line 3: "In Minutes"
+
+**Sub-headline (lines 34-36)**: Update copy to single line:
+- "Answer a few questions. Get a complete market validation report, it's free!"
 
