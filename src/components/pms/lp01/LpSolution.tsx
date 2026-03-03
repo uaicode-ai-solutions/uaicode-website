@@ -1,4 +1,6 @@
-import { BarChart3, Search, Users, Calculator } from "lucide-react";
+import { BarChart3, Search, Users, Calculator, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const deliverables = [
   {
@@ -56,6 +58,22 @@ const LpSolution = () => (
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Mid-page CTA */}
+      <div className="text-center mt-16">
+        <Link to="/pms/wizard">
+          <Button
+            size="lg"
+            className="bg-accent text-accent-foreground hover:bg-accent/90 glow-white text-lg px-10 py-6 rounded-xl font-semibold group"
+          >
+            Get My Free Report
+            <ArrowRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </Link>
+        <p className="text-muted-foreground/60 text-sm mt-4">
+          No credit card required. Results in ~10 minutes.
+        </p>
       </div>
     </div>
   </section>

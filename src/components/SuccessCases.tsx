@@ -87,6 +87,11 @@ const SuccessCases = ({ showCTAs = true }: { showCTAs?: boolean }) => {
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Real SaaS founders who validated first, then built and launched with us
           </p>
+          {!showCTAs && (
+            <p className="text-base text-muted-foreground/70 mt-3 max-w-2xl mx-auto italic">
+              Start with your free validation report — then let's talk about building it together.
+            </p>
+          )}
         </div>
 
         <div className="max-w-4xl mx-auto mb-16">

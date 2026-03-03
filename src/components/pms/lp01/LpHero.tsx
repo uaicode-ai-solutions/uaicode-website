@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle, Clock, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { YouTubeEmbed } from "@/components/blog/YouTubeEmbed";
 import heroThumbnail from "@/assets/hero-video-thumbnail.webp";
+import uaicodeLogo from "@/assets/uaicode-logo.png";
 
 const trustItems = [
   { icon: CheckCircle, label: "2,500+ Ideas Validated" },
@@ -17,10 +18,9 @@ const LpHero = () => (
     <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-accent/[0.03] blur-[100px] animate-float-delayed pointer-events-none" />
 
     <div className="relative z-10 max-w-4xl mx-auto text-center">
-      {/* Badge */}
-      <div className="inline-flex items-center gap-2 glass-card rounded-full px-4 py-2 mb-8 text-sm text-muted-foreground">
-        <Sparkles className="w-4 h-4 text-accent" />
-        AI-Powered SaaS Validation
+      {/* Logo */}
+      <div className="mb-8">
+        <img src={uaicodeLogo} alt="UaiCode" className="h-8 mx-auto" />
       </div>
 
       {/* Headline */}
@@ -55,6 +55,13 @@ const LpHero = () => (
           </div>
         ))}
       </div>
+
+      {/* Urgency */}
+      <p className="mt-6 text-sm text-muted-foreground/70 flex items-center justify-center gap-2">
+        <Users className="w-4 h-4 text-accent/60" />
+        Join 2,500+ founders who validated before building
+      </p>
+
       {/* Hero Video */}
       <div className="max-w-4xl mx-auto relative mt-16">
         <div className="absolute inset-0 bg-accent/10 blur-3xl rounded-3xl -z-10"></div>
