@@ -31,7 +31,7 @@ const LpHero = () => (
       {/* Sub-headline */}
       <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
         Answer a few questions about your idea and get a complete validation report
-        with market analysis, competitive landscape, branding assets, and financial
+        with market analysis, competitive landscape, pricing strategy, and financial
         projections. 100% free.
       </p>
 

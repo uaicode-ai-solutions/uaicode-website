@@ -13,7 +13,7 @@ const steps = [
     num: "02",
     icon: Cpu,
     title: "Our AI Does the Heavy Lifting",
-    desc: "Market research, competitor analysis, branding, financial modeling — all generated automatically in minutes.",
+    desc: "Market research, competitor analysis, pricing strategy, financial modeling — all generated automatically in minutes.",
   },
   {
     num: "03",
