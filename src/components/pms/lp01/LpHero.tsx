@@ -25,14 +25,14 @@ const LpHero = () => (
 
       {/* Headline */}
       <h1 className="text-foreground mb-6 tracking-tight">
-        Turn Your SaaS Idea Into a{" "}
-        <span className="text-gradient-gold">Data-Driven Strategy</span>
-        {" "}— In Minutes
+        Turn Your SaaS Idea Into a<br />
+        <span className="text-gradient-gold">Data-Driven Strategy</span><br />
+        In Minutes
       </h1>
 
       {/* Sub-headline */}
       <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-        Answer a few questions. Get a complete market validation report — free.
+        Answer a few questions. Get a complete market validation report, it's free!
       </p>
 
       {/* CTA */}
