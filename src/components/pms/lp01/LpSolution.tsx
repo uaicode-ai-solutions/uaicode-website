@@ -4,22 +4,22 @@ const deliverables = [
   {
     icon: Search,
     title: "Market Validation",
-    desc: "Understand your market size, demand signals, and growth potential with real data.",
+    desc: "Market size, demand signals, and growth potential — backed by data.",
   },
   {
     icon: BarChart3,
     title: "Competitive Intelligence",
-    desc: "See who your competitors are, what they charge, and where the gaps are.",
+    desc: "Competitors, pricing gaps, and positioning opportunities at a glance.",
   },
   {
     icon: Users,
     title: "Target Customer Profile",
-    desc: "Know exactly who your ideal customer is — their pain points, demographics, and buying behavior.",
+    desc: "Pain points, demographics, and buying behavior of your ideal customer.",
   },
   {
     icon: Calculator,
     title: "Financial Projections",
-    desc: "Revenue forecasts, unit economics, and ROI analysis for your first 3 years.",
+    desc: "Revenue forecasts, unit economics, and 3-year ROI analysis.",
   },
 ];
 
@@ -35,8 +35,7 @@ const LpSolution = () => (
           <span className="text-gradient-gold">Launch With Confidence</span>
         </h2>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          One report. Four powerful sections. All the intelligence you need to
-          make smarter decisions — before you write a single line of code.
+          One report. Four powerful insights. Everything before you write code.
         </p>
       </div>
 
