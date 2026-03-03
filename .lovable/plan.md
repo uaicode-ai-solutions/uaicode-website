@@ -1,49 +1,57 @@
 
 
-# Fix: Botao de reprocessar nao chama o n8n
+# Fix: Reprocessamento falha silenciosamente por causa de RLS
 
-## Problema
-O `supabase.functions.invoke("pms-orchestrate-lp-report")` esta retornando "Failed to fetch" nos network logs. A edge function faz boot mas nao processa nenhum request. Isso indica que a chamada do cliente nao esta chegando corretamente na funcao.
+## Problema identificado
 
-## Causa raiz
-O `supabase.functions.invoke` pode nao estar enviando corretamente os headers necessarios (Authorization, apikey) ou esta sendo bloqueado pelo contexto do iframe de preview. Os logs da edge function mostram apenas boot/shutdown sem nenhum request processado.
+Analisando os network logs e edge function logs em detalhe:
+
+1. O botao ESTA chamando o n8n com sucesso (edge function retorna 202, n8n responde 200)
+2. Porem, o `PATCH tb_pms_reports SET status = 'processing'` **falha silenciosamente** por causa das politicas RLS
+
+A politica de UPDATE na tabela `tb_pms_reports` so permite update para usuarios que possuem o wizard via `tb_pms_wizard` (tabela do sistema de usuarios logados). Como o hero admin nao e dono do wizard (e o wizard_id referencia `tb_pms_lp_wizard`, nao `tb_pms_wizard`), o update retorna 204 mas com 0 rows afetadas. O status nunca muda para "processing" no banco.
+
+Resultado: o polling na primeira checagem (5s depois) encontra status = "failed" (o antigo), detecta `st.includes("fail")`, e para imediatamente. O icone para de girar e o report volta a "failed" antes do n8n terminar.
 
 ## Solucao
 
+Duas alteracoes:
+
+### 1. Mover o reset de status para dentro da edge function `pms-orchestrate-lp-report`
+
+A edge function ja roda com service role, entao nao tem restricao de RLS. Adicionar o reset de status la dentro, antes de chamar o n8n:
+
+**Arquivo:** `supabase/functions/pms-orchestrate-lp-report/index.ts`
+
+- Receber `report_id` alem de `wizard_id` no body
+- Usar o service role client para `UPDATE tb_pms_reports SET status = 'processing' WHERE id = report_id`
+
+### 2. Remover o update do banco no frontend e passar report_id
+
 **Arquivo:** `src/components/hero/mock/PlanningMySaasOverview.tsx`
 
-Substituir `supabase.functions.invoke` por um `fetch` direto com headers explicitos:
+- Remover o `supabase.from("tb_pms_reports").update({status: "processing"})` do frontend (que falha por RLS)
+- Passar `report_id` junto com `wizard_id` no body do fetch para a edge function
+- Adicionar um delay inicial no polling (aguardar 10s antes do primeiro poll) para dar tempo da edge function resetar o status e do n8n comecar
+
+### 3. Adicionar delay no primeiro poll
+
+Para evitar que o polling detecte o status "failed" antigo antes da edge function atualizar, o primeiro poll deve aguardar pelo menos 10 segundos apos o trigger.
+
+## Detalhes tecnicos
+
+Na edge function, antes do `EdgeRuntime.waitUntil(fetch(webhookUrl...))`:
 
 ```typescript
-// Antes (linha 126-128):
-await supabase.functions.invoke("pms-orchestrate-lp-report", {
-  body: { wizard_id: wizardId },
-});
-
-// Depois:
-const SUPABASE_URL = "https://ccjnxselfgdoeyyuziwt.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
-
-try {
-  const res = await fetch(
-    `${SUPABASE_URL}/functions/v1/pms-orchestrate-lp-report`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({ wizard_id: wizardId }),
-    }
-  );
-  console.log("Edge function response:", res.status);
-} catch (err) {
-  console.error("Edge function call failed:", err);
-}
+const supabaseAdmin = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+);
+await supabaseAdmin
+  .from("tb_pms_reports")
+  .update({ status: "processing" })
+  .eq("id", report_id);
 ```
 
-Como a funcao tem `verify_jwt = false`, nao precisa de token do usuario — basta o anon key. As constantes SUPABASE_URL e SUPABASE_ANON_KEY ja existem em `src/integrations/supabase/client.ts` e podem ser importadas ou referenciadas diretamente.
-
-Tambem adicionar um `toast` de erro caso o fetch falhe, para o admin saber que algo deu errado, e um toast de sucesso quando o polling detectar "completed".
+No frontend, o fetch passa `{ wizard_id, report_id }` e o polling comeca com `setTimeout` de 10s antes do primeiro `setInterval`.
 
