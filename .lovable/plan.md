@@ -1,16 +1,11 @@
 
 
-# Adjust Hero Text Layout
+# Fix Sub-headline to Single Line on Desktop/Tablet
 
-## Changes
+The text "Answer a few questions. Get a complete market validation report, it's free!" is breaking into two lines because of the `max-w-2xl` constraint on the `<p>` tag.
 
-### `src/components/pms/lp01/LpHero.tsx`
+## Change
 
-**Headline (lines 27-31)**: Break into 3 lines using `<br />` tags:
-- Line 1: "Turn Your SaaS Idea Into a"
-- Line 2: "Data-Driven Strategy" (gold gradient)
-- Line 3: "In Minutes"
-
-**Sub-headline (lines 34-36)**: Update copy to single line:
-- "Answer a few questions. Get a complete market validation report, it's free!"
+### `src/components/pms/lp01/LpHero.tsx` (line 34)
+- Replace `max-w-2xl` with `max-w-4xl` so the text fits in one line on desktop and tablet, while still wrapping naturally on mobile.
 
