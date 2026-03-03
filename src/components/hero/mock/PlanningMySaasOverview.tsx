@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { FileText, BarChart3, Globe, Building2, Search, Loader2, ChevronLeft, ChevronRight, Eraser, Eye, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -122,10 +123,33 @@ const PlanningMySaasOverview = () => {
       .update({ status: "processing" })
       .eq("id", reportId);
 
-    // Call edge function with existing wizard_id (no new record created)
-    await supabase.functions.invoke("pms-orchestrate-lp-report", {
-      body: { wizard_id: wizardId },
-    });
+    // Call edge function with direct fetch
+    const SUPABASE_URL = "https://ccjnxselfgdoeyyuziwt.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg";
+
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/pms-orchestrate-lp-report`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ wizard_id: wizardId }),
+        }
+      );
+      if (!res.ok) {
+        console.error("Edge function error:", res.status);
+        toast.error(`Erro ao reprocessar: Status ${res.status}`);
+      } else {
+        console.log("Edge function triggered:", res.status);
+      }
+    } catch (err) {
+      console.error("Edge function call failed:", err);
+      toast.error(`Erro ao chamar edge function: ${String(err)}`);
+    }
 
     // Start polling every 5s
     const interval = setInterval(async () => {
