@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { FileText, BarChart3, Globe, Building2, Search, Loader2, ChevronLeft, ChevronRight, Eraser, Eye } from "lucide-react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { FileText, BarChart3, Globe, Building2, Search, Loader2, ChevronLeft, ChevronRight, Eraser, Eye, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -94,6 +94,83 @@ const PlanningMySaasOverview = () => {
   const [lpWizards, setLpWizards] = useState<LpWizardRow[]>([]);
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reprocessingIds, setReprocessingIds] = useState<Set<string>>(new Set());
+  const pollingIntervals = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
+
+  // Cleanup polling intervals on unmount
+  useEffect(() => {
+    return () => {
+      pollingIntervals.current.forEach((interval) => clearInterval(interval));
+      pollingIntervals.current.clear();
+    };
+  }, []);
+
+  const handleReprocess = useCallback(async (card: MergedCard) => {
+    const { reportId, wizardId } = card;
+
+    // Add to reprocessing set
+    setReprocessingIds((prev) => new Set(prev).add(reportId));
+
+    // Update local status immediately
+    setReports((prev) =>
+      prev.map((r) => (r.id === reportId ? { ...r, status: "processing" } : r))
+    );
+
+    // Reset status in DB
+    await supabase
+      .from("tb_pms_reports")
+      .update({ status: "processing" })
+      .eq("id", reportId);
+
+    // Call edge function with existing wizard_id (no new record created)
+    await supabase.functions.invoke("pms-orchestrate-lp-report", {
+      body: { wizard_id: wizardId },
+    });
+
+    // Start polling every 5s
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from("tb_pms_reports")
+        .select("status, hero_score_section, summary_section")
+        .eq("id", reportId)
+        .single();
+
+      if (data) {
+        const st = data.status.trim().toLowerCase();
+        if (st === "completed" || st.includes("fail")) {
+          clearInterval(interval);
+          pollingIntervals.current.delete(reportId);
+          setReprocessingIds((prev) => {
+            const next = new Set(prev);
+            next.delete(reportId);
+            return next;
+          });
+          setReports((prev) =>
+            prev.map((r) =>
+              r.id === reportId
+                ? { ...r, status: data.status, hero_score_section: data.hero_score_section, summary_section: data.summary_section }
+                : r
+            )
+          );
+        }
+      }
+    }, 5000);
+
+    pollingIntervals.current.set(reportId, interval);
+
+    // Safety timeout: stop polling after 5 minutes
+    setTimeout(() => {
+      if (pollingIntervals.current.has(reportId)) {
+        clearInterval(pollingIntervals.current.get(reportId)!);
+        pollingIntervals.current.delete(reportId);
+        setReprocessingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(reportId);
+          return next;
+        });
+      }
+    }, 5 * 60 * 1000);
+  }, []);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -370,17 +447,34 @@ const PlanningMySaasOverview = () => {
                   </td>
                   <td className="px-3 py-2.5 text-white/30 whitespace-nowrap">{formatDate(card.createdAt)}</td>
                   <td className="px-3 py-2.5 text-center">
-                    {card.status.trim().toLowerCase() === "completed" ? (
-                      <button
-                        onClick={() => window.open(`/hero/report/${card.reportId}`, '_blank')}
-                        title="View report"
-                        className="p-1.5 rounded-lg hover:bg-white/[0.08] text-white/40 hover:text-amber-400 transition-colors"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    ) : (
-                      <span className="text-white/10">—</span>
-                    )}
+                    <div className="flex items-center justify-center gap-1">
+                      {card.status.trim().toLowerCase() === "completed" && (
+                        <button
+                          onClick={() => window.open(`/hero/report/${card.reportId}`, '_blank')}
+                          title="View report"
+                          className="p-1.5 rounded-lg hover:bg-white/[0.08] text-white/40 hover:text-amber-400 transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      )}
+                      {reprocessingIds.has(card.reportId) ? (
+                        <button disabled className="p-1.5 rounded-lg text-amber-400">
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                        </button>
+                      ) : card.status.trim().toLowerCase().includes("fail") ? (
+                        <button
+                          onClick={() => handleReprocess(card)}
+                          title="Reprocess report"
+                          className="p-1.5 rounded-lg hover:bg-white/[0.08] text-white/40 hover:text-amber-400 transition-colors"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button disabled className="p-1.5 rounded-lg text-white/10">
+                          <RefreshCw className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
