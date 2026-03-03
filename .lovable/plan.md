@@ -1,17 +1,15 @@
 
 
-# Adjust "How It Works" Heading Layout
+# Adjust "Launch With Confidence" Heading Layout
 
-### `src/components/pms/lp01/LpHowItWorks.tsx` (lines 50-53)
+### `src/components/pms/lp01/LpSolution.tsx` (line 34)
 
-Break the heading into two lines using `<br />`:
-- Line 1: "From Idea to Strategy in"
-- Line 2: "4 Simple Steps" (gold gradient)
+Replace the space join with a `<br />` to break into two lines:
 
 ```tsx
 <h2 className="text-foreground mb-4">
-  From Idea to Strategy in<br />
-  <span className="text-gradient-gold">4 Simple Steps</span>
+  Everything You Need to<br />
+  <span className="text-gradient-gold">Launch With Confidence</span>
 </h2>
 ```
 
