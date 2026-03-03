@@ -1,31 +1,31 @@
 
 
-# Add "Meet the Founder" Section to LP — Funnel-Aligned
+# Merge Founder into "How It Works" as Step 4
 
-## Strategy
+## Concept
 
-The marketing team's idea is strong, but the CTA must align with the funnel:
+Instead of a separate `LpFounder` section, the founder becomes the natural Step 4 in the flow:
 
-1. User sees LP → runs wizard (lead captured)
-2. User receives report (email + dashboard)
-3. Report and email contain the "Book a Call" CTA
+1. Tell Us About Your Idea
+2. Our AI Does the Heavy Lifting
+3. Get Your Complete Report
+4. **Talk Strategy With an Expert** ← NEW
 
-So on the LP, the founder section builds **desire** for the call but the CTA pushes to **get the report first** — not to book directly. This qualifies the lead and forces wizard completion.
+The heading updates from "3 Simple Steps" to "4 Simple Steps".
 
-## Content
+## Changes
 
-- **Headline**: "Got Questions After Your Report? Talk Strategy With an Expert"
-- **Body**: "After receiving your free report, you'll have the option to book a 1-on-1 strategy session with Rafael Luz — former Microsoft AI Solutions Architect who has helped 100+ founders turn validated ideas into launched products. No pitch. Just real, actionable advice for your specific idea."
-- **Subtle note**: "Available exclusively after you receive your report"
-- **CTA**: "Get My Free Report First" → `/pms/wizard` (same CTA as rest of LP, maintaining single-CTA principle)
+### 1. `src/components/pms/lp01/LpHowItWorks.tsx`
 
-## Files
+- Add Step 04 to the `steps` array with a `CalendarCheck` icon, title "Talk Strategy With an Expert", and desc mentioning the 1-on-1 call with Rafael Luz (ex-Microsoft AI Solutions Architect) — available after the report
+- Update heading from "3 Simple Steps" to "4 Simple Steps"
+- Make Step 04 card special: include the founder photo (`founder-rafael-luz.webp`) and credential badge inline within the step card to differentiate it visually from the other steps
 
-### New: `src/components/pms/lp01/LpFounder.tsx`
-Glass card with two-column layout:
-- Left/top: Founder photo (`founder-rafael-luz.webp`), name, "Founder & CEO at Uaicode.ai", credential badge "Ex-Microsoft AI Solutions Architect"
-- Right/bottom: Benefit-focused copy (what the user gets from a call, not a bio), note about exclusivity after report, CTA → `/pms/wizard`
+### 2. `src/pages/PmsLandingPage01.tsx`
 
-### Modify: `src/pages/PmsLandingPage01.tsx`
-Add `<LpFounder />` after `<LpHowItWorks />`
+- Remove `<LpFounder />` import and usage (no longer needed as separate section)
+
+### 3. `src/components/pms/lp01/LpFounder.tsx`
+
+- Delete file (content merged into LpHowItWorks)
 
