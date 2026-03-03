@@ -6,7 +6,7 @@ import heroThumbnail from "@/assets/hero-video-thumbnail.webp";
 
 const trustItems = [
   { icon: CheckCircle, label: "2,500+ Ideas Validated" },
-  { icon: Clock, label: "Ready in 5 Minutes" },
+  { icon: Clock, label: "Ready in ~10 Minutes" },
   { icon: Sparkles, label: "100% Free" },
 ];
 
