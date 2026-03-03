@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle, Clock, Sparkles, Users } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { YouTubeEmbed } from "@/components/blog/YouTubeEmbed";
 import heroThumbnail from "@/assets/hero-video-thumbnail.webp";
@@ -20,7 +20,7 @@ const LpHero = () => (
     <div className="relative z-10 max-w-4xl mx-auto text-center">
       {/* Logo */}
       <div className="mb-8">
-        <img src={uaicodeLogo} alt="UaiCode" className="h-8 mx-auto" />
+        <img src={uaicodeLogo} alt="UaiCode" className="h-14 md:h-16 mx-auto" />
       </div>
 
       {/* Headline */}
@@ -56,11 +56,6 @@ const LpHero = () => (
         ))}
       </div>
 
-      {/* Urgency */}
-      <p className="mt-6 text-sm text-muted-foreground/70 flex items-center justify-center gap-2">
-        <Users className="w-4 h-4 text-accent/60" />
-        Join 2,500+ founders who validated before building
-      </p>
 
       {/* Hero Video */}
       <div className="max-w-4xl mx-auto relative mt-16">
