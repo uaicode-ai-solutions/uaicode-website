@@ -1,8 +1,18 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, MessageSquareText, Cpu, FileCheck } from "lucide-react";
+import { ArrowRight, MessageSquareText, Cpu, FileCheck, CalendarCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import founderPhoto from "@/assets/founder-rafael-luz.webp";
 
-const steps = [
+interface Step {
+  num: string;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  desc: string;
+  isSpecial?: boolean;
+}
+
+const steps: Step[] = [
   {
     num: "01",
     icon: MessageSquareText,
@@ -21,6 +31,13 @@ const steps = [
     title: "Get Your Complete Report",
     desc: "A ready-to-use strategy document you can share with investors, co-founders, or your team.",
   },
+  {
+    num: "04",
+    icon: CalendarCheck,
+    title: "Talk Strategy With an Expert",
+    desc: "Book a 1-on-1 strategy session with Rafael Luz — former Microsoft AI Solutions Architect who has helped 100+ founders launch. Available exclusively after your report.",
+    isSpecial: true,
+  },
 ];
 
 const LpHowItWorks = () => (
@@ -32,7 +49,7 @@ const LpHowItWorks = () => (
       <div className="text-center mb-16">
         <h2 className="text-foreground mb-4">
           From Idea to Strategy in{" "}
-          <span className="text-gradient-gold">3 Simple Steps</span>
+          <span className="text-gradient-gold">4 Simple Steps</span>
         </h2>
         <p className="text-muted-foreground text-lg max-w-xl mx-auto">
           No spreadsheets. No consultants. No weeks of research.
@@ -48,26 +65,53 @@ const LpHowItWorks = () => (
         {steps.map((step) => (
           <div
             key={step.num}
-            className="glass-premium rounded-2xl p-6 md:p-8 flex items-start gap-6 hover-lift relative"
+            className={`glass-premium rounded-2xl p-6 md:p-8 hover-lift relative ${
+              step.isSpecial ? 'border border-accent/30' : ''
+            }`}
           >
-            {/* Step number */}
-            <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center relative z-10">
-              <span className="text-2xl md:text-3xl font-bold text-gradient-gold">
-                {step.num}
-              </span>
+            <div className="flex items-start gap-6">
+              {/* Step number */}
+              <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center relative z-10">
+                <span className="text-2xl md:text-3xl font-bold text-gradient-gold">
+                  {step.num}
+                </span>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <step.icon className="w-5 h-5 text-accent flex-shrink-0" />
+                  <h3 className="text-lg md:text-xl font-semibold text-foreground">
+                    {step.title}
+                  </h3>
+                </div>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {step.desc}
+                </p>
+              </div>
             </div>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-2">
-                <step.icon className="w-5 h-5 text-accent flex-shrink-0" />
-                <h3 className="text-lg md:text-xl font-semibold text-foreground">
-                  {step.title}
-                </h3>
+            {/* Founder inline for Step 04 */}
+            {step.isSpecial && (
+              <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center gap-4">
+                <div className="relative flex-shrink-0">
+                  <div className="absolute -inset-1 bg-gradient-to-br from-accent/30 to-accent/5 rounded-full blur-lg" />
+                  <img
+                    src={founderPhoto}
+                    alt="Rafael Luz — Founder & CEO at Uaicode.ai"
+                    loading="lazy"
+                    className="relative w-16 h-16 rounded-full object-cover border-2 border-accent/30"
+                  />
+                </div>
+                <div className="text-center sm:text-left">
+                  <p className="text-sm font-semibold text-foreground">Rafael Luz</p>
+                  <p className="text-xs text-muted-foreground mb-1.5">Founder & CEO at Uaicode.ai</p>
+                  <Badge className="bg-accent/10 text-accent border-accent/20 gap-1 text-xs">
+                    <Award className="w-3 h-3" />
+                    Ex-Microsoft AI Solutions Architect
+                  </Badge>
+                </div>
               </div>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {step.desc}
-              </p>
-            </div>
+            )}
           </div>
         ))}
       </div>
