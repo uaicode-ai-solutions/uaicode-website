@@ -1,4 +1,4 @@
-import { BarChart3, Search, Palette, Calculator } from "lucide-react";
+import { BarChart3, Search, Users, Calculator } from "lucide-react";
 
 const deliverables = [
   {
@@ -12,9 +12,9 @@ const deliverables = [
     desc: "See who your competitors are, what they charge, and where the gaps are.",
   },
   {
-    icon: Palette,
-    title: "Brand Identity Kit",
-    desc: "Get logo suggestions, color palettes, and brand positioning — ready to use.",
+    icon: Users,
+    title: "Target Customer Profile",
+    desc: "Know exactly who your ideal customer is — their pain points, demographics, and buying behavior.",
   },
   {
     icon: Calculator,
