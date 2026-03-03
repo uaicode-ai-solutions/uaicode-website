@@ -48,7 +48,7 @@ const LpHowItWorks = () => (
     <div className="relative z-10 max-w-4xl mx-auto">
       <div className="text-center mb-16">
         <h2 className="text-foreground mb-4">
-          From Idea to Strategy in{" "}
+          From Idea to Strategy in<br />
           <span className="text-gradient-gold">4 Simple Steps</span>
         </h2>
         <p className="text-muted-foreground text-lg max-w-xl mx-auto">
