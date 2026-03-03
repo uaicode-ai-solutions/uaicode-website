@@ -80,7 +80,7 @@ const SuccessCases = ({ showCTAs = true }: { showCTAs?: boolean }) => {
   };
 
   return (
-    <section id="success-cases" className="py-24 px-4 bg-black">
+    <section id="success-cases" className="py-24 px-4 bg-transparent">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">They Validated First. <span className="text-gradient-gold">Then They Built.</span></h2>
