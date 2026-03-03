@@ -1,43 +1,31 @@
 
 
-# Fix: Align LP copy with actual report deliverables
+# Add "Meet the Founder" Section to LP — Funnel-Aligned
 
-## Inaccuracies found
+## Strategy
 
-The shared report (`BusinessPlanTab`) delivers these 8 sections:
-1. Executive Snapshot (KPIs)
-2. Executive Narrative (AI-written summary)
-3. Market Analysis (TAM/SAM/SOM)
-4. Competitive Landscape (competitors)
-5. Target Customer (ICP profile)
-6. Business Model (pricing intelligence)
-7. Financial Projections (revenue forecasts)
-8. Strategic Verdict (viability score + recommendations)
+The marketing team's idea is strong, but the CTA must align with the funnel:
 
-**What the LP incorrectly promises:**
-- Hero sub-headline: "branding assets" → does not exist
-- LpSolution: "Brand Identity Kit" with "logo suggestions, color palettes" → does not exist
-- LpHowItWorks step 02: "branding" → does not exist
+1. User sees LP → runs wizard (lead captured)
+2. User receives report (email + dashboard)
+3. Report and email contain the "Book a Call" CTA
 
-## Changes
+So on the LP, the founder section builds **desire** for the call but the CTA pushes to **get the report first** — not to book directly. This qualifies the lead and forces wizard completion.
 
-### 1. `src/components/pms/lp01/LpHero.tsx` (line 34)
-Replace "branding assets" with "pricing strategy":
-```
-"...with market analysis, competitive landscape, pricing strategy, and financial projections."
-```
+## Content
 
-### 2. `src/components/pms/lp01/LpSolution.tsx`
-Replace "Brand Identity Kit" card with **"Target Customer Profile"**:
-- Icon: `Users` (instead of `Palette`)
-- Title: "Target Customer Profile"
-- Desc: "Know exactly who your ideal customer is — their pain points, demographics, and buying behavior."
+- **Headline**: "Got Questions After Your Report? Talk Strategy With an Expert"
+- **Body**: "After receiving your free report, you'll have the option to book a 1-on-1 strategy session with Rafael Luz — former Microsoft AI Solutions Architect who has helped 100+ founders turn validated ideas into launched products. No pitch. Just real, actionable advice for your specific idea."
+- **Subtle note**: "Available exclusively after you receive your report"
+- **CTA**: "Get My Free Report First" → `/pms/wizard` (same CTA as rest of LP, maintaining single-CTA principle)
 
-This matches the ICP Intelligence section that IS in the report.
+## Files
 
-### 3. `src/components/pms/lp01/LpHowItWorks.tsx` (line 16)
-Replace "branding, financial modeling" with "pricing strategy, financial modeling":
-```
-"Market research, competitor analysis, pricing strategy, financial modeling — all generated automatically in minutes."
-```
+### New: `src/components/pms/lp01/LpFounder.tsx`
+Glass card with two-column layout:
+- Left/top: Founder photo (`founder-rafael-luz.webp`), name, "Founder & CEO at Uaicode.ai", credential badge "Ex-Microsoft AI Solutions Architect"
+- Right/bottom: Benefit-focused copy (what the user gets from a call, not a bio), note about exclusivity after report, CTA → `/pms/wizard`
+
+### Modify: `src/pages/PmsLandingPage01.tsx`
+Add `<LpFounder />` after `<LpHowItWorks />`
 
