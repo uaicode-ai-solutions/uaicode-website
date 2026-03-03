@@ -1,57 +1,70 @@
 
 
-# Fix: Reprocessamento falha silenciosamente por causa de RLS
+# Landing Page `/pms/lp-01` — High-Converting Design
 
-## Problema identificado
+## Research Findings (US Best Practices 2025-2026)
 
-Analisando os network logs e edge function logs em detalhe:
+Top converting SaaS LPs follow this sequence:
+1. **Stop the scroll** — specific headline + hero with trust signal above fold
+2. **Earn trust** — social proof (customer count, logos, stats)
+3. **Explain the value** — benefits, not features
+4. **Remove doubt** — address objections
+5. **Make the ask** — single CTA, repeated throughout
 
-1. O botao ESTA chamando o n8n com sucesso (edge function retorna 202, n8n responde 200)
-2. Porem, o `PATCH tb_pms_reports SET status = 'processing'` **falha silenciosamente** por causa das politicas RLS
+Key rules: single CTA per page, specific headline naming WHO + OUTCOME, above-fold proof, mobile-first.
 
-A politica de UPDATE na tabela `tb_pms_reports` so permite update para usuarios que possuem o wizard via `tb_pms_wizard` (tabela do sistema de usuarios logados). Como o hero admin nao e dono do wizard (e o wizard_id referencia `tb_pms_lp_wizard`, nao `tb_pms_wizard`), o update retorna 204 mas com 0 rows afetadas. O status nunca muda para "processing" no banco.
+## Content (plain language for founders/CEOs/CTOs)
 
-Resultado: o polling na primeira checagem (5s depois) encontra status = "failed" (o antigo), detecta `st.includes("fail")`, e para imediatamente. O icone para de girar e o report volta a "failed" antes do n8n terminar.
+### HERO SECTION
+- **Headline**: "Turn Your SaaS Idea Into a Data-Driven Strategy — In Minutes"
+- **Sub-headline**: "Answer a few questions about your idea and get a complete validation report with market analysis, competitive landscape, branding assets, and financial projections. 100% free."
+- **CTA**: "Get My Free Report" → `/pms/wizard`
+- **Trust Bar**: "2,500+ Ideas Validated" · "Ready in 5 Minutes" · "100% Free"
 
-## Solucao
+### THE PROBLEM — "The Valley of Death"
+- **Headline**: "90% of Startups Fail. Most Never Saw It Coming."
+- **Body**: 4 stat cards — "90% fail rate", "$29B wasted yearly on ideas that don't work", "6+ months spent on manual research", "73% of founders say they launched without proper validation"
+- Emotional close: "What if you could see the road ahead before you start driving?"
 
-Duas alteracoes:
+### THE SOLUTION
+- **Headline**: "Everything You Need to Launch With Confidence"
+- **Body**: Grid of 4 deliverables — Market Validation, Competitive Intelligence, Brand Identity Kit, Financial Projections
+- Each card: icon, title, 1-line description
 
-### 1. Mover o reset de status para dentro da edge function `pms-orchestrate-lp-report`
+### HOW IT WORKS — The Wizard
+- **Headline**: "From Idea to Strategy in 3 Simple Steps"
+- **Steps**:
+  1. "Tell Us About Your Idea" — Answer a few simple questions about your SaaS concept
+  2. "Our AI Does the Heavy Lifting" — Market research, competitor analysis, branding — all generated automatically
+  3. "Get Your Complete Report" — A ready-to-use strategy document you can share with investors or your team
+- **Final CTA**: "Start Now — It's Free" → `/pms/wizard`
 
-A edge function ja roda com service role, entao nao tem restricao de RLS. Adicionar o reset de status la dentro, antes de chamar o n8n:
+## Files
 
-**Arquivo:** `supabase/functions/pms-orchestrate-lp-report/index.ts`
+### New: `src/pages/PmsLandingPage01.tsx`
+Page component composing all 4 sections. Standalone (no header/footer) for maximum conversion focus. Pure black background with gold accents.
 
-- Receber `report_id` alem de `wizard_id` no body
-- Usar o service role client para `UPDATE tb_pms_reports SET status = 'processing' WHERE id = report_id`
+### New: `src/components/pms/lp01/LpHero.tsx`
+Liquid glass hero with floating orbs, headline, sub-headline, CTA button, trust badges. Uses existing `glass-premium`, `mesh-gradient`, `text-gradient-gold`, `glow-white`, `animate-float` utilities.
 
-### 2. Remover o update do banco no frontend e passar report_id
+### New: `src/components/pms/lp01/LpProblem.tsx`
+"Valley of Death" section with 4 glass stat cards. Red/destructive accent for urgency. Transition arrow to solution.
 
-**Arquivo:** `src/components/hero/mock/PlanningMySaasOverview.tsx`
+### New: `src/components/pms/lp01/LpSolution.tsx`
+4-card grid showing deliverables. Glass cards with gold accent icons. Hover lift effects.
 
-- Remover o `supabase.from("tb_pms_reports").update({status: "processing"})` do frontend (que falha por RLS)
-- Passar `report_id` junto com `wizard_id` no body do fetch para a edge function
-- Adicionar um delay inicial no polling (aguardar 10s antes do primeiro poll) para dar tempo da edge function resetar o status e do n8n comecar
+### New: `src/components/pms/lp01/LpHowItWorks.tsx`
+3 numbered steps with connecting vertical line. Glass cards with step numbers. Final CTA at bottom.
 
-### 3. Adicionar delay no primeiro poll
+### Modify: `src/App.tsx`
+Add route: `<Route path="/pms/lp-01" element={<PmsLandingPage01 />} />`
 
-Para evitar que o polling detecte o status "failed" antigo antes da edge function atualizar, o primeiro poll deve aguardar pelo menos 10 segundos apos o trigger.
-
-## Detalhes tecnicos
-
-Na edge function, antes do `EdgeRuntime.waitUntil(fetch(webhookUrl...))`:
-
-```typescript
-const supabaseAdmin = createClient(
-  Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-);
-await supabaseAdmin
-  .from("tb_pms_reports")
-  .update({ status: "processing" })
-  .eq("id", report_id);
-```
-
-No frontend, o fetch passa `{ wizard_id, report_id }` e o polling comeca com `setTimeout` de 10s antes do primeiro `setInterval`.
+## Design System
+- Background: pure black (`bg-background`)
+- Cards: `glass-premium` / `glass-card` with `hover-lift`
+- Gold accents via `text-gradient-gold`, `accent` color
+- Floating gradient orbs as bg decoration
+- `stagger-fade-in` for card groups
+- Single CTA color: `bg-accent text-background` with `glow-white`
+- All existing CSS utilities — no new CSS needed
 
