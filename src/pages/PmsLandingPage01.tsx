@@ -7,7 +7,7 @@ import SuccessCases from "@/components/SuccessCases";
 const PmsLandingPage01 = () => (
   <div className="min-h-screen bg-background text-foreground relative overflow-hidden noise-overlay">
     {/* Mesh gradient background */}
-    <div className="absolute inset-0 mesh-gradient pointer-events-none" />
+    <div className="absolute inset-0 bg-gradient-to-b from-background via-card/50 to-background pointer-events-none" />
 
     <div className="relative z-10">
       <LpHero />
