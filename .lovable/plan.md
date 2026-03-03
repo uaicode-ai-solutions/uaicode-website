@@ -1,49 +1,49 @@
 
 
-# Adicionar botao de Reprocessar Report com status Failed
+# Fix: Botao de reprocessar nao chama o n8n
 
-## Resumo
-Adicionar um icone RefreshCw na coluna Actions da tabela de reports. O icone fica ativo apenas para reports com status "failed". Ao clicar, dispara o reprocessamento via edge function `pms-orchestrate-lp-report` passando o `wizard_id` existente do report (da tabela `tb_pms_reports.wizard_id`), sem criar nenhum registro novo.
+## Problema
+O `supabase.functions.invoke("pms-orchestrate-lp-report")` esta retornando "Failed to fetch" nos network logs. A edge function faz boot mas nao processa nenhum request. Isso indica que a chamada do cliente nao esta chegando corretamente na funcao.
 
-## Alteracao
+## Causa raiz
+O `supabase.functions.invoke` pode nao estar enviando corretamente os headers necessarios (Authorization, apikey) ou esta sendo bloqueado pelo contexto do iframe de preview. Os logs da edge function mostram apenas boot/shutdown sem nenhum request processado.
 
-**Arquivo unico:** `src/components/hero/mock/PlanningMySaasOverview.tsx`
+## Solucao
 
-### 1. Novo estado e import
-- Importar `RefreshCw` do lucide-react
-- Adicionar estado `reprocessingIds` como `Set<string>` para rastrear reports em reprocessamento
+**Arquivo:** `src/components/hero/mock/PlanningMySaasOverview.tsx`
 
-### 2. Funcao `handleReprocess(card)`
-- Recebe o card que ja contem `reportId` e `wizardId` (vindo de `tb_pms_reports.wizard_id`, que referencia o registro existente em `tb_pms_lp_wizard`)
-- Adiciona `reportId` ao `reprocessingIds`
-- Atualiza o status local para "processing" imediatamente na UI
-- Reseta o status no banco: `UPDATE tb_pms_reports SET status = 'processing' WHERE id = reportId`
-- Chama `supabase.functions.invoke("pms-orchestrate-lp-report", { body: { wizard_id: card.wizardId } })`
-  - O `card.wizardId` ja e o UUID existente na `tb_pms_lp_wizard` -- nao cria registro novo
-- Inicia polling a cada 5 segundos: `SELECT status, hero_score_section, summary_section FROM tb_pms_reports WHERE id = reportId`
-- Quando status muda para "completed" ou contem "fail":
-  - Para o polling
-  - Remove do `reprocessingIds`
-  - Atualiza o array `reports` local com os novos dados (status, score, summary)
-- Timeout de seguranca: para o polling apos 5 minutos
+Substituir `supabase.functions.invoke` por um `fetch` direto com headers explicitos:
 
-### 3. Coluna Actions - nova renderizacao
-- Para status "completed": mostra icone Eye (existente) + RefreshCw desabilitado (opacidade 30%)
-- Para status "failed": mostra RefreshCw ativo (cor amber ao hover, clicavel)
-- Para status "processing" (em reprocessamento): mostra RefreshCw com `animate-spin` em cor amber
-- Para outros status (pending): mostra RefreshCw desabilitado
+```typescript
+// Antes (linha 126-128):
+await supabase.functions.invoke("pms-orchestrate-lp-report", {
+  body: { wizard_id: wizardId },
+});
 
-### 4. Cleanup
-- useEffect com cleanup para limpar todos os intervals ativos ao desmontar o componente
+// Depois:
+const SUPABASE_URL = "https://ccjnxselfgdoeyyuziwt.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
 
-## Detalhe importante sobre wizard_id
-O `wizard_id` utilizado e sempre o valor ja existente em `tb_pms_reports.wizard_id`, que corresponde ao registro original em `tb_pms_lp_wizard`. A edge function `pms-orchestrate-lp-report` recebe esse mesmo UUID e o n8n reutiliza o registro existente -- nenhum registro duplicado e criado.
-
-## Fluxo visual
-
-```text
-[Failed] -> Click RefreshCw -> Status muda para "Processing" + icone gira
-   -> n8n processa -> Polling detecta "completed"
-   -> Status atualiza + score aparece + Eye fica visivel + RefreshCw desabilitado
+try {
+  const res = await fetch(
+    `${SUPABASE_URL}/functions/v1/pms-orchestrate-lp-report`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ wizard_id: wizardId }),
+    }
+  );
+  console.log("Edge function response:", res.status);
+} catch (err) {
+  console.error("Edge function call failed:", err);
+}
 ```
+
+Como a funcao tem `verify_jwt = false`, nao precisa de token do usuario — basta o anon key. As constantes SUPABASE_URL e SUPABASE_ANON_KEY ja existem em `src/integrations/supabase/client.ts` e podem ser importadas ou referenciadas diretamente.
+
+Tambem adicionar um `toast` de erro caso o fetch falhe, para o admin saber que algo deu errado, e um toast de sucesso quando o polling detectar "completed".
 
