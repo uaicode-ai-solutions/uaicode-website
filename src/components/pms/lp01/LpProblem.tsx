@@ -35,8 +35,7 @@ const LpProblem = () => (
           <span className="text-gradient-gold">Most Never Saw It Coming.</span>
         </h2>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Building a SaaS without validation is like driving blindfolded.
-          The data is out there — most founders just don't have time to find it.
+          Building without validation is like driving blindfolded.
         </p>
       </div>
 
@@ -60,11 +59,6 @@ const LpProblem = () => (
         ))}
       </div>
 
-      {/* Emotional close */}
-      <p className="text-center text-lg text-muted-foreground mt-14 italic max-w-xl mx-auto">
-        "What if you could see the road ahead{" "}
-        <span className="text-foreground font-medium">before</span> you start driving?"
-      </p>
     </div>
   </section>
 );

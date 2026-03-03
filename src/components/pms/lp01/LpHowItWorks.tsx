@@ -17,25 +17,25 @@ const steps: Step[] = [
     num: "01",
     icon: MessageSquareText,
     title: "Tell Us About Your Idea",
-    desc: "Answer a few simple questions about your SaaS concept — what it does, who it's for, and what problem it solves.",
+    desc: "Describe your SaaS concept — what it does, who it's for, the problem it solves.",
   },
   {
     num: "02",
     icon: Cpu,
     title: "Our AI Does the Heavy Lifting",
-    desc: "Market research, competitor analysis, pricing strategy, financial modeling — all generated automatically in minutes.",
+    desc: "Market research, competitors, pricing, and financials — generated in minutes.",
   },
   {
     num: "03",
     icon: FileCheck,
     title: "Get Your Complete Report",
-    desc: "A ready-to-use strategy document you can share with investors, co-founders, or your team.",
+    desc: "A ready-to-use strategy doc to share with investors or your team.",
   },
   {
     num: "04",
     icon: CalendarCheck,
     title: "Talk Strategy With an Expert",
-    desc: "Book a 1-on-1 strategy session with Rafael Luz — former Microsoft AI Solutions Architect who has helped 100+ founders launch. Available exclusively after your report.",
+    desc: "Book a 1-on-1 session with Rafael Luz — ex-Microsoft AI architect, 100+ founders helped.",
     isSpecial: true,
   },
 ];
@@ -52,8 +52,7 @@ const LpHowItWorks = () => (
           <span className="text-gradient-gold">4 Simple Steps</span>
         </h2>
         <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-          No spreadsheets. No consultants. No weeks of research.
-          Just answer, wait, and receive.
+          No spreadsheets. No consultants. Just answer and receive.
         </p>
       </div>
 

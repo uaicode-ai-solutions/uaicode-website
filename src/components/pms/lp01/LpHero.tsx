@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { YouTubeEmbed } from "@/components/blog/YouTubeEmbed";
+import heroThumbnail from "@/assets/hero-video-thumbnail.webp";
 
 const trustItems = [
   { icon: CheckCircle, label: "2,500+ Ideas Validated" },
@@ -30,9 +32,7 @@ const LpHero = () => (
 
       {/* Sub-headline */}
       <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-        Answer a few questions about your idea and get a complete validation report
-        with market analysis, competitive landscape, pricing strategy, and financial
-        projections. 100% free.
+        Answer a few questions. Get a complete market validation report — free.
       </p>
 
       {/* CTA */}
@@ -54,6 +54,15 @@ const LpHero = () => (
             <span>{item.label}</span>
           </div>
         ))}
+      </div>
+      {/* Hero Video */}
+      <div className="max-w-4xl mx-auto relative mt-16">
+        <div className="absolute inset-0 bg-accent/10 blur-3xl rounded-3xl -z-10"></div>
+        <YouTubeEmbed 
+          videoId="" 
+          title="See Your SaaS Validation Report in Action"
+          customThumbnail={heroThumbnail}
+        />
       </div>
     </div>
   </section>
