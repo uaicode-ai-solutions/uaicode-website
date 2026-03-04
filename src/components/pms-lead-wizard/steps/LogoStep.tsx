@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import LeadWizardStep from "../LeadWizardStep";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Loader2, Upload, X } from "lucide-react";
@@ -26,10 +26,38 @@ interface Props {
 const SUPABASE_URL = "https://ccjnxselfgdoeyyuziwt.supabase.co";
 const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjam54c2VsZmdkb2V5eXV6aXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODAxNjksImV4cCI6MjA4MTU1NjE2OX0.L66tFhCjl6Tyr9v4qBdm-fmfr1_2rcFLLcJdJWbgYJg";
 
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
 const LogoStep = ({ value, onChange, description, saasName, saasType, industry }: Props) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [generatedLogo, setGeneratedLogo] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file (PNG, JPG, SVG, etc.)");
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("Image must be under 2MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      onChange(reader.result as string);
+      toast.success("Logo uploaded!");
+    };
+    reader.onerror = () => toast.error("Failed to read file");
+    reader.readAsDataURL(file);
+
+    // Reset so the same file can be re-selected
+    e.target.value = "";
+  };
 
   const handleGenerate = async () => {
     if (description.trim().length < 20) {
@@ -62,6 +90,14 @@ const LogoStep = ({ value, onChange, description, saasName, saasType, industry }
 
   return (
     <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileUpload}
+      />
+
       <LeadWizardStep title="Upload your logo" subtitle="Optional — or let AI create one for you">
         {value ? (
           <div className="flex flex-col items-center gap-4">
@@ -74,11 +110,23 @@ const LogoStep = ({ value, onChange, description, saasName, saasType, industry }
                 <X className="w-3 h-3" />
               </button>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="text-muted-foreground text-xs"
+            >
+              <Upload className="w-3 h-3 mr-1" />
+              Replace from device
+            </Button>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-4 py-8 border-2 border-dashed border-border/40 rounded-xl">
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="flex flex-col items-center gap-4 py-8 border-2 border-dashed border-border/40 rounded-xl cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-colors"
+          >
             <Upload className="w-8 h-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">No logo yet</p>
+            <p className="text-sm text-muted-foreground">Click to upload your logo</p>
           </div>
         )}
         <div className="flex justify-center mt-4">
