@@ -24,6 +24,7 @@ import PmsAdmin from "./pages/PmsAdmin";
 import PmsSharedReport from "./pages/PmsSharedReport";
 import Booking from "./pages/Booking";
 import PmsLeadWizard from "./pages/PmsLeadWizard";
+import CodeLeadWizard from "./pages/CodeLeadWizard";
 import PmsLandingPage01 from "./pages/PmsLandingPage01";
 import HeroLogin from "./pages/hero/HeroLogin";
 import HeroHome from "./pages/hero/HeroHome";
