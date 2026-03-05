@@ -1,20 +1,26 @@
 
 
-# LP Adjustments
+# Plan: Create /code/wizard — Copy of PMS Wizard
 
-## 1. Remove urgency line (`LpHero.tsx`, lines 59-63)
-Delete the "Join 2,500+ founders who validated before building" paragraph and the `Users` icon import.
+## What changes
+1. **New page `src/pages/CodeLeadWizard.tsx`** — Copy of `PmsLeadWizard.tsx` with:
+   - `TOTAL_STEPS = 13` (was 14, logo step removed)
+   - Remove `saasLogo` from form state
+   - Remove LogoStep import and rendering
+   - Adjust step numbering: steps 0–10 stay the same, step 11 (logo) removed, GeographicRegion becomes step 11, ThankYou becomes step 12
+   - Submission payload removes `saas_logo_url`
 
-## 2. Increase logo size (`LpHero.tsx`, line 23)
-Change `h-8` to `h-14 md:h-16` for a proportional, aesthetically balanced logo in the hero.
+2. **New step `src/components/code-lead-wizard/steps/SaasTypeStep.tsx`** — Copy of PMS version with one change:
+   - Replace `{ id: "platform", title: "Platform", description: "Multi-sided marketplace", icon: Layers }` with `{ id: "erp", title: "ERP", description: "Enterprise resource planning", icon: Layers }`
 
-## 3. Footer: dynamic year + open links in new tab (`LpFooter.tsx`)
-- Replace hardcoded `© 2025` with `{new Date().getFullYear()}`
-- Change `<Link>` to `<a href="..." target="_blank" rel="noopener noreferrer">` so Privacy/Terms open in a new tab without losing the lead
+3. **Reuse all other step components** from `src/components/pms-lead-wizard/steps/` (WelcomeStep, FullNameStep, EmailStep, etc.) and `LeadWizardLayout` + `LeadWizardStep` — no copies needed since they're generic.
 
-### Files Changed
-| File | Change |
+4. **Route in `App.tsx`** — Add `<Route path="/code/wizard" element={<CodeLeadWizard />} />` in the public routes section.
+
+## Files created/modified
+| File | Action |
 |------|--------|
-| `LpHero.tsx` | Remove urgency paragraph, enlarge logo |
-| `LpFooter.tsx` | Dynamic year, links open in new tab |
+| `src/pages/CodeLeadWizard.tsx` | Create (based on PmsLeadWizard, 13 steps, no logo) |
+| `src/components/code-lead-wizard/steps/SaasTypeStep.tsx` | Create (Platform → ERP) |
+| `src/App.tsx` | Add route `/code/wizard` |
 
