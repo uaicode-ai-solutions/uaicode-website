@@ -24,6 +24,7 @@ import PmsAdmin from "./pages/PmsAdmin";
 import PmsSharedReport from "./pages/PmsSharedReport";
 import Booking from "./pages/Booking";
 import PmsLeadWizard from "./pages/PmsLeadWizard";
+import CodeLeadWizard from "./pages/CodeLeadWizard";
 import PmsLandingPage01 from "./pages/PmsLandingPage01";
 import HeroLogin from "./pages/hero/HeroLogin";
 import HeroHome from "./pages/hero/HeroHome";
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/pms/wizard" element={<PmsLeadWizard />} />
+            <Route path="/code/wizard" element={<CodeLeadWizard />} />
             <Route path="/pms/lp-01" element={<PmsLandingPage01 />} />
             <Route path="/planningmysaas" element={<PlanningMySaas />} />
             <Route path="/planningmysaas/login" element={<PmsLogin />} />
