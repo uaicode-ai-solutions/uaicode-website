@@ -52,6 +52,7 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/pms/wizard" element={<PmsLeadWizard />} />
+            <Route path="/code/wizard" element={<CodeLeadWizard />} />
             <Route path="/pms/lp-01" element={<PmsLandingPage01 />} />
             <Route path="/planningmysaas" element={<PlanningMySaas />} />
             <Route path="/planningmysaas/login" element={<PmsLogin />} />
